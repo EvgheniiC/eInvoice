@@ -1,0 +1,377 @@
+from decouple import config
+import sys
+import re
+import os
+from xml.etree.ElementTree import Element
+import xml.etree.ElementTree as ET
+
+sys.path.append("../")
+to_replace = ["\[", "\]", " ", "\.\.\."]
+
+
+def get_xml_data(dictionary: dict):
+    """
+    Retrieves the XML data from the given dictionary.
+
+    This function processes a dictionary containing a single key-value
+    pair, which corresponds to an XML filename and its associated file
+    content. The function extracts and returns the key as `xml_filename`
+    and the value as `xml_file`.
+
+    Args:
+        dictionary (dict): A dictionary with exactly one key-value pair
+            associating an XML filename with its content.
+
+    Returns:
+        tuple: A tuple containing two elements:
+            - xml_filename (str): The key of the dictionary representing the
+              XML filename.
+            - xml_file (str): The value of the dictionary representing the
+              content of the XML file.
+    """
+    xml_filename = ""
+    xml_file = ""
+    for key, values in dictionary.items():
+        xml_filename = key
+        xml_file = values
+
+    return xml_filename, xml_file
+
+
+def remove_all_not_utf8_symbol(text: bytes):
+    """
+    Removes all characters from a byte string that are not valid UTF-8 symbols and replaces
+    specified German umlaut characters with their ASCII equivalent.
+
+    Parameters:
+    text (bytes): The input byte string to process. It must be in UTF-8 encoding.
+
+    Returns:
+    str: A string where non-UTF-8 symbols are removed, and specific German umlauts are
+    converted to their corresponding ASCII representations.
+
+    Raises:
+    UnicodeDecodeError: If the input byte string is not decodable as UTF-8.
+    """
+    text = text.decode('utf-8')
+    return text.replace("Ü", "U").replace("ü", "u").replace("Ä", "A").replace("ä", "a").replace(
+        "Ö", "O").replace("ö", "o").replace("ß", "ss")
+
+
+def xml_make_float(txt_float):
+    """
+    Parses a textual representation of a floating-point number and converts
+    it into a Python float. Handles different decimal and grouping
+    separators, including cases where both dot (.) and comma (,) are
+    present, determining the proper usage based on their placement.
+
+    Arguments:
+        txt_float (Optional[str]): The string representation of a floating-point
+        number. It may contain dot (.) or comma (,) as decimal separators,
+        or both.
+
+    Returns:
+        float: The floating-point number derived from the input string.
+        Returns 0.0 if the input string is None.
+
+    Raises:
+        ValueError: If the string cannot be converted into a valid float.
+    """
+    if txt_float is not None:
+        txt_float_rev = txt_float[::-1]
+        # check if comma or dot is the last character
+        if txt_float_rev.find('.') == -1 and txt_float_rev.find(',') > -1:
+            # comma is the only separator
+            return float(re.sub(r"\,", '.', txt_float))
+        elif txt_float_rev.find(',') == -1 and txt_float_rev.find('.') > -1:
+            # dot is the only separator
+            return float(txt_float)
+        elif txt_float_rev.find(',') < txt_float_rev.find('.'):
+            # both are present, comma is decimal separator
+            return float(re.sub(r',', '.', re.sub(r'\.', '', txt_float)))
+        elif txt_float_rev.find('.') < txt_float_rev.find(','):
+            # both are present, dot is decimal separator
+            return float(re.sub(r',', '', txt_float))
+        return float(txt_float)
+    return float(0)
+
+
+def get_xml_object_by_keys(dictionary, search_list):
+    """
+        Retrieves specific XML object data based on a list of search criteria.
+
+        This function processes a dictionary representation of an XML structure and
+        retrieves data for specified keys provided in a search list. The search list
+        specifies the query parameters, including which key to search for, optional
+        modifications such as taking only the first result, extracting only text, or
+        applying a namespace.
+
+        Arguments:
+            dictionary (dict): The dictionary representing the XML structure.
+            search_list (List[Dict[str, Any]]): A list of dictionaries, where each dictionary
+                contains the details for a key to search in the XML object. The supported
+                dictionary keys are:
+                - 'key' (Optional[str]): Specifies the output key for the result.
+                - 'searchKey' (str): The key to search in the XML dictionary.
+                - 'take_first' (Optional[bool]): Whether to take only the first result. Defaults
+                  to False if not specified.
+                - 'take_only_text' (Optional[bool]): Whether to extract only the text content
+                  of the search result. Defaults to False if not specified.
+                - 'name_space' (Optional[str]): Namespace to apply to the search. Defaults to
+                  None if not specified.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing the results mapped with specified keys.
+            Results are fetched according to the search criteria defined in the input
+            search list.
+    """
+    result_list = {}
+    for item in search_list:
+        key = item.get("key")
+        search_key = item.get("searchKey")
+        take_first = item.get("take_first") if item.get("take_first") is not None else False
+        take_only_text = item.get("take_only_text") if item.get("take_only_text") is not None else False
+        name_space = item.get("name_space") if item.get("name_space") else None
+
+        # print("key", key)
+        # print("take_only_text", take_only_text)
+        # print("name_space", name_space)
+
+        result = get_xml_object_by_key(dictionary, search_key,
+                                       take_first_result=take_first,
+                                       take_only_text=take_only_text,
+                                       name_space=name_space)
+
+        if type(result) is not str and take_only_text and len(result) == 0:
+            result_list.update({search_key if key is None or key == "" else key: ""})
+        if type(result) is not str and take_only_text and len(result) == 1:
+            result_list.update({search_key if key is None or key == "" else key: result[0]})
+        else:
+            result_list.update({search_key if key is None or key == "" else key: result})
+
+    return result_list
+
+
+def get_xml_object_by_key(dictionary, key, deep=10, take_first_result=True, take_only_text=False, name_space=None):
+    """
+    Retrieve XML objects from a nested dictionary by matching a specific key.
+
+    This function searches for XML-like objects within a nested dictionary structure
+    that match a specified key. The search can be adjusted to limit the depth of recursion,
+    retrieve only the first matching result, strip unused characters from the resulting
+    text, or filter results based on a namespace.
+
+    Arguments:
+        dictionary (dict): The root dictionary containing the XML-like data to be searched.
+        key (str): The key to search for within the dictionary structure.
+        deep (int, optional): The maximum depth to recursively search through children. Default is 10.
+        take_first_result (bool, optional): Whether to return only the first matching object. Default is True.
+        take_only_text (bool, optional): Whether to return only the text content of the matching object(s). Default is False.
+        name_space (str, optional): Namespace prefix to match when searching for objects. Default is None.
+
+    Returns:
+        list or dict or str: If take_first_result is True, returns the first matching object or its text if
+        take_only_text is True. Otherwise, returns a list of all matching objects or their texts.
+
+    Raises:
+        None explicitly raised, but may raise exceptions on invalid input such as a malformed dictionary.
+
+    Notes:
+        The function employs recursive parsing to traverse child objects. Performance may degrade with
+        very deep or wide dictionary trees. It relies on dictionary keys and structure being XML-like,
+        which may not apply in all cases.
+    """
+    results = []
+
+    # print("dictionary", dictionary)
+    def parse_children(d, key1, search_key, c):
+        """
+        Recursively searches for XML key values within a nested dictionary structure and retrieves matching values. The
+        search involves traversing dictionaries and nested "children" elements within the structure up to a specified depth.
+
+        Arguments:
+        - d: The dictionary structure representing the XML-like data where the search is performed.
+        - key1: The initial key to start searching within the XML-like data.
+        - search_key: The target key to search for across the nested structure.
+        - c: A counter for the current depth of the search.
+
+        Parameters:
+        - deep (int, optional): Specifies the maximum depth to search in the XML-like structure. Default is 10.
+        - take_first_result (bool, optional): Whether to retrieve only the first matching result. Default is True.
+        - take_only_text (bool, optional): Whether to extract only the plain text content of the matching key. Default is False.
+        - name_space (optional): A namespace filter to match key prefixes. Default is None.
+
+        Raises:
+        - Exception: If processing a key encounters an error, the function continues the search on other elements.
+
+        Returns:
+        - str | list: If take_only_text is True, returns a string containing the text of the first matching key or an empty
+          string if none are found. If take_only_text is False, returns a list of matching key objects or an empty list if
+          none are found.
+        """
+        if c <= deep:
+            c += 1
+
+            # print("counter", c, key1, search_key)
+            for _d in d:
+                # Test if element is inside object or error would occur
+                try:
+                    _d[key1]
+                except (Exception,):
+                    continue
+
+                # print(key1 == search_key)
+                # print('_d[key1].get("prefix")', _d[key1].get("prefix"))
+                if key1 == search_key and (name_space is None or name_space == _d[key1].get("prefix")):
+                    if _d.get(key1) not in results:
+                        if take_only_text:
+                            text = _d.get(key1).get("text")
+                            # replace all unused characters
+                            for replace in to_replace:
+                                text = re.sub(replace, '', text)
+                            results.append(text)
+                        else:
+                            results.append(_d.get(key1))
+
+                    if take_first_result:
+                        return True
+
+                else:
+                    if len(list(_d.get(key1).get("children"))) > 0:
+                        my__keys = ','.join(str(list(e.keys())[0]) for e in _d.get(key1).get("children"))
+
+                        # print("my__keys", my__keys)
+                        for ch_keys in my__keys.split(","):
+                            # print("abc", abc)
+                            parse_children(_d.get(key1).get("children"), ch_keys, search_key, c)
+                            if take_first_result and len(results) > 0:
+                                return True
+
+        else:
+            return "" if take_only_text else []
+
+        return "" if take_only_text else []
+
+    for x in dictionary:
+        # print("dictionary[x]", dictionary[x])
+        # print("dictionary[x].get(key)", dictionary[x].get(key))
+        # print('dictionary[x].get("prefix")', dictionary[x].get("prefix"))
+        # TODO try catch ??
+        if dictionary[x].get(key) and (name_space is None or name_space == dictionary[x].get("prefix")):
+            # if dictionary[x].get(key) if type(dictionary[x]) == dict else False and (name_space is None or name_space == dictionary[x].get("prefix") if type(dictionary[x]) ==dict else ""):
+
+            results.append(dictionary[x])
+
+            if take_first_result:
+                if take_only_text:
+                    # print("#####", results[0])
+                    return results[0].get("text")
+                else:
+                    # print("results found:", len(results))
+                    return results
+
+        else:
+            # check children
+            # print("#1", dictionary[x])
+            # print(x)
+            try:
+                if len(dictionary.get(x).get("children")) > 0:
+                    my_keys = ','.join(str(list(e.keys())[0]) for e in dictionary.get(x).get("children"))
+                    counter = 0
+
+                    for key2 in my_keys.split(","):
+                        if parse_children(dictionary.get(x).get("children"), key2, key, counter):
+                            if take_first_result:
+                                # print("results found:", len(results))
+                                if len(results) > 0:
+                                    return results[0]
+            except (Exception,):
+                if take_only_text:
+                    return ""
+    # results = list(dict.fromkeys(results))
+    # print("results found:", len(results))
+    return results if len(results) > 0 else ""
+
+
+def print_attributes_pretty(dictionary: dict):
+    """
+    Print dictionary attributes in a formatted style.
+
+    This function takes a dictionary as input and prints its contents in a
+    structured and readable way, with each key and its corresponding value displayed
+    on a separate line.
+
+    Parameters:
+        dictionary (dict): The dictionary whose key-value pairs need to be printed.
+    """
+    for key in dictionary:
+        print(key, ": ", dictionary[key])
+
+
+def print_positions_pretty(map_positions: dict):
+    """
+    Prints the content of the given map in a human-readable format.
+
+    This function iterates over the entries of the provided map and prints
+    each entry, allowing for the examination of the key-value pairs or items
+    stored in the map.
+
+    Args:
+        map_positions (dict): A dictionary from which the entries will be printed in
+                    a readable format.
+    """
+    for entry in map_positions:
+        print(entry)
+
+
+def find_data_within_element(element: Element, tags: list) -> str | None:
+    """
+    Searches for data within XML elements based on provided tags.
+
+    Args:
+    - element: The XML element in which to search for data.
+    - tags: A list of tags to search for within the element.
+
+    Returns:
+    - The text content of the first tag found within the element. Returns None if none of the tags are found.
+    """
+    for tag in tags:
+        data = element.find(tag)
+        if data is not None:
+            return data.text
+    return None
+
+
+# delete all prefixes from xml
+def delete_all_prefills(xml_tree: ET):
+    """
+    {urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100}CrossIndustryInvoice' -> CrossIndustryInvoice
+    """
+    # Remove namespace prefixes
+    for elem in xml_tree.iter():
+        # Get the tag name without the prefix
+        tag = elem.tag.split("}")[1] if "}" in elem.tag else elem.tag
+        # Replace the element tag with the tag name without prefix
+        elem.tag = tag
+    return xml_tree
+
+
+def find_data_with_regex(element: Element, regex_pattern: str) -> str | None:
+    """
+    Finds data within all tags of an XML element using a regular expression pattern.
+    For exam, we can find order number 930…
+
+    Args:
+    - element: The XML element to search for data.
+    - regex_pattern: The regular expression pattern to search for within the element tags.
+
+    Returns:
+    - The matched data found within the tags based on the regex pattern. Returns None if no match is found.
+    """
+    all_tags_data = ' '.join(element.itertext())  # Get all text content within the element and tags
+    match = re.search(regex_pattern, all_tags_data)
+
+    if match:
+        return match.group(0)
+    else:
+        return None
