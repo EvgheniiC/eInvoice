@@ -28,14 +28,7 @@ def get_einvoice_client_data(m_cn_id: str, xml_text: str) -> (dict, str):
         "S_KR_POSTLEITZAHL": find_data_within_element(xml_supplier_data, tags_to_search_s_kr_postleitzahl),
         "S_KR_LAND": find_data_within_element(xml_supplier_data, tags_to_search_s_kr_country),
         "S_KR_USTID": find_data_within_element(xml_supplier_data, tags_to_search_s_kr_ustd),
-        "S_KR_IBAN": find_data_within_element(xml_supplier_data, tags_to_search_iban)
+        "S_KR_IBAN": find_data_within_element(xml_supplier_data, tags_to_search_iban).replace(" ", "") if find_data_within_element(xml_supplier_data, tags_to_search_iban) else None
     }
     supplier: str = find_data_within_element(xml_supplier_data, tags_to_search_supplier)
-    print("clients_data = ", clients_data)
-    print("supplier = ", supplier)
-    # TODO in Chronos_new
-    # sometimes write client supplier number not correctly
-    # if not supplier or len(supplier) > 8:
-    #     supplier = get_kreditor_cronox(clients_data)
-
     return clients_data, supplier
