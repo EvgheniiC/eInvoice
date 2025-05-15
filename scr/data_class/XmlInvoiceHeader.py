@@ -294,7 +294,7 @@ class XmlInvoiceHeader:
 
     @iban.setter
     def iban(self, value: str):
-        self.__iban = value
+        self.__iban = value.replace(" ", "") if value else None
 
     @property
     def kind_of_invoice(self):
