@@ -338,7 +338,7 @@ def find_data_within_element(element: Element, tags: list) -> str | None:
     for tag in tags:
         data = element.find(tag)
         if data is not None:
-            return data.text
+            return data.text.strip()
     return None
 
 
@@ -375,3 +375,9 @@ def find_data_with_regex(element: Element, regex_pattern: str) -> str | None:
         return match.group(0)
     else:
         return None
+
+
+def get_xml_three(xml_text: str) -> Element:
+    xml_tree: Element = ET.fromstring(xml_text)
+    xml_tree = delete_all_prefills(xml_tree)
+    return xml_tree
