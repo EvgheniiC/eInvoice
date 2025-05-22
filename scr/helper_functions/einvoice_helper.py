@@ -345,7 +345,7 @@ def find_data_within_element(element: Element, tags: list) -> str | None:
 def find_data_within_element_with_len(element: Element, tags: list, length: int) -> str | None:
     """
     Searches for data within XML elements based on provided tags and length.
-    for exam search IBAN with length 22
+    For exam search IBAN with length 22
     Args:
     - element: The XML element in which to search for data.
     - tags: A list of tags to search for within the element.
@@ -356,8 +356,9 @@ def find_data_within_element_with_len(element: Element, tags: list, length: int)
     """
     for tag in tags:
         data = element.find(tag)
-        if data is not None and len(data) == length:
-            return data.text.strip()
+        if data is not None:
+            if len(data.text.strip()) == length:
+                return data.text.strip()
     return None
 
 
