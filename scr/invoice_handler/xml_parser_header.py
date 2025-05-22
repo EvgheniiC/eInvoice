@@ -2,48 +2,48 @@ from datetime import datetime
 import re
 from ..data_class import XmlInvoiceHeader
 from ..helper_functions import find_data_within_element, find_data_with_regex, get_xml_three
+from xml.etree.ElementTree import Element
 
 
 # TODO logger
 # extract xml data from pdf file
 # def zugpferd_extraction(m_cn_id: str, xml_text: str, db_helper, barcode: str):
-def get_zugpferd_header(m_cn_id: str, xml_text: str, barcode: str, xml_invoice_data: XmlInvoiceHeader):
+def get_xml_header(m_cn_id: str, xml_text: str, barcode: str,
+                   xml_invoice_data: XmlInvoiceHeader) -> XmlInvoiceHeader:
     print("##### START zugpferd_extraction")
     # logger = EinvoiceLoger("zugpferd_extraction", m_cn_id)
     # logger.info_log(f"start zugpferd_extraction with m_cn_id = {m_cn_id}")
 
-    xml_tree = get_xml_three(xml_text)
+    xml_tree: Element = get_xml_three(xml_text)
 
-
-    xml_exchanged_document = xml_tree.find("./ExchangedDocument")
-    xml_invoice_head = xml_tree.find("./SupplyChainTradeTransaction/ApplicableHeaderTradeSettlement")
-    xml_invoice_head_money = xml_tree.find(
+    xml_exchanged_document: Element = xml_tree.find("./ExchangedDocument")
+    xml_invoice_head: Element = xml_tree.find("./SupplyChainTradeTransaction/ApplicableHeaderTradeSettlement")
+    xml_invoice_head_money: Element = xml_tree.find(
         "./SupplyChainTradeTransaction/ApplicableHeaderTradeSettlement/SpecifiedTradeSettlementHeaderMonetarySummation")
-    xml_supplier_data = xml_tree.find("./SupplyChainTradeTransaction")
-    xml_positions_data = xml_tree.find("./SupplyChainTradeTransaction")
+    xml_supplier_data: Element = xml_tree.find("./SupplyChainTradeTransaction")
+    xml_positions_data: Element = xml_tree.find("./SupplyChainTradeTransaction")
 
     # header data
-    # xml_invoice_data = XmlInvoiceHeader(m_cn_id=m_cn_id)
-    tags_to_search_invoice_number = ['./ID']
-    tags_to_search_order_id = ['./ApplicableHeaderTradeAgreement/BuyerOrderReferencedDocument/IssuerAssignedID',
-                               './IncludedNote/Content']
-    tags_to_search_invoice_date = ['./IssueDateTime/DateTimeString']
-    tags_to_search_delivery_date = ['./BillingSpecifiedPeriod/StartDateTime/DateTimeString']
-    tags_to_search_delivery_date_till = ['./BillingSpecifiedPeriod/EndDateTime/DateTimeString']
-    tags_to_search_currency = ['./InvoiceCurrencyCode']
-    tags_to_search_invoice_amount = ['./TaxBasisTotalAmount']
-    tags_to_search_total_amount = ['./GrandTotalAmount']
-    tags_to_search_total_tax_amount = ['./TaxTotalAmount']
-    tags_to_search_supplier = ['./ApplicableHeaderTradeAgreement/SellerTradeParty/ID']
-    tags_to_search_iban = ['./ApplicableHeaderTradeAgreement/BuyerTradeParty/ID',
-                           './ApplicableHeaderTradeSettlement/SpecifiedTradeSettlementPaymentMeans/PayeePartyCreditorFinancialAccount/IBANID']
+    tags_to_search_invoice_number: list = ['./ID']
+    tags_to_search_order_id: list = ['./ApplicableHeaderTradeAgreement/BuyerOrderReferencedDocument/IssuerAssignedID',
+                                     './IncludedNote/Content']
+    tags_to_search_invoice_date: list = ['./IssueDateTime/DateTimeString']
+    tags_to_search_delivery_date: list = ['./BillingSpecifiedPeriod/StartDateTime/DateTimeString']
+    tags_to_search_delivery_date_till: list = ['./BillingSpecifiedPeriod/EndDateTime/DateTimeString']
+    tags_to_search_currency: list = ['./InvoiceCurrencyCode']
+    tags_to_search_invoice_amount: list = ['./TaxBasisTotalAmount']
+    tags_to_search_total_amount: list = ['./GrandTotalAmount']
+    tags_to_search_total_tax_amount: list = ['./TaxTotalAmount']
+    tags_to_search_supplier: list = ['./ApplicableHeaderTradeAgreement/SellerTradeParty/ID']
+    tags_to_search_iban: list = ['./ApplicableHeaderTradeAgreement/BuyerTradeParty/ID',
+                                 './ApplicableHeaderTradeSettlement/SpecifiedTradeSettlementPaymentMeans/PayeePartyCreditorFinancialAccount/IBANID']
 
-    tags_to_search_tax_amount1 = [
+    tags_to_search_tax_amount1: list = [
         './SupplyChainTradeTransaction/ApplicableHeaderTradeSettlement/ApplicableTradeTax/CalculatedAmount']
-    tags_to_search_tax_rate1 = [
+    tags_to_search_tax_rate1: list = [
         './SupplyChainTradeTransaction/ApplicableHeaderTradeSettlement/ApplicableTradeTax/RateApplicablePercent']
-    tags_to_search_kind_of_invoice = ['./TypeCode']
-    xml_invoice_data.invoice_number = find_data_within_element(xml_exchanged_document, tags_to_search_invoice_number)
+    tags_to_search_kind_of_invoice: list = ['./TypeCode']
+    xml_invoice_data.invoice_number: str = find_data_within_element(xml_exchanged_document, tags_to_search_invoice_number)
 
     print("####### xml_invoice_data.invoice_number ", xml_invoice_data.invoice_number)
 
@@ -108,7 +108,6 @@ def get_zugpferd_header(m_cn_id: str, xml_text: str, barcode: str, xml_invoice_d
 
     xml_invoice_data.kind_of_invoice = "RE" if find_data_within_element(xml_exchanged_document,
                                                                         tags_to_search_kind_of_invoice) == '380' else "GU"
-
 
     xml_invoice_data.correct_data()
 
