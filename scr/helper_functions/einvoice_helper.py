@@ -401,3 +401,34 @@ def get_xml_three(xml_text: str) -> Element:
     xml_tree: Element = ET.fromstring(xml_text)
     xml_tree = delete_all_prefills(xml_tree)
     return xml_tree
+
+
+# many XML files have emdbebebe PDF File, most of all attachments is in teg AdditionalDocumentReference ->Attachment-> EmbeddedDocumentBinaryObject
+# there may be many PDF files
+def extract_pdf_attachments(data: dict, key: str):
+    """
+    This function extracts the values of "#text" and "@filename" from all elements under the specified key in the data dictionary.
+
+    Args:
+        data (dict): The dictionary containing the data.
+        key (str): The key under which to extract the values.
+    """
+
+    # Get the list of elements under the specified key
+    additional_documents = data.get(key, [])
+    attachments = []
+    file = {"TEXT": None, "FILE_NAME": None}
+
+    # Iterate over each document in the list
+    for document in additional_documents:
+        # Iterate over each key-value pair in the document
+        for sub_key, value in document.get("Attachment", {}).get("EmbeddedDocumentBinaryObject", {}).items():
+            # Check if the key is "#text" and "@filename"
+            if sub_key == "#text":
+                # Print the key and its corresponding value
+                file["TEXT"] = value
+            if sub_key == "@filename":
+                file["FILE_NAME"] = value
+        attachments.append(file)
+
+    return  attachments
