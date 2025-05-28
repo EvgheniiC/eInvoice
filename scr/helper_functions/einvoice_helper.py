@@ -417,18 +417,16 @@ def extract_pdf_attachments(data: dict, key: str):
     # Get the list of elements under the specified key
     additional_documents = data.get(key, [])
     attachments = []
-    file = {"TEXT": None, "FILE_NAME": None}
 
-    # Iterate over each document in the list
     for document in additional_documents:
-        # Iterate over each key-value pair in the document
+        file = {"TEXT": None, "FILE_NAME": None}
+
         for sub_key, value in document.get("Attachment", {}).get("EmbeddedDocumentBinaryObject", {}).items():
-            # Check if the key is "#text" and "@filename"
             if sub_key == "#text":
-                # Print the key and its corresponding value
                 file["TEXT"] = value
             if sub_key == "@filename":
                 file["FILE_NAME"] = value
+
         attachments.append(file)
 
-    return  attachments
+    return attachments
