@@ -420,7 +420,7 @@ def extract_pdf_attachments(m_cn_id: str, data: dict, key: str) -> {}:
     attachments = []
 
     for document in additional_documents:
-        file = {"M_CN_ID": m_cn_id, "TEXT": None, "FILE_NAME": None}
+        file = {"M_CN_ID": m_cn_id, "ATTACHMENT": None, "FILE_NAME": None, "FILE_TYPE" : "pdf"}
 
         for sub_key, value in document.get("Attachment", {}).get("EmbeddedDocumentBinaryObject", {}).items():
             if sub_key == "#text":
