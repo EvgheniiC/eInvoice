@@ -405,11 +405,12 @@ def get_xml_three(xml_text: str) -> Element:
 
 # many XML files have emdbebebe PDF File, most of all attachments is in teg AdditionalDocumentReference ->Attachment-> EmbeddedDocumentBinaryObject
 # there may be many PDF files
-def extract_pdf_attachments(data: dict, key: str):
+def extract_pdf_attachments(m_cn_id: str, data: dict, key: str) -> {}:
     """
     This function extracts the values of "#text" and "@filename" from all elements under the specified key in the data dictionary.
 
     Args:
+        m_cn_id (str): main id.
         data (dict): The dictionary containing the data.
         key (str): The key under which to extract the values.
     """
@@ -419,7 +420,7 @@ def extract_pdf_attachments(data: dict, key: str):
     attachments = []
 
     for document in additional_documents:
-        file = {"TEXT": None, "FILE_NAME": None}
+        file = {"M_CN_ID": m_cn_id, "TEXT": None, "FILE_NAME": None}
 
         for sub_key, value in document.get("Attachment", {}).get("EmbeddedDocumentBinaryObject", {}).items():
             if sub_key == "#text":
