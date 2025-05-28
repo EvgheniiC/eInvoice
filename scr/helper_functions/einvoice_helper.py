@@ -424,7 +424,7 @@ def extract_pdf_attachments(m_cn_id: str, data: dict, key: str) -> {}:
 
         for sub_key, value in document.get("Attachment", {}).get("EmbeddedDocumentBinaryObject", {}).items():
             if sub_key == "#text":
-                file["TEXT"] = value
+                file["ATTACHMENT"] = value
             if sub_key == "@filename":
                 file["FILE_NAME"] = value
 
