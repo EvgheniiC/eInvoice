@@ -9,7 +9,7 @@ setup(
         "scr": ["invoice_handler/*"]
     },
     install_requires=[
-        'requests==2.32.0' # Add any additional dependencies here
+        'requests>=2.31.0' # Add any additional dependencies here
     ],
     description='General Einvoice handler'
 )
