@@ -1,15 +1,14 @@
-from decouple import config
 import sys
 import re
-import os
 from xml.etree.ElementTree import Element
 import xml.etree.ElementTree as ET
+from typing import Union
 
 sys.path.append("../")
 to_replace = ["\[", "\]", " ", "\.\.\."]
 
 
-def get_xml_data(dictionary: dict):
+def get_xml_data(dictionary: dict) -> (str, str):
     """
     Retrieves the XML data from the given dictionary.
 
@@ -38,7 +37,7 @@ def get_xml_data(dictionary: dict):
     return xml_filename, xml_file
 
 
-def remove_all_not_utf8_symbol(text: bytes):
+def remove_all_not_utf8_symbol(text: bytes) -> str:
     """
     Removes all characters from a byte string that are not valid UTF-8 symbols and replaces
     specified German umlaut characters with their ASCII equivalent.
@@ -58,7 +57,7 @@ def remove_all_not_utf8_symbol(text: bytes):
         "Ö", "O").replace("ö", "o").replace("ß", "ss")
 
 
-def xml_make_float(txt_float):
+def xml_make_float(txt_float) -> float:
     """
     Parses a textual representation of a floating-point number and converts
     it into a Python float. Handles different decimal and grouping
@@ -324,7 +323,7 @@ def print_positions_pretty(map_positions: dict):
         print(entry)
 
 
-def find_data_within_element(element: Element, tags: list) -> str | None:
+def find_data_within_element(element: Element, tags: list) -> Union[str, None]:
     """
     Searches for data within XML elements based on provided tags.
 
@@ -342,7 +341,7 @@ def find_data_within_element(element: Element, tags: list) -> str | None:
     return None
 
 
-def find_data_within_element_with_len(element: Element, tags: list, length: int) -> str | None:
+def find_data_within_element_with_len(element: Element, tags: list, length: int) -> Union[str, None]:
     """
     Searches for data within XML elements based on provided tags and length.
     For exam search IBAN with length 22
@@ -363,7 +362,7 @@ def find_data_within_element_with_len(element: Element, tags: list, length: int)
 
 
 # delete all prefixes from xml
-def delete_all_prefills(xml_tree: ET):
+def delete_all_prefills(xml_tree: ET) -> ET:
     """
     {urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100}CrossIndustryInvoice' -> CrossIndustryInvoice
     """
@@ -376,7 +375,7 @@ def delete_all_prefills(xml_tree: ET):
     return xml_tree
 
 
-def find_data_with_regex(element: Element, regex_pattern: str) -> str | None:
+def find_data_with_regex(element: Element, regex_pattern: str) -> Union[str, None]:
     """
     Finds data within all tags of an XML element using a regular expression pattern.
     For exam, we can find order number 930…
@@ -420,7 +419,7 @@ def extract_pdf_attachments(m_cn_id: str, data: dict, key: str) -> {}:
     attachments = []
 
     for document in additional_documents:
-        file = {"M_CN_ID": m_cn_id, "ATTACHMENT": None, "FILE_NAME": None, "FILE_TYPE" : "pdf"}
+        file = {"M_CN_ID": m_cn_id, "ATTACHMENT": None, "FILE_NAME": None, "FILE_TYPE": "pdf"}
 
         for sub_key, value in document.get("Attachment", {}).get("EmbeddedDocumentBinaryObject", {}).items():
             if sub_key == "#text":
