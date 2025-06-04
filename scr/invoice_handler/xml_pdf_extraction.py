@@ -3,10 +3,11 @@ from xml.etree.ElementTree import Element
 import xmltodict
 import json
 from xml.etree.ElementTree import tostring
+from typing import Union
 
 
 # sometimes we have a PDF file embedded in an XML file
-def get_pdf_file(m_cn_id: str, xml_text: str) -> str | None:
+def get_pdf_file(m_cn_id: str, xml_text: str) -> Union[str, None]:
     xml_tree: Element = get_xml_three(xml_text)
     # Assuming xml_tree is an Element object obtained from your XML data
     xml_str = tostring(xml_tree).decode()
