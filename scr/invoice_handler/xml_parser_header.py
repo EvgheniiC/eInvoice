@@ -1,7 +1,7 @@
 from datetime import datetime
 import re
 from ..data_class import XmlInvoiceHeader
-from ..helper_functions import find_data_within_element, find_data_with_regex, get_xml_three
+from ..helper_functions import find_data_within_element, find_data_with_regex, get_xml_tree
 from xml.etree.ElementTree import Element
 
 
@@ -14,7 +14,7 @@ def get_xml_header(m_cn_id: str, xml_text: str, barcode: str,
     # logger = EinvoiceLoger("zugpferd_extraction", m_cn_id)
     # logger.info_log(f"start zugpferd_extraction with m_cn_id = {m_cn_id}")
 
-    xml_tree: Element = get_xml_three(xml_text)
+    xml_tree: Element = get_xml_tree(xml_text)
 
     xml_exchanged_document: Element = xml_tree.find("./ExchangedDocument")
     xml_invoice_head: Element = xml_tree.find("./SupplyChainTradeTransaction/ApplicableHeaderTradeSettlement")
