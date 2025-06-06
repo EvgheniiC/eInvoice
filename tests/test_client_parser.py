@@ -1,6 +1,6 @@
 import unittest
 from scr.invoice_handler.client_parser import get_einvoice_client_data
-from .test_helper import xml_text_none, xml_text_from_zugpferd, xml_text_from_xml
+from .test_helper import xml_text_none, xml_text_from_zugpferd, xml_text_from_xml, xml_test_iban_none
 
 #TODO can i find supplier?
 class TestClientParser(unittest.TestCase):
@@ -33,6 +33,16 @@ class TestClientParser(unittest.TestCase):
         self.assertEqual(supplier, None)
         #TODO potential supplier
         # self.assertEqual(supplier, '85089740')
+
+    def test_get_einvoice_client_data_no(self):
+        m_cn_id = "5207492"
+        clients_data, supplier = get_einvoice_client_data(m_cn_id=m_cn_id, xml_text=xml_test_iban_none)
+        self.assertEqual(clients_data,
+                         {'M_CN_ID': '5207492', 'S_KR_NAME1': 'E.ON Energie Deutschland GmbH',
+                          'S_KR_STRASSE': 'Postfach 14 75', 'S_KR_ORT': 'Landshut', 'S_KR_POSTLEITZAHL': '84001',
+                          'S_KR_LAND': 'DE', 'S_KR_USTID': 'DE259922663', 'S_KR_IBAN': None}
+                         )
+        self.assertEqual(supplier, '')
 
 
 if __name__ == '__main__':
