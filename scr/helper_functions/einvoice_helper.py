@@ -323,22 +323,27 @@ def print_positions_pretty(map_positions: dict):
         print(entry)
 
 
-def find_data_within_element(element: Element, tags: list) -> Union[str, None]:
+def find_data_within_element(element: Element, tags: list, default: str = None) -> Union[str, None]:
     """
     Searches for data within XML elements based on provided tags.
 
     Args:
     - element: The XML element in which to search for data.
     - tags: A list of tags to search for within the element.
+    - default: The default value to return if none of the tags are found.
 
     Returns:
-    - The text content of the first tag found within the element. Returns None if none of the tags are found.
+    - The text content of the first tag found within the element. Returns default if none of the tags are found.
     """
+    if element is None:
+        return default
+
     for tag in tags:
+        print("tag = ", tag)
         data = element.find(tag)
         if data is not None:
             return data.text.strip()
-    return None
+    return default
 
 
 def find_data_within_element_with_len(element: Element, tags: list, length: int) -> Union[str, None]:
@@ -353,6 +358,9 @@ def find_data_within_element_with_len(element: Element, tags: list, length: int)
     Returns:
     - The text content of the first tag found within the element. Returns None if none of the tags are found.
     """
+    if element is None:
+        return None
+
     for tag in tags:
         data = element.find(tag)
         if data is not None:
@@ -396,37 +404,7 @@ def find_data_with_regex(element: Element, regex_pattern: str) -> Union[str, Non
         return None
 
 
-def get_xml_three(xml_text: str) -> Element:
+def get_xml_tree(xml_text: str) -> Element:
     xml_tree: Element = ET.fromstring(xml_text)
     xml_tree = delete_all_prefills(xml_tree)
     return xml_tree
-
-
-# many XML files have emdbebebe PDF File, most of all attachments is in teg AdditionalDocumentReference ->Attachment-> EmbeddedDocumentBinaryObject
-# there may be many PDF files
-def extract_pdf_attachments(m_cn_id: str, data: dict, key: str) -> {}:
-    """
-    This function extracts the values of "#text" and "@filename" from all elements under the specified key in the data dictionary.
-
-    Args:
-        m_cn_id (str): main id.
-        data (dict): The dictionary containing the data.
-        key (str): The key under which to extract the values.
-    """
-
-    # Get the list of elements under the specified key
-    additional_documents = data.get(key, [])
-    attachments = []
-
-    for document in additional_documents:
-        file = {"M_CN_ID": m_cn_id, "ATTACHMENT": None, "FILE_NAME": None, "FILE_TYPE": "pdf"}
-
-        for sub_key, value in document.get("Attachment", {}).get("EmbeddedDocumentBinaryObject", {}).items():
-            if sub_key == "#text":
-                file["ATTACHMENT"] = value
-            if sub_key == "@filename":
-                file["FILE_NAME"] = value
-
-        attachments.append(file)
-
-    return attachments
