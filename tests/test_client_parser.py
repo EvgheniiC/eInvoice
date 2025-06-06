@@ -31,6 +31,8 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_LAND': 'DE', 'S_KR_USTID': 'DE814742004', 'S_KR_IBAN': 'DE95700400410228840500'}
                          )
         self.assertEqual(supplier, None)
+        #TODO potential supplier
+        # self.assertEqual(supplier, '85089740')
 
 
 if __name__ == '__main__':
