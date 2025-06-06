@@ -1,7 +1,7 @@
 import re
 from ..data_class import XmlInvoiceHeader
 from ..data_class import XmlInvoicePosition
-from ..helper_functions import get_xml_three, find_data_within_element
+from ..helper_functions import get_xml_tree, find_data_within_element
 from xml.etree.ElementTree import Element
 
 
@@ -12,7 +12,7 @@ from xml.etree.ElementTree import Element
 # extract xml data from pdf file
 def get_xml_positions(m_cn_id: str, xml_text: str, xml_invoice_data: XmlInvoiceHeader) -> XmlInvoiceHeader:
     print("##### START get_zugpferd_positions")
-    xml_tree: Element = get_xml_three(xml_text)
+    xml_tree: Element = get_xml_tree(xml_text)
     xml_positions_data: Element = xml_tree.find("./SupplyChainTradeTransaction")
     tags_to_search_description: list = ['SpecifiedTradeProduct/Description', 'SpecifiedTradeProduct/Name']
     tags_to_search_tax_rate: list = ['SpecifiedLineTradeSettlement/ApplicableTradeTax/RateApplicablePercent']
