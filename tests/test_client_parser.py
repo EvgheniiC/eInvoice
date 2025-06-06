@@ -2,7 +2,7 @@ import unittest
 from scr.invoice_handler.client_parser import get_einvoice_client_data
 from .test_helper import xml_text_none, xml_text_from_zugpferd, xml_text_from_xml
 
-
+#TODO can i find supplier?
 class TestClientParser(unittest.TestCase):
     def test_get_einvoice_client_data(self):
         m_cn_id = "5208214"
