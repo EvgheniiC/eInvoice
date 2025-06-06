@@ -32,7 +32,8 @@ def get_einvoice_client_data(m_cn_id: str, xml_text: str) -> (dict, str):
     }
     supplier: str = find_data_within_element(xml_supplier_data, tags_to_search_supplier)
 
-    if len(supplier) != 8 or not supplier.startswith(r"8|9\d{8}"):
-        supplier = ""
+    if supplier:
+        if len(supplier) != 8 or not supplier.startswith(r"8|9\d{8}"):
+            supplier = ""
 
     return clients_data, supplier
