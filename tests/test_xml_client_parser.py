@@ -1,5 +1,5 @@
 import unittest
-from scr.invoice_handler.client_parser import get_einvoice_client_data
+from scr.invoice_handler.xml_client_parser import get_einvoice_client_data
 from .test_helper import xml_text_none, xml_text_from_zugpferd, xml_text_from_xml, xml_test_iban_none
 from unittest.mock import Mock
 
