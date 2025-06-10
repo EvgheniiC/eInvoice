@@ -342,7 +342,8 @@ def find_data_within_element(element: Element, tags: list, default: str = None) 
         print("tag = ", tag)
         data = element.find(tag)
         if data is not None:
-            return data.text.strip()
+            if data.text:
+                return data.text.strip()
     return default
 
 
@@ -396,13 +397,15 @@ def find_data_with_regex(element: Element, regex_pattern: str) -> Union[str, Non
     Returns:
     - The matched data found within the tags based on the regex pattern. Returns None if no match is found.
     """
-    all_tags_data = ' '.join(element.itertext())  # Get all text content within the element and tags
-    match = re.search(regex_pattern, all_tags_data)
+    if element:
+        all_tags_data = ' '.join(element.itertext())  # Get all text content within the element and tags
+        match = re.search(regex_pattern, all_tags_data)
 
-    if match:
-        return match.group(0)
-    else:
-        return None
+        if match:
+            return match.group(0)
+        else:
+            return None
+    return None
 
 
 def get_xml_tree(xml_text: str) -> Element:
