@@ -8,7 +8,7 @@ from unittest.mock import Mock
 
 
 class TestXmlParserHeader(unittest.TestCase):
-    def test_get_xml_header_with_orderid(self):
+    def test_get_xml_header_with_contract_id(self):
         m_cn_id = "6983825"
         xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id)
         xml_invoice_data = get_xml_header(m_cn_id=m_cn_id, xml_text=xml_text_from_zugpferd, barcode="1234567",
@@ -18,8 +18,8 @@ class TestXmlParserHeader(unittest.TestCase):
                           'M_IV_SCANLOCATION': 'E-Mail', 'M_IV_IMAGEPATH': '1234567.pdf',
                           'M_IV_QUELLSYSTEM': 'eInvoice', 'M_IV_MAIL_SUBJECT': None,
                           'HIGHWAY_ZEITSTEMPEL': None, 'M_IV_INVOICETYPE': 'EKS',
-                          'M_IV_KREDITOR': None, 'M_IV_MANDANT': '1', 'M_IV_CONTRACTID': None,
-                          'M_IV_ORDERID': 'SX-00855', 'M_IV_IBAN': '52296',
+                          'M_IV_KREDITOR': None, 'M_IV_MANDANT': '1', 'M_IV_CONTRACTID': 'SX-00855',
+                          'M_IV_ORDERID': None, 'M_IV_IBAN': 'DE95700400410228840500',
                           'M_IV_KINDOFINVOICE': 'RE', 'M_IV_INVOICENUMBER': '202510294',
                           'M_IV_COSTCENTER': None, 'M_IV_DAMAGENUMBER': None,
                           'M_IV_INVOICEDATE': datetime(2025, 1, 31, 0, 0),
@@ -45,7 +45,7 @@ class TestXmlParserHeader(unittest.TestCase):
                           'M_IV_SCANLOCATION': 'E-Mail', 'M_IV_IMAGEPATH': '1234567.pdf',
                           'M_IV_QUELLSYSTEM': 'eInvoice', 'M_IV_MAIL_SUBJECT': None, 'HIGHWAY_ZEITSTEMPEL': None,
                           'M_IV_INVOICETYPE': 'EKS', 'M_IV_KREDITOR': '9903323000007', 'M_IV_MANDANT': '1',
-                          'M_IV_CONTRACTID': None, 'M_IV_ORDERID': None, 'M_IV_IBAN': '232081412135',
+                          'M_IV_CONTRACTID': None, 'M_IV_ORDERID': None, 'M_IV_IBAN': None,
                           'M_IV_KINDOFINVOICE': 'GU', 'M_IV_INVOICENUMBER': '212732918642', 'M_IV_COSTCENTER': None,
                           'M_IV_DAMAGENUMBER': None, 'M_IV_INVOICEDATE': datetime(2025, 4, 15, 0, 0),
                           'M_IV_DELIVERYDATE': datetime(2024, 1, 1, 0, 0),
