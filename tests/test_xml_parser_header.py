@@ -1,6 +1,6 @@
 import unittest
 from scr.invoice_handler.xml_parser_header import get_xml_header
-from .test_helper import xml_text_none, xml_text_from_zugpferd, xml_test_iban_none, xml_test_header, \
+from .test_helper import xml_text_from_zugpferd, xml_test_iban_none, xml_test_header, \
     xml_test_header_order_930, xml_test_header_kst
 from scr.data_class.XmlInvoiceHeader import XmlInvoiceHeader
 from datetime import datetime
