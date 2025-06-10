@@ -3,7 +3,9 @@ from xml.etree.ElementTree import Element
 import xml.etree.ElementTree as ET
 
 
-def get_einvoice_client_data(m_cn_id: str, xml_text: str) -> (dict, str):
+def get_einvoice_client_data(m_cn_id: str, xml_text: str, logger) -> (dict, str):
+    logger.info_log(f"START get_einvoice_client_data with m_cn_id = {m_cn_id}")
+
     xml_tree: Element = ET.fromstring(xml_text)
     xml_tree = delete_all_prefills(xml_tree)
     xml_supplier_data: Element = xml_tree.find("./SupplyChainTradeTransaction")
@@ -36,5 +38,7 @@ def get_einvoice_client_data(m_cn_id: str, xml_text: str) -> (dict, str):
         # sometimes write client supplier number not correctly
         if len(supplier) != 8 or not supplier.startswith(r"8|9\d{8}"):
             supplier = ""
+
+    logger.info_log(f"Finish get_einvoice_client_data with m_cn_id = {m_cn_id} , supplier = {supplier}")
 
     return clients_data, supplier
