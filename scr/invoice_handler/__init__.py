@@ -1,3 +1,3 @@
-from .client_parser import get_einvoice_client_data
+from .xml_client_parser import get_einvoice_client_data
 from .xml_parser_header import get_xml_header
 from .xml_parser_positions import get_xml_positions
