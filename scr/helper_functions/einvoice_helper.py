@@ -412,3 +412,50 @@ def get_xml_tree(xml_text: str) -> Element:
     xml_tree: Element = ET.fromstring(xml_text)
     xml_tree = delete_all_prefills(xml_tree)
     return xml_tree
+
+
+def string_to_float(value, de_format=False) -> Union[float, int, None, str]:
+    """
+    Formats a none null value into a float value with this format: d{1,}.d{2}
+
+    :param value: The string value to convert
+    :type value: str
+    :param de_format: If de --> , instead of .
+    :type de_format: bool
+    :return: 0 if not an number, None if value == None, else the formatted float value
+    :rtype: float
+    """
+    if value is None:
+        return None
+    if not str(value).replace(",", "").replace(".", "").replace("-", "").strip().isdigit():
+        return 0
+    return value if isinstance(value, float) or isinstance(value, int) else float(
+        create_viable_float_or_int_string(value, de_format))
+
+
+def create_viable_float_or_int_string(value: str, de_format) -> Union[float, int, None, str]:
+    """
+    Creates a float / int string, by replacing every , / . except the last one and check
+
+    :param value: string value (i.e. "234.12")
+    :type value: str
+    :param de_format: deFormat true --> 234.12, False 1,234.23
+    :type de_format: bool
+    :return: the formatted string
+    :rtype: str
+    """
+    if de_format:
+        value = value.replace(".", "")
+        return float(value.replace(",", "."))
+
+    value = value.replace(",", ".")
+    if value.count(".") == 1:
+        return value
+
+    splitValue = value.split(".")
+    if len(splitValue) > 0:
+        if len(splitValue[-1]) < 3:
+            return value.replace(",", ".").replace(".", "", value.replace(",", ".").count(".") - 1)
+        else:
+            return value.replace(",", ".").replace(".", "")
+    return None
