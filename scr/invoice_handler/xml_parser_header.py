@@ -2,7 +2,7 @@ from datetime import datetime
 import re
 from ..data_class import XmlInvoiceHeader
 from ..helper_functions import find_data_within_element, find_data_with_regex, get_xml_tree, \
-    find_data_within_element_with_len, find_data_with_regex
+    find_data_within_element_with_len
 from xml.etree.ElementTree import Element
 
 
