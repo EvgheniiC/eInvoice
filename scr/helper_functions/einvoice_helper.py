@@ -8,93 +8,6 @@ sys.path.append("../")
 to_replace = ["\[", "\]", " ", "\.\.\."]
 
 
-def get_xml_data(dictionary: dict) -> (str, str):
-    """
-    Retrieves the XML data from the given dictionary.
-
-    This function processes a dictionary containing a single key-value
-    pair, which corresponds to an XML filename and its associated file
-    content. The function extracts and returns the key as `xml_filename`
-    and the value as `xml_file`.
-
-    Args:
-        dictionary (dict): A dictionary with exactly one key-value pair
-            associating an XML filename with its content.
-
-    Returns:
-        tuple: A tuple containing two elements:
-            - xml_filename (str): The key of the dictionary representing the
-              XML filename.
-            - xml_file (str): The value of the dictionary representing the
-              content of the XML file.
-    """
-    xml_filename = ""
-    xml_file = ""
-    for key, values in dictionary.items():
-        xml_filename = key
-        xml_file = values
-
-    return xml_filename, xml_file
-
-
-def remove_all_not_utf8_symbol(text: bytes) -> str:
-    """
-    Removes all characters from a byte string that are not valid UTF-8 symbols and replaces
-    specified German umlaut characters with their ASCII equivalent.
-
-    Parameters:
-    text (bytes): The input byte string to process. It must be in UTF-8 encoding.
-
-    Returns:
-    str: A string where non-UTF-8 symbols are removed, and specific German umlauts are
-    converted to their corresponding ASCII representations.
-
-    Raises:
-    UnicodeDecodeError: If the input byte string is not decodable as UTF-8.
-    """
-    text = text.decode('utf-8')
-    return text.replace("Ü", "U").replace("ü", "u").replace("Ä", "A").replace("ä", "a").replace(
-        "Ö", "O").replace("ö", "o").replace("ß", "ss")
-
-
-def xml_make_float(txt_float) -> float:
-    """
-    Parses a textual representation of a floating-point number and converts
-    it into a Python float. Handles different decimal and grouping
-    separators, including cases where both dot (.) and comma (,) are
-    present, determining the proper usage based on their placement.
-
-    Arguments:
-        txt_float (Optional[str]): The string representation of a floating-point
-        number. It may contain dot (.) or comma (,) as decimal separators,
-        or both.
-
-    Returns:
-        float: The floating-point number derived from the input string.
-        Returns 0.0 if the input string is None.
-
-    Raises:
-        ValueError: If the string cannot be converted into a valid float.
-    """
-    if txt_float is not None:
-        txt_float_rev = txt_float[::-1]
-        # check if comma or dot is the last character
-        if txt_float_rev.find('.') == -1 and txt_float_rev.find(',') > -1:
-            # comma is the only separator
-            return float(re.sub(r"\,", '.', txt_float))
-        elif txt_float_rev.find(',') == -1 and txt_float_rev.find('.') > -1:
-            # dot is the only separator
-            return float(txt_float)
-        elif txt_float_rev.find(',') < txt_float_rev.find('.'):
-            # both are present, comma is decimal separator
-            return float(re.sub(r',', '.', re.sub(r'\.', '', txt_float)))
-        elif txt_float_rev.find('.') < txt_float_rev.find(','):
-            # both are present, dot is decimal separator
-            return float(re.sub(r',', '', txt_float))
-        return float(txt_float)
-    return float(0)
-
-
 def get_xml_object_by_keys(dictionary, search_list):
     """
         Retrieves specific XML object data based on a list of search criteria.
@@ -292,37 +205,6 @@ def get_xml_object_by_key(dictionary, key, deep=10, take_first_result=True, take
     return results if len(results) > 0 else ""
 
 
-def print_attributes_pretty(dictionary: dict):
-    """
-    Print dictionary attributes in a formatted style.
-
-    This function takes a dictionary as input and prints its contents in a
-    structured and readable way, with each key and its corresponding value displayed
-    on a separate line.
-
-    Parameters:
-        dictionary (dict): The dictionary whose key-value pairs need to be printed.
-    """
-    for key in dictionary:
-        print(key, ": ", dictionary[key])
-
-
-def print_positions_pretty(map_positions: dict):
-    """
-    Prints the content of the given map in a human-readable format.
-
-    This function iterates over the entries of the provided map and prints
-    each entry, allowing for the examination of the key-value pairs or items
-    stored in the map.
-
-    Args:
-        map_positions (dict): A dictionary from which the entries will be printed in
-                    a readable format.
-    """
-    for entry in map_positions:
-        print(entry)
-
-
 def find_data_within_element(element: Element, tags: list, default: str = None) -> Union[str, None]:
     """
     Searches for data within XML elements based on provided tags.
@@ -374,7 +256,18 @@ def find_data_within_element_with_len(element: Element, tags: list, length: int)
 # delete all prefixes from xml
 def delete_all_prefills(xml_tree: ET) -> ET:
     """
-    {urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100}CrossIndustryInvoice' -> CrossIndustryInvoice
+    This function removes namespace prefixes from XML elements in the given XML tree.
+
+    Parameters:
+    xml_tree (elementtree.ElementTree): The input ElementTree object representing the XML structure.
+
+    Returns:
+    elementtree.ElementTree: The modified ElementTree object with namespace prefixes removed.
+
+    Example:
+    <{urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100}CrossIndustryInvoice>
+    will be transformed to
+    <CrossIndustryInvoice>
     """
     # Remove namespace prefixes
     for elem in xml_tree.iter():
@@ -382,6 +275,7 @@ def delete_all_prefills(xml_tree: ET) -> ET:
         tag = elem.tag.split("}")[1] if "}" in elem.tag else elem.tag
         # Replace the element tag with the tag name without prefix
         elem.tag = tag
+
     return xml_tree
 
 
@@ -402,7 +296,7 @@ def find_data_with_regex(element: Element, regex_pattern: str) -> Union[str, Non
         match = re.search(regex_pattern, all_tags_data)
 
         if match:
-            return match.group(0)
+            return match.group(0).strip().rstrip()
         else:
             return None
     return None
