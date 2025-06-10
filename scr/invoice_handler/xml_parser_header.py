@@ -1,7 +1,8 @@
 from datetime import datetime
 import re
 from ..data_class import XmlInvoiceHeader
-from ..helper_functions import find_data_within_element, find_data_with_regex, get_xml_tree
+from ..helper_functions import find_data_within_element, find_data_with_regex, get_xml_tree, \
+    find_data_within_element_with_len, find_data_with_regex
 from xml.etree.ElementTree import Element
 
 
@@ -68,9 +69,8 @@ def get_xml_header(m_cn_id: str, xml_text: str, barcode: str,
                                                          tags_to_search_currency) if not find_data_within_element(
         xml_invoice_head, tags_to_search_currency) else "EUR"
 
-    print("xml_invoice_data.currency ", xml_invoice_data.invoice_date)
+    xml_invoice_data.order_id = find_data_with_regex(xml_supplier_data, "930\d{7}|960\d{7}")
 
-    xml_invoice_data.order_id = find_data_within_element(xml_supplier_data, tags_to_search_order_id)
 
     # TODO test
     # SWFM-5293
@@ -99,7 +99,9 @@ def get_xml_header(m_cn_id: str, xml_text: str, barcode: str,
     xml_invoice_data.m_cn_id = m_cn_id
     xml_invoice_data.barcode = barcode
     xml_invoice_data.image_path = barcode + ".pdf"
-    xml_invoice_data.iban = find_data_within_element(xml_supplier_data, tags_to_search_iban)
+    xml_invoice_data.iban = find_data_within_element_with_len(xml_supplier_data, tags_to_search_iban, 22).replace(" ",
+                                                                                                                  "") if find_data_within_element_with_len(
+        xml_supplier_data, tags_to_search_iban, 22) else None
     if xml_invoice_data.iban:
         logger.info_log(f"IBAN was founded = {xml_invoice_data.iban}")
         if len(xml_invoice_data.iban) < 22:
