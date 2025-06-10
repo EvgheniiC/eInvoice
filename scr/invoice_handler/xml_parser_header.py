@@ -70,7 +70,7 @@ def get_xml_header(m_cn_id: str, xml_text: str, barcode: str,
         xml_invoice_head, tags_to_search_currency) else "EUR"
 
     xml_invoice_data.order_id = find_data_with_regex(xml_supplier_data, "930\d{7}|960\d{7}")
-
+    xml_invoice_data.contract_id = find_data_with_regex(xml_supplier_data, r"\bSX-\d{5}(?:-\d{3})?\b")
 
     # TODO test
     # SWFM-5293
