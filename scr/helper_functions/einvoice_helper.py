@@ -364,8 +364,9 @@ def find_data_within_element_with_len(element: Element, tags: list, length: int)
     for tag in tags:
         data = element.find(tag)
         if data is not None:
-            if len(data.text.strip()) == length:
-                return data.text.strip()
+            if data.text:
+                if len(data.text.strip()) == length:
+                    return data.text.strip()
     return None
 
 
