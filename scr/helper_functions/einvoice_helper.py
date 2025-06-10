@@ -221,7 +221,6 @@ def find_data_within_element(element: Element, tags: list, default: str = None) 
         return default
 
     for tag in tags:
-        print("tag = ", tag)
         data = element.find(tag)
         if data is not None:
             if data.text:
