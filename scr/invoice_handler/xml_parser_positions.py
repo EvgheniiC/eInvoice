@@ -6,11 +6,7 @@ from xml.etree.ElementTree import Element
 from ..helper_functions.einvoice_helper import string_to_float
 
 
-# from logger.einvoice_logging import EinvoiceLoger
-
-
-# TODO check with another kreditor (without IBAN)
-# extract xml data from pdf file
+# extract positions data from XML
 def get_xml_positions(m_cn_id: str, xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) -> XmlInvoiceHeader:
     print("##### START get_zugpferd_positions")
     logger.info_log(f"START get_xml_header with m_cn_id = {m_cn_id}")
@@ -32,7 +28,8 @@ def get_xml_positions(m_cn_id: str, xml_text: str, xml_invoice_data: XmlInvoiceH
                                 0:499] if find_data_within_element(position,
                                                                    tags_to_search_description) else "Default text"
         tax_rate: float = string_to_float(find_data_within_element(position, tags_to_search_tax_rate))
-        quantity: float = string_to_float(find_data_within_element(position, tags_to_search_quantity)) if find_data_within_element(
+        quantity: float = string_to_float(
+            find_data_within_element(position, tags_to_search_quantity)) if find_data_within_element(
             position,
             tags_to_search_quantity) else 1
         single_net_price: float = string_to_float(find_data_within_element(position, tags_to_search_single_net_price))
