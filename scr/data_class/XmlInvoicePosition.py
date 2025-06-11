@@ -198,13 +198,13 @@ class XmlInvoicePosition:
                 "M_IP_GOODSINWARDPOSID": self.goods_inward_pos_id,
                 "M_IP_ECLASS": self.e_class}
 
-    @property
-    def m_cn_id(self):
-        return self.__m_cn_id
-
-    @m_cn_id.setter
-    def m_cn_id(self, value: str):
-        self.__m_cn_id = value
+    # @property
+    # def m_cn_id(self):
+    #     return self.__m_cn_id
+    #
+    # @m_cn_id.setter
+    # def m_cn_id(self, value: str):
+    #     self.__m_cn_id = value
 
     @property
     def article_number(self):
