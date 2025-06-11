@@ -22,33 +22,42 @@ def get_xml_positions(m_cn_id: str, xml_text: str, xml_invoice_data: XmlInvoiceH
 
     # positions
     item_position: int = 1
-    for position in xml_positions_data.iter("IncludedSupplyChainTradeLineItem"):
-        # print("######### position", position)
-        description_text: str = find_data_within_element(position, tags_to_search_description)[
-                                0:499] if find_data_within_element(position,
-                                                                   tags_to_search_description) else "Default text"
-        tax_rate: float = string_to_float(find_data_within_element(position, tags_to_search_tax_rate))
-        quantity: float = string_to_float(
-            find_data_within_element(position, tags_to_search_quantity)) if find_data_within_element(
-            position,
-            tags_to_search_quantity) else 1
-        single_net_price: float = string_to_float(find_data_within_element(position, tags_to_search_single_net_price))
-        total_net_price: float = string_to_float(find_data_within_element(position, tags_to_search_total_net_price))
+    print("######## xml_positions_data ", xml_positions_data)
+    if xml_positions_data:
+        for position in xml_positions_data.iter("IncludedSupplyChainTradeLineItem"):
+            print("######### position", position)
+            description_text: str = find_data_within_element(position, tags_to_search_description)[
+                                    0:499] if find_data_within_element(position,
+                                                                       tags_to_search_description) else "Default text"
+            tax_rate: float = string_to_float(find_data_within_element(position, tags_to_search_tax_rate))
+            quantity: float = string_to_float(
+                find_data_within_element(position, tags_to_search_quantity)) if find_data_within_element(
+                position,
+                tags_to_search_quantity) else 1
+            single_net_price: float = string_to_float(find_data_within_element(position, tags_to_search_single_net_price))
+            total_net_price: float = string_to_float(find_data_within_element(position, tags_to_search_total_net_price))
 
-        article_number: str = ""
-        try:
-            if re.findall("OE\s*\w{9,}", description_text):
-                article_number: str = re.findall("OE\s*\w{9,}", description_text)[0].replace("OE", "").replace(" ", "")
-        except Exception as e:
-            print(f"Mistake with article number {e}")
-            logger.error_log(f"Mistake with article number {e}")
+            article_number: str = ""
+            try:
+                if re.findall("OE\s*\w{9,}", description_text):
+                    article_number: str = re.findall("OE\s*\w{9,}", description_text)[0].replace("OE", "").replace(" ", "")
+            except Exception as e:
+                print(f"Mistake with article number {e}")
+                logger.error_log(f"Mistake with article number {e}")
 
+            xml_invoice_data.add_position(
+                XmlInvoicePosition(item_pos=item_position, position_text=description_text, quantity=quantity,
+                                   single_net_price=single_net_price, tax_rate=tax_rate,
+                                   total_net_price=total_net_price, invoice_id=xml_invoice_data.m_cn_id,
+                                   article_number=article_number))
+            item_position += 1
+    # if not positions
+    else:
         xml_invoice_data.add_position(
-            XmlInvoicePosition(item_pos=item_position, position_text=description_text, quantity=quantity,
-                               single_net_price=single_net_price, tax_rate=tax_rate,
-                               total_net_price=total_net_price, invoice_id=xml_invoice_data.m_cn_id,
-                               article_number=article_number))
-        item_position += 1
+            XmlInvoicePosition(item_pos=item_position, position_text="description_text", quantity=1,
+                               single_net_price=0, tax_rate=0,
+                               total_net_price=0, invoice_id=xml_invoice_data.m_cn_id,
+                               article_number=None))
 
     logger.info_log(f"Finish get_xml_header with m_cn_id = {m_cn_id}")
 
