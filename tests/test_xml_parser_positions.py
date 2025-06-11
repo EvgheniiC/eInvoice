@@ -7,13 +7,12 @@ from unittest.mock import Mock
 
 
 class TestXmlParserHeader(unittest.TestCase):
-    def test_get_xml_header_with_orderid(self):
+    def test_get_xml_positions_many_positions(self):
         m_cn_id = "6983825"
         xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id)
         xml_invoice_positions = get_xml_positions(m_cn_id=xml_invoice_header.m_cn_id, xml_text=xml_test_header_kst,
                                                   xml_invoice_data=xml_invoice_header, logger=Mock())
 
-        print(xml_invoice_positions.get_xml_postions_map())
         self.assertEqual(xml_invoice_positions.get_xml_postions_map(),
                          [{'M_CN_ID': None, 'M_CN_INVOICEID': '6983825', 'M_IP_ITEMPOS': 1,
                            'M_IP_POSITIONSTEXT': 'Arbeitspreis', 'M_IP_QUANTITY': 1352.0,
@@ -85,6 +84,97 @@ class TestXmlParserHeader(unittest.TestCase):
                            'M_IP_ARTICLENUMBER': '', 'M_IP_ARTICLENUMBER2': None, 'M_IP_DISCOUNTAMOUNT': None,
                            'M_IP_QUANTITYUNIT': None, 'M_IP_TYP': 'ET', 'M_IP_DISCOUNTPERCENT': None,
                            'M_IP_TAXCODE': None, 'M_IP_ORDERPOSID': '', 'M_IP_GOODSINWARDPOSID': '', 'M_IP_ECLASS': ''}]
+                         )
+
+    def test_get_xml_positions_bad_positionstext(self):
+        m_cn_id = "65478963"
+        xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id)
+        xml_invoice_positions = get_xml_positions(m_cn_id=xml_invoice_header.m_cn_id,
+                                                  xml_text=xml_test_header_order_930,
+                                                  xml_invoice_data=xml_invoice_header, logger=Mock())
+
+        self.assertEqual(xml_invoice_positions.get_xml_postions_map(),
+                         [{'M_CN_ID': None, 'M_CN_INVOICEID': '65478963', 'M_IP_ITEMPOS': 1,
+                           'M_IP_POSITIONSTEXT': 'WSS OE 8894354944', 'M_IP_QUANTITY': 1.0,
+                           'M_IP_SINGLENETPRICE': 595.36, 'M_IP_TOTALNETPRICE': 595.36, 'M_IP_TAXRATE': 19.0,
+                           'M_IP_COSTCENTER': '', 'M_IP_KOSTENTRAEGER': '', 'M_IP_INVENTORYACC': None,
+                           'M_IP_ARTICLENUMBER': '8894354944', 'M_IP_ARTICLENUMBER2': None, 'M_IP_DISCOUNTAMOUNT': None,
+                           'M_IP_QUANTITYUNIT': None, 'M_IP_TYP': 'ET', 'M_IP_DISCOUNTPERCENT': None,
+                           'M_IP_TAXCODE': None, 'M_IP_ORDERPOSID': '', 'M_IP_GOODSINWARDPOSID': '', 'M_IP_ECLASS': ''},
+                          {'M_CN_ID': None, 'M_CN_INVOICEID': '65478963', 'M_IP_ITEMPOS': 2,
+                           'M_IP_POSITIONSTEXT': 'Klebesatz', 'M_IP_QUANTITY': 1.0, 'M_IP_SINGLENETPRICE': 33.61,
+                           'M_IP_TOTALNETPRICE': 33.61, 'M_IP_TAXRATE': 19.0, 'M_IP_COSTCENTER': '',
+                           'M_IP_KOSTENTRAEGER': '', 'M_IP_INVENTORYACC': None, 'M_IP_ARTICLENUMBER': '',
+                           'M_IP_ARTICLENUMBER2': None, 'M_IP_DISCOUNTAMOUNT': None, 'M_IP_QUANTITYUNIT': None,
+                           'M_IP_TYP': 'ET', 'M_IP_DISCOUNTPERCENT': None, 'M_IP_TAXCODE': None, 'M_IP_ORDERPOSID': '',
+                           'M_IP_GOODSINWARDPOSID': '', 'M_IP_ECLASS': ''},
+                          {'M_CN_ID': None, 'M_CN_INVOICEID': '65478963', 'M_IP_ITEMPOS': 3,
+                           'M_IP_POSITIONSTEXT': 'Primer', 'M_IP_QUANTITY': 1.0, 'M_IP_SINGLENETPRICE': 15.0,
+                           'M_IP_TOTALNETPRICE': 15.0, 'M_IP_TAXRATE': 19.0, 'M_IP_COSTCENTER': '',
+                           'M_IP_KOSTENTRAEGER': '', 'M_IP_INVENTORYACC': None, 'M_IP_ARTICLENUMBER': '',
+                           'M_IP_ARTICLENUMBER2': None, 'M_IP_DISCOUNTAMOUNT': None, 'M_IP_QUANTITYUNIT': None,
+                           'M_IP_TYP': 'ET', 'M_IP_DISCOUNTPERCENT': None, 'M_IP_TAXCODE': None, 'M_IP_ORDERPOSID': '',
+                           'M_IP_GOODSINWARDPOSID': '', 'M_IP_ECLASS': ''},
+                          {'M_CN_ID': None, 'M_CN_INVOICEID': '65478963', 'M_IP_ITEMPOS': 4,
+                           'M_IP_POSITIONSTEXT': 'Montage-Arbeitswerte [12AW=1 Std.]', 'M_IP_QUANTITY': 23.5,
+                           'M_IP_SINGLENETPRICE': 8.33, 'M_IP_TOTALNETPRICE': 195.76, 'M_IP_TAXRATE': 19.0,
+                           'M_IP_COSTCENTER': '', 'M_IP_KOSTENTRAEGER': '', 'M_IP_INVENTORYACC': None,
+                           'M_IP_ARTICLENUMBER': '', 'M_IP_ARTICLENUMBER2': None, 'M_IP_DISCOUNTAMOUNT': None,
+                           'M_IP_QUANTITYUNIT': None, 'M_IP_TYP': 'ET', 'M_IP_DISCOUNTPERCENT': None,
+                           'M_IP_TAXCODE': None, 'M_IP_ORDERPOSID': '', 'M_IP_GOODSINWARDPOSID': '', 'M_IP_ECLASS': ''},
+                          {'M_CN_ID': None, 'M_CN_INVOICEID': '65478963', 'M_IP_ITEMPOS': 5,
+                           'M_IP_POSITIONSTEXT': 'Altglasentsorgung PKW\nBundes- & Landesentsorgungs-\nverordnung / KFZ-Verbundglas',
+                           'M_IP_QUANTITY': 1.0, 'M_IP_SINGLENETPRICE': 4.31, 'M_IP_TOTALNETPRICE': 4.31,
+                           'M_IP_TAXRATE': 19.0, 'M_IP_COSTCENTER': '', 'M_IP_KOSTENTRAEGER': '',
+                           'M_IP_INVENTORYACC': None, 'M_IP_ARTICLENUMBER': '', 'M_IP_ARTICLENUMBER2': None,
+                           'M_IP_DISCOUNTAMOUNT': None, 'M_IP_QUANTITYUNIT': None, 'M_IP_TYP': 'ET',
+                           'M_IP_DISCOUNTPERCENT': None, 'M_IP_TAXCODE': None, 'M_IP_ORDERPOSID': '',
+                           'M_IP_GOODSINWARDPOSID': '', 'M_IP_ECLASS': ''},
+                          {'M_CN_ID': None, 'M_CN_INVOICEID': '65478963', 'M_IP_ITEMPOS': 6,
+                           'M_IP_POSITIONSTEXT': 'FSP', 'M_IP_QUANTITY': 1.0, 'M_IP_SINGLENETPRICE': 5.0,
+                           'M_IP_TOTALNETPRICE': 5.0, 'M_IP_TAXRATE': 19.0, 'M_IP_COSTCENTER': '',
+                           'M_IP_KOSTENTRAEGER': '', 'M_IP_INVENTORYACC': None, 'M_IP_ARTICLENUMBER': '',
+                           'M_IP_ARTICLENUMBER2': None, 'M_IP_DISCOUNTAMOUNT': None, 'M_IP_QUANTITYUNIT': None,
+                           'M_IP_TYP': 'ET', 'M_IP_DISCOUNTPERCENT': None, 'M_IP_TAXCODE': None, 'M_IP_ORDERPOSID': '',
+                           'M_IP_GOODSINWARDPOSID': '', 'M_IP_ECLASS': ''},
+                          {'M_CN_ID': None, 'M_CN_INVOICEID': '65478963', 'M_IP_ITEMPOS': 7,
+                           'M_IP_POSITIONSTEXT': 'Schadennummer 9074743424', 'M_IP_QUANTITY': 1.0,
+                           'M_IP_SINGLENETPRICE': 0.0, 'M_IP_TOTALNETPRICE': 0.0, 'M_IP_TAXRATE': 19.0,
+                           'M_IP_COSTCENTER': '', 'M_IP_KOSTENTRAEGER': '', 'M_IP_INVENTORYACC': None,
+                           'M_IP_ARTICLENUMBER': '', 'M_IP_ARTICLENUMBER2': None, 'M_IP_DISCOUNTAMOUNT': None,
+                           'M_IP_QUANTITYUNIT': None, 'M_IP_TYP': 'ET', 'M_IP_DISCOUNTPERCENT': None,
+                           'M_IP_TAXCODE': None, 'M_IP_ORDERPOSID': '', 'M_IP_GOODSINWARDPOSID': '', 'M_IP_ECLASS': ''},
+                          {'M_CN_ID': None, 'M_CN_INVOICEID': '65478963', 'M_IP_ITEMPOS': 8,
+                           'M_IP_POSITIONSTEXT': 'Auftragsnummer 9307162373', 'M_IP_QUANTITY': 1.0,
+                           'M_IP_SINGLENETPRICE': 0.0, 'M_IP_TOTALNETPRICE': 0.0, 'M_IP_TAXRATE': 19.0,
+                           'M_IP_COSTCENTER': '', 'M_IP_KOSTENTRAEGER': '', 'M_IP_INVENTORYACC': None,
+                           'M_IP_ARTICLENUMBER': '', 'M_IP_ARTICLENUMBER2': None, 'M_IP_DISCOUNTAMOUNT': None,
+                           'M_IP_QUANTITYUNIT': None, 'M_IP_TYP': 'ET', 'M_IP_DISCOUNTPERCENT': None,
+                           'M_IP_TAXCODE': None, 'M_IP_ORDERPOSID': '', 'M_IP_GOODSINWARDPOSID': '', 'M_IP_ECLASS': ''},
+                          {'M_CN_ID': None, 'M_CN_INVOICEID': '65478963', 'M_IP_ITEMPOS': 9,
+                           'M_IP_POSITIONSTEXT': 'Durchgefuhrt am 17.02.25', 'M_IP_QUANTITY': 1.0,
+                           'M_IP_SINGLENETPRICE': 0.0, 'M_IP_TOTALNETPRICE': 0.0, 'M_IP_TAXRATE': 19.0,
+                           'M_IP_COSTCENTER': '', 'M_IP_KOSTENTRAEGER': '', 'M_IP_INVENTORYACC': None,
+                           'M_IP_ARTICLENUMBER': '', 'M_IP_ARTICLENUMBER2': None, 'M_IP_DISCOUNTAMOUNT': None,
+                           'M_IP_QUANTITYUNIT': None, 'M_IP_TYP': 'ET', 'M_IP_DISCOUNTPERCENT': None,
+                           'M_IP_TAXCODE': None, 'M_IP_ORDERPOSID': '', 'M_IP_GOODSINWARDPOSID': '', 'M_IP_ECLASS': ''}]
+                         )
+
+    def test_get_xml_positions_no_positions(self):
+        m_cn_id = "65478963"
+        xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id)
+        xml_invoice_positions = get_xml_positions(m_cn_id=xml_invoice_header.m_cn_id,
+                                                  xml_text=xml_text_none,
+                                                  xml_invoice_data=xml_invoice_header, logger=Mock())
+
+        self.assertEqual(xml_invoice_positions.get_xml_postions_map(),
+                         [{'M_CN_ID': None, 'M_CN_INVOICEID': '65478963', 'M_IP_ITEMPOS': 1,
+                           'M_IP_POSITIONSTEXT': 'description_text', 'M_IP_QUANTITY': 1, 'M_IP_SINGLENETPRICE': 0,
+                           'M_IP_TOTALNETPRICE': 0, 'M_IP_TAXRATE': 0, 'M_IP_COSTCENTER': '', 'M_IP_KOSTENTRAEGER': '',
+                           'M_IP_INVENTORYACC': None, 'M_IP_ARTICLENUMBER': None, 'M_IP_ARTICLENUMBER2': None,
+                           'M_IP_DISCOUNTAMOUNT': None, 'M_IP_QUANTITYUNIT': None, 'M_IP_TYP': 'ET',
+                           'M_IP_DISCOUNTPERCENT': None, 'M_IP_TAXCODE': None, 'M_IP_ORDERPOSID': '',
+                           'M_IP_GOODSINWARDPOSID': '', 'M_IP_ECLASS': ''}]
                          )
 
 
