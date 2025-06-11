@@ -3,10 +3,7 @@ from scr.invoice_handler.xml_parser_positions import get_xml_positions
 from .test_helper import xml_text_none, xml_text_from_zugpferd, xml_test_iban_none, xml_test_header, \
     xml_test_header_order_930, xml_test_header_kst
 from scr.data_class.XmlInvoiceHeader import XmlInvoiceHeader
-from datetime import datetime
 from unittest.mock import Mock
-from xml.etree.ElementTree import Element
-from scr.helper_functions.einvoice_helper import get_xml_tree
 
 
 class TestXmlParserHeader(unittest.TestCase):
