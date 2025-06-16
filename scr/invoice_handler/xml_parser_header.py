@@ -42,8 +42,8 @@ def get_xml_header(m_cn_id: str, xml_text: str, barcode: str,
     tags_to_search_tax_rate1: list = [
         './SupplyChainTradeTransaction/ApplicableHeaderTradeSettlement/ApplicableTradeTax/RateApplicablePercent']
     tags_to_search_kind_of_invoice: list = ['./TypeCode']
-    xml_invoice_data.invoice_number: str = find_data_within_element(xml_exchanged_document,
-                                                                    tags_to_search_invoice_number)
+    xml_invoice_data.invoice_number = find_data_within_element(xml_exchanged_document,
+                                                               tags_to_search_invoice_number)
 
     try:
         xml_invoice_data.invoice_date = datetime.strptime(
