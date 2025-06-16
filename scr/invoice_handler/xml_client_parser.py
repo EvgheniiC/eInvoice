@@ -30,7 +30,9 @@ def get_einvoice_client_data(m_cn_id: str, xml_text: str, logger) -> (dict, str)
         "S_KR_POSTLEITZAHL": find_data_within_element(xml_supplier_data, tags_to_search_s_kr_postleitzahl),
         "S_KR_LAND": find_data_within_element(xml_supplier_data, tags_to_search_s_kr_country),
         "S_KR_USTID": find_data_within_element(xml_supplier_data, tags_to_search_s_kr_ustd),
-        "S_KR_IBAN": find_data_within_element_with_len(xml_supplier_data, tags_to_search_iban, 22).replace(" ", "") if find_data_within_element_with_len(xml_supplier_data, tags_to_search_iban, 22) else None
+        "S_KR_IBAN": find_data_within_element_with_len(xml_supplier_data, tags_to_search_iban, 22).replace(" ",
+                                                                                                           "") if find_data_within_element_with_len(
+            xml_supplier_data, tags_to_search_iban, 22) else None
     }
     supplier: str = find_data_within_element(xml_supplier_data, tags_to_search_supplier)
 
