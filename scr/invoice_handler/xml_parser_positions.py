@@ -22,10 +22,8 @@ def get_xml_positions(m_cn_id: str, xml_text: str, xml_invoice_data: XmlInvoiceH
 
     # positions
     item_position: int = 1
-    print("######## xml_positions_data ", xml_positions_data)
     if xml_positions_data:
         for position in xml_positions_data.iter("IncludedSupplyChainTradeLineItem"):
-            print("######### position", position)
             description_text: str = find_data_within_element(position, tags_to_search_description)[
                                     0:499] if find_data_within_element(position,
                                                                        tags_to_search_description) else "Default text"
