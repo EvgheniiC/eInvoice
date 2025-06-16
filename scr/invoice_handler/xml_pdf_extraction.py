@@ -22,16 +22,37 @@ def extract_pdf_attachments(m_cn_id: str, data: dict, key: str) -> {}:
     additional_documents = data.get(key, [])
     attachments = []
 
-    for document in additional_documents:
+    # print("########## additional_documents type =", type(additional_documents))
+    # print("########## additional_documents  =", additional_documents)
+
+    if 'Attachment' in additional_documents:
+        invoice_data: dict = additional_documents['Attachment']
         file = {"M_CN_ID": m_cn_id, "ATTACHMENT": None, "FILE_NAME": None, "FILE_TYPE": "pdf"}
 
-        for sub_key, value in document.get("Attachment", {}).get("EmbeddedDocumentBinaryObject", {}).items():
+        for sub_key, value in invoice_data['EmbeddedDocumentBinaryObject'].items():
             if sub_key == "#text":
                 file["ATTACHMENT"] = value
             if sub_key == "@filename":
                 file["FILE_NAME"] = value
 
         attachments.append(file)
+    # for document in additional_documents:
+    #     print("document type ", type(document))
+    #     print("document=",document)
+    #     print()
+        # file = {"M_CN_ID": m_cn_id, "ATTACHMENT": None, "FILE_NAME": None, "FILE_TYPE": "pdf"}
+
+        # if document == "Attachment":
+        #     print("###############faasdasd")
+        #     print()
+
+        # for sub_key, value in document.get("Attachment", {}).get("EmbeddedDocumentBinaryObject", {}).items():
+        #     if sub_key == "#text":
+        #         file["ATTACHMENT"] = value
+        #     if sub_key == "@filename":
+        #         file["FILE_NAME"] = value
+        #
+        # attachments.append(file)
 
     return attachments
 
@@ -46,7 +67,10 @@ def get_pdf_file(m_cn_id: str, xml_text: str) -> Optional[dict]:
 
     # at the moment XML have embedded PDF only if we have the tag Invoice
     if 'Invoice' in data_dict:
-        invoice_data = data_dict['Invoice']
+        invoice_data:dict = data_dict['Invoice']
         return extract_pdf_attachments(m_cn_id, invoice_data, "AdditionalDocumentReference")
 
     return None
+
+
+doc:dict = {'ID': '02_04_Anhang_01.pdf', 'DocumentDescription': 'Aufschlsselung der einzelnen Leistungspositionen', 'Attachment': {'EmbeddedDocumentBinaryObject': {'@filename': '01_15_Anhang_01.pdf', '@mimeCode': 'application/pdf', '#text': 'JVBERi0xLjUNCiW1tbW1DQoxIDAgb2'}}}
