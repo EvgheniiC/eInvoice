@@ -108,28 +108,29 @@ class XmlInvoicePosition:
     cost_carrier : str
         Getter and setter for `cost_carrier` attribute.
     """
+
     def __init__(self,
                  item_pos: int = 1,
                  position_text: str = None,
                  quantity: float = 1,
-                 single_net_price: float =None,
-                 tax_rate: float =None,
-                 total_net_price: float =None,
-                 invoice_id:int=None,
-                 m_cn_id :int=None,
-                 typ: str="ET",
-                 article_number:str=None,
-                 quantity_unit: float=None,
-                 discount_percent: float=None,
-                 inventory_account: float=None,
-                 tax_code:str=None,
-                 article_number2:str=None,
-                 discount_amount: float=None,
-                 order_pos_id:str="",
-                 goods_inward_pos_id:str="",
-                 e_class:str="",
-                 cost_center:str="",
-                 cost_carrier:str=""):
+                 single_net_price: float = None,
+                 tax_rate: float = None,
+                 total_net_price: float = None,
+                 invoice_id: int = None,
+                 m_cn_id: int = None,
+                 typ: str = "ET",
+                 article_number: str = None,
+                 quantity_unit: float = None,
+                 discount_percent: float = None,
+                 inventory_account: float = None,
+                 tax_code: str = None,
+                 article_number2: str = None,
+                 discount_amount: float = None,
+                 order_pos_id: str = "",
+                 goods_inward_pos_id: str = "",
+                 e_class: str = "",
+                 cost_center: str = "",
+                 cost_carrier: str = ""):
         self.m_cn_id = m_cn_id
         self.invoice_id = invoice_id
         self.quantity = quantity
@@ -197,14 +198,6 @@ class XmlInvoicePosition:
                 "M_IP_ORDERPOSID": self.order_pos_id,
                 "M_IP_GOODSINWARDPOSID": self.goods_inward_pos_id,
                 "M_IP_ECLASS": self.e_class}
-
-    # @property
-    # def m_cn_id(self):
-    #     return self.__m_cn_id
-    #
-    # @m_cn_id.setter
-    # def m_cn_id(self, value: str):
-    #     self.__m_cn_id = value
 
     @property
     def article_number(self):
