@@ -22,9 +22,6 @@ def extract_pdf_attachments(m_cn_id: str, data: dict, key: str) -> {}:
     additional_documents = data.get(key, [])
     attachments = []
 
-    # print("########## additional_documents type =", type(additional_documents))
-    # print("########## additional_documents  =", additional_documents)
-
     if 'Attachment' in additional_documents:
         invoice_data: dict = additional_documents['Attachment']
         file = {"M_CN_ID": m_cn_id, "ATTACHMENT": None, "FILE_NAME": None, "FILE_TYPE": "pdf"}
