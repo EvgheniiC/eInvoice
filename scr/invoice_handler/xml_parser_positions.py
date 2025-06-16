@@ -32,13 +32,15 @@ def get_xml_positions(m_cn_id: str, xml_text: str, xml_invoice_data: XmlInvoiceH
                 find_data_within_element(position, tags_to_search_quantity)) if find_data_within_element(
                 position,
                 tags_to_search_quantity) else 1
-            single_net_price: float = string_to_float(find_data_within_element(position, tags_to_search_single_net_price))
+            single_net_price: float = string_to_float(
+                find_data_within_element(position, tags_to_search_single_net_price))
             total_net_price: float = string_to_float(find_data_within_element(position, tags_to_search_total_net_price))
 
             article_number: str = ""
             try:
                 if re.findall("OE\s*\w{9,}", description_text):
-                    article_number: str = re.findall("OE\s*\w{9,}", description_text)[0].replace("OE", "").replace(" ", "")
+                    article_number: str = re.findall("OE\s*\w{9,}", description_text)[0].replace("OE", "").replace(" ",
+                                                                                                                   "")
             except Exception as e:
                 print(f"Mistake with article number {e}")
                 logger.error_log(f"Mistake with article number {e}")
