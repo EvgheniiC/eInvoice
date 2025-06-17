@@ -10,8 +10,9 @@ from unittest.mock import Mock
 class TestXmlParserHeader(unittest.TestCase):
     def test_get_xml_header_with_contract_id(self):
         m_cn_id = "6983825"
-        xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id)
-        xml_invoice_data = get_xml_header(m_cn_id=m_cn_id, xml_text=xml_text_from_zugpferd, barcode="1234567",
+        barcode = "1234567"
+        xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id, barcode=barcode)
+        xml_invoice_data = get_xml_header(xml_text=xml_text_from_zugpferd,
                                           xml_invoice_data=xml_invoice_header, logger=Mock())
         self.assertEqual(xml_invoice_data.get_xml_header_attributes(),
                          {'M_CN_ID': '6983825', 'M_IV_BARCODE': '1234567', 'M_IV_RECEIPTDATE': None,
@@ -37,8 +38,9 @@ class TestXmlParserHeader(unittest.TestCase):
 
     def test_get_xml_header_all_none(self):
         m_cn_id = "6983825"
-        xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id)
-        xml_invoice_data = get_xml_header(m_cn_id=m_cn_id, xml_text=xml_test_iban_none, barcode="1234567",
+        barcode = "1234567"
+        xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id, barcode=barcode)
+        xml_invoice_data = get_xml_header(xml_text=xml_test_iban_none,
                                           xml_invoice_data=xml_invoice_header, logger=Mock())
         self.assertEqual(xml_invoice_data.get_xml_header_attributes(),
                          {'M_CN_ID': '6983825', 'M_IV_BARCODE': '1234567', 'M_IV_RECEIPTDATE': None,
@@ -62,8 +64,9 @@ class TestXmlParserHeader(unittest.TestCase):
 
     def test_get_xml_header_iban(self):
         m_cn_id = "6983825"
-        xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id)
-        xml_invoice_data = get_xml_header(m_cn_id=m_cn_id, xml_text=xml_test_header, barcode="1234567",
+        barcode = "1234567"
+        xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id, barcode=barcode)
+        xml_invoice_data = get_xml_header(xml_text=xml_test_header,
                                           xml_invoice_data=xml_invoice_header, logger=Mock())
         self.assertEqual(xml_invoice_data.get_xml_header_attributes(),
                          {'M_CN_ID': '6983825', 'M_IV_BARCODE': '1234567', 'M_IV_RECEIPTDATE': None,
@@ -86,8 +89,9 @@ class TestXmlParserHeader(unittest.TestCase):
 
     def test_get_xml_header_orderid_930(self):
         m_cn_id = "6769729"
-        xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id)
-        xml_invoice_data = get_xml_header(m_cn_id=m_cn_id, xml_text=xml_test_header_order_930, barcode="1234567",
+        barcode = "1234567"
+        xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id, barcode=barcode)
+        xml_invoice_data = get_xml_header(xml_text=xml_test_header_order_930,
                                           xml_invoice_data=xml_invoice_header, logger=Mock())
         self.assertEqual(xml_invoice_data.get_xml_header_attributes(),
                          {'M_CN_ID': '6769729', 'M_IV_BARCODE': '1234567', 'M_IV_RECEIPTDATE': None,
@@ -110,8 +114,9 @@ class TestXmlParserHeader(unittest.TestCase):
 
     def test_get_xml_header_orderid_false(self):
         m_cn_id = "7053580"
-        xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id)
-        xml_invoice_data = get_xml_header(m_cn_id=m_cn_id, xml_text=xml_test_header_kst, barcode="1234567",
+        barcode = "1234567"
+        xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id, barcode=barcode)
+        xml_invoice_data = get_xml_header(xml_text=xml_test_header_kst,
                                           xml_invoice_data=xml_invoice_header, logger=Mock())
         # print(xml_invoice_data.get_xml_header_attributes())
         self.assertEqual(xml_invoice_data.get_xml_header_attributes(),
