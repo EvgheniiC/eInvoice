@@ -195,7 +195,6 @@ class XmlInvoiceHeader:
                 "EMAIL_NAME": self.email_name,
                 }
 
-
     def get_xml_header_attributes_for_hw(self):
         return {"M_IV_ID": self.m_cn_id,
                 "M_IV_BARCODE": self.barcode,
@@ -580,7 +579,6 @@ class XmlInvoiceHeader:
             self.delivery_date = self.invoice_date
             self.delivery_date_till = self.invoice_date
 
-
     def normalize_invoice_number(self):
         """
         | The invoicenumber needs to be in lower cases and numbers/letters only,
@@ -617,12 +615,3 @@ class XmlInvoiceHeader:
         :rtype: [InvoicePosition]
         """
         return [position.get_xml_positions_attributes() for position in self.__positions]
-
-    def get_xml_postions_map_for_hw(self):
-        """
-        Return all positions in an List
-
-        :return: List of positionsDict (i.e. [{M_IP_ID : 1 }, {M_IP_ID : 2}]
-        :rtype: [InvoicePosition]
-        """
-        return [position.get_xml_positions_attributes_for_hw() for position in self.__positions]
