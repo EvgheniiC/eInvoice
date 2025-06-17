@@ -9,7 +9,7 @@ class TestXmlParserHeader(unittest.TestCase):
     def test_get_xml_positions_many_positions(self):
         m_cn_id = "6983825"
         xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id)
-        xml_invoice_positions = get_xml_positions(m_cn_id=xml_invoice_header.m_cn_id, xml_text=xml_test_header_kst,
+        xml_invoice_positions = get_xml_positions(xml_text=xml_test_header_kst,
                                                   xml_invoice_data=xml_invoice_header, logger=Mock())
 
         self.assertEqual(xml_invoice_positions.get_xml_postions_map(),
@@ -88,8 +88,7 @@ class TestXmlParserHeader(unittest.TestCase):
     def test_get_xml_positions_bad_positionstext(self):
         m_cn_id = "65478963"
         xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id)
-        xml_invoice_positions = get_xml_positions(m_cn_id=xml_invoice_header.m_cn_id,
-                                                  xml_text=xml_test_header_order_930,
+        xml_invoice_positions = get_xml_positions(xml_text=xml_test_header_order_930,
                                                   xml_invoice_data=xml_invoice_header, logger=Mock())
 
         self.assertEqual(xml_invoice_positions.get_xml_postions_map(),
@@ -162,9 +161,9 @@ class TestXmlParserHeader(unittest.TestCase):
     def test_get_xml_positions_no_positions(self):
         m_cn_id = "65478963"
         xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id)
-        xml_invoice_positions = get_xml_positions(m_cn_id=xml_invoice_header.m_cn_id,
-                                                  xml_text=xml_text_none,
-                                                  xml_invoice_data=xml_invoice_header, logger=Mock())
+        xml_invoice_positions = get_xml_positions(
+            xml_text=xml_text_none,
+            xml_invoice_data=xml_invoice_header, logger=Mock())
 
         self.assertEqual(xml_invoice_positions.get_xml_postions_map(),
                          [{'M_CN_ID': None, 'M_CN_INVOICEID': '65478963', 'M_IP_ITEMPOS': 1,
