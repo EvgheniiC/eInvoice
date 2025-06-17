@@ -8,10 +8,9 @@ from xml.etree.ElementTree import Element
 
 # extract xml data from pdf file
 # def zugpferd_extraction(m_cn_id: str, xml_text: str, db_helper, barcode: str):
-def get_xml_header(m_cn_id: str, xml_text: str, barcode: str,
-                   xml_invoice_data: XmlInvoiceHeader, logger) -> XmlInvoiceHeader:
+def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) -> XmlInvoiceHeader:
     print("##### START get_xml_header")
-    logger.info_log(f"START get_xml_header with m_cn_id = {m_cn_id}")
+    logger.info_log(f"START get_xml_header with m_cn_id = {xml_invoice_data.m_cn_id}")
 
     xml_tree: Element = get_xml_tree(xml_text)
 
@@ -96,9 +95,7 @@ def get_xml_header(m_cn_id: str, xml_text: str, barcode: str,
     xml_invoice_data.tax_rate1 = find_data_within_element(xml_tree, tags_to_search_tax_rate1)
     xml_invoice_data.supplier = find_data_within_element(xml_supplier_data, tags_to_search_supplier)
     xml_invoice_data.client = "1"
-    xml_invoice_data.m_cn_id = m_cn_id
-    xml_invoice_data.barcode = barcode
-    xml_invoice_data.image_path = barcode + ".pdf"
+    xml_invoice_data.image_path = xml_invoice_data.barcode + ".pdf"
     xml_invoice_data.iban = find_data_within_element_with_len(xml_supplier_data, tags_to_search_iban, 22).replace(" ",
                                                                                                                   "") if find_data_within_element_with_len(
         xml_supplier_data, tags_to_search_iban, 22) else None
@@ -112,6 +109,6 @@ def get_xml_header(m_cn_id: str, xml_text: str, barcode: str,
 
     xml_invoice_data.correct_data()
 
-    logger.info_log(f"Finish get_xml_header with m_cn_id = {m_cn_id}")
+    logger.info_log(f"Finish get_xml_header with m_cn_id = {xml_invoice_data.m_cn_id}")
 
     return xml_invoice_data
