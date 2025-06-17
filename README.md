@@ -7,16 +7,18 @@
 
 
 
-This Python script reads data from eInvoice files
+This Python script reads data from eInvoice files.
+the script receives an XML file in str format, processes and finds data in it and returns it to the Chronos_new/chronox/eInvoice/eInvoice_start_extraction repository
 
 ## Setup
 
 ```shell
-python setup.py sdist
-copy .tar.gz file from folder dict in Chronos_new repository -> chronox_extraction/eInvoice/eInvoice_repo, for exam com.sixt.lib.python.eInvoice-0.1.tar.gz
-in Chronos_new repository in eInvoice/eInvoice_repo: 
-pip uninstall com.sixt.lib.python.eInvoice
-pip install com.sixt.lib.python.eInvoice-0.1.tar.gz
+1 in com.sixt.lib.python.eInvoice ->(venv) python setup.py sdist
+2 copy .tar.gz file from folder dist (for exam com.sixt.lib.python.eInvoice-0.1.tar.gz)
+3 in Chronos_new repository -> chronox_extraction/eInvoice/eInvoice_repo, for exam com.sixt.lib.python.eInvoice-0.1.tar.gz
+4 in Chronos_new repository in eInvoice/eInvoice_repo: 
+5 pip uninstall com.sixt.lib.python.eInvoice
+6 pip install com.sixt.lib.python.eInvoice-0.1.tar.gz
 
 ```
 

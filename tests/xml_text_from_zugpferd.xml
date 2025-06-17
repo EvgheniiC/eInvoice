@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rsm:CrossIndustryInvoice xmlns:qdt="urn:un:unece:uncefact:data:standard:QualifiedDataType:100"
+                          xmlns:ram="urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100"
+                          xmlns:rsm="urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100"
+                          xmlns:udt="urn:un:unece:uncefact:data:standard:UnqualifiedDataType:100">
+   <rsm:ExchangedDocumentContext>
+      <ram:BusinessProcessSpecifiedDocumentContextParameter>
+         <ram:ID>OUT-380</ram:ID>
+      </ram:BusinessProcessSpecifiedDocumentContextParameter>
+      <ram:GuidelineSpecifiedDocumentContextParameter>
+         <ram:ID>urn:cen.eu:en16931:2017</ram:ID>
+      </ram:GuidelineSpecifiedDocumentContextParameter>
+   </rsm:ExchangedDocumentContext>
+   <rsm:ExchangedDocument>
+      <ram:ID>2025/10294</ram:ID>
+      <ram:TypeCode>380</ram:TypeCode>
+      <ram:IssueDateTime>
+         <udt:DateTimeString format="102">20250131</udt:DateTimeString>
+      </ram:IssueDateTime>
+      <ram:IncludedNote>
+         <ram:Content>Die in Ihrem Auftrag erbrachten Leistungen werden vereinbarungsgemass wie folgt abgerechnet:</ram:Content>
+      </ram:IncludedNote>
+      <ram:IncludedNote>
+         <ram:Content>Commerzbank Munchen IBAN: DE95700400410228840500 BIC: COBADEFFXXX</ram:Content>
+      </ram:IncludedNote>
+      <ram:IncludedNote>
+         <ram:Content>Bartel, Tim</ram:Content>
+      </ram:IncludedNote>
+   </rsm:ExchangedDocument>
+   <rsm:SupplyChainTradeTransaction>
+      <ram:IncludedSupplyChainTradeLineItem>
+         <ram:AssociatedDocumentLineDocument>
+            <ram:LineID>1</ram:LineID>
+         </ram:AssociatedDocumentLineDocument>
+         <ram:SpecifiedTradeProduct>
+            <ram:Name>Umsatzsteuerrechtliche Beratung gemass Zeitaufstellung
+
+Partner:</ram:Name>
+            <ram:Description>Satz: 390,00</ram:Description>
+         </ram:SpecifiedTradeProduct>
+         <ram:SpecifiedLineTradeAgreement>
+            <ram:NetPriceProductTradePrice>
+               <ram:ChargeAmount>390.00</ram:ChargeAmount>
+            </ram:NetPriceProductTradePrice>
+         </ram:SpecifiedLineTradeAgreement>
+         <ram:SpecifiedLineTradeDelivery>
+            <ram:BilledQuantity unitCode="HUR">0.2500</ram:BilledQuantity>
+         </ram:SpecifiedLineTradeDelivery>
+         <ram:SpecifiedLineTradeSettlement>
+            <ram:ApplicableTradeTax>
+               <ram:TypeCode>VAT</ram:TypeCode>
+               <ram:CategoryCode>S</ram:CategoryCode>
+               <ram:RateApplicablePercent>19.00</ram:RateApplicablePercent>
+            </ram:ApplicableTradeTax>
+            <ram:SpecifiedTradeSettlementLineMonetarySummation>
+               <ram:LineTotalAmount>97.50</ram:LineTotalAmount>
+            </ram:SpecifiedTradeSettlementLineMonetarySummation>
+         </ram:SpecifiedLineTradeSettlement>
+      </ram:IncludedSupplyChainTradeLineItem>
+      <ram:IncludedSupplyChainTradeLineItem>
+         <ram:AssociatedDocumentLineDocument>
+            <ram:LineID>2</ram:LineID>
+         </ram:AssociatedDocumentLineDocument>
+         <ram:SpecifiedTradeProduct>
+            <ram:Name>Associates:</ram:Name>
+            <ram:Description>Satz: 260,00</ram:Description>
+         </ram:SpecifiedTradeProduct>
+         <ram:SpecifiedLineTradeAgreement>
+            <ram:NetPriceProductTradePrice>
+               <ram:ChargeAmount>260.00</ram:ChargeAmount>
+            </ram:NetPriceProductTradePrice>
+         </ram:SpecifiedLineTradeAgreement>
+         <ram:SpecifiedLineTradeDelivery>
+            <ram:BilledQuantity unitCode="HUR">0.5000</ram:BilledQuantity>
+         </ram:SpecifiedLineTradeDelivery>
+         <ram:SpecifiedLineTradeSettlement>
+            <ram:ApplicableTradeTax>
+               <ram:TypeCode>VAT</ram:TypeCode>
+               <ram:CategoryCode>S</ram:CategoryCode>
+               <ram:RateApplicablePercent>19.00</ram:RateApplicablePercent>
+            </ram:ApplicableTradeTax>
+            <ram:SpecifiedTradeSettlementLineMonetarySummation>
+               <ram:LineTotalAmount>130.00</ram:LineTotalAmount>
+            </ram:SpecifiedTradeSettlementLineMonetarySummation>
+         </ram:SpecifiedLineTradeSettlement>
+      </ram:IncludedSupplyChainTradeLineItem>
+      <ram:ApplicableHeaderTradeAgreement>
+         <ram:BuyerReference/>
+         <ram:SellerTradeParty>
+            <ram:Name>KMLZ Rechtsanwaltsges. mbH</ram:Name>
+            <ram:DefinedTradeContact>
+               <ram:PersonName>Bartel, Tim</ram:PersonName>
+               <ram:TelephoneUniversalCommunication>
+                  <ram:CompleteNumber>089 217501220</ram:CompleteNumber>
+               </ram:TelephoneUniversalCommunication>
+               <ram:EmailURIUniversalCommunication>
+                  <ram:URIID>XRechnung@kmlz.de</ram:URIID>
+               </ram:EmailURIUniversalCommunication>
+            </ram:DefinedTradeContact>
+            <ram:PostalTradeAddress>
+               <ram:PostcodeCode>80331</ram:PostcodeCode>
+               <ram:LineOne>Unterer Anger 3</ram:LineOne>
+               <ram:CityName>Munchen</ram:CityName>
+               <ram:CountryID>DE</ram:CountryID>
+            </ram:PostalTradeAddress>
+            <ram:URIUniversalCommunication>
+               <ram:URIID schemeID="EM">XRechnung@kmlz.de</ram:URIID>
+            </ram:URIUniversalCommunication>
+            <ram:SpecifiedTaxRegistration>
+               <ram:ID schemeID="VA">DE814742004</ram:ID>
+            </ram:SpecifiedTaxRegistration>
+         </ram:SellerTradeParty>
+         <ram:BuyerTradeParty>
+            <ram:ID>52296</ram:ID>
+            <ram:Name>Sixt SE</ram:Name>
+            <ram:DefinedTradeContact>
+               <ram:PersonName>Sixt SE</ram:PersonName>
+            </ram:DefinedTradeContact>
+            <ram:PostalTradeAddress>
+               <ram:PostcodeCode>82049</ram:PostcodeCode>
+               <ram:LineOne>Zugspitzstr.1</ram:LineOne>
+               <ram:CityName>Pullach</ram:CityName>
+               <ram:CountryID>DE</ram:CountryID>
+            </ram:PostalTradeAddress>
+            <ram:URIUniversalCommunication>
+               <ram:URIID schemeID="EM">eingangsrechnungenpdf@sixt.com</ram:URIID>
+            </ram:URIUniversalCommunication>
+         </ram:BuyerTradeParty>
+         <ram:BuyerOrderReferencedDocument>
+            <ram:IssuerAssignedID>SX-00855</ram:IssuerAssignedID>
+         </ram:BuyerOrderReferencedDocument>
+         <ram:AdditionalReferencedDocument>
+            <ram:IssuerAssignedID>Anlage_1</ram:IssuerAssignedID>
+            <ram:URIID>#ef=Anlage_1.pdf</ram:URIID>
+            <ram:TypeCode>916</ram:TypeCode>
+            <ram:Name>Anlage 1</ram:Name>
+         </ram:AdditionalReferencedDocument>
+      </ram:ApplicableHeaderTradeAgreement>
+      <ram:ApplicableHeaderTradeDelivery>
+         <ram:ActualDeliverySupplyChainEvent>
+            <ram:OccurrenceDateTime>
+               <udt:DateTimeString format="102">20250107</udt:DateTimeString>
+            </ram:OccurrenceDateTime>
+         </ram:ActualDeliverySupplyChainEvent>
+      </ram:ApplicableHeaderTradeDelivery>
+      <ram:ApplicableHeaderTradeSettlement>
+         <ram:InvoiceCurrencyCode>EUR</ram:InvoiceCurrencyCode>
+         <ram:SpecifiedTradeSettlementPaymentMeans>
+            <ram:TypeCode>30</ram:TypeCode>
+            <ram:PayeePartyCreditorFinancialAccount>
+               <ram:IBANID>DE95700400410228840500</ram:IBANID>
+            </ram:PayeePartyCreditorFinancialAccount>
+            <ram:PayeeSpecifiedCreditorFinancialInstitution>
+               <ram:BICID>COBADEFFXXX</ram:BICID>
+            </ram:PayeeSpecifiedCreditorFinancialInstitution>
+         </ram:SpecifiedTradeSettlementPaymentMeans>
+         <ram:ApplicableTradeTax>
+            <ram:CalculatedAmount>43.23</ram:CalculatedAmount>
+            <ram:TypeCode>VAT</ram:TypeCode>
+            <ram:BasisAmount>227.50</ram:BasisAmount>
+            <ram:CategoryCode>S</ram:CategoryCode>
+            <ram:RateApplicablePercent>19.00</ram:RateApplicablePercent>
+         </ram:ApplicableTradeTax>
+         <ram:SpecifiedTradePaymentTerms>
+            <ram:Description>Bitte uberweisen Sie den Rechnungsbetrag von 270,73 EUR bis zum 20.02.2025.</ram:Description>
+            <ram:DueDateDateTime>
+               <udt:DateTimeString format="102">20250220</udt:DateTimeString>
+            </ram:DueDateDateTime>
+         </ram:SpecifiedTradePaymentTerms>
+         <ram:SpecifiedTradeSettlementHeaderMonetarySummation>
+            <ram:LineTotalAmount>227.50</ram:LineTotalAmount>
+            <ram:ChargeTotalAmount>0.00</ram:ChargeTotalAmount>
+            <ram:AllowanceTotalAmount>0.00</ram:AllowanceTotalAmount>
+            <ram:TaxBasisTotalAmount>227.50</ram:TaxBasisTotalAmount>
+            <ram:TaxTotalAmount currencyID="EUR">43.23</ram:TaxTotalAmount>
+            <ram:GrandTotalAmount>270.73</ram:GrandTotalAmount>
+            <ram:TotalPrepaidAmount>0.00</ram:TotalPrepaidAmount>
+            <ram:DuePayableAmount>270.73</ram:DuePayableAmount>
+         </ram:SpecifiedTradeSettlementHeaderMonetarySummation>
+      </ram:ApplicableHeaderTradeSettlement>
+   </rsm:SupplyChainTradeTransaction>
+</rsm:CrossIndustryInvoice>
