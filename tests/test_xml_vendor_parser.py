@@ -1,13 +1,14 @@
 import unittest
 from scr.invoice_handler.xml_vendor_parser import get_einvoice_vendor_data
-from .test_helper import xml_text_none, xml_text_from_zugpferd, xml_text_from_xml, xml_test_iban_none
 from unittest.mock import Mock
+from scr.helper_functions.einvoice_helper import read_xml_file_to_str
 
 
 # TODO can i find supplier?
 class TestClientParser(unittest.TestCase):
     def test_get_einvoice_client_data(self):
         m_cn_id = "5208214"
+        xml_text_from_xml = read_xml_file_to_str('xml_text_from_xml.xml')
         clients_data, supplier = get_einvoice_vendor_data(m_cn_id=m_cn_id, xml_text=xml_text_from_xml, logger=Mock())
         self.assertEqual(clients_data, {'M_CN_ID': '5208214', 'S_KR_NAME1': '[Seller name]',
                                         'S_KR_STRASSE': '[Seller address line 1]', 'S_KR_ORT': '[Seller city]',
@@ -17,7 +18,8 @@ class TestClientParser(unittest.TestCase):
 
     def test_get_einvoice_client_data_none(self):
         m_cn_id = "5208215"
-        clients_data, supplier = get_einvoice_vendor_data(m_cn_id=m_cn_id, xml_text=xml_text_none,  logger=Mock())
+        xml_text_none = read_xml_file_to_str('xml_text_none.xml')
+        clients_data, supplier = get_einvoice_vendor_data(m_cn_id=m_cn_id, xml_text=xml_text_none, logger=Mock())
         self.assertEqual(clients_data,
                          {'M_CN_ID': '5208215', 'S_KR_NAME1': None, 'S_KR_STRASSE': None, 'S_KR_ORT': None,
                           'S_KR_POSTLEITZAHL': None, 'S_KR_LAND': None, 'S_KR_USTID': None, 'S_KR_IBAN': None}
@@ -26,7 +28,9 @@ class TestClientParser(unittest.TestCase):
 
     def test_get_einvoice_client_data_all_data(self):
         m_cn_id = "5207492"
-        clients_data, supplier = get_einvoice_vendor_data(m_cn_id=m_cn_id, xml_text=xml_text_from_zugpferd,  logger=Mock())
+        xml_text_from_zugpferd = read_xml_file_to_str('xml_text_from_zugpferd.xml')
+        clients_data, supplier = get_einvoice_vendor_data(m_cn_id=m_cn_id, xml_text=xml_text_from_zugpferd,
+                                                          logger=Mock())
         self.assertEqual(clients_data,
                          {'M_CN_ID': '5207492', 'S_KR_NAME1': 'KMLZ Rechtsanwaltsges. mbH',
                           'S_KR_STRASSE': 'Unterer Anger 3', 'S_KR_ORT': 'Munchen', 'S_KR_POSTLEITZAHL': '80331',
@@ -38,7 +42,8 @@ class TestClientParser(unittest.TestCase):
 
     def test_get_einvoice_client_data_no(self):
         m_cn_id = "5207492"
-        clients_data, supplier = get_einvoice_vendor_data(m_cn_id=m_cn_id, xml_text=xml_test_iban_none,  logger=Mock())
+        xml_test_iban_none = read_xml_file_to_str('xml_test_iban_none.xml')
+        clients_data, supplier = get_einvoice_vendor_data(m_cn_id=m_cn_id, xml_text=xml_test_iban_none, logger=Mock())
         self.assertEqual(clients_data,
                          {'M_CN_ID': '5207492', 'S_KR_NAME1': 'E.ON Energie Deutschland GmbH',
                           'S_KR_STRASSE': 'Postfach 14 75', 'S_KR_ORT': 'Landshut', 'S_KR_POSTLEITZAHL': '84001',
