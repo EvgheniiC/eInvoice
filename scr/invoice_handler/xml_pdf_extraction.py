@@ -51,9 +51,3 @@ def get_pdf_file(m_cn_id: str, xml_text: str) -> Optional[dict]:
         return extract_pdf_attachments(m_cn_id, invoice_data, "AdditionalDocumentReference")
 
     return None
-
-
-doc: dict = {'ID': '02_04_Anhang_01.pdf', 'DocumentDescription': 'Aufschlsselung der einzelnen Leistungspositionen',
-             'Attachment': {
-                 'EmbeddedDocumentBinaryObject': {'@filename': '01_15_Anhang_01.pdf', '@mimeCode': 'application/pdf',
-                                                  '#text': 'JVBERi0xLjUNCiW1tbW1DQoxIDAgb2'}}}
