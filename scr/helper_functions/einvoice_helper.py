@@ -3,6 +3,7 @@ import re
 from xml.etree.ElementTree import Element
 import xml.etree.ElementTree as ET
 from typing import Union
+import os
 
 sys.path.append("../")
 to_replace = ["\[", "\]", " ", "\.\.\."]
@@ -155,3 +156,31 @@ def create_viable_float_or_int_string(value: str, de_format) -> Union[float, int
         else:
             return value.replace(",", ".").replace(".", "")
     return None
+
+
+# Function to read XML file to string with fixed directory path
+def read_xml_file_to_str(file_name):
+    """
+    Reads the contents of an XML file located in the fixed directory path 'com.sixt.lib.python.eInvoice/tests'
+    and returns it as a string.
+
+    Args:
+        file_name (str): Name of the XML file to read.
+
+    Returns:
+        str: The contents of the XML file as a string, or None if the file is not found.
+    """
+    # Fixed directory path for the XML file
+    directory_path = os.path.join(os.getcwd(), '')
+
+    # Construct the full path to the XML file
+    xml_file_path = os.path.join(directory_path, file_name)
+
+    try:
+        # Attempt to open and read the XML file
+        with open(xml_file_path, 'r') as file:
+            xml_content = file.read()
+        return xml_content
+    except FileNotFoundError:
+        print(f"Error: File not found at path '{xml_file_path}'")
+        return None
