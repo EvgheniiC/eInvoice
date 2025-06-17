@@ -7,9 +7,9 @@ from ..helper_functions.einvoice_helper import string_to_float
 
 
 # extract positions data from XML
-def get_xml_positions(m_cn_id: str, xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) -> XmlInvoiceHeader:
+def get_xml_positions(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) -> XmlInvoiceHeader:
     print("##### START get_zugpferd_positions")
-    logger.info_log(f"START get_xml_header with m_cn_id = {m_cn_id}")
+    logger.info_log(f"START get_xml_header with m_cn_id = {xml_invoice_data.m_cn_id}")
 
     xml_tree: Element = get_xml_tree(xml_text)
     xml_positions_data: Element = xml_tree.find("./SupplyChainTradeTransaction")
@@ -59,6 +59,6 @@ def get_xml_positions(m_cn_id: str, xml_text: str, xml_invoice_data: XmlInvoiceH
                                total_net_price=0, invoice_id=xml_invoice_data.m_cn_id,
                                article_number=None))
 
-    logger.info_log(f"Finish get_xml_header with m_cn_id = {m_cn_id}")
+    logger.info_log(f"Finish get_xml_header with m_cn_id = {xml_invoice_data.m_cn_id}")
 
     return xml_invoice_data
