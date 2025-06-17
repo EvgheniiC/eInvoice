@@ -1,14 +1,15 @@
 import unittest
 from scr.invoice_handler.xml_parser_positions import get_xml_positions
-from .test_helper import xml_text_none, xml_test_header_order_930, xml_test_header_kst
 from scr.data_class.XmlInvoiceHeader import XmlInvoiceHeader
 from unittest.mock import Mock
+from scr.helper_functions.einvoice_helper import read_xml_file_to_str
 
 
 class TestXmlParserHeader(unittest.TestCase):
     def test_get_xml_positions_many_positions(self):
         m_cn_id = "6983825"
         xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id)
+        xml_test_header_kst = read_xml_file_to_str('xml_test_header_kst.xml')
         xml_invoice_positions = get_xml_positions(xml_text=xml_test_header_kst,
                                                   xml_invoice_data=xml_invoice_header, logger=Mock())
 
@@ -88,6 +89,7 @@ class TestXmlParserHeader(unittest.TestCase):
     def test_get_xml_positions_bad_positionstext(self):
         m_cn_id = "65478963"
         xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id)
+        xml_test_header_order_930 = read_xml_file_to_str('xml_test_header_order_930.xml')
         xml_invoice_positions = get_xml_positions(xml_text=xml_test_header_order_930,
                                                   xml_invoice_data=xml_invoice_header, logger=Mock())
 
@@ -161,6 +163,7 @@ class TestXmlParserHeader(unittest.TestCase):
     def test_get_xml_positions_no_positions(self):
         m_cn_id = "65478963"
         xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id)
+        xml_text_none = read_xml_file_to_str('xml_text_none.xml')
         xml_invoice_positions = get_xml_positions(
             xml_text=xml_text_none,
             xml_invoice_data=xml_invoice_header, logger=Mock())
