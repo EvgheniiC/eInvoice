@@ -106,7 +106,8 @@ class XmlInvoiceHeader:
                  contract_end: datetime = None,
                  trigger_highway: str = "0",
                  m_cn_mail_id=None,
-                 email_name=None
+                 email_name=None,
+                 license_number: str = None
                  ):
 
         self.m_cn_id = m_cn_id
@@ -151,6 +152,7 @@ class XmlInvoiceHeader:
         self.trigger_highway = trigger_highway
         self.m_cn_mail_id = m_cn_mail_id
         self.email_name = email_name
+        self.license_number = license_number
         self.__table = "CHRONOS_EINVOICE_HEADER"
         self.__table_pos = "CHRONOS_EINVOICE_POSITOINS"
         self.__positions = []
@@ -193,6 +195,7 @@ class XmlInvoiceHeader:
                 "TRIGGER_HIGHWAY": self.trigger_highway,
                 "M_CN_MAIL_ID": self.m_cn_mail_id,
                 "EMAIL_NAME": self.email_name,
+                "M_IV_LICENSE_NUMBER": self.license_number
                 }
 
     def get_xml_header_attributes_for_hw(self):
@@ -229,6 +232,7 @@ class XmlInvoiceHeader:
                 "M_IV_EMPFAENGER": self.receiver,
                 "M_IV_CONTRACT_START": self.contract_start,
                 "M_IV_CONTRACT_END": self.contract_end,
+                "M_IV_LICENSE_NUMBER": self.license_number
                 }
 
     @property
@@ -558,6 +562,14 @@ class XmlInvoiceHeader:
     @highway_timestamp.setter
     def highway_timestamp(self, value: str):
         self.__highway_timestamp = value
+
+    @property
+    def license_number(self):
+        return self.__licence_number
+
+    @license_number.setter
+    def license_number(self, value: str):
+        self.__licence_number = value
 
     def set_dates(self):
         """
