@@ -22,14 +22,14 @@ class TestXmlParserHeader(unittest.TestCase):
         self.assertEqual(12012.02, float_value)
 
     def test_find_data_with_regex(self):
-        xml_test_header_order_930 = read_xml_file_to_str('xml_test_header_order_930.xml')
+        xml_test_header_order_930 = read_xml_file_to_str('xml_files/xml_test_header_order_930.xml')
         xml_tree: Element = get_xml_tree(xml_test_header_order_930)
         xml_supplier_data: Element = xml_tree.find("./SupplyChainTradeTransaction")
         order_id: str = find_data_with_regex(xml_supplier_data, "930\d{7}|960\d{7}")
         self.assertEqual("9307162373", order_id)
 
     def test_find_data_find_data_within_element(self):
-        xml_test_header_order_930 = read_xml_file_to_str('xml_test_header_order_930.xml')
+        xml_test_header_order_930 = read_xml_file_to_str('xml_files/xml_test_header_order_930.xml')
         xml_tree: Element = get_xml_tree(xml_test_header_order_930)
         xml_exchanged_document: Element = xml_tree.find("./ExchangedDocument")
         tags_to_search_invoice_number: list = ['./ID']
@@ -38,7 +38,7 @@ class TestXmlParserHeader(unittest.TestCase):
         self.assertEqual("22247", invoice_number)
 
     def test_find_data_find_data_within_element_with_len_None(self):
-        xml_test_header_order_930 = read_xml_file_to_str('xml_test_header_order_930.xml')
+        xml_test_header_order_930 = read_xml_file_to_str('xml_files/xml_test_header_order_930.xml')
         xml_tree: Element = get_xml_tree(xml_test_header_order_930)
         xml_supplier_data: Element = xml_tree.find("./SupplyChainTradeTransaction")
         tags_to_search_iban: list = ['./ApplicableHeaderTradeAgreement/BuyerTradeParty/ID',
@@ -50,7 +50,7 @@ class TestXmlParserHeader(unittest.TestCase):
         self.assertEqual(None, iban)
 
     def test_find_data_find_data_within_element_with_len_IBAN(self):
-        xml_test_header_kst = read_xml_file_to_str('xml_test_header_kst.xml')
+        xml_test_header_kst = read_xml_file_to_str('xml_files/xml_test_header_kst.xml')
         xml_tree: Element = get_xml_tree(xml_test_header_kst)
         xml_supplier_data: Element = xml_tree.find("./SupplyChainTradeTransaction")
         tags_to_search_iban: list = ['./ApplicableHeaderTradeAgreement/BuyerTradeParty/ID',

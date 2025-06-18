@@ -11,7 +11,7 @@ class TestXmlParserHeader(unittest.TestCase):
         m_cn_id = "6983825"
         barcode = "1234567"
         xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id, barcode=barcode)
-        xml_text_from_zugpferd = read_xml_file_to_str('xml_text_from_zugpferd.xml')
+        xml_text_from_zugpferd = read_xml_file_to_str('xml_files/xml_text_from_zugpferd.xml')
         xml_invoice_data = get_xml_header(xml_text=xml_text_from_zugpferd,
                                           xml_invoice_data=xml_invoice_header, logger=Mock())
         self.assertEqual(xml_invoice_data.get_xml_header_attributes(),
@@ -19,7 +19,8 @@ class TestXmlParserHeader(unittest.TestCase):
                           'M_IV_SCANLOCATION': 'E-Mail', 'M_IV_IMAGEPATH': '1234567.pdf',
                           'M_IV_QUELLSYSTEM': 'eInvoice', 'M_IV_MAIL_SUBJECT': None,
                           'HIGHWAY_ZEITSTEMPEL': None, 'M_IV_INVOICETYPE': 'EKS',
-                          'M_IV_KREDITOR': None, 'M_IV_MANDANT': '1', 'M_IV_CONTRACTID': 'SX-00855',
+                          'M_IV_KREDITOR': None, 'M_IV_LICENSE_NUMBER': None, 'M_IV_MANDANT': '1',
+                          'M_IV_CONTRACTID': 'SX-00855',
                           'M_IV_ORDERID': None, 'M_IV_IBAN': 'DE95700400410228840500',
                           'M_IV_KINDOFINVOICE': 'RE', 'M_IV_INVOICENUMBER': '202510294',
                           'M_IV_COSTCENTER': None, 'M_IV_DAMAGENUMBER': None,
@@ -40,12 +41,12 @@ class TestXmlParserHeader(unittest.TestCase):
         m_cn_id = "6983825"
         barcode = "1234567"
         xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id, barcode=barcode)
-        xml_test_iban_none = read_xml_file_to_str('xml_test_iban_none.xml')
+        xml_test_iban_none = read_xml_file_to_str('xml_files/xml_test_iban_none.xml')
         xml_invoice_data = get_xml_header(xml_text=xml_test_iban_none,
                                           xml_invoice_data=xml_invoice_header, logger=Mock())
         self.assertEqual(xml_invoice_data.get_xml_header_attributes(),
                          {'M_CN_ID': '6983825', 'M_IV_BARCODE': '1234567', 'M_IV_RECEIPTDATE': None,
-                          'M_IV_SCANLOCATION': 'E-Mail', 'M_IV_IMAGEPATH': '1234567.pdf',
+                          'M_IV_SCANLOCATION': 'E-Mail', 'M_IV_IMAGEPATH': '1234567.pdf', 'M_IV_LICENSE_NUMBER': None,
                           'M_IV_QUELLSYSTEM': 'eInvoice', 'M_IV_MAIL_SUBJECT': None, 'HIGHWAY_ZEITSTEMPEL': None,
                           'M_IV_INVOICETYPE': 'EKS', 'M_IV_KREDITOR': '9903323000007', 'M_IV_MANDANT': '1',
                           'M_IV_CONTRACTID': None, 'M_IV_ORDERID': None, 'M_IV_IBAN': None,
@@ -67,12 +68,12 @@ class TestXmlParserHeader(unittest.TestCase):
         m_cn_id = "6983825"
         barcode = "1234567"
         xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id, barcode=barcode)
-        xml_test_header = read_xml_file_to_str('xml_test_header.xml')
+        xml_test_header = read_xml_file_to_str('xml_files/xml_test_header.xml')
         xml_invoice_data = get_xml_header(xml_text=xml_test_header,
                                           xml_invoice_data=xml_invoice_header, logger=Mock())
         self.assertEqual(xml_invoice_data.get_xml_header_attributes(),
                          {'M_CN_ID': '6983825', 'M_IV_BARCODE': '1234567', 'M_IV_RECEIPTDATE': None,
-                          'M_IV_SCANLOCATION': 'E-Mail', 'M_IV_IMAGEPATH': '1234567.pdf',
+                          'M_IV_SCANLOCATION': 'E-Mail', 'M_IV_IMAGEPATH': '1234567.pdf', 'M_IV_LICENSE_NUMBER': None,
                           'M_IV_QUELLSYSTEM': 'eInvoice', 'M_IV_MAIL_SUBJECT': None, 'HIGHWAY_ZEITSTEMPEL': None,
                           'M_IV_INVOICETYPE': 'EKS', 'M_IV_KREDITOR': None, 'M_IV_MANDANT': '1',
                           'M_IV_CONTRACTID': None, 'M_IV_ORDERID': None, 'M_IV_IBAN': 'DE47795800990158788201',
@@ -93,12 +94,12 @@ class TestXmlParserHeader(unittest.TestCase):
         m_cn_id = "6769729"
         barcode = "1234567"
         xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id, barcode=barcode)
-        xml_test_header_order_930 = read_xml_file_to_str('xml_test_header_order_930.xml')
+        xml_test_header_order_930 = read_xml_file_to_str('xml_files/xml_test_header_order_930.xml')
         xml_invoice_data = get_xml_header(xml_text=xml_test_header_order_930,
                                           xml_invoice_data=xml_invoice_header, logger=Mock())
         self.assertEqual(xml_invoice_data.get_xml_header_attributes(),
                          {'M_CN_ID': '6769729', 'M_IV_BARCODE': '1234567', 'M_IV_RECEIPTDATE': None,
-                          'M_IV_SCANLOCATION': 'E-Mail', 'M_IV_IMAGEPATH': '1234567.pdf',
+                          'M_IV_SCANLOCATION': 'E-Mail', 'M_IV_IMAGEPATH': '1234567.pdf', 'M_IV_LICENSE_NUMBER': None,
                           'M_IV_QUELLSYSTEM': 'eInvoice', 'M_IV_MAIL_SUBJECT': None, 'HIGHWAY_ZEITSTEMPEL': None,
                           'M_IV_INVOICETYPE': 'EKS', 'M_IV_KREDITOR': None, 'M_IV_MANDANT': '1',
                           'M_IV_CONTRACTID': None, 'M_IV_ORDERID': '9307162373', 'M_IV_IBAN': None,
@@ -119,13 +120,13 @@ class TestXmlParserHeader(unittest.TestCase):
         m_cn_id = "7053580"
         barcode = "1234567"
         xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id, barcode=barcode)
-        xml_test_header_kst = read_xml_file_to_str('xml_test_header_kst.xml')
+        xml_test_header_kst = read_xml_file_to_str('xml_files/xml_test_header_kst.xml')
         xml_invoice_data = get_xml_header(xml_text=xml_test_header_kst,
                                           xml_invoice_data=xml_invoice_header, logger=Mock())
         # print(xml_invoice_data.get_xml_header_attributes())
         self.assertEqual(xml_invoice_data.get_xml_header_attributes(),
                          {'M_CN_ID': '7053580', 'M_IV_BARCODE': '1234567', 'M_IV_RECEIPTDATE': None,
-                          'M_IV_SCANLOCATION': 'E-Mail', 'M_IV_IMAGEPATH': '1234567.pdf',
+                          'M_IV_SCANLOCATION': 'E-Mail', 'M_IV_IMAGEPATH': '1234567.pdf', 'M_IV_LICENSE_NUMBER': None,
                           'M_IV_QUELLSYSTEM': 'eInvoice', 'M_IV_MAIL_SUBJECT': None, 'HIGHWAY_ZEITSTEMPEL': None,
                           'M_IV_INVOICETYPE': 'EKS', 'M_IV_KREDITOR': '9903323000007', 'M_IV_MANDANT': '1',
                           'M_IV_CONTRACTID': None, 'M_IV_ORDERID': None, 'M_IV_IBAN': 'DE04700202700062004312',

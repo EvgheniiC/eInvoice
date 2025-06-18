@@ -161,7 +161,7 @@ def create_viable_float_or_int_string(value: str, de_format) -> Union[float, int
 # Function to read XML file to string with fixed directory path
 def read_xml_file_to_str(file_name):
     """
-    Reads the contents of an XML file located in the fixed directory path 'com.sixt.lib.python.eInvoice/tests'
+    Reads the contents of an XML file located in the fixed directory path 'com.sixt.lib.python.eInvoice/tests/xml_files'
     and returns it as a string.
 
     Args:
