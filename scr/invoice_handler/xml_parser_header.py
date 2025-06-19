@@ -2,7 +2,7 @@ from datetime import datetime
 import re
 from ..data_class import XmlInvoiceHeader
 from ..helper_functions import find_data_within_element, find_data_with_regex, get_xml_tree, \
-    find_data_within_element_with_len
+    find_data_within_element_with_len, get_tags_from_json
 from xml.etree.ElementTree import Element
 
 
@@ -22,25 +22,20 @@ def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) ->
     xml_positions_data: Element = xml_tree.find("./SupplyChainTradeTransaction")
 
     # header data
-    tags_to_search_invoice_number: list = ['./ID']
-    tags_to_search_order_id: list = ['./ApplicableHeaderTradeAgreement/BuyerOrderReferencedDocument/IssuerAssignedID',
-                                     './IncludedNote/Content']
-    tags_to_search_invoice_date: list = ['./IssueDateTime/DateTimeString']
-    tags_to_search_delivery_date: list = ['./BillingSpecifiedPeriod/StartDateTime/DateTimeString']
-    tags_to_search_delivery_date_till: list = ['./BillingSpecifiedPeriod/EndDateTime/DateTimeString']
-    tags_to_search_currency: list = ['./InvoiceCurrencyCode']
-    tags_to_search_invoice_amount: list = ['./TaxBasisTotalAmount']
-    tags_to_search_total_amount: list = ['./GrandTotalAmount']
-    tags_to_search_total_tax_amount: list = ['./TaxTotalAmount']
-    tags_to_search_supplier: list = ['./ApplicableHeaderTradeAgreement/SellerTradeParty/ID']
-    tags_to_search_iban: list = ['./ApplicableHeaderTradeAgreement/BuyerTradeParty/ID',
-                                 './ApplicableHeaderTradeSettlement/SpecifiedTradeSettlementPaymentMeans/PayeePartyCreditorFinancialAccount/IBANID']
-
-    tags_to_search_tax_amount1: list = [
-        './SupplyChainTradeTransaction/ApplicableHeaderTradeSettlement/ApplicableTradeTax/CalculatedAmount']
-    tags_to_search_tax_rate1: list = [
-        './SupplyChainTradeTransaction/ApplicableHeaderTradeSettlement/ApplicableTradeTax/RateApplicablePercent']
-    tags_to_search_kind_of_invoice: list = ['./TypeCode']
+    tags_to_search_invoice_number: list = get_tags_from_json('tags_to_search_invoice_number')
+    tags_to_search_order_id: list = get_tags_from_json('tags_to_search_order_id')
+    tags_to_search_invoice_date: list = get_tags_from_json('tags_to_search_invoice_date')
+    tags_to_search_delivery_date: list = get_tags_from_json('tags_to_search_delivery_date')
+    tags_to_search_delivery_date_till: list = get_tags_from_json('tags_to_search_delivery_date_till')
+    tags_to_search_currency: list = get_tags_from_json('tags_to_search_currency')
+    tags_to_search_invoice_amount: list = get_tags_from_json('tags_to_search_invoice_amount')
+    tags_to_search_total_amount: list = get_tags_from_json('tags_to_search_total_amount')
+    tags_to_search_total_tax_amount: list = get_tags_from_json('tags_to_search_total_tax_amount')
+    tags_to_search_supplier: list = get_tags_from_json('tags_to_search_supplier')
+    tags_to_search_iban: list = get_tags_from_json('tags_to_search_iban')
+    tags_to_search_tax_amount1: list = get_tags_from_json('tags_to_search_tax_amount1')
+    tags_to_search_tax_rate1: list = get_tags_from_json('tags_to_search_tax_rate1')
+    tags_to_search_kind_of_invoice: list = get_tags_from_json('tags_to_search_kind_of_invoice')
     xml_invoice_data.invoice_number = find_data_within_element(xml_exchanged_document,
                                                                tags_to_search_invoice_number)
 
