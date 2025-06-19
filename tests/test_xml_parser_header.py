@@ -144,6 +144,57 @@ class TestXmlParserHeader(unittest.TestCase):
 
                          )
 
+    def test_get_xml_header_bad_case(self):
+        xml_invoice_header = XmlInvoiceHeader()
+        xml_test_header_kst = read_xml_file_to_str('xml_files/xml_test_header_kst.xml')
+        xml_invoice_data = get_xml_header(xml_text=xml_test_header_kst,
+                                          xml_invoice_data=xml_invoice_header, logger=Mock())
+        self.assertEqual(xml_invoice_data.get_xml_header_attributes(),
+                         {'EMAIL_NAME': None,
+                          'HIGHWAY_ZEITSTEMPEL': None,
+                          'M_CN_ID': None,
+                          'M_CN_MAIL_ID': None,
+                          'M_IV_BARCODE': None,
+                          'M_IV_CONTRACTID': None,
+                          'M_IV_CONTRACT_END': None,
+                          'M_IV_CONTRACT_START': None,
+                          'M_IV_COSTCENTER': None,
+                          'M_IV_CURRENCY': None,
+                          'M_IV_DAMAGENUMBER': None,
+                          'M_IV_DELIVERYDATE': None,
+                          'M_IV_DELIVERYDATE_BIS': None,
+                          'M_IV_EMPFAENGER': None,
+                          'M_IV_IBAN': None,
+                          'M_IV_IMAGEPATH': None,
+                          'M_IV_INVOICEAMOUNT': None,
+                          'M_IV_INVOICEDATE': None,
+                          'M_IV_INVOICENUMBER': None,
+                          'M_IV_INVOICETYPE': 'EKS',
+                          'M_IV_KINDOFINVOICE': None,
+                          'M_IV_KREDITOR': None,
+                          'M_IV_LICENSE_NUMBER': None,
+                          'M_IV_MAIL_SUBJECT': None,
+                          'M_IV_MANDANT': None,
+                          'M_IV_ORDERID': None,
+                          'M_IV_QUELLSYSTEM': 'eInvoice',
+                          'M_IV_RECEIPTDATE': None,
+                          'M_IV_SCANLOCATION': 'E-Mail',
+                          'M_IV_TAXAMOUNT1': None,
+                          'M_IV_TAXAMOUNT2': None,
+                          'M_IV_TAXAMOUNT3': None,
+                          'M_IV_TAXAMOUNT4': None,
+                          'M_IV_TAXAMOUNT5': None,
+                          'M_IV_TAXRATE1': None,
+                          'M_IV_TAXRATE2': None,
+                          'M_IV_TAXRATE3': None,
+                          'M_IV_TAXRATE4': None,
+                          'M_IV_TAXRATE5': None,
+                          'M_IV_TOTALAMOUNT': None,
+                          'M_IV_TOTALTAXAMOUNT': None,
+                          'M_IV_VIN': None,
+                          'TRIGGER_HIGHWAY': '0'}
+                         )
+
 
 if __name__ == '__main__':
     unittest.main()
