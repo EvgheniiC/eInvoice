@@ -4,6 +4,7 @@ from xml.etree.ElementTree import Element
 import xml.etree.ElementTree as ET
 from typing import Union
 import os
+import json
 
 sys.path.append("../")
 to_replace = ["\[", "\]", " ", "\.\.\."]
@@ -184,3 +185,33 @@ def read_xml_file_to_str(file_name):
     except FileNotFoundError:
         print(f"Error: File not found at path '{xml_file_path}'")
         return None
+
+
+def get_tags_from_json(tag: str) -> list:
+    """
+    Get a list of tags from a JSON file based on the given tag name.
+
+    Parameters:
+    tag (str): The tag to retrieve from the JSON file.
+
+    Returns:
+    list: A list of tags or an empty list if the tag is not found.
+    """
+
+    # Desired directory path where tags.json is located
+    desired_directory_path = os.path.abspath(os.path.join(os.getcwd(), '..', 'scr', 'config'))
+
+    # Construct the full path to the JSON file with tags
+    json_file_with_tags = os.path.join(desired_directory_path, 'tags.json')
+
+    # Read tags from the JSON file based on the provided tag
+    if os.path.exists(json_file_with_tags):  # Check if the file exists
+        with open(json_file_with_tags) as file:
+            json_data = json.load(file)
+            tags = json_data.get(tag, [])
+    else:
+        print(f"File {json_file_with_tags} not found.")
+        tags = []
+
+    # Return the list of tags
+    return tags
