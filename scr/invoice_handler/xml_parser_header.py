@@ -12,6 +12,9 @@ def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) ->
     print("##### START get_xml_header")
     logger.info_log(f"START get_xml_header with m_cn_id = {xml_invoice_data.m_cn_id}")
 
+    if not xml_invoice_data.barcode or not xml_invoice_data.m_cn_id or not xml_text:
+        return xml_invoice_data
+
     xml_tree: Element = get_xml_tree(xml_text)
 
     xml_exchanged_document: Element = xml_tree.find("./ExchangedDocument")
