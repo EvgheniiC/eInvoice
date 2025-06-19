@@ -199,7 +199,7 @@ def get_tags_from_json(tag: str) -> list:
     """
 
     # Desired directory path where tags.json is located
-    desired_directory_path = os.path.abspath(os.path.join(os.getcwd(), '..', 'scr', 'config'))
+    desired_directory_path = os.path.dirname(os.path.abspath(__file__)) + "/config/"
 
     # Construct the full path to the JSON file with tags
     json_file_with_tags = os.path.join(desired_directory_path, 'tags.json')
