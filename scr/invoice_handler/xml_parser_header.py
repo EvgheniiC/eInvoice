@@ -66,7 +66,6 @@ def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) ->
     xml_invoice_data.order_id = find_data_with_regex(xml_supplier_data, "930\d{7}|960\d{7}")
     xml_invoice_data.contract_id = find_data_with_regex(xml_supplier_data, r"\bSX-\d{5}(?:-\d{3})?\b")
 
-    # TODO test
     # SWFM-5293
     if not xml_invoice_data.order_id:
         # sometimes we get order in positions
