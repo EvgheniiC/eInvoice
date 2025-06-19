@@ -46,8 +46,12 @@ def get_pdf_file(m_cn_id: str, xml_text: str) -> Optional[dict]:
     data_dict: dict = json.loads(json_data)
 
     # at the moment XML have embedded PDF only if we have the tag Invoice
-    if 'Invoice' in data_dict:
-        invoice_data: dict = data_dict['Invoice']
-        return extract_pdf_attachments(m_cn_id, invoice_data, "AdditionalDocumentReference")
+    try:
+        if 'Invoice' in data_dict:
+            invoice_data: dict = data_dict['Invoice']
+            return extract_pdf_attachments(m_cn_id, invoice_data, "AdditionalDocumentReference")
+    except Exception as e:
+        print(f"Error in get_pdf_file {e}")
+        return None
 
     return None
