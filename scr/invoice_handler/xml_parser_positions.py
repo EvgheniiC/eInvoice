@@ -1,7 +1,7 @@
 import re
 from ..data_class import XmlInvoiceHeader
 from ..data_class import XmlInvoicePosition
-from ..helper_functions import get_xml_tree, find_data_within_element
+from ..helper_functions import get_xml_tree, find_data_within_element, get_tags_from_json
 from xml.etree.ElementTree import Element
 from ..helper_functions.einvoice_helper import string_to_float
 
@@ -13,12 +13,11 @@ def get_xml_positions(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger)
 
     xml_tree: Element = get_xml_tree(xml_text)
     xml_positions_data: Element = xml_tree.find("./SupplyChainTradeTransaction")
-    tags_to_search_description: list = ['SpecifiedTradeProduct/Description', 'SpecifiedTradeProduct/Name']
-    tags_to_search_tax_rate: list = ['SpecifiedLineTradeSettlement/ApplicableTradeTax/RateApplicablePercent']
-    tags_to_search_quantity: list = ['SpecifiedLineTradeDelivery/BilledQuantity']
-    tags_to_search_single_net_price: list = ['SpecifiedLineTradeAgreement/NetPriceProductTradePrice/ChargeAmount']
-    tags_to_search_total_net_price: list = [
-        'SpecifiedLineTradeSettlement/SpecifiedTradeSettlementLineMonetarySummation/LineTotalAmount']
+    tags_to_search_description: list = get_tags_from_json('tags_to_search_description')
+    tags_to_search_tax_rate: list = get_tags_from_json('tags_to_search_tax_rate')
+    tags_to_search_quantity: list = get_tags_from_json('tags_to_search_quantity')
+    tags_to_search_single_net_price: list = get_tags_from_json('tags_to_search_single_net_price')
+    tags_to_search_total_net_price: list = get_tags_from_json('tags_to_search_total_net_price')
 
     # positions
     item_position: int = 1
