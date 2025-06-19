@@ -5,6 +5,8 @@ import xml.etree.ElementTree as ET
 from typing import Union
 import os
 import json
+import PyPDF2
+
 
 sys.path.append("../")
 to_replace = ["\[", "\]", " ", "\.\.\."]
@@ -215,3 +217,31 @@ def get_tags_from_json(tag: str) -> list:
 
     # Return the list of tags
     return tags
+
+
+def is_zugpferd_pdf(file_path: str):
+    """
+    checks the PDF file to make sure it is in the zugpferd format
+    """
+    pdf_file = open(file_path, "rb")
+    pdf_reader = PyPDF2.PdfReader(pdf_file)
+    file_names = ""
+    catalog = ""
+    try:
+        catalog = pdf_reader.trailer["/Root"]
+    except (Exception,):
+        print("Not found in Kids")
+
+    if catalog:
+        try:
+            file_names = catalog['/Names']['/EmbeddedFiles']['/Names']
+        except (Exception,):
+            print("Not found in Names")
+
+        if not file_names:
+            try:
+                file_names = catalog['/Names']['/EmbeddedFiles']['/Kids']
+            except (Exception,):
+                print("Not found in Kids")
+
+    return True if file_names else False
