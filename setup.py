@@ -6,7 +6,7 @@ setup(
     version='0.1',
     packages=find_packages(),
     package_data={
-        "scr": ["invoice_handler/*"]
+        "scr": ["invoice_handler/*", "helper_functions/*","helper_functions/config/*"]
     },
     install_requires=[
         'requests>=2.31.0' # Add any additional dependencies here
