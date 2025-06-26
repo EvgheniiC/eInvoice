@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?><tns:Invoice xmlns:tns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" xmlns="urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:n0="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:n1="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2">
+  <n0:UBLVersionID>2.1</n0:UBLVersionID>
+  <n0:CustomizationID>urn:cen.eu:en16931:2017#compliant#urn:xeinkauf.de:kosit:xrechnung_3.0</n0:CustomizationID>
+  <n0:ProfileID>urn:fdc:peppol.eu:2017:poacc:billing:01:1.0</n0:ProfileID>
+  <n0:ID>3250124002</n0:ID>
+  <n0:IssueDate>2025-01-24</n0:IssueDate>
+  <n0:DueDate>2025-02-14</n0:DueDate>
+  <n0:InvoiceTypeCode>380</n0:InvoiceTypeCode>
+  <n0:DocumentCurrencyCode>EUR</n0:DocumentCurrencyCode>
+  <n0:BuyerReference>Bestellung SIXT-000000025218</n0:BuyerReference>
+  <cac:InvoicePeriod>
+    <n0:StartDate>2025-01-01</n0:StartDate>
+    <n0:EndDate>2025-12-31</n0:EndDate>
+  </cac:InvoicePeriod>
+  <cac:OrderReference>
+    <n0:ID>SIXT-000000025218</n0:ID>
+  </cac:OrderReference>
+  <cac:AdditionalDocumentReference>
+    <n0:ID>2210114001</n0:ID>
+    <n0:DocumentTypeCode>220</n0:DocumentTypeCode>
+  </cac:AdditionalDocumentReference>
+
+  <cac:AccountingSupplierParty>
+    <cac:Party>
+      <n0:EndpointID schemeID="EM">inspire-buchhaltung@mrknow.ai</n0:EndpointID>
+
+      <cac:PostalAddress>
+        <n0:StreetName>Leopoldstr. 1</n0:StreetName>
+
+
+        <n0:CityName>St. Georgen</n0:CityName>
+        <n0:PostalZone>78112</n0:PostalZone>
+        <cac:Country>
+          <n0:IdentificationCode>DE</n0:IdentificationCode>
+        </cac:Country>
+      </cac:PostalAddress>
+      <cac:PartyTaxScheme>
+        <n0:CompanyID>DE260569738</n0:CompanyID>
+        <cac:TaxScheme>
+          <n0:ID>VAT</n0:ID>
+        </cac:TaxScheme>
+      </cac:PartyTaxScheme>
+      <cac:PartyLegalEntity>
+        <n0:RegistrationName>Inspire Technologies GmbH</n0:RegistrationName>
+      </cac:PartyLegalEntity>
+      <cac:Contact>
+        <n0:Name>Inspire Buchhaltung</n0:Name>
+        <n0:Telephone>+49 7724 85990-10</n0:Telephone>
+        <n0:ElectronicMail>inspire-buchhaltung@mrknow.ai</n0:ElectronicMail>
+      </cac:Contact>
+    </cac:Party>
+  </cac:AccountingSupplierParty>
+  <cac:AccountingCustomerParty>
+    <cac:Party>
+      <n0:EndpointID schemeID="EM">gerhard.fliedner@sixt.com</n0:EndpointID>
+      <cac:PartyIdentification>
+        <n0:ID>105863</n0:ID>
+      </cac:PartyIdentification>
+      <cac:PostalAddress>
+        <n0:StreetName>Zugspitzstrasse 1</n0:StreetName>
+        <n0:CityName>Pullach</n0:CityName>
+        <n0:PostalZone>82049</n0:PostalZone>
+        <cac:Country>
+          <n0:IdentificationCode>DE</n0:IdentificationCode>
+        </cac:Country>
+      </cac:PostalAddress>
+      <cac:PartyTaxScheme>
+        <n0:CompanyID>DE234567890</n0:CompanyID>
+        <cac:TaxScheme>
+          <n0:ID>VAT</n0:ID>
+        </cac:TaxScheme>
+      </cac:PartyTaxScheme>
+      <cac:PartyLegalEntity>
+        <n0:RegistrationName>Sixt GmbH &amp; Co. Autovermietung KG </n0:RegistrationName>
+      </cac:PartyLegalEntity>
+      <cac:Contact>
+        <n0:Name>n.n.</n0:Name>
+        <n0:Telephone>+49 (89) 74444 - 6161</n0:Telephone>
+        <n0:ElectronicMail>moritz.bernabei@sixt.de</n0:ElectronicMail>
+      </cac:Contact>
+    </cac:Party>
+  </cac:AccountingCustomerParty>
+  <cac:TaxRepresentativeParty>
+    <cac:PartyName>
+      <n0:Name>Inspire Technologies GmbH</n0:Name>
+    </cac:PartyName>
+    <cac:PostalAddress>
+      <n0:StreetName>Leopoldstr. 1</n0:StreetName>
+      <n0:CityName>Sankt Georgen im Schwarzwald</n0:CityName>
+      <n0:PostalZone>78112</n0:PostalZone>
+      <cac:Country>
+        <n0:IdentificationCode>DE</n0:IdentificationCode>
+      </cac:Country>
+    </cac:PostalAddress>
+    <cac:PartyTaxScheme>
+      <n0:CompanyID>DE260569738</n0:CompanyID>
+      <cac:TaxScheme>
+        <n0:ID>VAT</n0:ID>
+      </cac:TaxScheme>
+    </cac:PartyTaxScheme>
+  </cac:TaxRepresentativeParty>
+  <cac:PaymentMeans>
+    <n0:PaymentMeansCode>58</n0:PaymentMeansCode>
+    <n0:PaymentID>3250124002</n0:PaymentID>
+    <cac:PayeeFinancialAccount>
+      <n0:ID>DE13664900000023969700</n0:ID>
+      <n0:Name>Inspire Technologies GmbH</n0:Name>
+      <cac:FinancialInstitutionBranch>
+        <n0:ID>GENODE61OG1</n0:ID>
+      </cac:FinancialInstitutionBranch>
+    </cac:PayeeFinancialAccount>
+  </cac:PaymentMeans>
+  <cac:TaxTotal>
+    <n0:TaxAmount currencyID="EUR">9139.95</n0:TaxAmount>
+    <cac:TaxSubtotal>
+      <n0:TaxableAmount currencyID="EUR">48105.0</n0:TaxableAmount>
+      <n0:TaxAmount currencyID="EUR">9139.95</n0:TaxAmount>
+      <cac:TaxCategory>
+        <n0:ID>S</n0:ID>
+        <n0:Percent>19.00</n0:Percent>
+        <cac:TaxScheme>
+          <n0:ID>VAT</n0:ID>
+        </cac:TaxScheme>
+      </cac:TaxCategory>
+    </cac:TaxSubtotal>
+  </cac:TaxTotal>
+  <cac:LegalMonetaryTotal>
+    <n0:LineExtensionAmount currencyID="EUR">48105.0</n0:LineExtensionAmount>
+    <n0:TaxExclusiveAmount currencyID="EUR">48105.0</n0:TaxExclusiveAmount>
+    <n0:TaxInclusiveAmount currencyID="EUR">57244.95</n0:TaxInclusiveAmount>
+    <n0:PrepaidAmount currencyID="EUR">0</n0:PrepaidAmount>
+    <n0:PayableAmount currencyID="EUR">57244.95</n0:PayableAmount>
+  </cac:LegalMonetaryTotal>
+<tns:InvoiceLine xmlns:tns="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
+  <ID>1</ID>
+  <InvoicedQuantity unitCode="">1.0</InvoicedQuantity>
+  <LineExtensionAmount currencyID="EUR">48105.0</LineExtensionAmount>
+  <tns:Item>
+    <Description>Softwarepflegeschein 6140414001 / 005</Description>
+    <Name>Wartung BPM inspire</Name>
+    <tns:ClassifiedTaxCategory>
+      <ID>S</ID>
+      <Percent>19</Percent>
+      <tns:TaxScheme>
+        <ID>VAT</ID>
+      </tns:TaxScheme>
+    </tns:ClassifiedTaxCategory>
+  </tns:Item>
+  <tns:Price>
+    <PriceAmount currencyID="EUR">48105.0</PriceAmount>
+    <BaseQuantity unitCode="">1</BaseQuantity>
+  </tns:Price>
+</tns:InvoiceLine></tns:Invoice>
