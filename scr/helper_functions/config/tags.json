@@ -19,20 +19,25 @@
   ],
   "tags_to_search_iban": [
     "./ApplicableHeaderTradeAgreement/BuyerTradeParty/ID",
-    "./ApplicableHeaderTradeSettlement/SpecifiedTradeSettlementPaymentMeans/PayeePartyCreditorFinancialAccount/IBANID"
+    "./ApplicableHeaderTradeSettlement/SpecifiedTradeSettlementPaymentMeans/PayeePartyCreditorFinancialAccount/IBANID",
+    "./PaymentMeans/PayeeFinancialAccount/ID"
   ],
   "tags_to_search_description": [
     "SpecifiedTradeProduct/Description",
-    "SpecifiedTradeProduct/Name"
+    "SpecifiedTradeProduct/Name",
+    "Item/Description"
   ],
   "tags_to_search_tax_rate": [
-    "SpecifiedLineTradeSettlement/ApplicableTradeTax/RateApplicablePercent"
+    "SpecifiedLineTradeSettlement/ApplicableTradeTax/RateApplicablePercent",
+    "Item/ClassifiedTaxCategory/Percent"
   ],
   "tags_to_search_quantity": [
-    "SpecifiedLineTradeDelivery/BilledQuantity"
+    "SpecifiedLineTradeDelivery/BilledQuantity",
+    "InvoicedQuantity"
   ],
   "tags_to_search_single_net_price": [
-    "SpecifiedLineTradeAgreement/NetPriceProductTradePrice/ChargeAmount"
+    "SpecifiedLineTradeAgreement/NetPriceProductTradePrice/ChargeAmount",
+    "Price/PriceAmount"
   ],
   "tags_to_search_invoice_number": [
     "./ID"
@@ -42,39 +47,51 @@
     "./IncludedNote/Content"
   ],
   "tags_to_search_invoice_date": [
-    "./IssueDateTime/DateTimeString"
+    "./IssueDateTime/DateTimeString",
+    "./IssueDate"
   ],
   "tags_to_search_delivery_date": [
-    "./BillingSpecifiedPeriod/StartDateTime/DateTimeString"
+    "./BillingSpecifiedPeriod/StartDateTime/DateTimeString",
+    "./InvoicePeriod/StartDate"
   ],
   "tags_to_search_delivery_date_till": [
-    "./BillingSpecifiedPeriod/EndDateTime/DateTimeString"
+    "./BillingSpecifiedPeriod/EndDateTime/DateTimeString",
+    "./InvoicePeriod/EndDate"
+
   ],
   "tags_to_search_currency": [
-    "./InvoiceCurrencyCode"
+    "./InvoiceCurrencyCode",
+    "./DocumentCurrencyCode"
   ],
   "tags_to_search_invoice_amount": [
-    "./TaxBasisTotalAmount"
+    "./TaxBasisTotalAmount",
+    "./TaxTotal/TaxSubtotal/TaxableAmount"
   ],
   "tags_to_search_total_amount": [
-    "./GrandTotalAmount"
+    "./GrandTotalAmount",
+    "./LegalMonetaryTotal/TaxInclusiveAmount"
   ],
   "tags_to_search_total_tax_amount": [
-    "./TaxTotalAmount"
+    "./TaxTotalAmount",
+    "./TaxTotal/TaxAmount"
   ],
   "tags_to_search_total_net_price": [
-    "SpecifiedLineTradeSettlement/SpecifiedTradeSettlementLineMonetarySummation/LineTotalAmount"
+    "SpecifiedLineTradeSettlement/SpecifiedTradeSettlementLineMonetarySummation/LineTotalAmount",
+    "LineExtensionAmount"
   ],
   "tags_to_search_supplier": [
     "./ApplicableHeaderTradeAgreement/SellerTradeParty/ID"
   ],
   "tags_to_search_tax_amount1": [
-    "./SupplyChainTradeTransaction/ApplicableHeaderTradeSettlement/ApplicableTradeTax/CalculatedAmount"
+    "./SupplyChainTradeTransaction/ApplicableHeaderTradeSettlement/ApplicableTradeTax/CalculatedAmount",
+    "./TaxTotal/TaxSubtotal/TaxAmount"
   ],
   "tags_to_search_tax_rate1": [
-    "./SupplyChainTradeTransaction/ApplicableHeaderTradeSettlement/ApplicableTradeTax/RateApplicablePercent"
+    "./SupplyChainTradeTransaction/ApplicableHeaderTradeSettlement/ApplicableTradeTax/RateApplicablePercent",
+    "./TaxTotal/TaxSubtotal/TaxCategory/Percent"
   ],
   "tags_to_search_kind_of_invoice": [
-    "./TypeCode"
+    "./TypeCode",
+    "./InvoiceTypeCode"
   ]
 }
