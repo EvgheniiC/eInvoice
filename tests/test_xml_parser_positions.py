@@ -160,7 +160,7 @@ class TestXmlParserHeader(unittest.TestCase):
                            'M_IP_TAXCODE': None, 'M_IP_ORDERPOSID': '', 'M_IP_GOODSINWARDPOSID': '', 'M_IP_ECLASS': ''}]
                          )
 
-    def test_get_xml_positions_no_positions(self):
+    def test_get_xml_positions_one_position(self):
         m_cn_id = "65478963"
         xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id)
         xml_text_none = read_xml_file_to_str('xml_files/xml_text_none.xml')
@@ -169,13 +169,60 @@ class TestXmlParserHeader(unittest.TestCase):
             xml_invoice_data=xml_invoice_header, logger=Mock())
 
         self.assertEqual(xml_invoice_positions.get_xml_postions_map(),
-                         [{'M_CN_ID': None, 'M_CN_INVOICEID': '65478963', 'M_IP_ITEMPOS': 1,
-                           'M_IP_POSITIONSTEXT': 'description_text', 'M_IP_QUANTITY': 1, 'M_IP_SINGLENETPRICE': 0,
-                           'M_IP_TOTALNETPRICE': 0, 'M_IP_TAXRATE': 0, 'M_IP_COSTCENTER': '', 'M_IP_KOSTENTRAEGER': '',
-                           'M_IP_INVENTORYACC': None, 'M_IP_ARTICLENUMBER': None, 'M_IP_ARTICLENUMBER2': None,
-                           'M_IP_DISCOUNTAMOUNT': None, 'M_IP_QUANTITYUNIT': None, 'M_IP_TYP': 'ET',
-                           'M_IP_DISCOUNTPERCENT': None, 'M_IP_TAXCODE': None, 'M_IP_ORDERPOSID': '',
-                           'M_IP_GOODSINWARDPOSID': '', 'M_IP_ECLASS': ''}]
+                         [{'M_CN_ID': None,
+                           'M_CN_INVOICEID': '65478963',
+                           'M_IP_ARTICLENUMBER': '',
+                           'M_IP_ARTICLENUMBER2': None,
+                           'M_IP_COSTCENTER': '',
+                           'M_IP_DISCOUNTAMOUNT': None,
+                           'M_IP_DISCOUNTPERCENT': None,
+                           'M_IP_ECLASS': '',
+                           'M_IP_GOODSINWARDPOSID': '',
+                           'M_IP_INVENTORYACC': None,
+                           'M_IP_ITEMPOS': 1,
+                           'M_IP_KOSTENTRAEGER': '',
+                           'M_IP_ORDERPOSID': '',
+                           'M_IP_POSITIONSTEXT': 'Beschreibung Artikel',
+                           'M_IP_QUANTITY': 10.0,
+                           'M_IP_QUANTITYUNIT': None,
+                           'M_IP_SINGLENETPRICE': 1000.0,
+                           'M_IP_TAXCODE': None,
+                           'M_IP_TAXRATE': 7.0,
+                           'M_IP_TOTALNETPRICE': 10000.0,
+                           'M_IP_TYP': 'ET'}]
+                         )
+
+    # if we got clear XML file
+    def test_get_xml_positions_from_xml_file(self):
+        m_cn_id = "65478963"
+        xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id)
+        xml_text_none = read_xml_file_to_str('xml_files/clear_xml_from_gerd.xml')
+        xml_invoice_positions = get_xml_positions(
+            xml_text=xml_text_none,
+            xml_invoice_data=xml_invoice_header, logger=Mock())
+
+        self.assertEqual(xml_invoice_positions.get_xml_postions_map(),
+                         [{'M_CN_ID': None,
+                           'M_CN_INVOICEID': '65478963',
+                           'M_IP_ARTICLENUMBER': '',
+                           'M_IP_ARTICLENUMBER2': None,
+                           'M_IP_COSTCENTER': '',
+                           'M_IP_DISCOUNTAMOUNT': None,
+                           'M_IP_DISCOUNTPERCENT': None,
+                           'M_IP_ECLASS': '',
+                           'M_IP_GOODSINWARDPOSID': '',
+                           'M_IP_INVENTORYACC': None,
+                           'M_IP_ITEMPOS': 1,
+                           'M_IP_KOSTENTRAEGER': '',
+                           'M_IP_ORDERPOSID': '',
+                           'M_IP_POSITIONSTEXT': 'Softwarepflegeschein 6140414001 / 005',
+                           'M_IP_QUANTITY': 1.0,
+                           'M_IP_QUANTITYUNIT': None,
+                           'M_IP_SINGLENETPRICE': 48105.0,
+                           'M_IP_TAXCODE': None,
+                           'M_IP_TAXRATE': 19.0,
+                           'M_IP_TOTALNETPRICE': 48105.0,
+                           'M_IP_TYP': 'ET'}]
                          )
 
 
