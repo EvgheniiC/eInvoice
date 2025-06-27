@@ -10,6 +10,9 @@ def get_einvoice_vendor_data(m_cn_id: str, xml_text: str, logger) -> (dict, str)
     xml_tree: Element = ET.fromstring(xml_text)
     xml_tree = delete_all_prefills(xml_tree)
     xml_vendor_data: Element = xml_tree.find("./SupplyChainTradeTransaction")
+    # for not zugpferd format, only xml
+    if not xml_vendor_data:
+        xml_vendor_data: Element = xml_tree
 
     tags_to_search_tax_id: list = get_tags_from_json('tags_to_search_tax_id')
     tags_to_search_vendor_name: list = get_tags_from_json('tags_to_search_vendor_name')
