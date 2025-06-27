@@ -49,7 +49,24 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_STRASSE': 'Postfach 14 75', 'S_KR_ORT': 'Landshut', 'S_KR_POSTLEITZAHL': '84001',
                           'S_KR_LAND': 'DE', 'S_KR_USTID': 'DE259922663', 'S_KR_IBAN': None}
                          )
-        self.assertEqual(supplier, '')
+        self.assertEqual(supplier, None)
+
+    # not zugpferd, only XML file
+    def test_get_einvoice_client_data_not_zugpferd(self):
+        m_cn_id = "5207492"
+        clear_xml_from_gerd = read_xml_file_to_str('xml_files/clear_xml_from_gerd.xml')
+        clients_data, supplier = get_einvoice_vendor_data(m_cn_id=m_cn_id, xml_text=clear_xml_from_gerd, logger=Mock())
+        self.assertEqual(clients_data,
+                         {'M_CN_ID': '5207492',
+                          'S_KR_IBAN': 'DE13664900000023969700',
+                          'S_KR_LAND': 'DE',
+                          'S_KR_NAME1': 'Inspire Technologies GmbH',
+                          'S_KR_ORT': 'St. Georgen',
+                          'S_KR_POSTLEITZAHL': '78112',
+                          'S_KR_STRASSE': 'Leopoldstr. 1',
+                          'S_KR_USTID': 'DE260569738'})
+
+        self.assertEqual(supplier, None)
 
 
 if __name__ == '__main__':
