@@ -1,21 +1,27 @@
 {
   "tags_to_search_tax_id": [
-    "./ApplicableHeaderTradeAgreement/SellerTradeParty/SpecifiedTaxRegistration/ID"
+    "./ApplicableHeaderTradeAgreement/SellerTradeParty/SpecifiedTaxRegistration/ID",
+    "./AccountingSupplierParty/Party/PartyTaxScheme/CompanyID"
   ],
   "tags_to_search_vendor_name": [
-    "./ApplicableHeaderTradeAgreement/SellerTradeParty/Name"
+    "./ApplicableHeaderTradeAgreement/SellerTradeParty/Name",
+    "./AccountingSupplierParty/Party/PartyLegalEntity/RegistrationName"
   ],
   "tags_to_search_address": [
-    "./ApplicableHeaderTradeAgreement/SellerTradeParty/PostalTradeAddress/LineOne"
+    "./ApplicableHeaderTradeAgreement/SellerTradeParty/PostalTradeAddress/LineOne",
+    "./AccountingSupplierParty/Party/PostalAddress/StreetName"
   ],
   "tags_to_search_postcode": [
-    "./ApplicableHeaderTradeAgreement/SellerTradeParty/PostalTradeAddress/PostcodeCode"
+    "./ApplicableHeaderTradeAgreement/SellerTradeParty/PostalTradeAddress/PostcodeCode",
+    "./AccountingSupplierParty/Party/PostalAddress/PostalZone"
   ],
   "tags_to_search_city_name": [
-    "./ApplicableHeaderTradeAgreement/SellerTradeParty/PostalTradeAddress/CityName"
+    "./ApplicableHeaderTradeAgreement/SellerTradeParty/PostalTradeAddress/CityName",
+    "./AccountingSupplierParty/Party/PostalAddress/CityName"
   ],
   "tags_to_search_country": [
-    "./ApplicableHeaderTradeAgreement/SellerTradeParty/PostalTradeAddress/CountryID"
+    "./ApplicableHeaderTradeAgreement/SellerTradeParty/PostalTradeAddress/CountryID",
+    "./AccountingSupplierParty/Party/PostalAddress/Country/IdentificationCode"
   ],
   "tags_to_search_iban": [
     "./ApplicableHeaderTradeAgreement/BuyerTradeParty/ID",
@@ -57,7 +63,6 @@
   "tags_to_search_delivery_date_till": [
     "./BillingSpecifiedPeriod/EndDateTime/DateTimeString",
     "./InvoicePeriod/EndDate"
-
   ],
   "tags_to_search_currency": [
     "./InvoiceCurrencyCode",
