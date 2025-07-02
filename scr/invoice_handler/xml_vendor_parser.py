@@ -15,6 +15,7 @@ def get_einvoice_vendor_data(m_cn_id: str, xml_text: str, logger) -> (dict, str)
         xml_vendor_data: Element = xml_tree
 
     tags_to_search_tax_id: list = get_tags_from_json('tags_to_search_tax_id')
+    tags_to_search_client_name: list = get_tags_from_json('tags_to_search_client_name')
     tags_to_search_vendor_name: list = get_tags_from_json('tags_to_search_vendor_name')
     tags_to_search_address: list = get_tags_from_json('tags_to_search_address')
     tags_to_search_postcode: list = get_tags_from_json('tags_to_search_postcode')
@@ -31,6 +32,7 @@ def get_einvoice_vendor_data(m_cn_id: str, xml_text: str, logger) -> (dict, str)
         "S_KR_POSTLEITZAHL": find_data_within_element(xml_vendor_data, tags_to_search_postcode),
         "S_KR_LAND": find_data_within_element(xml_vendor_data, tags_to_search_country),
         "S_KR_USTID": find_data_within_element(xml_vendor_data, tags_to_search_tax_id),
+        "S_KR_CLIENT_NAME": find_data_within_element(xml_vendor_data, tags_to_search_client_name),
         "S_KR_IBAN": find_data_within_element_with_len(xml_vendor_data, tags_to_search_iban, 22).replace(" ",
                                                                                                          "") if find_data_within_element_with_len(
             xml_vendor_data, tags_to_search_iban, 22) else None

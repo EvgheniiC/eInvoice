@@ -13,7 +13,7 @@ class TestClientParser(unittest.TestCase):
         self.assertEqual(clients_data, {'M_CN_ID': '5208214', 'S_KR_NAME1': '[Seller name]',
                                         'S_KR_STRASSE': '[Seller address line 1]', 'S_KR_ORT': '[Seller city]',
                                         'S_KR_POSTLEITZAHL': '12345', 'S_KR_LAND': 'DE', 'S_KR_USTID': 'DE 123456789',
-                                        'S_KR_IBAN': 'DE75512108001245126199'})
+                                        'S_KR_IBAN': 'DE75512108001245126199','S_KR_CLIENT_NAME': '[Buyer name]'})
         self.assertEqual(supplier, None)
 
     def test_get_einvoice_client_data_none(self):
@@ -21,8 +21,15 @@ class TestClientParser(unittest.TestCase):
         xml_text_none = read_xml_file_to_str('xml_files/xml_text_none.xml')
         clients_data, supplier = get_einvoice_vendor_data(m_cn_id=m_cn_id, xml_text=xml_text_none, logger=Mock())
         self.assertEqual(clients_data,
-                         {'M_CN_ID': '5208215', 'S_KR_NAME1': None, 'S_KR_STRASSE': None, 'S_KR_ORT': None,
-                          'S_KR_POSTLEITZAHL': None, 'S_KR_LAND': None, 'S_KR_USTID': None, 'S_KR_IBAN': None}
+                         {'M_CN_ID': '5208215',
+                          'S_KR_CLIENT_NAME': None,
+                          'S_KR_IBAN': None,
+                          'S_KR_LAND': 'DK',
+                          'S_KR_NAME1': 'EntServ Deutschland GmbH',
+                          'S_KR_ORT': 'Ort Rechnungssteller',
+                          'S_KR_POSTLEITZAHL': '12345',
+                          'S_KR_STRASSE': 'Strae Rechnungssteller 1',
+                          'S_KR_USTID': 'ATU13585627'}
                          )
         self.assertEqual(supplier, None)
 
@@ -34,7 +41,7 @@ class TestClientParser(unittest.TestCase):
         self.assertEqual(clients_data,
                          {'M_CN_ID': '5207492', 'S_KR_NAME1': 'KMLZ Rechtsanwaltsges. mbH',
                           'S_KR_STRASSE': 'Unterer Anger 3', 'S_KR_ORT': 'Munchen', 'S_KR_POSTLEITZAHL': '80331',
-                          'S_KR_LAND': 'DE', 'S_KR_USTID': 'DE814742004', 'S_KR_IBAN': 'DE95700400410228840500'}
+                          'S_KR_LAND': 'DE', 'S_KR_USTID': 'DE814742004', 'S_KR_IBAN': 'DE95700400410228840500', 'S_KR_CLIENT_NAME': 'Sixt SE',}
                          )
         self.assertEqual(supplier, None)
         # TODO potential supplier
@@ -47,7 +54,7 @@ class TestClientParser(unittest.TestCase):
         self.assertEqual(clients_data,
                          {'M_CN_ID': '5207492', 'S_KR_NAME1': 'E.ON Energie Deutschland GmbH',
                           'S_KR_STRASSE': 'Postfach 14 75', 'S_KR_ORT': 'Landshut', 'S_KR_POSTLEITZAHL': '84001',
-                          'S_KR_LAND': 'DE', 'S_KR_USTID': 'DE259922663', 'S_KR_IBAN': None}
+                          'S_KR_LAND': 'DE', 'S_KR_USTID': 'DE259922663', 'S_KR_IBAN': None, 'S_KR_CLIENT_NAME': 'Sixt GmbH & Co. Autovermietung KG',}
                          )
         self.assertEqual(supplier, None)
 
@@ -64,7 +71,25 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_ORT': 'St. Georgen',
                           'S_KR_POSTLEITZAHL': '78112',
                           'S_KR_STRASSE': 'Leopoldstr. 1',
-                          'S_KR_USTID': 'DE260569738'})
+                          'S_KR_USTID': 'DE260569738',
+                          'S_KR_CLIENT_NAME': None,})
+
+        self.assertEqual(supplier, None)
+
+    def test_get_einvoice_client_10(self):
+        m_cn_id = "5207492"
+        clear_xml_from_gerd = read_xml_file_to_str('xml_files/xml_test_mandant_10.xml')
+        clients_data, supplier = get_einvoice_vendor_data(m_cn_id=m_cn_id, xml_text=clear_xml_from_gerd, logger=Mock())
+        self.assertEqual(clients_data,
+                         {'M_CN_ID': '5207492',
+                          'S_KR_IBAN': 'DE95700400410228840500',
+                          'S_KR_LAND': 'DE',
+                          'S_KR_NAME1': 'KMLZ Rechtsanwaltsges. mbH',
+                          'S_KR_ORT': 'Munchen',
+                          'S_KR_POSTLEITZAHL': '80331',
+                          'S_KR_STRASSE': 'Unterer Anger 3',
+                          'S_KR_USTID': 'DE814742004',
+                          'S_KR_CLIENT_NAME': 'Sixt SE'})
 
         self.assertEqual(supplier, None)
 
