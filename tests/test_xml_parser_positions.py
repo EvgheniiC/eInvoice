@@ -225,6 +225,16 @@ class TestXmlParserHeader(unittest.TestCase):
                            'M_IP_TYP': 'ET'}]
                          )
 
+    # if we got XML file without correctly positions tags
+    def test_get_xml_positions_from_xml_file_porscheinformatik(self):
+        m_cn_id = "7339081"
+        xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id)
+        xm_positions_false = read_xml_file_to_str('xml_files/xm_positions_false.xml')
+        xml_invoice_positions = get_xml_positions(
+            xml_text=xm_positions_false,
+            xml_invoice_data=xml_invoice_header, logger=Mock())
+
+        self.assertEqual(xml_invoice_positions.get_xml_postions_map(),[])
 
 if __name__ == '__main__':
     unittest.main()
