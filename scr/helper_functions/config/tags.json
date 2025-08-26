@@ -34,7 +34,8 @@
   "tags_to_search_description": [
     "SpecifiedTradeProduct/Description",
     "SpecifiedTradeProduct/Name",
-    "Item/Description"
+    "Item/Description",
+    "Item/Name"
   ],
   "tags_to_search_tax_rate": [
     "SpecifiedLineTradeSettlement/ApplicableTradeTax/RateApplicablePercent",

@@ -14,7 +14,7 @@ def get_xml_positions(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger)
     xml_tree: Element = get_xml_tree(xml_text)
     xml_positions_data_zugpferd: Element = xml_tree.find("./SupplyChainTradeTransaction")
     # some XML invoices have a tag InvoiceLine for positions
-    xml_positions_data: Element = xml_tree.find("./InvoiceLine")
+    xml_positions_data: list = xml_tree.findall("./InvoiceLine")
     item_position: int = 1
     tags_to_search_description: list = get_tags_from_json('tags_to_search_description')
     tags_to_search_tax_rate: list = get_tags_from_json('tags_to_search_tax_rate')
@@ -23,12 +23,11 @@ def get_xml_positions(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger)
     tags_to_search_total_net_price: list = get_tags_from_json('tags_to_search_total_net_price')
 
     if not xml_positions_data_zugpferd and not xml_positions_data:
-        xml_positions_data: Element = xml_tree.find("./CreditNoteLine")
+        xml_positions_data: list = xml_tree.findall("./CreditNoteLine")
 
-    # positions
+    # positions IncludedSupplyChainTradeLineItem for ZUGPFERD, InvoiceLine for xml
     for position in xml_positions_data_zugpferd.iter(
-            "IncludedSupplyChainTradeLineItem") if xml_positions_data_zugpferd else xml_positions_data.iter(
-        'InvoiceLine'):
+            "IncludedSupplyChainTradeLineItem") if xml_positions_data_zugpferd else xml_positions_data:
         description_text: str = find_data_within_element(position, tags_to_search_description)[
             0:499] if find_data_within_element(position,
                                                tags_to_search_description) else "Default text"
