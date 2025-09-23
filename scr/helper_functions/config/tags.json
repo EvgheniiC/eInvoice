@@ -3,8 +3,9 @@
     "./ApplicableHeaderTradeAgreement/SellerTradeParty/SpecifiedTaxRegistration/ID",
     "./AccountingSupplierParty/Party/PartyTaxScheme/CompanyID"
   ],
-    "tags_to_search_client_name": [
-    "./ApplicableHeaderTradeAgreement/BuyerTradeParty/Name"
+  "tags_to_search_client_name": [
+    "./ApplicableHeaderTradeAgreement/BuyerTradeParty/Name",
+    "AccountingCustomerParty/Party/PartyName/Name"
   ],
   "tags_to_search_vendor_name": [
     "./ApplicableHeaderTradeAgreement/SellerTradeParty/Name",
@@ -102,5 +103,8 @@
   "tags_to_search_kind_of_invoice": [
     "./TypeCode",
     "./InvoiceTypeCode"
+  ],
+  "tags_to_search_vin": [
+    "AdditionalDocumentReference/ID"
   ]
 }

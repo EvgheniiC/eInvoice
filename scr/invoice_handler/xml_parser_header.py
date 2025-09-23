@@ -49,6 +49,7 @@ def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) ->
     tags_to_search_tax_amount1: list = get_tags_from_json('tags_to_search_tax_amount1')
     tags_to_search_tax_rate1: list = get_tags_from_json('tags_to_search_tax_rate1')
     tags_to_search_kind_of_invoice: list = get_tags_from_json('tags_to_search_kind_of_invoice')
+    tags_to_search_vin: list = get_tags_from_json('tags_to_search_vin')
 
     xml_invoice_data.invoice_number = find_data_within_element(xml_exchanged_document, tags_to_search_invoice_number)
 
@@ -119,6 +120,10 @@ def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) ->
     xml_invoice_data.supplier = find_data_within_element(xml_supplier_data, tags_to_search_supplier)
     xml_invoice_data.client = "1"
     xml_invoice_data.image_path = xml_invoice_data.barcode + ".pdf"
+    xml_invoice_data.vin = find_data_within_element(xml_tree, tags_to_search_vin)
+    # Vin number should be = 17
+    if xml_invoice_data.vin and len(xml_invoice_data.vin) != 17:
+        xml_invoice_data.vin = None
     xml_invoice_data.iban = find_data_within_element_with_len(xml_supplier_data, tags_to_search_iban, 22).replace(
         " ",
         "") if find_data_within_element_with_len(

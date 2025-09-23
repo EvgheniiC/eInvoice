@@ -22,7 +22,7 @@ class TestClientParser(unittest.TestCase):
         clients_data, supplier = get_einvoice_vendor_data(m_cn_id=m_cn_id, xml_text=xml_text_none, logger=Mock())
         self.assertEqual(clients_data,
                          {'M_CN_ID': '5208215',
-                          'S_KR_CLIENT_NAME': None,
+                          'S_KR_CLIENT_NAME': 'Abweichender Handelsname Rechnungsempfnger',
                           'S_KR_IBAN': None,
                           'S_KR_LAND': 'DK',
                           'S_KR_NAME1': 'EntServ Deutschland GmbH',
@@ -93,6 +93,23 @@ class TestClientParser(unittest.TestCase):
 
         self.assertEqual(supplier, None)
 
+
+    def test_get_einvoice_SWFM_5490(self):
+        m_cn_id = "5207492"
+        clear_xml_from_gerd = read_xml_file_to_str('xml_files/xml_text_find_VIN_USTD_SWFM-5490.xml')
+        clients_data, supplier = get_einvoice_vendor_data(m_cn_id=m_cn_id, xml_text=clear_xml_from_gerd, logger=Mock())
+        self.assertEqual(clients_data,
+                         {'M_CN_ID': '5207492',
+                          'S_KR_CLIENT_NAME': 'Sixt GmbH & Co Autovermietg.KG Reparaturzentrum Berlin',
+                          'S_KR_IBAN': 'DE55160500003504000405',
+                          'S_KR_LAND': 'DE',
+                          'S_KR_NAME1': 'Autohaus Babelsberg  GmbH & Co.KG',
+                          'S_KR_ORT': 'Potsdam',
+                          'S_KR_POSTLEITZAHL': '14482',
+                          'S_KR_STRASSE': 'Fritz-Zubeil-Strae 70-78',
+                          'S_KR_USTID': 'DE138410797'})
+
+        self.assertEqual(supplier, None)
 
 if __name__ == '__main__':
     unittest.main()
