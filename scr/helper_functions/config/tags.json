@@ -7,6 +7,9 @@
     "./ApplicableHeaderTradeAgreement/BuyerTradeParty/Name",
     "AccountingCustomerParty/Party/PartyName/Name"
   ],
+  "tags_to_search_client_name_delivery": [
+    "Delivery/DeliveryParty/PartyName/Name"
+  ],
   "tags_to_search_vendor_name": [
     "./ApplicableHeaderTradeAgreement/SellerTradeParty/Name",
     "./AccountingSupplierParty/Party/PartyLegalEntity/RegistrationName"
@@ -15,13 +18,22 @@
     "./ApplicableHeaderTradeAgreement/SellerTradeParty/PostalTradeAddress/LineOne",
     "./AccountingSupplierParty/Party/PostalAddress/StreetName"
   ],
+  "tags_to_search_address_delivery": [
+    "Delivery/DeliveryLocation/Address/StreetName"
+  ],
   "tags_to_search_postcode": [
     "./ApplicableHeaderTradeAgreement/SellerTradeParty/PostalTradeAddress/PostcodeCode",
     "./AccountingSupplierParty/Party/PostalAddress/PostalZone"
   ],
+  "tags_to_search_postcode_delivery": [
+    "Delivery/DeliveryLocation/Address/PostalZone"
+  ],
   "tags_to_search_city_name": [
     "./ApplicableHeaderTradeAgreement/SellerTradeParty/PostalTradeAddress/CityName",
     "./AccountingSupplierParty/Party/PostalAddress/CityName"
+  ],
+  "tags_to_search_city_name_delivery": [
+     "Delivery/DeliveryLocation/Address/CityName"
   ],
   "tags_to_search_country": [
     "./ApplicableHeaderTradeAgreement/SellerTradeParty/PostalTradeAddress/CountryID",
