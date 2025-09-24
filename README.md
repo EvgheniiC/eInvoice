@@ -19,6 +19,7 @@ the script receives an XML file in str format, processes and finds data in it an
 3 in Chronos_new repository -> chronox_extraction/eInvoice/eInvoice_repo, for exam com.sixt.lib.python.eInvoice-0.1.tar.gz
 4 in Chronos_new repository in eInvoice/eInvoice_repo: 
 5 pip uninstall com.sixt.lib.python.eInvoice
+  Proceed (Y/n)? -> Y
 6 pip install com.sixt.lib.python.eInvoice-0.1.tar.gz
 
 ```
@@ -137,8 +138,17 @@ After the functions are processed, the positions will look like this:
 After the functions are processed, the vendor will look like this:
 
 ```json
-{'M_CN_ID': '5208214', 'S_KR_NAME1': '[Seller name]',
-                                        'S_KR_STRASSE': '[Seller address line 1]', 'S_KR_ORT': '[Seller city]',
-                                        'S_KR_POSTLEITZAHL': '12345', 'S_KR_LAND': 'DE', 'S_KR_USTID': 'DE 123456789',
-                                        'S_KR_IBAN': 'DE75512108001245126199'}
+{'M_CN_ID': '5207492',
+                          'S_KR_CLIENT_NAME': 'Sixt GmbH & Co Autovermietg.KG Reparaturzentrum Berlin',
+                          'S_KR_CLIENT_NAME_DELIVERY': 'Sixt GmbH & Co Autovermietg.KG Reparaturzentrum Berlin',
+                          'S_KR_IBAN': 'DE55160500003504000405',
+                          'S_KR_LAND': 'DE',
+                          'S_KR_NAME1': 'Autohaus Babelsberg  GmbH & Co.KG',
+                          'S_KR_ORT': 'Potsdam',
+                          'S_KR_ORT_DELIVERY': 'Schnefeld',
+                          'S_KR_POSTLEITZAHL': '14482',
+                          'S_KR_POSTLEITZAHL_DELIVERY': '12529',
+                          'S_KR_STRASSE': 'Fritz-Zubeil-Strae 70-78',
+                          'S_KR_STRASSE_DELIVERY': 'Am Airport 7',
+                          'S_KR_USTID': 'DE138410797'}
 ```
