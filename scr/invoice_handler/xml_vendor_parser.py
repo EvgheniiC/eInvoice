@@ -14,6 +14,7 @@ def get_einvoice_vendor_data(m_cn_id: str, xml_text: str, logger) -> (dict, str)
     if not xml_vendor_data:
         xml_vendor_data: Element = xml_tree
 
+    # SWFM-5490 AccountingCustomerParty -> for Address of the Sixt company, Delivery -> for Lieferanschrift (xxx_delivery)
     tags_to_search_tax_id: list = get_tags_from_json('tags_to_search_tax_id')
     tags_to_search_client_name: list = get_tags_from_json('tags_to_search_client_name')
     tags_to_search_client_name_delivery: list = get_tags_from_json('tags_to_search_client_name_delivery')

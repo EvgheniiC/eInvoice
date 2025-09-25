@@ -35,11 +35,11 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_IBAN': None,
                           'S_KR_LAND': 'DK',
                           'S_KR_NAME1': 'EntServ Deutschland GmbH',
-                          'S_KR_ORT': 'Ort Rechnungssteller',
+                          'S_KR_ORT': 'Ort Rechnungsempfnger',
                           'S_KR_ORT_DELIVERY': 'Anderer Leistungsempfnger Ort',
-                          'S_KR_POSTLEITZAHL': '12345',
+                          'S_KR_POSTLEITZAHL': '67890',
                           'S_KR_POSTLEITZAHL_DELIVERY': '45678',
-                          'S_KR_STRASSE': 'Strae Rechnungssteller 1',
+                          'S_KR_STRASSE': 'Strae Rechnungsempfnger 1',
                           'S_KR_STRASSE_DELIVERY': 'Anderer Leistungsempfnger Strae 1',
                           'S_KR_USTID': 'ATU13585627'}
                          )
@@ -102,11 +102,11 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_IBAN': 'DE13664900000023969700',
                           'S_KR_LAND': 'DE',
                           'S_KR_NAME1': 'Inspire Technologies GmbH',
-                          'S_KR_ORT': 'St. Georgen',
+                          'S_KR_ORT': 'Pullach',
                           'S_KR_ORT_DELIVERY': None,
-                          'S_KR_POSTLEITZAHL': '78112',
+                          'S_KR_POSTLEITZAHL': '82049',
                           'S_KR_POSTLEITZAHL_DELIVERY': None,
-                          'S_KR_STRASSE': 'Leopoldstr. 1',
+                          'S_KR_STRASSE': 'Zugspitzstrasse 1',
                           'S_KR_STRASSE_DELIVERY': None,
                           'S_KR_USTID': 'DE260569738'})
 
@@ -140,15 +140,38 @@ class TestClientParser(unittest.TestCase):
         self.assertEqual(clients_data,
                          {'M_CN_ID': '5207492',
                           'S_KR_CLIENT_NAME': 'Sixt GmbH & Co Autovermietg.KG Reparaturzentrum Berlin',
-                          'S_KR_CLIENT_NAME_DELIVERY': 'Sixt GmbH & Co Autovermietg.KG Reparaturzentrum Berlin',
+                          'S_KR_CLIENT_NAME_DELIVERY': 'Sixt GmbH & Co Autovermietg.KG Reparaturzentrum '
+                                                       'Berlin',
                           'S_KR_IBAN': 'DE55160500003504000405',
                           'S_KR_LAND': 'DE',
                           'S_KR_NAME1': 'Autohaus Babelsberg  GmbH & Co.KG',
-                          'S_KR_ORT': 'Potsdam',
+                          'S_KR_ORT': 'Schnefeld',
                           'S_KR_ORT_DELIVERY': 'Schnefeld',
-                          'S_KR_POSTLEITZAHL': '14482',
+                          'S_KR_POSTLEITZAHL': '12529',
                           'S_KR_POSTLEITZAHL_DELIVERY': '12529',
-                          'S_KR_STRASSE': 'Fritz-Zubeil-Strae 70-78',
+                          'S_KR_STRASSE': 'Am Airport 7',
+                          'S_KR_STRASSE_DELIVERY': 'Am Airport 7',
+                          'S_KR_USTID': 'DE138410797'})
+
+        self.assertEqual(supplier, None)
+
+    def test_get_einvoice_85018982AutohausBabelsberg(self):
+        m_cn_id = "5207492"
+        clear_xml_from_gerd = read_xml_file_to_str('xml_files/85018982AutohausBabelsberg.xml')
+        clients_data, supplier = get_einvoice_vendor_data(m_cn_id=m_cn_id, xml_text=clear_xml_from_gerd, logger=Mock())
+        self.assertEqual(clients_data,
+                         {'M_CN_ID': '5207492',
+                          'S_KR_CLIENT_NAME': 'Sixt GmbH & Co Autovermietg.KG Reparaturzentrum Berlin',
+                          'S_KR_CLIENT_NAME_DELIVERY': 'Sixt GmbH & Co Autovermietg.KG Reparaturzentrum '
+                                                       'Berlin',
+                          'S_KR_IBAN': 'DE55160500003504000405',
+                          'S_KR_LAND': 'DE',
+                          'S_KR_NAME1': 'Autohaus Babelsberg  GmbH & Co.KG',
+                          'S_KR_ORT': 'Schnefeld',
+                          'S_KR_ORT_DELIVERY': 'Schnefeld',
+                          'S_KR_POSTLEITZAHL': '12529',
+                          'S_KR_POSTLEITZAHL_DELIVERY': '12529',
+                          'S_KR_STRASSE': 'Am Airport 7',
                           'S_KR_STRASSE_DELIVERY': 'Am Airport 7',
                           'S_KR_USTID': 'DE138410797'})
 

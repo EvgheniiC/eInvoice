@@ -4,8 +4,8 @@
     "./AccountingSupplierParty/Party/PartyTaxScheme/CompanyID"
   ],
   "tags_to_search_client_name": [
-    "./ApplicableHeaderTradeAgreement/BuyerTradeParty/Name",
-    "AccountingCustomerParty/Party/PartyName/Name"
+    "./AccountingCustomerParty/Party/PartyName/Name",
+    "./ApplicableHeaderTradeAgreement/BuyerTradeParty/Name"
   ],
   "tags_to_search_client_name_delivery": [
     "Delivery/DeliveryParty/PartyName/Name"
@@ -15,22 +15,22 @@
     "./AccountingSupplierParty/Party/PartyLegalEntity/RegistrationName"
   ],
   "tags_to_search_address": [
-    "./ApplicableHeaderTradeAgreement/SellerTradeParty/PostalTradeAddress/LineOne",
-    "./AccountingSupplierParty/Party/PostalAddress/StreetName"
+    "./AccountingCustomerParty/Party/PostalAddress/StreetName",
+    "./ApplicableHeaderTradeAgreement/SellerTradeParty/PostalTradeAddress/LineOne"
   ],
   "tags_to_search_address_delivery": [
     "Delivery/DeliveryLocation/Address/StreetName"
   ],
   "tags_to_search_postcode": [
-    "./ApplicableHeaderTradeAgreement/SellerTradeParty/PostalTradeAddress/PostcodeCode",
-    "./AccountingSupplierParty/Party/PostalAddress/PostalZone"
+    "./AccountingCustomerParty/Party/PostalAddress/PostalZone",
+    "./ApplicableHeaderTradeAgreement/SellerTradeParty/PostalTradeAddress/PostcodeCode"
   ],
   "tags_to_search_postcode_delivery": [
     "Delivery/DeliveryLocation/Address/PostalZone"
   ],
   "tags_to_search_city_name": [
-    "./ApplicableHeaderTradeAgreement/SellerTradeParty/PostalTradeAddress/CityName",
-    "./AccountingSupplierParty/Party/PostalAddress/CityName"
+    "./AccountingCustomerParty/Party/PostalAddress/CityName",
+    "./ApplicableHeaderTradeAgreement/SellerTradeParty/PostalTradeAddress/CityName"
   ],
   "tags_to_search_city_name_delivery": [
      "Delivery/DeliveryLocation/Address/CityName"
