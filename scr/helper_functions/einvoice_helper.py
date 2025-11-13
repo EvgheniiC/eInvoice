@@ -54,7 +54,7 @@ def find_data_within_element_with_len(element: Element, tags: list, length: int)
         data = element.find(tag)
         if data is not None:
             if data.text:
-                if len(data.text.strip()) == length:
+                if len(data.text.strip().replace(" ", "")) == length:
                     return data.text.strip()
     return None
 

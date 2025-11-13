@@ -463,5 +463,60 @@ class TestXmlParserHeader(unittest.TestCase):
                           'M_IV_VIN': 'WVGZZZC11SY078194',
                           'TRIGGER_HIGHWAY': '0'}
                          )
+
+    # SWFM-5639
+    def test_get_xml_header_from_xml_85000159(self):
+        m_cn_id = "7697763"
+        barcode = "44073860"
+        xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id, barcode=barcode)
+        xml_text = read_xml_file_to_str('xml_files/85000159.xml')
+        xml_invoice_data = get_xml_header(xml_text=xml_text,
+                                          xml_invoice_data=xml_invoice_header, logger=Mock())
+        self.assertEqual(xml_invoice_data.get_xml_header_attributes(),
+                         {'EMAIL_NAME': None,
+                          'HIGHWAY_ZEITSTEMPEL': None,
+                          'M_CN_ID': '7697763',
+                          'M_CN_MAIL_ID': None,
+                          'M_IV_BARCODE': '44073860',
+                          'M_IV_CONTRACTID': None,
+                          'M_IV_CONTRACT_END': None,
+                          'M_IV_CONTRACT_START': None,
+                          'M_IV_COSTCENTER': None,
+                          'M_IV_CURRENCY': 'EUR',
+                          'M_IV_DAMAGENUMBER': None,
+                          'M_IV_DELIVERYDATE': datetime(2025, 11, 9, 0, 0),
+                          'M_IV_DELIVERYDATE_BIS': datetime(2025, 11, 9, 0, 0),
+                          'M_IV_EMPFAENGER': None,
+                          'M_IV_IBAN': 'DE36512500000001178040',
+                          'M_IV_IMAGEPATH': '44073860.pdf',
+                          'M_IV_INVOICEAMOUNT': '142.40',
+                          'M_IV_INVOICEDATE': datetime(2025, 11, 9, 0, 0),
+                          'M_IV_INVOICENUMBER': 'ofr2517108',
+                          'M_IV_INVOICETYPE': 'EKS',
+                          'M_IV_KINDOFINVOICE': 'RE',
+                          'M_IV_KREDITOR': None,
+                          'M_IV_LICENSE_NUMBER': None,
+                          'M_IV_MAIL_SUBJECT': None,
+                          'M_IV_MANDANT': '1',
+                          'M_IV_ORDERID': None,
+                          'M_IV_QUELLSYSTEM': 'eInvoice',
+                          'M_IV_RECEIPTDATE': None,
+                          'M_IV_SCANLOCATION': 'E-Mail',
+                          'M_IV_TAXAMOUNT1': '27.06',
+                          'M_IV_TAXAMOUNT2': None,
+                          'M_IV_TAXAMOUNT3': None,
+                          'M_IV_TAXAMOUNT4': None,
+                          'M_IV_TAXAMOUNT5': None,
+                          'M_IV_TAXRATE1': '19.00',
+                          'M_IV_TAXRATE2': None,
+                          'M_IV_TAXRATE3': None,
+                          'M_IV_TAXRATE4': None,
+                          'M_IV_TAXRATE5': None,
+                          'M_IV_TOTALAMOUNT': '169.46',
+                          'M_IV_TOTALTAXAMOUNT': '27.06',
+                          'M_IV_VIN': None,
+                          'TRIGGER_HIGHWAY': '0'}
+                         )
+
 if __name__ == '__main__':
     unittest.main()

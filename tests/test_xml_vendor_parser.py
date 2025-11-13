@@ -32,7 +32,7 @@ class TestClientParser(unittest.TestCase):
                          {'M_CN_ID': '5208215',
                           'S_KR_CLIENT_NAME': 'Abweichender Handelsname Rechnungsempfnger',
                           'S_KR_CLIENT_NAME_DELIVERY': 'Anderer Leistungsempfnger',
-                          'S_KR_IBAN': None,
+                          'S_KR_IBAN': 'DE84600400710561515801',
                           'S_KR_LAND': 'DK',
                           'S_KR_NAME1': 'EntServ Deutschland GmbH',
                           'S_KR_ORT': 'Ort Rechnungsempfnger',
@@ -174,6 +174,28 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_STRASSE': 'Am Airport 7',
                           'S_KR_STRASSE_DELIVERY': 'Am Airport 7',
                           'S_KR_USTID': 'DE138410797'})
+
+        self.assertEqual(supplier, None)
+
+
+    def test_get_einvoice_85000159(self):
+        m_cn_id = "7697763"
+        clear_xml_from_gerd = read_xml_file_to_str('xml_files/85000159.xml')
+        clients_data, supplier = get_einvoice_vendor_data(m_cn_id=m_cn_id, xml_text=clear_xml_from_gerd, logger=Mock())
+        self.assertEqual(clients_data,
+                         {'M_CN_ID': '7697763',
+                          'S_KR_CLIENT_NAME': 'Sixt GmbH & Co. Autovermietung KG',
+                          'S_KR_CLIENT_NAME_DELIVERY': None,
+                          'S_KR_IBAN': 'DE36512500000001178040',
+                          'S_KR_LAND': 'DE',
+                          'S_KR_NAME1': 'Abschleppdienst Offenbach GmbH',
+                          'S_KR_ORT': 'Offenbach am Main',
+                          'S_KR_ORT_DELIVERY': None,
+                          'S_KR_POSTLEITZAHL': '63069',
+                          'S_KR_POSTLEITZAHL_DELIVERY': None,
+                          'S_KR_STRASSE': 'Sprendlinger Landstrae 167',
+                          'S_KR_STRASSE_DELIVERY': None,
+                          'S_KR_USTID': 'DE113527818'})
 
         self.assertEqual(supplier, None)
 

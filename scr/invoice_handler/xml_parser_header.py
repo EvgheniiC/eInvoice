@@ -126,8 +126,8 @@ def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) ->
         xml_invoice_data.vin = None
     xml_invoice_data.iban = find_data_within_element_with_len(xml_supplier_data, tags_to_search_iban, 22).replace(
         " ",
-        "") if find_data_within_element_with_len(
-        xml_supplier_data, tags_to_search_iban, 22) else None
+        "") if find_data_within_element_with_len(xml_supplier_data, tags_to_search_iban, 22) else None
+
     if xml_invoice_data.iban:
         logger.info_log(f"IBAN was founded = {xml_invoice_data.iban}")
         if len(xml_invoice_data.iban) < 22:
