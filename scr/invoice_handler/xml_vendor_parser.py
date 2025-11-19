@@ -27,7 +27,7 @@ def get_einvoice_vendor_data(m_cn_id: str, xml_text: str, logger) -> (dict, str)
     tags_to_search_city_name_delivery: list = get_tags_from_json('tags_to_search_city_name_delivery')
     tags_to_search_country: list = get_tags_from_json('tags_to_search_country')
     tags_to_search_iban: list = get_tags_from_json('tags_to_search_iban')
-    tags_to_search_vendor: list = get_tags_from_json('tags_to_search_vendor')
+    tags_to_search_supplier: list = get_tags_from_json('tags_to_search_supplier')
 
     clients_data: dict = {
         "M_CN_ID": m_cn_id,
@@ -46,11 +46,11 @@ def get_einvoice_vendor_data(m_cn_id: str, xml_text: str, logger) -> (dict, str)
                                                                                                          "") if find_data_within_element_with_len(
             xml_vendor_data, tags_to_search_iban, 22) else None
     }
-    vendor: str = find_data_within_element(xml_vendor_data, tags_to_search_vendor)
+    vendor: str = find_data_within_element(xml_vendor_data, tags_to_search_supplier)
 
     if vendor:
         # sometimes write client supplier number not correctly
-        if len(vendor) != 8 or not vendor.startswith(r"8|9\d{8}"):
+        if len(vendor) != 8 and vendor.startswith(r"8|9\d{7}") != 'False':
             vendor = ""
 
     logger.info_log(f"Finish get_einvoice_client_data with m_cn_id = {m_cn_id} , supplier = {vendor}")

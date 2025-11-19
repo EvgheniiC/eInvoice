@@ -1,48 +1,60 @@
 {
   "tags_to_search_tax_id": [
     "./ApplicableHeaderTradeAgreement/SellerTradeParty/SpecifiedTaxRegistration/ID",
-    "./AccountingSupplierParty/Party/PartyTaxScheme/CompanyID"
+    "./AccountingSupplierParty/Party/PartyTaxScheme/CompanyID",
+    "./Invoice/AccountingSupplierParty/Party/PartyTaxScheme/CompanyID"
   ],
   "tags_to_search_client_name": [
     "./AccountingCustomerParty/Party/PartyName/Name",
-    "./ApplicableHeaderTradeAgreement/BuyerTradeParty/Name"
+    "./ApplicableHeaderTradeAgreement/BuyerTradeParty/Name",
+    "./Invoice/AccountingCustomerParty/Party/PartyName/Name"
   ],
   "tags_to_search_client_name_delivery": [
-    "Delivery/DeliveryParty/PartyName/Name"
+    "Delivery/DeliveryParty/PartyName/Name",
+    "Invoice/Delivery/DeliveryParty/PartyName/Name"
   ],
   "tags_to_search_vendor_name": [
     "./ApplicableHeaderTradeAgreement/SellerTradeParty/Name",
-    "./AccountingSupplierParty/Party/PartyLegalEntity/RegistrationName"
+    "./AccountingSupplierParty/Party/PartyLegalEntity/RegistrationName",
+    "./Invoice/AccountingSupplierParty/Party/PartyName/Name"
   ],
   "tags_to_search_address": [
     "./AccountingCustomerParty/Party/PostalAddress/StreetName",
-    "./ApplicableHeaderTradeAgreement/SellerTradeParty/PostalTradeAddress/LineOne"
+    "./ApplicableHeaderTradeAgreement/SellerTradeParty/PostalTradeAddress/LineOne",
+    "./Invoice/AccountingSupplierParty/Party/PostalAddress/StreetName"
   ],
   "tags_to_search_address_delivery": [
-    "Delivery/DeliveryLocation/Address/StreetName"
+    "Delivery/DeliveryLocation/Address/StreetName",
+    "Invoice/Delivery/DeliveryLocation/Address/StreetName"
   ],
   "tags_to_search_postcode": [
     "./AccountingCustomerParty/Party/PostalAddress/PostalZone",
-    "./ApplicableHeaderTradeAgreement/SellerTradeParty/PostalTradeAddress/PostcodeCode"
+    "./ApplicableHeaderTradeAgreement/SellerTradeParty/PostalTradeAddress/PostcodeCode",
+    "./Invoice/AccountingSupplierParty/Party/PostalAddress/PostalZone"
   ],
   "tags_to_search_postcode_delivery": [
-    "Delivery/DeliveryLocation/Address/PostalZone"
+    "Delivery/DeliveryLocation/Address/PostalZone",
+    "Invoice/Delivery/DeliveryLocation/Address/PostalZone"
   ],
   "tags_to_search_city_name": [
     "./AccountingCustomerParty/Party/PostalAddress/CityName",
-    "./ApplicableHeaderTradeAgreement/SellerTradeParty/PostalTradeAddress/CityName"
+    "./ApplicableHeaderTradeAgreement/SellerTradeParty/PostalTradeAddress/CityName",
+    "./Invoice/AccountingSupplierParty/Party/PostalAddress/CityName"
   ],
   "tags_to_search_city_name_delivery": [
-     "Delivery/DeliveryLocation/Address/CityName"
+     "Delivery/DeliveryLocation/Address/CityName",
+     "Invoice/Delivery/DeliveryLocation/Address/CityName"
   ],
   "tags_to_search_country": [
     "./ApplicableHeaderTradeAgreement/SellerTradeParty/PostalTradeAddress/CountryID",
-    "./AccountingSupplierParty/Party/PostalAddress/Country/IdentificationCode"
+    "./AccountingSupplierParty/Party/PostalAddress/Country/IdentificationCode",
+    "./Invoice/AccountingSupplierParty/Party/PostalAddress/Country/IdentificationCode"
   ],
   "tags_to_search_iban": [
     "./ApplicableHeaderTradeAgreement/BuyerTradeParty/ID",
     "./ApplicableHeaderTradeSettlement/SpecifiedTradeSettlementPaymentMeans/PayeePartyCreditorFinancialAccount/IBANID",
-    "./PaymentMeans/PayeeFinancialAccount/ID"
+    "./PaymentMeans/PayeeFinancialAccount/ID",
+    "./Invoice/PaymentMeans/PayeeFinancialAccount/ID"
   ],
   "tags_to_search_description": [
     "SpecifiedTradeProduct/Description",
@@ -63,7 +75,8 @@
     "Price/PriceAmount"
   ],
   "tags_to_search_invoice_number": [
-    "./ID"
+    "./ID",
+    "./Invoice/ID"
   ],
   "tags_to_search_order_id": [
     "./ApplicableHeaderTradeAgreement/BuyerOrderReferencedDocument/IssuerAssignedID",
@@ -71,52 +84,66 @@
   ],
   "tags_to_search_invoice_date": [
     "./IssueDateTime/DateTimeString",
-    "./IssueDate"
+    "./IssueDate",
+    "./Invoice/IssueDate"
   ],
   "tags_to_search_delivery_date": [
     "./BillingSpecifiedPeriod/StartDateTime/DateTimeString",
-    "./InvoicePeriod/StartDate"
+    "./InvoicePeriod/StartDate",
+    "./Invoice/InvoicePeriod/StartDate"
   ],
   "tags_to_search_delivery_date_till": [
     "./BillingSpecifiedPeriod/EndDateTime/DateTimeString",
-    "./InvoicePeriod/EndDate"
+    "./InvoicePeriod/EndDate",
+    "./Invoice/InvoicePeriod/EndDate"
   ],
   "tags_to_search_currency": [
     "./InvoiceCurrencyCode",
-    "./DocumentCurrencyCode"
+    "./Invoice/DocumentCurrencyCode"
   ],
   "tags_to_search_invoice_amount": [
     "./TaxBasisTotalAmount",
-    "./TaxTotal/TaxSubtotal/TaxableAmount"
+    "./TaxTotal/TaxSubtotal/TaxableAmount",
+    "./Invoice/TaxTotal/TaxSubtotal/TaxableAmount"
   ],
   "tags_to_search_total_amount": [
     "./GrandTotalAmount",
-    "./LegalMonetaryTotal/TaxInclusiveAmount"
+    "./LegalMonetaryTotal/TaxInclusiveAmount",
+    "./Invoice/LegalMonetaryTotal/TaxInclusiveAmount"
   ],
   "tags_to_search_total_tax_amount": [
     "./TaxTotalAmount",
-    "./TaxTotal/TaxAmount"
+    "./TaxTotal/TaxAmount",
+    "./Invoice/TaxTotal/TaxAmount"
   ],
   "tags_to_search_total_net_price": [
     "SpecifiedLineTradeSettlement/SpecifiedTradeSettlementLineMonetarySummation/LineTotalAmount",
     "LineExtensionAmount"
   ],
   "tags_to_search_supplier": [
-    "./ApplicableHeaderTradeAgreement/SellerTradeParty/ID"
+    "./ApplicableHeaderTradeAgreement/SellerTradeParty/ID",
+   "./Invoice/AccountingSupplierParty/Party/PartyIdentification/ID"
   ],
   "tags_to_search_tax_amount1": [
     "./SupplyChainTradeTransaction/ApplicableHeaderTradeSettlement/ApplicableTradeTax/CalculatedAmount",
-    "./TaxTotal/TaxSubtotal/TaxAmount"
+    "./TaxTotal/TaxSubtotal/TaxAmount",
+    "./Invoice/TaxTotal/TaxSubtotal/TaxAmount"
   ],
   "tags_to_search_tax_rate1": [
     "./SupplyChainTradeTransaction/ApplicableHeaderTradeSettlement/ApplicableTradeTax/RateApplicablePercent",
-    "./TaxTotal/TaxSubtotal/TaxCategory/Percent"
+    "./TaxTotal/TaxSubtotal/TaxCategory/Percent",
+    "./Invoice/TaxTotal/TaxSubtotal/TaxCategory/Percent"
   ],
   "tags_to_search_kind_of_invoice": [
     "./TypeCode",
-    "./InvoiceTypeCode"
+    "./InvoiceTypeCode",
+    "./Invoice/InvoiceTypeCode"
   ],
   "tags_to_search_vin": [
-    "AdditionalDocumentReference/ID"
+    "AdditionalDocumentReference/ID",
+    "Invoice/AdditionalDocumentReference/ID"
+  ],
+  "tags_to_search_cost_center": [
+    "Invoice/AccountingCost"
   ]
 }

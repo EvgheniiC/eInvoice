@@ -5,8 +5,6 @@ from ..helper_functions import find_data_within_element, find_data_with_regex, g
     find_data_within_element_with_len, get_tags_from_json
 from xml.etree.ElementTree import Element
 
-
-# TODO cam be difference datum formats? %Y%m%d %Y-%m-%d
 # extract xml data from pdf file
 # def zugpferd_extraction(m_cn_id: str, xml_text: str, db_helper, barcode: str):
 def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) -> XmlInvoiceHeader:
@@ -50,6 +48,7 @@ def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) ->
     tags_to_search_tax_rate1: list = get_tags_from_json('tags_to_search_tax_rate1')
     tags_to_search_kind_of_invoice: list = get_tags_from_json('tags_to_search_kind_of_invoice')
     tags_to_search_vin: list = get_tags_from_json('tags_to_search_vin')
+    tags_to_search_cost_center: list = get_tags_from_json('tags_to_search_cost_center')
 
     xml_invoice_data.invoice_number = find_data_within_element(xml_exchanged_document, tags_to_search_invoice_number)
 
@@ -63,7 +62,6 @@ def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) ->
         except Exception as e:
             print(f"Invoice date Date was not found {e}")
             logger.error_log(f"Invoice date bis was not found {e}")
-
 
     try:
         xml_invoice_data.delivery_date = datetime.strptime(
@@ -115,9 +113,13 @@ def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) ->
     xml_invoice_data.total_tax_amount = find_data_within_element(xml_invoice_head_money,
                                                                  tags_to_search_total_tax_amount)
     xml_invoice_data.tax_amount1 = find_data_within_element(xml_tree, tags_to_search_tax_amount1)
-    #TODO if w have many tax_amount and tax_rate
+    # TODO if w have many tax_amount and tax_rate
     xml_invoice_data.tax_rate1 = find_data_within_element(xml_tree, tags_to_search_tax_rate1)
     xml_invoice_data.supplier = find_data_within_element(xml_supplier_data, tags_to_search_supplier)
+    # for BE
+    if not xml_invoice_data.supplier:
+        xml_invoice_data.supplier = find_data_within_element(xml_supplier_data, tags_to_search_supplier)
+
     xml_invoice_data.client = "1"
     xml_invoice_data.image_path = xml_invoice_data.barcode + ".pdf"
     xml_invoice_data.vin = find_data_within_element(xml_tree, tags_to_search_vin)
@@ -133,8 +135,13 @@ def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) ->
         if len(xml_invoice_data.iban) < 22:
             xml_invoice_data.iban = find_data_within_element(xml_supplier_data, tags_to_search_iban)
 
+    # 380 → "RE" (invoice)
+    # 381 → "GU" (credit note)
+    # 384 → "RE" (corrected invoice, still invoice)
     xml_invoice_data.kind_of_invoice = "RE" if find_data_within_element(xml_exchanged_document,
                                                                         tags_to_search_kind_of_invoice) == '380' else "GU"
+    xml_invoice_data.cost_center = find_data_within_element(xml_exchanged_document,
+                                                            tags_to_search_cost_center)
 
     xml_invoice_data.correct_data()
 
