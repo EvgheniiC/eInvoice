@@ -47,7 +47,7 @@ class TestXmlParserHeader(unittest.TestCase):
                                                                                                      "") if find_data_within_element_with_len(
             xml_supplier_data, tags_to_search_iban, 22) else None
 
-        self.assertEqual(None, iban)
+        self.assertEqual('DE24590501010074280249', iban)
 
     def test_find_data_find_data_within_element_with_len_IBAN(self):
         xml_test_header_kst = read_xml_file_to_str('xml_files/xml_test_header_kst.xml')

@@ -60,7 +60,8 @@
     "SpecifiedTradeProduct/Description",
     "SpecifiedTradeProduct/Name",
     "Item/Description",
-    "Item/Name"
+    "Item/Name",
+    "Note"
   ],
   "tags_to_search_tax_rate": [
     "SpecifiedLineTradeSettlement/ApplicableTradeTax/RateApplicablePercent",
@@ -99,6 +100,7 @@
   ],
   "tags_to_search_currency": [
     "./InvoiceCurrencyCode",
+    "./DocumentCurrencyCode",
     "./Invoice/DocumentCurrencyCode"
   ],
   "tags_to_search_invoice_amount": [
@@ -145,5 +147,8 @@
   ],
   "tags_to_search_cost_center": [
     "Invoice/AccountingCost"
+  ],
+  "tags_to_search_order_line_reference": [
+    "OrderLineReference/LineID"
   ]
 }

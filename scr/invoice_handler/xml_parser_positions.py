@@ -21,9 +21,14 @@ def get_xml_positions(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger)
     tags_to_search_quantity: list = get_tags_from_json('tags_to_search_quantity')
     tags_to_search_single_net_price: list = get_tags_from_json('tags_to_search_single_net_price')
     tags_to_search_total_net_price: list = get_tags_from_json('tags_to_search_total_net_price')
+    tags_to_search_order_line_reference: list = get_tags_from_json('tags_to_search_order_line_reference')
 
     if not xml_positions_data_zugpferd and not xml_positions_data:
         xml_positions_data: list = xml_tree.findall("./CreditNoteLine")
+
+    # for BE
+    if not xml_positions_data:
+        xml_positions_data: list = xml_tree.findall("./Invoice/InvoiceLine")
 
     # positions IncludedSupplyChainTradeLineItem for ZUGPFERD, InvoiceLine for xml
     for position in xml_positions_data_zugpferd.iter(
@@ -40,6 +45,7 @@ def get_xml_positions(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger)
             find_data_within_element(position, tags_to_search_single_net_price))
         total_net_price: float = string_to_float(
             find_data_within_element(position, tags_to_search_total_net_price))
+        order_pos_id = find_data_within_element(position, tags_to_search_order_line_reference)
 
         article_number: str = ""
         try:
@@ -53,7 +59,7 @@ def get_xml_positions(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger)
             XmlInvoicePosition(item_pos=item_position, position_text=description_text, quantity=quantity,
                                single_net_price=single_net_price, tax_rate=tax_rate,
                                total_net_price=total_net_price, invoice_id=xml_invoice_data.m_cn_id,
-                               article_number=article_number))
+                               article_number=article_number, order_pos_id=order_pos_id))
         item_position += 1
 
     # if not positions

@@ -88,7 +88,7 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_STRASSE_DELIVERY': None,
                           'S_KR_USTID': 'DE259922663'}
                          )
-        self.assertEqual(supplier, None)
+        self.assertEqual(supplier, '')
 
     # not zugpferd, only XML file
     def test_get_einvoice_client_data_not_zugpferd(self):
@@ -177,7 +177,6 @@ class TestClientParser(unittest.TestCase):
 
         self.assertEqual(supplier, None)
 
-
     def test_get_einvoice_85000159(self):
         m_cn_id = "7697763"
         clear_xml_from_gerd = read_xml_file_to_str('xml_files/85000159.xml')
@@ -198,6 +197,28 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_USTID': 'DE113527818'})
 
         self.assertEqual(supplier, None)
+
+    # HW_5648
+    def test_get_einvoice_HW_5648(self):
+        m_cn_id = "5209222"
+        clear_xml_from_gerd = read_xml_file_to_str('xml_files/xml_text_SAP_BE_HW_5648.xml')
+        clients_data, supplier = get_einvoice_vendor_data(m_cn_id=m_cn_id, xml_text=clear_xml_from_gerd, logger=Mock())
+        self.assertEqual(clients_data,
+                         {'M_CN_ID': '5209222',
+                          'S_KR_CLIENT_NAME': 'BuyerTradingName AS',
+                          'S_KR_CLIENT_NAME_DELIVERY': 'Delivery party Name',
+                          'S_KR_IBAN': None,
+                          'S_KR_LAND': 'GB',
+                          'S_KR_NAME1': 'SupplierTradingName Ltd.',
+                          'S_KR_ORT': 'London',
+                          'S_KR_ORT_DELIVERY': 'Stockholm',
+                          'S_KR_POSTLEITZAHL': 'GB 123 EW',
+                          'S_KR_POSTLEITZAHL_DELIVERY': '21234',
+                          'S_KR_STRASSE': 'Main street 1',
+                          'S_KR_STRASSE_DELIVERY': 'Delivery street 2',
+                          'S_KR_USTID': 'GB1232434'})
+
+        self.assertEqual(supplier, '99887766')
 
 
 if __name__ == '__main__':
