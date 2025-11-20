@@ -532,7 +532,7 @@ class TestXmlParserHeader(unittest.TestCase):
                           'M_IV_INVOICETYPE': 'EKS', 'M_IV_KREDITOR': '99887766', 'M_IV_MANDANT': '1',
                           'M_IV_CONTRACTID': None, 'M_IV_ORDERID': None, 'M_IV_IBAN': None,
                           'M_IV_KINDOFINVOICE': 'RE', 'M_IV_INVOICENUMBER': 'tickstarapbis3test01',
-                          'M_IV_COSTCENTER': '4025:123:4343', 'M_IV_DAMAGENUMBER': None,
+                          'M_IV_COSTCENTER': '', 'M_IV_DAMAGENUMBER': None,
                           'M_IV_INVOICEDATE': datetime(2023, 12, 19, 0, 0),
                           'M_IV_DELIVERYDATE': datetime(2023, 11, 1, 0, 0),
                           'M_IV_DELIVERYDATE_BIS': datetime(2032, 12, 31, 0, 0),
