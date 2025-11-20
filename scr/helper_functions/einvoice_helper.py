@@ -247,5 +247,7 @@ def is_zugpferd_pdf(file_path: str):
     return True if file_names else False
 
 # cost center can not be more than 4
-def check_cost_center(cost_center: str) -> str:
-    return '' if len(cost_center) > 4 else cost_center
+def check_cost_center(cost_center: str) -> str | None:
+    if cost_center:
+        return '' if len(cost_center) > 4 else cost_center
+    return None
