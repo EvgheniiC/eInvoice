@@ -2,7 +2,7 @@ from datetime import datetime
 import re
 from ..data_class import XmlInvoiceHeader
 from ..helper_functions import find_data_within_element, find_data_with_regex, get_xml_tree, \
-    find_data_within_element_with_len, get_tags_from_json
+    find_data_within_element_with_len, get_tags_from_json, check_cost_center
 from xml.etree.ElementTree import Element
 
 # extract xml data from pdf file
@@ -140,8 +140,8 @@ def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) ->
     # 384 → "RE" (corrected invoice, still invoice)
     xml_invoice_data.kind_of_invoice = "RE" if find_data_within_element(xml_exchanged_document,
                                                                         tags_to_search_kind_of_invoice) == '380' else "GU"
-    xml_invoice_data.cost_center = find_data_within_element(xml_exchanged_document,
-                                                            tags_to_search_cost_center)
+    xml_invoice_data.cost_center = check_cost_center(find_data_within_element(xml_exchanged_document,
+                                                            tags_to_search_cost_center))
 
     xml_invoice_data.correct_data()
 
