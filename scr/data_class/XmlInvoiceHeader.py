@@ -61,6 +61,7 @@ class XmlInvoiceHeader:
         receiver: The receiver of the invoice.
         contract_start: The start date of the associated contract.
         contract_end: The end date of the associated contract.
+        sixt_vat_id: client number for sixt, looks like DE223999470.
         trigger_highway: A flag to indicate highway-related processing triggers. Default is "0".
     """
 
@@ -107,7 +108,8 @@ class XmlInvoiceHeader:
                  trigger_highway: str = "0",
                  m_cn_mail_id=None,
                  email_name=None,
-                 license_number: str = None
+                 license_number: str = None,
+                 sixt_vat_id: str = None
                  ):
 
         self.m_cn_id = m_cn_id
@@ -153,6 +155,7 @@ class XmlInvoiceHeader:
         self.m_cn_mail_id = m_cn_mail_id
         self.email_name = email_name
         self.license_number = license_number
+        self.sixt_vat_id = sixt_vat_id
         self.__table = "CHRONOS_EINVOICE_HEADER"
         self.__table_pos = "CHRONOS_EINVOICE_POSITOINS"
         self.__positions = []
@@ -195,7 +198,8 @@ class XmlInvoiceHeader:
                 "TRIGGER_HIGHWAY": self.trigger_highway,
                 "M_CN_MAIL_ID": self.m_cn_mail_id,
                 "EMAIL_NAME": self.email_name,
-                "M_IV_LICENSE_NUMBER": self.license_number
+                "M_IV_LICENSE_NUMBER": self.license_number,
+                "M_IV_SIXT_VAT_ID": self.sixt_vat_id
                 }
 
     def get_xml_header_attributes_for_hw(self):
@@ -570,6 +574,14 @@ class XmlInvoiceHeader:
     @license_number.setter
     def license_number(self, value: str):
         self.__licence_number = value
+
+    @property
+    def sixt_vat_id(self):
+        return self.__sixt_vat_id
+
+    @sixt_vat_id.setter
+    def sixt_vat_id(self, value):
+        self.__sixt_vat_id = value
 
     def set_dates(self):
         """

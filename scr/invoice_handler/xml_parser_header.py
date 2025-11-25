@@ -5,6 +5,7 @@ from ..helper_functions import find_data_within_element, find_data_with_regex, g
     find_data_within_element_with_len, get_tags_from_json, check_cost_center
 from xml.etree.ElementTree import Element
 
+
 # extract xml data from pdf file
 # def zugpferd_extraction(m_cn_id: str, xml_text: str, db_helper, barcode: str):
 def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) -> XmlInvoiceHeader:
@@ -49,6 +50,7 @@ def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) ->
     tags_to_search_kind_of_invoice: list = get_tags_from_json('tags_to_search_kind_of_invoice')
     tags_to_search_vin: list = get_tags_from_json('tags_to_search_vin')
     tags_to_search_cost_center: list = get_tags_from_json('tags_to_search_cost_center')
+    tags_to_search_client_vat_id: list = get_tags_from_json('tags_to_search_client_vat_id')
 
     xml_invoice_data.invoice_number = find_data_within_element(xml_exchanged_document, tags_to_search_invoice_number)
 
@@ -120,6 +122,7 @@ def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) ->
     if not xml_invoice_data.supplier:
         xml_invoice_data.supplier = find_data_within_element(xml_supplier_data, tags_to_search_supplier)
 
+    xml_invoice_data.sixt_vat_id = find_data_within_element(xml_supplier_data, tags_to_search_client_vat_id)
     xml_invoice_data.client = "1"
     xml_invoice_data.image_path = xml_invoice_data.barcode + ".pdf"
     xml_invoice_data.vin = find_data_within_element(xml_tree, tags_to_search_vin)
@@ -141,7 +144,7 @@ def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) ->
     xml_invoice_data.kind_of_invoice = "RE" if find_data_within_element(xml_exchanged_document,
                                                                         tags_to_search_kind_of_invoice) == '380' else "GU"
     xml_invoice_data.cost_center = check_cost_center(find_data_within_element(xml_exchanged_document,
-                                                            tags_to_search_cost_center))
+                                                                              tags_to_search_cost_center))
 
     xml_invoice_data.correct_data()
 

@@ -9,6 +9,9 @@
     "./ApplicableHeaderTradeAgreement/BuyerTradeParty/Name",
     "./Invoice/AccountingCustomerParty/Party/PartyName/Name"
   ],
+    "tags_to_search_client_vat_id": [
+    "./AccountingCustomerParty/Party/PartyTaxScheme/CompanyID"
+  ],
   "tags_to_search_client_name_delivery": [
     "Delivery/DeliveryParty/PartyName/Name",
     "Invoice/Delivery/DeliveryParty/PartyName/Name"
