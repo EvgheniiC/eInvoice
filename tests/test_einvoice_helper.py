@@ -1,6 +1,6 @@
 import unittest
 from scr.helper_functions.einvoice_helper import string_to_float, find_data_with_regex, find_data_within_element, \
-    find_data_within_element_with_len, get_xml_tree, read_xml_file_to_str, is_zugpferd_pdf
+    find_data_within_element_with_len, get_xml_tree, read_xml_file_to_str, is_zugpferd_pdf, check_cost_center
 from xml.etree.ElementTree import Element
 import os
 
@@ -72,6 +72,16 @@ class TestXmlParserHeader(unittest.TestCase):
     def test_is_zugpferd_pdf_true_zugpferd(self):
         desired_directory_path = os.path.dirname(os.path.abspath(__file__)) + "/pdf_files/Rechnung_23XXXX233327.pdf"
         self.assertEqual(True, is_zugpferd_pdf(desired_directory_path))
+
+    def test_check_cost_center(self):
+        check_true = check_cost_center("1234")
+        self.assertEqual('1234', check_true)
+
+        check_None = check_cost_center(None)
+        self.assertEqual(None, check_None)
+
+        check_too_long= check_cost_center('1234567')
+        self.assertEqual(None, check_too_long)
 
 
 if __name__ == '__main__':

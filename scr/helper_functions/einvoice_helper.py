@@ -6,6 +6,7 @@ from typing import Union
 import os
 import json
 import PyPDF2
+from typing import Optional
 
 
 sys.path.append("../")
@@ -247,7 +248,32 @@ def is_zugpferd_pdf(file_path: str):
     return True if file_names else False
 
 # cost center can not be more than 4
-def check_cost_center(cost_center: str) -> str | None:
-    if cost_center:
-        return '' if len(cost_center) > 4 else cost_center
-    return None
+def check_cost_center(cost_center: Optional[str]) -> Optional[str]:
+    """
+    Validates a cost center string.
+
+    A valid cost center must:
+    - Not be None or empty
+    - Have a maximum length of 4 characters
+
+    Args:
+        cost_center (Optional[str]): The cost center string to validate.
+                                   Can be None, empty string, or any string.
+
+    Returns:
+        Optional[str]: The original cost_center if valid, None otherwise.
+                      Returns None if cost_center is None, empty, or longer than 4 characters.
+
+    Examples:
+        #>>> check_cost_center("1234")
+        '1234'
+        #>>> check_cost_center("12345")  # Too long
+        None
+        #>>> check_cost_center("")       # Empty
+        None
+        #>>> check_cost_center(None)     # None input
+        None
+    """
+    if not cost_center or len(cost_center) > 4:
+        return None
+    return cost_center
