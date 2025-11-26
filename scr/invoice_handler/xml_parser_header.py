@@ -123,7 +123,6 @@ def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) ->
         xml_invoice_data.supplier = find_data_within_element(xml_supplier_data, tags_to_search_supplier)
 
     xml_invoice_data.sixt_vat_id = find_data_within_element(xml_supplier_data, tags_to_search_client_vat_id)
-    xml_invoice_data.client = "1"
     xml_invoice_data.image_path = xml_invoice_data.barcode + ".pdf"
     xml_invoice_data.vin = find_data_within_element(xml_tree, tags_to_search_vin)
     # Vin number should be = 17
