@@ -10,6 +10,7 @@
     "./Invoice/AccountingCustomerParty/Party/PartyName/Name"
   ],
     "tags_to_search_client_vat_id": [
+    "./Invoice/AccountingCustomerParty/Party/PartyTaxScheme/CompanyID",
     "./AccountingCustomerParty/Party/PartyTaxScheme/CompanyID"
   ],
   "tags_to_search_client_name_delivery": [
