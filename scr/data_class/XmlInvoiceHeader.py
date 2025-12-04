@@ -199,7 +199,7 @@ class XmlInvoiceHeader:
                 "M_CN_MAIL_ID": self.m_cn_mail_id,
                 "EMAIL_NAME": self.email_name,
                 "M_IV_LICENSE_NUMBER": self.license_number,
-                "M_IV_SIXT_VAT_ID": self.sixt_vat_id
+                "SIXT_VAT_ID": self.sixt_vat_id
                 }
 
     def get_xml_header_attributes_for_hw(self):

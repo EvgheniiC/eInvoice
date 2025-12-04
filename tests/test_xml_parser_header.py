@@ -34,7 +34,7 @@ class TestXmlParserHeader(unittest.TestCase):
                           'M_IV_TAXAMOUNT4': None, 'M_IV_TAXRATE5': None, 'M_IV_TAXAMOUNT5': None,
                           'M_IV_CURRENCY': 'EUR', 'M_IV_VIN': None, 'M_IV_EMPFAENGER': None,
                           'M_IV_CONTRACT_START': None, 'M_IV_CONTRACT_END': None,
-                          'TRIGGER_HIGHWAY': '0', 'M_CN_MAIL_ID': None, 'EMAIL_NAME': None, 'M_IV_SIXT_VAT_ID': None}
+                          'TRIGGER_HIGHWAY': '0', 'M_CN_MAIL_ID': None, 'EMAIL_NAME': None, 'SIXT_VAT_ID': None}
                          )
 
     def test_get_xml_header_all_none(self):
@@ -60,7 +60,7 @@ class TestXmlParserHeader(unittest.TestCase):
                           'M_IV_TAXRATE4': None, 'M_IV_TAXAMOUNT4': None, 'M_IV_TAXRATE5': None,
                           'M_IV_TAXAMOUNT5': None, 'M_IV_CURRENCY': 'EUR', 'M_IV_VIN': None, 'M_IV_EMPFAENGER': None,
                           'M_IV_CONTRACT_START': None, 'M_IV_CONTRACT_END': None, 'TRIGGER_HIGHWAY': '0',
-                          'M_CN_MAIL_ID': None, 'EMAIL_NAME': None, 'M_IV_SIXT_VAT_ID': None}
+                          'M_CN_MAIL_ID': None, 'EMAIL_NAME': None, 'SIXT_VAT_ID': None}
 
                          )
 
@@ -87,7 +87,7 @@ class TestXmlParserHeader(unittest.TestCase):
                           'M_IV_TAXAMOUNT3': None, 'M_IV_TAXRATE4': None, 'M_IV_TAXAMOUNT4': None,
                           'M_IV_TAXRATE5': None, 'M_IV_TAXAMOUNT5': None, 'M_IV_CURRENCY': 'EUR', 'M_IV_VIN': None,
                           'M_IV_EMPFAENGER': None, 'M_IV_CONTRACT_START': None, 'M_IV_CONTRACT_END': None,
-                          'TRIGGER_HIGHWAY': '0', 'M_CN_MAIL_ID': None, 'EMAIL_NAME': None, 'M_IV_SIXT_VAT_ID': None}
+                          'TRIGGER_HIGHWAY': '0', 'M_CN_MAIL_ID': None, 'EMAIL_NAME': None, 'SIXT_VAT_ID': None}
                          )
 
     def test_get_xml_header_orderid_930(self):
@@ -113,7 +113,7 @@ class TestXmlParserHeader(unittest.TestCase):
                           'M_IV_TAXAMOUNT4': None, 'M_IV_TAXRATE5': None, 'M_IV_TAXAMOUNT5': None,
                           'M_IV_CURRENCY': 'EUR', 'M_IV_VIN': None, 'M_IV_EMPFAENGER': None,
                           'M_IV_CONTRACT_START': None, 'M_IV_CONTRACT_END': None, 'TRIGGER_HIGHWAY': '0',
-                          'M_CN_MAIL_ID': None, 'EMAIL_NAME': None, 'M_IV_SIXT_VAT_ID': None}
+                          'M_CN_MAIL_ID': None, 'EMAIL_NAME': None, 'SIXT_VAT_ID': None}
                          )
 
     def test_get_xml_header_orderid_false(self):
@@ -140,7 +140,7 @@ class TestXmlParserHeader(unittest.TestCase):
                           'M_IV_TAXAMOUNT4': None, 'M_IV_TAXRATE5': None, 'M_IV_TAXAMOUNT5': None,
                           'M_IV_CURRENCY': 'EUR', 'M_IV_VIN': None, 'M_IV_EMPFAENGER': None,
                           'M_IV_CONTRACT_START': None, 'M_IV_CONTRACT_END': None, 'TRIGGER_HIGHWAY': '0',
-                          'M_CN_MAIL_ID': None, 'EMAIL_NAME': None, 'M_IV_SIXT_VAT_ID': None}
+                          'M_CN_MAIL_ID': None, 'EMAIL_NAME': None, 'SIXT_VAT_ID': None}
 
                          )
 
@@ -192,7 +192,7 @@ class TestXmlParserHeader(unittest.TestCase):
                           'M_IV_TOTALAMOUNT': None,
                           'M_IV_TOTALTAXAMOUNT': None,
                           'M_IV_VIN': None,
-                          'TRIGGER_HIGHWAY': '0', 'M_IV_SIXT_VAT_ID': None}
+                          'TRIGGER_HIGHWAY': '0', 'SIXT_VAT_ID': None}
                          )
 
     # if we get only XML File (not from zugpferd)
@@ -246,7 +246,7 @@ class TestXmlParserHeader(unittest.TestCase):
                           'M_IV_TOTALAMOUNT': '57244.95',
                           'M_IV_TOTALTAXAMOUNT': '9139.95',
                           'M_IV_VIN': None,
-                          'TRIGGER_HIGHWAY': '0', 'M_IV_SIXT_VAT_ID': 'DE234567890'}
+                          'TRIGGER_HIGHWAY': '0', 'SIXT_VAT_ID': 'DE234567890'}
                          )
 
     # if we get XML File, but we don't have tags
@@ -300,7 +300,7 @@ class TestXmlParserHeader(unittest.TestCase):
                           'M_IV_TOTALAMOUNT': '312.71',
                           'M_IV_TOTALTAXAMOUNT': '49.93',
                           'M_IV_VIN': 'WVGZZZCSZPY011005',
-                          'TRIGGER_HIGHWAY': '0', 'M_IV_SIXT_VAT_ID': 'DE223999470'}
+                          'TRIGGER_HIGHWAY': '0', 'SIXT_VAT_ID': 'DE223999470'}
                          )
 
     def test_get_xml_header_from_xml_file_85018982(self):
@@ -353,7 +353,7 @@ class TestXmlParserHeader(unittest.TestCase):
                           'M_IV_TOTALAMOUNT': '45.52',
                           'M_IV_TOTALTAXAMOUNT': '7.27',
                           'M_IV_VIN': 'WAUZZZGH5SA015309',
-                          'TRIGGER_HIGHWAY': '0', 'M_IV_SIXT_VAT_ID': 'DE223999470'}
+                          'TRIGGER_HIGHWAY': '0', 'SIXT_VAT_ID': 'DE223999470'}
                          )
 
     def test_get_xml_header_from_xml_file_SWFM_5490(self):
@@ -406,7 +406,7 @@ class TestXmlParserHeader(unittest.TestCase):
                           'M_IV_TOTALAMOUNT': '116.17',
                           'M_IV_TOTALTAXAMOUNT': '18.55',
                           'M_IV_VIN': None,
-                          'TRIGGER_HIGHWAY': '0', 'M_IV_SIXT_VAT_ID': None}
+                          'TRIGGER_HIGHWAY': '0', 'SIXT_VAT_ID': None}
                          )
 
     def test_get_xml_header_from_xml_file_new_VIN(self):
@@ -459,7 +459,7 @@ class TestXmlParserHeader(unittest.TestCase):
                           'M_IV_TOTALAMOUNT': '2974.68',
                           'M_IV_TOTALTAXAMOUNT': '510.62',
                           'M_IV_VIN': 'WVGZZZC11SY078194',
-                          'TRIGGER_HIGHWAY': '0', 'M_IV_SIXT_VAT_ID': 'DE223999470'}
+                          'TRIGGER_HIGHWAY': '0', 'SIXT_VAT_ID': 'DE223999470'}
                          )
 
     # SWFM-5639
@@ -513,7 +513,7 @@ class TestXmlParserHeader(unittest.TestCase):
                           'M_IV_TOTALAMOUNT': '169.46',
                           'M_IV_TOTALTAXAMOUNT': '27.06',
                           'M_IV_VIN': None,
-                          'TRIGGER_HIGHWAY': '0', 'M_IV_SIXT_VAT_ID': None}
+                          'TRIGGER_HIGHWAY': '0', 'SIXT_VAT_ID': None}
                          )
 
     # HW-5648
@@ -554,7 +554,7 @@ class TestXmlParserHeader(unittest.TestCase):
                                  'M_IV_QUELLSYSTEM': 'eInvoice',
                                  'M_IV_RECEIPTDATE': None,
                                  'M_IV_SCANLOCATION': 'E-Mail',
-                                 'M_IV_SIXT_VAT_ID': 'SE4598375937',
+                                 'SIXT_VAT_ID': 'SE4598375937',
                                  'M_IV_TAXAMOUNT1': '1225',
                                  'M_IV_TAXAMOUNT2': None,
                                  'M_IV_TAXAMOUNT3': None,
@@ -609,7 +609,7 @@ class TestXmlParserHeader(unittest.TestCase):
                           'M_IV_QUELLSYSTEM': 'eInvoice',
                           'M_IV_RECEIPTDATE': None,
                           'M_IV_SCANLOCATION': 'E-Mail',
-                          'M_IV_SIXT_VAT_ID': 'BE0465341266',
+                          'SIXT_VAT_ID': 'BE0465341266',
                           'M_IV_TAXAMOUNT1': '1225',
                           'M_IV_TAXAMOUNT2': None,
                           'M_IV_TAXAMOUNT3': None,
