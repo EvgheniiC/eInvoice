@@ -1,5 +1,4 @@
-import re
-from ..data_class import XmlInvoiceHeader, XmlInvoiceEquipment, XmlInvoicePosition
+from ..data_class import XmlInvoiceHeader, XmlInvoiceEquipment
 from ..helper_functions import get_xml_tree, find_data_within_element, get_tags_from_json
 from xml.etree.ElementTree import Element
 from ..helper_functions.einvoice_helper import string_to_float
@@ -35,7 +34,6 @@ def get_xml_equipment(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger)
             XmlInvoiceEquipment(m_cn_header_id=xml_invoice_data.m_cn_id, pos_nummer=pos_nummer, pos_code=pos_code,
                                 pos_description=pos_description, pos_price=pos_price, pos_msrp_price=pos_msrp_price))
         pos_nummer += 1
-    print("xml_invoice_data = ", xml_invoice_data.get_xml_equipment_map())
 
     logger.info_log(f"Finish get_xml_header with m_cn_id = {xml_invoice_data.m_cn_id}")
 
