@@ -1,6 +1,5 @@
 import re
-from ..data_class import XmlInvoiceHeader
-from ..data_class import XmlInvoicePosition
+from ..data_class import XmlInvoiceHeader, XmlInvoicePosition
 from ..helper_functions import get_xml_tree, find_data_within_element, get_tags_from_json
 from xml.etree.ElementTree import Element
 from ..helper_functions.einvoice_helper import string_to_float

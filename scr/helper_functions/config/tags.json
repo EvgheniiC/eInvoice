@@ -9,7 +9,7 @@
     "./ApplicableHeaderTradeAgreement/BuyerTradeParty/Name",
     "./Invoice/AccountingCustomerParty/Party/PartyName/Name"
   ],
-    "tags_to_search_client_vat_id": [
+  "tags_to_search_client_vat_id": [
     "./Invoice/AccountingCustomerParty/Party/PartyTaxScheme/CompanyID",
     "./AccountingCustomerParty/Party/PartyTaxScheme/CompanyID"
   ],
@@ -46,8 +46,8 @@
     "./Invoice/AccountingSupplierParty/Party/PostalAddress/CityName"
   ],
   "tags_to_search_city_name_delivery": [
-     "Delivery/DeliveryLocation/Address/CityName",
-     "Invoice/Delivery/DeliveryLocation/Address/CityName"
+    "Delivery/DeliveryLocation/Address/CityName",
+    "Invoice/Delivery/DeliveryLocation/Address/CityName"
   ],
   "tags_to_search_country": [
     "./ApplicableHeaderTradeAgreement/SellerTradeParty/PostalTradeAddress/CountryID",
@@ -128,7 +128,7 @@
   ],
   "tags_to_search_supplier": [
     "./ApplicableHeaderTradeAgreement/SellerTradeParty/ID",
-   "./Invoice/AccountingSupplierParty/Party/PartyIdentification/ID"
+    "./Invoice/AccountingSupplierParty/Party/PartyIdentification/ID"
   ],
   "tags_to_search_tax_amount1": [
     "./SupplyChainTradeTransaction/ApplicableHeaderTradeSettlement/ApplicableTradeTax/CalculatedAmount",
@@ -154,5 +154,14 @@
   ],
   "tags_to_search_order_line_reference": [
     "OrderLineReference/LineID"
+  ],
+  "tags_to_search_pos_code": [
+    "Item/SellersItemIdentification/ID"
+  ],
+  "tags_to_search_pos_price": [
+    "Price/PriceAmount"
+  ],
+  "tags_to_search_pos_msrp_price": [
+    "Price/PriceAmount"
   ]
 }

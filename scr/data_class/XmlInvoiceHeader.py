@@ -4,7 +4,9 @@ from datetime import datetime
 import sys
 
 sys.path.append('../..')
-from scr.data_class.XmlInvoicePosition import XmlInvoicePosition
+# from scr.data_class.XmlInvoicePosition import XmlInvoicePosition
+from .XmlInvoicePosition import XmlInvoicePosition
+from .XmlInvoiceEquipment import XmlInvoiceEquipment
 import re
 
 
@@ -159,6 +161,7 @@ class XmlInvoiceHeader:
         self.__table = "CHRONOS_EINVOICE_HEADER"
         self.__table_pos = "CHRONOS_EINVOICE_POSITOINS"
         self.__positions = []
+        self.__equipment = []
 
     def get_xml_header_attributes(self):
         return {"M_CN_ID": self.m_cn_id,
@@ -631,6 +634,16 @@ class XmlInvoiceHeader:
         XmlInvoicePosition.m_cn_id = self.m_cn_id
         self.__positions.append(position)
 
+    def add_position_equipment(self, equipment: XmlInvoiceEquipment):
+        """
+        Adds new equipment to the equipment List
+
+        :param equipment: equipment
+        :type equipment: XmlInvoiceEquipment
+        """
+        XmlInvoiceEquipment.m_cn_header_id = self.m_cn_id
+        self.__equipment.append(equipment)
+
     def get_xml_postions_map(self):
         """
         Return all positions in a List
@@ -639,3 +652,12 @@ class XmlInvoiceHeader:
         :rtype: [InvoicePosition]
         """
         return [position.get_xml_positions_attributes() for position in self.__positions]
+
+    def get_xml_equipment_map(self):
+        """
+        Return all positions in a List
+
+        :return: List of positionsDict (i.e. [{M_IP_ID : 1 }, {M_IP_ID : 2}]
+        :rtype: [InvoicePosition]
+        """
+        return [equipment.get_xml_equipment_attributes() for equipment in self.__equipment]

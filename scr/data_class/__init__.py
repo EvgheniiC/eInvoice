@@ -1,2 +1,3 @@
 from .XmlInvoiceHeader import XmlInvoiceHeader
 from .XmlInvoicePosition import XmlInvoicePosition
+from  .XmlInvoiceEquipment import XmlInvoiceEquipment

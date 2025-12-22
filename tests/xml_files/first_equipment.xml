@@ -1,0 +1,2036 @@
+<?xml version="1.0" encoding="utf-8"?>
+<StandardBusinessDocument xmlns="http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:array="http://www.w3.org/2005/xpath-functions/array" xmlns:map="http://www.w3.org/2005/xpath-functions/map" xmlns:math="http://www.w3.org/2005/xpath-functions/math" xmlns:var="variables">
+  <StandardBusinessDocumentHeader>
+    <HeaderVersion>1.0</HeaderVersion>
+    <Sender>
+      <Identifier Authority="iso6523-actorid-upis">9925:BE0413533863</Identifier>
+    </Sender>
+    <Receiver>
+      <Identifier Authority="iso6523-actorid-upis">0208:0465341266</Identifier>
+    </Receiver>
+    <DocumentIdentification>
+      <Standard>urn:oasis:names:specification:ubl:schema:xsd:Invoice-2</Standard>
+      <TypeVersion>2.1</TypeVersion>
+      <InstanceIdentifier>443D6AFF-DF35-4746-8668-FE5357B47340</InstanceIdentifier>
+      <Type>Invoice</Type>
+      <CreationDateAndTime>2025-12-05T01:18:36.1803352Z</CreationDateAndTime>
+    </DocumentIdentification>
+    <BusinessScope>
+      <Scope>
+        <Type>DOCUMENTID</Type>
+        <InstanceIdentifier>urn:oasis:names:specification:ubl:schema:xsd:Invoice-2::Invoice##urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0::2.1</InstanceIdentifier>
+      </Scope>
+      <Scope>
+        <Type>PROCESSID</Type>
+        <InstanceIdentifier>urn:fdc:peppol.eu:2017:poacc:billing:01:1.0</InstanceIdentifier>
+      </Scope>
+      <Scope>
+        <Type>COUNTRY_C1</Type>
+        <InstanceIdentifier>BE</InstanceIdentifier>
+      </Scope>
+    </BusinessScope>
+  </StandardBusinessDocumentHeader>
+  <Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:ext="urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2">
+    <cbc:UBLVersionID>2.1</cbc:UBLVersionID>
+    <cbc:CustomizationID>urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0</cbc:CustomizationID>
+    <cbc:ProfileID>urn:fdc:peppol.eu:2017:poacc:billing:01:1.0</cbc:ProfileID>
+    <cbc:ID>0141778069</cbc:ID>
+    <cbc:IssueDate>2025-12-04</cbc:IssueDate>
+    <cbc:DueDate>2026-02-02</cbc:DueDate>
+    <cbc:InvoiceTypeCode>380</cbc:InvoiceTypeCode>
+    <cbc:DocumentCurrencyCode>EUR</cbc:DocumentCurrencyCode>
+    <cbc:BuyerReference>0141778069</cbc:BuyerReference>
+    <cac:AccountingSupplierParty>
+      <cac:Party>
+        <cbc:EndpointID schemeID="9925">BE0413533863</cbc:EndpointID>
+        <cac:PartyIdentification>
+          <cbc:ID>E9</cbc:ID>
+        </cac:PartyIdentification>
+        <cac:PartyName>
+          <cbc:Name>BMW Belgium Luxembourg N.</cbc:Name>
+        </cac:PartyName>
+        <cac:PostalAddress>
+          <cbc:StreetName>Lodderstraat16</cbc:StreetName>
+          <cbc:CityName>Bornem</cbc:CityName>
+          <cbc:PostalZone>2880</cbc:PostalZone>
+          <cac:Country>
+            <cbc:IdentificationCode>BE</cbc:IdentificationCode>
+          </cac:Country>
+        </cac:PostalAddress>
+        <cac:PartyTaxScheme>
+          <cbc:CompanyID>BE0413533863</cbc:CompanyID>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:PartyTaxScheme>
+        <cac:PartyLegalEntity>
+          <cbc:RegistrationName>BMW Belgium Luxembourg N.</cbc:RegistrationName>
+          <cbc:CompanyID>BE0413533863</cbc:CompanyID>
+        </cac:PartyLegalEntity>
+      </cac:Party>
+    </cac:AccountingSupplierParty>
+    <cac:AccountingCustomerParty>
+      <cac:Party>
+        <cbc:EndpointID schemeID="0208">0465341266</cbc:EndpointID>
+        <cac:PartyIdentification>
+          <cbc:ID>0003017620</cbc:ID>
+        </cac:PartyIdentification>
+        <cac:PartyName>
+          <cbc:Name>SIXT BELGIUM BV accountspayable.bnl@sixt.com</cbc:Name>
+        </cac:PartyName>
+        <cac:PostalAddress>
+          <cbc:StreetName>Kouterveldstraat 6 C</cbc:StreetName>
+          <cbc:CityName>Machelen</cbc:CityName>
+          <cbc:PostalZone>1831</cbc:PostalZone>
+          <cac:Country>
+            <cbc:IdentificationCode>BE</cbc:IdentificationCode>
+          </cac:Country>
+        </cac:PostalAddress>
+        <cac:PartyTaxScheme>
+          <cbc:CompanyID>BE0465341266</cbc:CompanyID>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:PartyTaxScheme>
+        <cac:PartyLegalEntity>
+          <cbc:RegistrationName>SIXT BELGIUM BV accountspayable.bnl@sixt.com</cbc:RegistrationName>
+          <cbc:CompanyID>BE0465341266</cbc:CompanyID>
+        </cac:PartyLegalEntity>
+      </cac:Party>
+    </cac:AccountingCustomerParty>
+    <cac:Delivery>
+      <cac:DeliveryLocation>
+        <cac:Address>
+          <cbc:StreetName>Kouterveldstraat 6 C</cbc:StreetName>
+          <cbc:CityName>Machelen</cbc:CityName>
+          <cbc:PostalZone>1831</cbc:PostalZone>
+          <cac:Country>
+            <cbc:IdentificationCode>BE</cbc:IdentificationCode>
+          </cac:Country>
+        </cac:Address>
+      </cac:DeliveryLocation>
+    </cac:Delivery>
+    <cac:PaymentMeans>
+      <cbc:PaymentMeansCode>30</cbc:PaymentMeansCode>
+      <cac:PayeeFinancialAccount>
+        <cbc:ID>BE41826000426110</cbc:ID>
+        <cbc:Name>BMW Belgium Luxembourg N.</cbc:Name>
+        <cac:FinancialInstitutionBranch>
+          <cbc:ID>GEBABEBBXXX</cbc:ID>
+          <cac:FinancialInstitution>
+            <cbc:Name>Deutsche Bank</cbc:Name>
+          </cac:FinancialInstitution>
+        </cac:FinancialInstitutionBranch>
+      </cac:PayeeFinancialAccount>
+    </cac:PaymentMeans>
+    <cac:PaymentMeans>
+      <cbc:PaymentMeansCode>30</cbc:PaymentMeansCode>
+      <cac:PayeeFinancialAccount>
+        <cbc:ID>826000426110</cbc:ID>
+        <cbc:Name>BMW Belgium Luxembourg N.</cbc:Name>
+        <cac:FinancialInstitutionBranch>
+          <cbc:ID>GEBABEBBXXX</cbc:ID>
+          <cac:FinancialInstitution>
+            <cbc:Name>Deutsche Bank</cbc:Name>
+          </cac:FinancialInstitution>
+        </cac:FinancialInstitutionBranch>
+      </cac:PayeeFinancialAccount>
+    </cac:PaymentMeans>
+    <cac:TaxTotal>
+      <cbc:TaxAmount currencyID="EUR">13699.07</cbc:TaxAmount>
+      <cac:TaxSubtotal>
+        <cbc:TaxableAmount currencyID="EUR">65233.66</cbc:TaxableAmount>
+        <cbc:TaxAmount currencyID="EUR">13699.07</cbc:TaxAmount>
+        <cac:TaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:TaxCategory>
+      </cac:TaxSubtotal>
+    </cac:TaxTotal>
+    <cac:LegalMonetaryTotal>
+      <cbc:LineExtensionAmount currencyID="EUR">65233.66</cbc:LineExtensionAmount>
+      <cbc:TaxExclusiveAmount currencyID="EUR">65233.66</cbc:TaxExclusiveAmount>
+      <cbc:TaxInclusiveAmount currencyID="EUR">78932.73</cbc:TaxInclusiveAmount>
+      <cbc:PayableAmount currencyID="EUR">78932.73</cbc:PayableAmount>
+    </cac:LegalMonetaryTotal>
+    <cac:InvoiceLine>
+      <cbc:ID>1</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">51919.62</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>1</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>i5 eDrive40 Touring</cbc:Description>
+        <cbc:Name>i5 eDrive40 Touring</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>71HH</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">51919.62</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>2</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">933.88</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>2</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Saphirschwarz</cbc:Description>
+        <cbc:Name>Saphirschwarz</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1L0475</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">933.88</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>3</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>3</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Binnenbekleding Veganza geperforeerd met</cbc:Description>
+        <cbc:Name>Binnenbekleding Veganza geperforeerd met</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1PKSSW</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>4</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>4</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Versie EU</cbc:Description>
+        <cbc:Name>Versie EU</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S0230</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>5</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">256.20</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>5</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Verwarmd stuurwiel</cbc:Description>
+        <cbc:Name>Verwarmd stuurwiel</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S0248</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">256.20</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>6</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>6</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Antidiefstalbouten</cbc:Description>
+        <cbc:Name>Antidiefstalbouten</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S02PA</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>7</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>7</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Weergave bandendruk</cbc:Description>
+        <cbc:Name>Weergave bandendruk</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S02VB</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>8</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>8</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Bandenherstelkit</cbc:Description>
+        <cbc:Name>Bandenherstelkit</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S02VC</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>9</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>9</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Alarmsysteem</cbc:Description>
+        <cbc:Name>Alarmsysteem</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S0302</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>10</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>10</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Comforttoegang</cbc:Description>
+        <cbc:Name>Comforttoegang</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S0322</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>11</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">2892.56</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>11</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>M Sportpakket</cbc:Description>
+        <cbc:Name>M Sportpakket</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S0337</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">2892.56</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>12</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">1421.49</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>12</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>M Sport Pack Pro</cbc:Description>
+        <cbc:Name>M Sport Pack Pro</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S033B</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">1421.49</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>13</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>13</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>BMW Iconic Glow Exterieur Pack</cbc:Description>
+        <cbc:Name>BMW Iconic Glow Exterieur Pack</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S03DP</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>14</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>14</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>M Sport remmen, rot</cbc:Description>
+        <cbc:Name>M Sport remmen, rot</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S03M2</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>15</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>15</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>M Lights Shadow Line</cbc:Description>
+        <cbc:Name>M Lights Shadow Line</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S03MF</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>16</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">1371.90</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>16</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Panoramisch doorschijnend dak</cbc:Description>
+        <cbc:Name>Panoramisch doorschijnend dak</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S0402</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">1371.90</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>17</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">487.60</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>17</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Zonnewerend glas achteraan</cbc:Description>
+        <cbc:Name>Zonnewerend glas achteraan</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S0420</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">487.60</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>18</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>18</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Gevarendriehoek en verbandkist</cbc:Description>
+        <cbc:Name>Gevarendriehoek en verbandkist</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S0428</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>19</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>19</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>M Decoratieve lijsten in Aluminium Rhomb</cbc:Description>
+        <cbc:Name>M Decoratieve lijsten in Aluminium Rhomb</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S043R</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>20</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>20</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Actieve zetelventilatie vooraan</cbc:Description>
+        <cbc:Name>Actieve zetelventilatie vooraan</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S0453</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>21</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>21</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Elektrische regeling voorzetels met gehe</cbc:Description>
+        <cbc:Name>Elektrische regeling voorzetels met gehe</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S0459</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>22</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>22</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Lendensteun vooraan</cbc:Description>
+        <cbc:Name>Lendensteun vooraan</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S0488</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>23</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>23</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Travel &amp; Comfort System</cbc:Description>
+        <cbc:Name>Travel &amp; Comfort System</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S04FL</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>24</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>24</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>M veiligheidsgordels</cbc:Description>
+        <cbc:Name>M veiligheidsgordels</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S04GQ</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>25</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>25</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Verwarmde zetels vooraan en achteraan</cbc:Description>
+        <cbc:Name>Verwarmde zetels vooraan en achteraan</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S04HA</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>26</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>26</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Elektronisch gestuurde airconditioning,4</cbc:Description>
+        <cbc:Name>Elektronisch gestuurde airconditioning,4</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S04NB</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>27</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>27</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Interieurcamera</cbc:Description>
+        <cbc:Name>Interieurcamera</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S04NR</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>28</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>28</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Snellaadkabel tot 22kW (Mode 3)</cbc:Description>
+        <cbc:Name>Snellaadkabel tot 22kW (Mode 3)</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S04T2</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>29</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>29</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Akoestische voetgangersbescherming</cbc:Description>
+        <cbc:Name>Akoestische voetgangersbescherming</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S04U9</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>30</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>30</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Sfeerverlichting</cbc:Description>
+        <cbc:Name>Sfeerverlichting</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S04UR</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>31</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>31</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>BMW IconicSounds Electric</cbc:Description>
+        <cbc:Name>BMW IconicSounds Electric</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S04V1</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>32</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>32</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Kilometertacho</cbc:Description>
+        <cbc:Name>Kilometertacho</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S0548</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>33</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>33</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Adaptive LED headlights</cbc:Description>
+        <cbc:Name>Adaptive LED headlights</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S0552</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>34</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>34</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Driving Assistant Pack</cbc:Description>
+        <cbc:Name>Driving Assistant Pack</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S05AS</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>35</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">950.41</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>35</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Driving Assistant Pack Plus</cbc:Description>
+        <cbc:Name>Driving Assistant Pack Plus</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S05AT</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">950.41</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>36</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>36</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Active Guard</cbc:Description>
+        <cbc:Name>Active Guard</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S05AV</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>37</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>37</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Parking Assistant Pack Plus</cbc:Description>
+        <cbc:Name>Parking Assistant Pack Plus</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S05DN</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>38</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>38</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>DAB-Tuner</cbc:Description>
+        <cbc:Name>DAB-Tuner</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S0654</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>39</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>39</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Harman-Kardon sound system</cbc:Description>
+        <cbc:Name>Harman-Kardon sound system</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S0674</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>40</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>40</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>BMW Teleservices</cbc:Description>
+        <cbc:Name>BMW Teleservices</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S06AE</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>41</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>41</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Intelligent Emergency Call - eCall</cbc:Description>
+        <cbc:Name>Intelligent Emergency Call - eCall</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S06AF</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>42</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>42</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>ConnectedDrive Services</cbc:Description>
+        <cbc:Name>ConnectedDrive Services</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S06AK</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>43</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>43</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>ConnectedPackage Professional</cbc:Description>
+        <cbc:Name>ConnectedPackage Professional</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S06C4</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>44</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>44</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Opbergvak voor Wireless Charging</cbc:Description>
+        <cbc:Name>Opbergvak voor Wireless Charging</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S06NX</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>45</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>45</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Personal eSIM</cbc:Description>
+        <cbc:Name>Personal eSIM</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S06PA</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>46</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>46</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>BMW Live Cockpit Navigation Professional</cbc:Description>
+        <cbc:Name>BMW Live Cockpit Navigation Professional</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S06U3</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>47</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>47</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>BMW Natural Interaction</cbc:Description>
+        <cbc:Name>BMW Natural Interaction</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S06U7</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>48</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>48</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>M sportophanging</cbc:Description>
+        <cbc:Name>M sportophanging</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S0704</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>49</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>49</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>M sportstuur</cbc:Description>
+        <cbc:Name>M sportstuur</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S0710</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>50</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>50</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>M Shadow Line hochgl{nzend</cbc:Description>
+        <cbc:Name>M Shadow Line hochgl{nzend</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S0760</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>51</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>51</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>M Hemelbekleding Anthrazit</cbc:Description>
+        <cbc:Name>M Hemelbekleding Anthrazit</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S0775</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>52</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>52</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Garantie 3 jaar, zonder kilometerbeperki</cbc:Description>
+        <cbc:Name>Garantie 3 jaar, zonder kilometerbeperki</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S07CG</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>53</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">1797.52</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>53</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Professional Pack</cbc:Description>
+        <cbc:Name>Professional Pack</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S07EW</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">1797.52</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>54</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">888.43</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>54</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Advantage Plus Pack</cbc:Description>
+        <cbc:Name>Advantage Plus Pack</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S07LK</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">888.43</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>55</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>55</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>M Shadow Line hochgl{nzend met bijkomend</cbc:Description>
+        <cbc:Name>M Shadow Line hochgl{nzend met bijkomend</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S07M9</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>56</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">2314.05</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>56</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Comfort Pack</cbc:Description>
+        <cbc:Name>Comfort Pack</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S07VB</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">2314.05</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>57</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>57</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Spraakversie Duits</cbc:Description>
+        <cbc:Name>Spraakversie Duits</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S0851</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>58</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>58</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Handleiding Nederlands</cbc:Description>
+        <cbc:Name>Handleiding Nederlands</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S0886</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>59</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>59</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Interne code</cbc:Description>
+        <cbc:Name>Interne code</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S08R3</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>60</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>60</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Koelmiddel</cbc:Description>
+        <cbc:Name>Koelmiddel</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S08R9</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>61</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>61</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Actieve voetgangersbescherming</cbc:Description>
+        <cbc:Name>Actieve voetgangersbescherming</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S08TF</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>62</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>62</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Interne code</cbc:Description>
+        <cbc:Name>Interne code</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S08WC</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>63</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>63</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Interne code</cbc:Description>
+        <cbc:Name>Interne code</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S08WN</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>64</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>64</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Winterbanden i.p.v. zomerbanden</cbc:Description>
+        <cbc:Name>Winterbanden i.p.v. zomerbanden</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S0931</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>65</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>65</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Specifieke exterieur elementen M Sport</cbc:Description>
+        <cbc:Name>Specifieke exterieur elementen M Sport</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S09T1</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>66</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>66</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Specifieke interieur elementen M Sport</cbc:Description>
+        <cbc:Name>Specifieke interieur elementen M Sport</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S09T2</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+      <cbc:ID>67</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">0.00</cbc:LineExtensionAmount>
+      <cac:OrderLineReference>
+        <cbc:LineID>67</cbc:LineID>
+        <cac:OrderReference>
+          <cbc:ID>0233776475</cbc:ID>
+        </cac:OrderReference>
+      </cac:OrderLineReference>
+      <cac:Item>
+        <cbc:Description>Specifieke bijkomende elementen M SportP</cbc:Description>
+        <cbc:Name>Specifieke bijkomende elementen M SportP</cbc:Name>
+        <cac:SellersItemIdentification>
+          <cbc:ID>1S09TB</cbc:ID>
+        </cac:SellersItemIdentification>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>21.0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID>VAT</cbc:ID>
+          </cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="EUR">0.00</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+  </Invoice>
+</StandardBusinessDocument>
