@@ -12,7 +12,8 @@ def get_xml_equipment(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger)
     xml_tree: Element = get_xml_tree(xml_text)
     # some XML invoices have a tag InvoiceLine for equipment
     xml_equipment_data: list = xml_tree.findall("./InvoiceLine")
-    pos_nummer: int = 1
+    # pos = 0 is always model and prise
+    pos_nummer: int = 0
     tags_to_search_description: list = get_tags_from_json('tags_to_search_description')
     tags_to_search_pos_code: list = get_tags_from_json('tags_to_search_pos_code')
     tags_to_search_pos_price: list = get_tags_from_json('tags_to_search_pos_price')
