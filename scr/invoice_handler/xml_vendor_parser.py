@@ -48,6 +48,12 @@ def get_einvoice_vendor_data(m_cn_id: str, xml_text: str, logger) -> (dict, str)
     }
     vendor: str = find_data_within_element(xml_vendor_data, tags_to_search_supplier)
 
+    # sometimes len(IBAN) = 16(for client 35)
+    if not clients_data["S_KR_IBAN"]:
+        clients_data["S_KR_IBAN"] = find_data_within_element_with_len(xml_vendor_data, tags_to_search_iban, 16).replace(" ",
+                                                                                                                        "") if find_data_within_element_with_len(
+            xml_vendor_data, tags_to_search_iban, 16) else None
+
     if vendor:
         # sometimes write client supplier number not correctly
         if len(vendor) != 8 and vendor.startswith(r"8|9\d{7}") != 'False':

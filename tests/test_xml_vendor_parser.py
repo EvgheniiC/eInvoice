@@ -220,6 +220,27 @@ class TestClientParser(unittest.TestCase):
 
         self.assertEqual(supplier, '99887766')
 
+    def test_get_einvoice_sap(self):
+        m_cn_id = "5209222"
+        clear_xml_from_gerd = read_xml_file_to_str('xml_files/first_sap.xml')
+        clients_data, supplier = get_einvoice_vendor_data(m_cn_id=m_cn_id, xml_text=clear_xml_from_gerd, logger=Mock())
+        self.assertEqual(clients_data,
+                         {'M_CN_ID': '5209222',
+                          'S_KR_CLIENT_NAME': 'BV SIXT BELGIUM',
+                          'S_KR_CLIENT_NAME_DELIVERY': None,
+                          'S_KR_IBAN': 'BE64734003185952',
+                          'S_KR_LAND': 'BE',
+                          'S_KR_NAME1': 'SOCIAAL SECRETARIAAT VZW',
+                          'S_KR_ORT': 'MACHELEN',
+                          'S_KR_ORT_DELIVERY': None,
+                          'S_KR_POSTLEITZAHL': '1831',
+                          'S_KR_POSTLEITZAHL_DELIVERY': None,
+                          'S_KR_STRASSE': 'KOUTERVELDSTRAAT 6/C',
+                          'S_KR_STRASSE_DELIVERY': None,
+                          'S_KR_USTID': 'BE0473329910'})
+
+        self.assertEqual(supplier, None)
+
 
 if __name__ == '__main__':
     unittest.main()

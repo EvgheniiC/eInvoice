@@ -137,6 +137,12 @@ def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) ->
         if len(xml_invoice_data.iban) < 22:
             xml_invoice_data.iban = find_data_within_element(xml_supplier_data, tags_to_search_iban)
 
+    # sometimes len(IBAN) = 16(for client 35)
+    if not xml_invoice_data.iban:
+        xml_invoice_data.iban = find_data_within_element_with_len(xml_supplier_data, tags_to_search_iban, 16).replace(
+            " ",
+            "") if find_data_within_element_with_len(xml_supplier_data, tags_to_search_iban, 16) else None
+
     # 380 → "RE" (invoice)
     # 381 → "GU" (credit note)
     # 384 → "RE" (corrected invoice, still invoice)
