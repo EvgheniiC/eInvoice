@@ -84,8 +84,8 @@ def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) ->
             xml_invoice_data.delivery_date_till = datetime.strptime(
                 find_data_within_element(xml_invoice_head, tags_to_search_delivery_date_till), '%Y-%m-%d')
         except Exception as e:
-            print(f"Delivery date bis was not found {e}")
-            logger.error_log(f"Delivery date bis was not found {e}")
+            print(f"delivery_date_till bis was not found {e}")
+            logger.error_log(f"delivery_date_till bis was not found {e}")
 
     xml_invoice_data.currency = find_data_within_element(xml_invoice_head,
                                                          tags_to_search_currency) if not find_data_within_element(

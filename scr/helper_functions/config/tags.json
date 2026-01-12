@@ -95,12 +95,14 @@
   "tags_to_search_delivery_date": [
     "./BillingSpecifiedPeriod/StartDateTime/DateTimeString",
     "./InvoicePeriod/StartDate",
-    "./Invoice/InvoicePeriod/StartDate"
+    "./Invoice/InvoicePeriod/StartDate",
+    "./Delivery/ActualDeliveryDate"
   ],
   "tags_to_search_delivery_date_till": [
     "./BillingSpecifiedPeriod/EndDateTime/DateTimeString",
     "./InvoicePeriod/EndDate",
-    "./Invoice/InvoicePeriod/EndDate"
+    "./Invoice/InvoicePeriod/EndDate",
+    "./Delivery/ActualDeliveryDate"
   ],
   "tags_to_search_currency": [
     "./InvoiceCurrencyCode",
