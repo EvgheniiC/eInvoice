@@ -679,6 +679,61 @@ class TestXmlParserHeader(unittest.TestCase):
                           'TRIGGER_HIGHWAY': '0'}
                          )
 
+    # HW-5823
+    def test_get_gu(self):
+        m_cn_id = "7952984"
+        barcode = "14961075"
+        xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id, barcode=barcode)
+        xml_text = read_xml_file_to_str('xml_files/GU.xml')
+        xml_invoice_data = get_xml_header(xml_text=xml_text,
+                                          xml_invoice_data=xml_invoice_header, logger=Mock())
+        self.assertEqual(xml_invoice_data.get_xml_header_attributes(),
+                         {'EMAIL_NAME': None,
+                          'HIGHWAY_ZEITSTEMPEL': None,
+                          'M_CN_ID': '7952984',
+                          'M_CN_MAIL_ID': None,
+                          'M_IV_BARCODE': '14961075',
+                          'M_IV_CONTRACTID': None,
+                          'M_IV_CONTRACT_END': None,
+                          'M_IV_CONTRACT_START': None,
+                          'M_IV_COSTCENTER': None,
+                          'M_IV_CURRENCY': 'EUR',
+                          'M_IV_DAMAGENUMBER': None,
+                          'M_IV_DELIVERYDATE': datetime(2026, 1, 6, 0, 0),
+                          'M_IV_DELIVERYDATE_BIS': datetime(2026, 1, 6, 0, 0),
+                          'M_IV_EMPFAENGER': None,
+                          'M_IV_IBAN': 'BE36733023702281',
+                          'M_IV_IMAGEPATH': '14961075.pdf',
+                          'M_IV_INVOICEAMOUNT': '-66.14',
+                          'M_IV_INVOICEDATE': datetime(2026, 1, 6, 0, 0),
+                          'M_IV_INVOICENUMBER': '3557959',
+                          'M_IV_INVOICETYPE': 'EKS',
+                          'M_IV_KINDOFINVOICE': 'GU',
+                          'M_IV_KREDITOR': None,
+                          'M_IV_LICENSE_NUMBER': None,
+                          'M_IV_MAIL_SUBJECT': None,
+                          'M_IV_MANDANT': None,
+                          'M_IV_ORDERID': '9600511022',
+                          'M_IV_QUELLSYSTEM': 'eInvoice',
+                          'M_IV_RECEIPTDATE': None,
+                          'M_IV_SCANLOCATION': 'E-Mail',
+                          'M_IV_TAXAMOUNT1': '-13.89',
+                          'M_IV_TAXAMOUNT2': None,
+                          'M_IV_TAXAMOUNT3': None,
+                          'M_IV_TAXAMOUNT4': None,
+                          'M_IV_TAXAMOUNT5': None,
+                          'M_IV_TAXRATE1': '21',
+                          'M_IV_TAXRATE2': None,
+                          'M_IV_TAXRATE3': None,
+                          'M_IV_TAXRATE4': None,
+                          'M_IV_TAXRATE5': None,
+                          'M_IV_TOTALAMOUNT': '-80.03',
+                          'M_IV_TOTALTAXAMOUNT': '-13.89',
+                          'M_IV_VIN': None,
+                          'SIXT_VAT_ID': 'BE0465341266',
+                          'TRIGGER_HIGHWAY': '0'}
+                         )
+
     # HW - 5794
     def test_get_delivery_date(self):
         m_cn_id = "7952945"
