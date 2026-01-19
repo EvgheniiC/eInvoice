@@ -2,7 +2,7 @@ from datetime import datetime
 import re
 from ..data_class import XmlInvoiceHeader
 from ..helper_functions import find_data_within_element, find_data_with_regex, get_xml_tree, \
-    find_data_within_element_with_len, get_tags_from_json, check_cost_center
+    find_data_within_element_with_len, get_tags_from_json, check_cost_center, find_tax_data
 from xml.etree.ElementTree import Element
 
 
@@ -114,9 +114,20 @@ def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) ->
     xml_invoice_data.total_amount = find_data_within_element(xml_invoice_head_money, tags_to_search_total_amount)
     xml_invoice_data.total_tax_amount = find_data_within_element(xml_invoice_head_money,
                                                                  tags_to_search_total_tax_amount)
-    xml_invoice_data.tax_amount1 = find_data_within_element(xml_tree, tags_to_search_tax_amount1)
-    # TODO if w have many tax_amount and tax_rate
-    xml_invoice_data.tax_rate1 = find_data_within_element(xml_tree, tags_to_search_tax_rate1)
+    tax_amount: dict = find_tax_data(xml_tree, tags_to_search_tax_amount1, "tax_amount")
+    xml_invoice_data.tax_amount1 = tax_amount["tax_amount1"]
+    xml_invoice_data.tax_amount2 = tax_amount["tax_amount2"]
+    xml_invoice_data.tax_amount3 = tax_amount["tax_amount3"]
+    xml_invoice_data.tax_amount4 = tax_amount["tax_amount4"]
+    xml_invoice_data.tax_amount5 = tax_amount["tax_amount5"]
+
+    tax_rate:dict  =  find_tax_data(xml_tree, tags_to_search_tax_rate1, "tax_rate")
+    xml_invoice_data.tax_rate1 = tax_rate["tax_rate1"]
+    xml_invoice_data.tax_rate2 = tax_rate["tax_rate2"]
+    xml_invoice_data.tax_rate3 = tax_rate["tax_rate3"]
+    xml_invoice_data.tax_rate4 = tax_rate["tax_rate4"]
+    xml_invoice_data.tax_rate5 = tax_rate["tax_rate5"]
+
     xml_invoice_data.supplier = find_data_within_element(xml_supplier_data, tags_to_search_supplier)
     # for BE
     if not xml_invoice_data.supplier:

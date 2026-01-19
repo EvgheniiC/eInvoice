@@ -8,7 +8,6 @@ import json
 import PyPDF2
 from typing import Optional
 
-
 sys.path.append("../")
 to_replace = ["\[", "\]", " ", "\.\.\."]
 
@@ -247,6 +246,7 @@ def is_zugpferd_pdf(file_path: str):
 
     return True if file_names else False
 
+
 # cost center can not be more than 4
 def check_cost_center(cost_center: Optional[str]) -> Optional[str]:
     """
@@ -277,3 +277,57 @@ def check_cost_center(cost_center: Optional[str]) -> Optional[str]:
     if not cost_center or len(cost_center) > 4:
         return None
     return cost_center
+
+
+def find_tax_data(root, json_config_paths, tax_name, max_rates=5)-> dict:
+    """
+    Finds all unique tax values for tax data
+
+    Args:
+        root: XML tree root element
+        json_config_paths: list of XPath strings from JSON config
+        tax_name: name for variable
+        max_rates: maximum number of tax rates to extract (default: 5)
+
+    Returns:
+        dict: dictionary in format {'tax_rate1': 21.0, 'tax_rate2': 0.0, ...}
+              Always returns exactly max_rates entries (missing ones are None)
+    """
+    percent_values = []
+    seen_values = set()  # Track unique values
+
+    for path in json_config_paths:
+        try:
+            # Find elements
+            elements = root.findall(path)
+
+            # Extract values
+            for elem in elements:
+                if elem.text:
+                    value = str(elem.text.strip())
+                    # Add only unique values
+                    if value not in seen_values:
+                        percent_values.append(value)
+                        seen_values.add(value)
+
+                        # Stop if max limit reached
+                        if len(percent_values) >= max_rates:
+                            break
+
+            if len(percent_values) >= max_rates:
+                break
+
+        except Exception as e:
+            print(f"Warning: could not process path {path}: {e}")
+            continue
+
+    # Create dictionary tax_rate1, tax_rate2, etc.
+    # Always return exactly max_rates entries
+    tax_rates = {}
+    for i in range(1, max_rates + 1):
+        if i <= len(percent_values):
+            tax_rates[f'{tax_name}{i}'] = percent_values[i - 1]
+        else:
+            tax_rates[f'{tax_name}{i}'] = None
+
+    return tax_rates

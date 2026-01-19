@@ -1,6 +1,7 @@
 import unittest
 from scr.helper_functions.einvoice_helper import string_to_float, find_data_with_regex, find_data_within_element, \
-    find_data_within_element_with_len, get_xml_tree, read_xml_file_to_str, is_zugpferd_pdf, check_cost_center
+    find_data_within_element_with_len, get_xml_tree, read_xml_file_to_str, is_zugpferd_pdf, check_cost_center, \
+    find_tax_data, get_tags_from_json
 from xml.etree.ElementTree import Element
 import os
 
@@ -80,8 +81,22 @@ class TestXmlParserHeader(unittest.TestCase):
         check_None = check_cost_center(None)
         self.assertEqual(None, check_None)
 
-        check_too_long= check_cost_center('1234567')
+        check_too_long = check_cost_center('1234567')
         self.assertEqual(None, check_too_long)
+
+    def test_find_tax_data(self):
+        xml_text = read_xml_file_to_str('xml_files/SIXT_VAT_ID.xml')
+        xml_tree: Element = get_xml_tree(xml_text)
+        tags_to_search_tax_amount1: list = get_tags_from_json('tags_to_search_tax_amount1')
+        tax_amount_two: dict = find_tax_data(xml_tree, tags_to_search_tax_amount1, "tax_amount")
+        self.assertEqual({'tax_amount1': '1225', 'tax_amount2': '0', 'tax_amount3': None, 'tax_amount4': None, 'tax_amount5': None}, tax_amount_two)
+
+
+        xml_text = read_xml_file_to_str('xml_files/first_sap.xml')
+        xml_tree: Element = get_xml_tree(xml_text)
+        tags_to_search_tax_amount1: list = get_tags_from_json('tags_to_search_tax_amount1')
+        tax_amount_one_zero: dict = find_tax_data(xml_tree, tags_to_search_tax_amount1, "tax_amount")
+        self.assertEqual({'tax_amount1': '0', 'tax_amount2': None, 'tax_amount3': None, 'tax_amount4': None, 'tax_amount5': None}, tax_amount_one_zero)
 
 
 if __name__ == '__main__':
