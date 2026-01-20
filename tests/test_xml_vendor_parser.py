@@ -103,11 +103,11 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_LAND': 'DE',
                           'S_KR_NAME1': 'Inspire Technologies GmbH',
                           'S_KR_ORT': 'Pullach',
-                          'S_KR_ORT_DELIVERY': None,
+                          'S_KR_ORT_DELIVERY': 'St. Georgen',
                           'S_KR_POSTLEITZAHL': '82049',
-                          'S_KR_POSTLEITZAHL_DELIVERY': None,
+                          'S_KR_POSTLEITZAHL_DELIVERY': '78112',
                           'S_KR_STRASSE': 'Zugspitzstrasse 1',
-                          'S_KR_STRASSE_DELIVERY': None,
+                          'S_KR_STRASSE_DELIVERY': 'Leopoldstr. 1',
                           'S_KR_USTID': 'DE260569738'})
 
         self.assertEqual(supplier, None)
@@ -227,17 +227,39 @@ class TestClientParser(unittest.TestCase):
         self.assertEqual(clients_data,
                          {'M_CN_ID': '5209222',
                           'S_KR_CLIENT_NAME': 'BV SIXT BELGIUM',
-                          'S_KR_CLIENT_NAME_DELIVERY': None,
+                          'S_KR_CLIENT_NAME_DELIVERY': 'SOCIAAL SECRETARIAAT VZW',
                           'S_KR_IBAN': 'BE64734003185952',
                           'S_KR_LAND': 'BE',
                           'S_KR_NAME1': 'SOCIAAL SECRETARIAAT VZW',
                           'S_KR_ORT': 'MACHELEN',
-                          'S_KR_ORT_DELIVERY': None,
+                          'S_KR_ORT_DELIVERY': 'Leuven',
                           'S_KR_POSTLEITZAHL': '1831',
-                          'S_KR_POSTLEITZAHL_DELIVERY': None,
+                          'S_KR_POSTLEITZAHL_DELIVERY': '3000',
                           'S_KR_STRASSE': 'KOUTERVELDSTRAAT 6/C',
-                          'S_KR_STRASSE_DELIVERY': None,
+                          'S_KR_STRASSE_DELIVERY': 'Diestsepoort 1',
                           'S_KR_USTID': 'BE0473329910'})
+
+        self.assertEqual(supplier, None)
+
+    # HW-5825
+    def test_get_client_address(self):
+        m_cn_id = "7983677"
+        clear_xml_from_gerd = read_xml_file_to_str('xml_files/adressedesLiferanten.xml')
+        clients_data, supplier = get_einvoice_vendor_data(m_cn_id=m_cn_id, xml_text=clear_xml_from_gerd, logger=Mock())
+        self.assertEqual(clients_data,
+                         {'M_CN_ID': '7983677',
+                          'S_KR_CLIENT_NAME': 'Sixt Belgium Bv',
+                          'S_KR_CLIENT_NAME_DELIVERY': 'Ac Brussels NV',
+                          'S_KR_IBAN': 'BE09363065981157',
+                          'S_KR_LAND': 'BE',
+                          'S_KR_NAME1': 'Ac Brussels NV',
+                          'S_KR_ORT': 'Machelen',
+                          'S_KR_ORT_DELIVERY': 'Zaventem',
+                          'S_KR_POSTLEITZAHL': '1830',
+                          'S_KR_POSTLEITZAHL_DELIVERY': '1930',
+                          'S_KR_STRASSE': 'Kouterveldstraat 6',
+                          'S_KR_STRASSE_DELIVERY': 'Leuvensesteenweg 430',
+                          'S_KR_USTID': 'BE0821129645'})
 
         self.assertEqual(supplier, None)
 
