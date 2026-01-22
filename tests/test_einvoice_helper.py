@@ -1,7 +1,7 @@
 import unittest
 from scr.helper_functions.einvoice_helper import string_to_float, find_data_with_regex, find_data_within_element, \
     find_data_within_element_with_len, get_xml_tree, read_xml_file_to_str, is_zugpferd_pdf, check_cost_center, \
-    find_tax_data, get_tags_from_json
+    find_tax_data, get_tags_from_json, format_sixt_number
 from xml.etree.ElementTree import Element
 import os
 
@@ -89,14 +89,34 @@ class TestXmlParserHeader(unittest.TestCase):
         xml_tree: Element = get_xml_tree(xml_text)
         tags_to_search_tax_amount1: list = get_tags_from_json('tags_to_search_tax_amount1')
         tax_amount_two: dict = find_tax_data(xml_tree, tags_to_search_tax_amount1, "tax_amount")
-        self.assertEqual({'tax_amount1': '1225', 'tax_amount2': '0', 'tax_amount3': None, 'tax_amount4': None, 'tax_amount5': None}, tax_amount_two)
-
+        self.assertEqual(
+            {'tax_amount1': '1225', 'tax_amount2': '0', 'tax_amount3': None, 'tax_amount4': None, 'tax_amount5': None},
+            tax_amount_two)
 
         xml_text = read_xml_file_to_str('xml_files/first_sap.xml')
         xml_tree: Element = get_xml_tree(xml_text)
         tags_to_search_tax_amount1: list = get_tags_from_json('tags_to_search_tax_amount1')
         tax_amount_one_zero: dict = find_tax_data(xml_tree, tags_to_search_tax_amount1, "tax_amount")
-        self.assertEqual({'tax_amount1': '0', 'tax_amount2': None, 'tax_amount3': None, 'tax_amount4': None, 'tax_amount5': None}, tax_amount_one_zero)
+        self.assertEqual(
+            {'tax_amount1': '0', 'tax_amount2': None, 'tax_amount3': None, 'tax_amount4': None, 'tax_amount5': None},
+            tax_amount_one_zero)
+
+    def test_format_sixt_number(self):
+        number = "12345"
+        coupa_po = format_sixt_number(number)
+        self.assertEqual("SIXT-000000012345", coupa_po)
+
+        number = "123456"
+        coupa_po = format_sixt_number(number)
+        self.assertEqual("SIXT-000000123456", coupa_po)
+
+        number = "1234567"
+        coupa_po = format_sixt_number(number)
+        self.assertEqual("SIXT-000001234567", coupa_po)
+
+        number = ''
+        coupa_po = format_sixt_number(number)
+        self.assertEqual(None, coupa_po)
 
 
 if __name__ == '__main__':
