@@ -2,7 +2,7 @@ from datetime import datetime
 import re
 from ..data_class import XmlInvoiceHeader
 from ..helper_functions import find_data_within_element, find_data_with_regex, get_xml_tree, \
-    find_data_within_element_with_len, get_tags_from_json, check_cost_center, find_tax_data
+    find_data_within_element_with_len, get_tags_from_json, check_cost_center, find_tax_data, format_sixt_number
 from xml.etree.ElementTree import Element
 
 
@@ -92,6 +92,11 @@ def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) ->
         xml_invoice_head, tags_to_search_currency) else "EUR"
 
     xml_invoice_data.order_id = find_data_with_regex(xml_supplier_data, "930\d{7}|960\d{7}|SIXT-\d{7,}")
+    # HW-5852
+    if not xml_invoice_data.order_id:
+        coupa_number:str = find_data_within_element(xml_tree, tags_to_search_order_id)
+        xml_invoice_data.order_id = format_sixt_number(coupa_number)
+
     xml_invoice_data.contract_id = find_data_with_regex(xml_supplier_data, r"\bSX-\d{5}(?:-\d{3})?\b")
 
     # SWFM-5293
@@ -121,7 +126,7 @@ def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) ->
     xml_invoice_data.tax_amount4 = tax_amount["tax_amount4"]
     xml_invoice_data.tax_amount5 = tax_amount["tax_amount5"]
 
-    tax_rate:dict  =  find_tax_data(xml_tree, tags_to_search_tax_rate1, "tax_rate")
+    tax_rate: dict = find_tax_data(xml_tree, tags_to_search_tax_rate1, "tax_rate")
     xml_invoice_data.tax_rate1 = tax_rate["tax_rate1"]
     xml_invoice_data.tax_rate2 = tax_rate["tax_rate2"]
     xml_invoice_data.tax_rate3 = tax_rate["tax_rate3"]

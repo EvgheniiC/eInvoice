@@ -279,7 +279,7 @@ def check_cost_center(cost_center: Optional[str]) -> Optional[str]:
     return cost_center
 
 
-def find_tax_data(root, json_config_paths, tax_name, max_rates=5)-> dict:
+def find_tax_data(root, json_config_paths, tax_name, max_rates=5) -> dict:
     """
     Finds all unique tax values for tax data
 
@@ -331,3 +331,21 @@ def find_tax_data(root, json_config_paths, tax_name, max_rates=5)-> dict:
             tax_rates[f'{tax_name}{i}'] = None
 
     return tax_rates
+
+
+def format_sixt_number(number: str) -> Optional[str]:
+    """
+    Formats a number with the SIXT- prefix and zero-padding.
+
+    Args:
+    number: string or number
+
+    Returns:
+    SIXT-XXXXXXXXXXXX format string (length 17)
+
+    for exam number = 323914
+    :return SIXT-000000323914
+    for exam number = 5197871
+    :return SIXT-000005197871
+    """
+    return f"SIXT-{str(number).zfill(12)}" if number else None

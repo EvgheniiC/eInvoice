@@ -89,7 +89,8 @@
   ],
   "tags_to_search_order_id": [
     "./ApplicableHeaderTradeAgreement/BuyerOrderReferencedDocument/IssuerAssignedID",
-    "./IncludedNote/Content"
+    "./IncludedNote/Content",
+    "./BuyerReference"
   ],
   "tags_to_search_invoice_date": [
     "./IssueDateTime/DateTimeString",
