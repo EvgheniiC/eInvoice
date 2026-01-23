@@ -2,7 +2,8 @@ from datetime import datetime
 import re
 from ..data_class import XmlInvoiceHeader
 from ..helper_functions import find_data_within_element, find_data_with_regex, get_xml_tree, \
-    find_data_within_element_with_len, get_tags_from_json, check_cost_center, find_tax_data, format_sixt_number
+    find_data_within_element_with_len, get_tags_from_json, check_cost_center, find_tax_data, format_sixt_number, \
+    get_field_value
 from xml.etree.ElementTree import Element
 
 
@@ -18,7 +19,6 @@ def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) ->
     xml_tree: Element = get_xml_tree(xml_text)
 
     xml_exchanged_document: Element = xml_tree.find("./ExchangedDocument")
-
     xml_invoice_head: Element = xml_tree.find("./SupplyChainTradeTransaction/ApplicableHeaderTradeSettlement")
     xml_invoice_head_money: Element = xml_tree.find(
         "./SupplyChainTradeTransaction/ApplicableHeaderTradeSettlement/SpecifiedTradeSettlementHeaderMonetarySummation")
@@ -94,7 +94,7 @@ def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) ->
     xml_invoice_data.order_id = find_data_with_regex(xml_supplier_data, "930\d{7}|960\d{7}|SIXT-\d{7,}")
     # HW-5852
     if not xml_invoice_data.order_id:
-        coupa_number:str = find_data_within_element(xml_tree, tags_to_search_order_id)
+        coupa_number: str = find_data_within_element(xml_tree, tags_to_search_order_id)
         xml_invoice_data.order_id = format_sixt_number(coupa_number)
 
     xml_invoice_data.contract_id = find_data_with_regex(xml_supplier_data, r"\bSX-\d{5}(?:-\d{3})?\b")
@@ -166,6 +166,21 @@ def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) ->
                                                                         tags_to_search_kind_of_invoice) == '380' else "GU"
     xml_invoice_data.cost_center = check_cost_center(find_data_within_element(xml_exchanged_document,
                                                                               tags_to_search_cost_center))
+
+    # xml_invoice_data.client = ""
+    # cost_center = get_field_value(xml_tree, 'cost_center')
+    # HW-5851
+    if not xml_invoice_data.cost_center:
+        xml_invoice_data.cost_center = check_cost_center(get_field_value(xml_tree, 'cost_center'))
+
+    xml_invoice_data.client = get_field_value(xml_tree, 'legal_entity')
+    # some clients send 035 or 001
+    if xml_invoice_data.client:
+        xml_invoice_data.client = xml_invoice_data.client.lstrip('0')
+
+    print("######## ")
+
+
 
     xml_invoice_data.correct_data()
 

@@ -1,6 +1,7 @@
 import re
 from ..data_class import XmlInvoiceHeader, XmlInvoicePosition
-from ..helper_functions import get_xml_tree, find_data_within_element, get_tags_from_json
+from ..helper_functions import get_xml_tree, find_data_within_element, get_tags_from_json, check_cost_center, \
+    get_field_value
 from xml.etree.ElementTree import Element
 from ..helper_functions.einvoice_helper import string_to_float
 
@@ -29,6 +30,10 @@ def get_xml_positions(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger)
     if not xml_positions_data:
         xml_positions_data: list = xml_tree.findall("./Invoice/InvoiceLine")
 
+    # cost_center = xml_invoice_data.cost_center if xml_invoice_data.cost_center else None
+    cost_center = check_cost_center(get_field_value(xml_tree, 'cost_center'))
+    print("cost_center ",cost_center)
+
     # positions IncludedSupplyChainTradeLineItem for ZUGPFERD, InvoiceLine for xml
     for position in xml_positions_data_zugpferd.iter(
             "IncludedSupplyChainTradeLineItem") if xml_positions_data_zugpferd else xml_positions_data:
@@ -56,7 +61,7 @@ def get_xml_positions(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger)
 
         xml_invoice_data.add_position(
             XmlInvoicePosition(item_pos=item_position, position_text=description_text, quantity=quantity,
-                               single_net_price=single_net_price, tax_rate=tax_rate,
+                               single_net_price=single_net_price, tax_rate=tax_rate, cost_center=cost_center,
                                total_net_price=total_net_price, invoice_id=xml_invoice_data.m_cn_id,
                                article_number=article_number, order_pos_id=order_pos_id))
         item_position += 1

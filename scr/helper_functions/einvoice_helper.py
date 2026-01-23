@@ -7,6 +7,7 @@ import os
 import json
 import PyPDF2
 from typing import Optional
+from pathlib import Path
 
 sys.path.append("../")
 to_replace = ["\[", "\]", " ", "\.\.\."]
@@ -274,7 +275,7 @@ def check_cost_center(cost_center: Optional[str]) -> Optional[str]:
         #>>> check_cost_center(None)     # None input
         None
     """
-    if not cost_center or len(cost_center) > 4:
+    if not cost_center or len(cost_center) > 5:
         return None
     return cost_center
 
@@ -349,3 +350,149 @@ def format_sixt_number(number: str) -> Optional[str]:
     :return SIXT-000005197871
     """
     return f"SIXT-{str(number).zfill(12)}" if number else None
+
+
+def load_config(config_path='config.json'):
+    """
+    Loads configuration from a JSON file.
+
+    Args:
+        config_path (str): Path to the configuration JSON file. Can be relative or absolute.
+
+    Returns:
+        dict: Dictionary containing field configurations with keywords to search for.
+              Returns empty dict if file not found.
+
+    Example:
+         config = load_config('config/fields.json')
+         print(config['cost_center'])
+         ['Cost Center', 'CC']
+    """
+    if not Path(config_path).is_absolute():
+        script_dir = Path(__file__).parent
+        config_path = script_dir / config_path
+
+    if config_path.exists():
+        with open(config_path, 'r', encoding='utf-8') as f:
+            config = json.load(f)
+        return config.get('fields', config)
+    else:
+        print(f"Mistake: File {config_path} not found!")
+        return {}
+
+
+def get_field_value(xml_text: Element, field_name: str, config_path='config/fields.json'):
+    """
+    Extracts a specific field value from XML text.
+
+    Args:
+        xml_text (str): XML content as a string.
+        field_name (str): Name of the field to extract (e.g., 'cost_center', 'legal_entity').
+        config_path (str, optional): Path to the configuration JSON file.
+                                      Defaults to 'config/fields.json'.
+
+    Returns:
+        str or dict or None:
+            - str: Simple value if no description found (e.g., '41872')
+            - dict: {'value': str, 'description': str} if description exists after dash
+            - None: If field not found in XML
+
+    Raises:
+        ValueError: If field_name is not found in configuration.
+
+    Example:
+        cost_center = get_field_value(xml, 'cost_center')
+        '41872'
+        cc_budget = get_field_value(xml, 'cc_budget')
+        {'value': '41872', 'description': 'TRAVEL TRAINEES'}
+        """
+    config = load_config(config_path)
+
+    if field_name not in config:
+        print(f"Field '{field_name}' not found in fields.json")
+        return None
+
+    keywords = config[field_name]
+
+    return find_value_by_keywords(xml_text, keywords)
+
+
+def find_value_by_keywords(root: Element, keywords: str):
+    """
+    Searches for a value in XML by matching keywords in AdditionalDocumentReference elements.
+
+    Args:
+        root (Element): XML content as a string.
+        keywords (str or list): Keyword(s) to search for in ID elements.
+
+    Returns:
+        str or dict or None:
+            - str: Extracted value after keyword/colon
+            - dict: {'value': str, 'description': str} if description exists
+            - None: If no matching keyword found
+
+    Note:
+        Supports XML with namespaces (cac:, cbc: prefixes).
+    """
+    if isinstance(keywords, str):
+        keywords = [keywords]
+
+    for ref in root.iter('AdditionalDocumentReference'):
+        id_elem = ref.find('ID')
+
+        if id_elem is not None and id_elem.text:
+            id_text = id_elem.text.strip()
+
+            for keyword in keywords:
+                if keyword.lower() in id_text.lower():
+                    return extract_value(id_text, keyword)
+
+    return None
+
+
+def extract_value(text: str, keyword: str) -> str | dict:
+    """
+    Extracts value from text after a keyword or colon.
+
+    Supports patterns:
+        - "Keyword : Value" → returns "Value"
+        - "Keyword Value" → returns "Value"
+        - "Keyword : Value - Description" → returns {'value': 'Value', 'description': 'Description'}
+
+    Args:
+        text (str): Text to extract value from.
+        keyword (str): Keyword that precedes the value.
+
+    Returns:
+        str or dict:
+            - str: Simple extracted value
+            - dict: {'value': str, 'description': str} if description after dash exists
+
+    Example:
+        extract_value("Cost Center : 41872", "Cost Center")
+        '41872'
+        extract_value("CC - Budget : 41872 - TRAVEL TRAINEES", "CC - Budget")
+        {'value': '41872', 'description': 'TRAVEL TRAINEES'}
+    """
+    # with ":"
+    match = re.search(r':\s*(.+?)(?:\s*-\s*(.+))?$', text)
+    if match:
+        value = match.group(1).strip()
+        description = match.group(2).strip() if match.group(2) else None
+
+        if description:
+            return {'value': value, 'description': description}
+        return value
+
+    # without ":"
+    pattern = rf'{re.escape(keyword)}\s+(.+?)(?:\s*-\s*(.+))?$'
+    match = re.search(pattern, text, re.IGNORECASE)
+    if match:
+        value = match.group(1).strip()
+        description = match.group(2).strip() if match.group(2) else None
+
+        if description:
+            return {'value': value, 'description': description}
+        return value
+
+    return text
