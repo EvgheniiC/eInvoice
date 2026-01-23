@@ -1,5 +1,5 @@
 from ..helper_functions import find_data_within_element, delete_all_prefills, find_data_within_element_with_len, \
-    get_tags_from_json
+    get_tags_from_json, get_field_value
 from xml.etree.ElementTree import Element
 import xml.etree.ElementTree as ET
 
@@ -28,7 +28,9 @@ def get_einvoice_vendor_data(m_cn_id: str, xml_text: str, logger) -> (dict, str)
     tags_to_search_country: list = get_tags_from_json('tags_to_search_country')
     tags_to_search_iban: list = get_tags_from_json('tags_to_search_iban')
     tags_to_search_supplier: list = get_tags_from_json('tags_to_search_supplier')
+    tags_to_search_buyer_reference: list = get_tags_from_json('tags_to_search_buyer_reference')
 
+    # HW-5851 new field(S_KR_EMPLOYEE_ID,S_KR_BUDGET,S_KR_TRIP_INFO,S_KR_APPROVAL,S_KR_TRIP_PURPOSE)
     clients_data: dict = {
         "M_CN_ID": m_cn_id,
         "S_KR_NAME1": find_data_within_element(xml_vendor_data, tags_to_search_vendor_name),
@@ -44,7 +46,13 @@ def get_einvoice_vendor_data(m_cn_id: str, xml_text: str, logger) -> (dict, str)
         "S_KR_CLIENT_NAME_DELIVERY": find_data_within_element(xml_vendor_data, tags_to_search_client_name_delivery),
         "S_KR_IBAN": find_data_within_element_with_len(xml_vendor_data, tags_to_search_iban, 22).replace(" ",
                                                                                                          "") if find_data_within_element_with_len(
-            xml_vendor_data, tags_to_search_iban, 22) else None
+            xml_vendor_data, tags_to_search_iban, 22) else None,
+        "S_KR_EMPLOYEE_ID": get_field_value(xml_tree, 'employee_id'),
+        "S_KR_BUDGET": get_field_value(xml_tree, 'cc_budget'),
+        "S_KR_TRIP_INFO": get_field_value(xml_tree, 'trip_purpose'),
+        "S_KR_APPROVAL": get_field_value(xml_tree, 'pa_report_id'),
+        "S_KR_TRIP_PURPOSE": get_field_value(xml_tree, 'private_extension'),
+        "S_KR_BUYERREFERENCE": find_data_within_element(xml_vendor_data, tags_to_search_buyer_reference)
     }
     vendor: str = find_data_within_element(xml_vendor_data, tags_to_search_supplier)
 

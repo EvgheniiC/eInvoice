@@ -171,5 +171,8 @@
   ],
   "tags_to_search_pos_msrp_price": [
     "Price/PriceAmount"
+  ],
+    "tags_to_search_buyer_reference": [
+    "./BuyerReference"
   ]
 }

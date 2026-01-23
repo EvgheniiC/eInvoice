@@ -450,41 +450,39 @@ def find_value_by_keywords(root: Element, keywords: str):
     return None
 
 
-def extract_value(text: str, keyword: str) -> str | dict:
+def extract_value(text, keyword):
     """
     Extracts value from text after a keyword or colon.
 
     Supports patterns:
         - "Keyword : Value" → returns "Value"
         - "Keyword Value" → returns "Value"
-        - "Keyword : Value - Description" → returns {'value': 'Value', 'description': 'Description'}
+        - "Keyword : Value - Description" → returns "Value - Description"
 
     Args:
         text (str): Text to extract value from.
         keyword (str): Keyword that precedes the value.
 
     Returns:
-        str or dict:
-            - str: Simple extracted value
-            - dict: {'value': str, 'description': str} if description after dash exists
+        str: Extracted value, optionally with description separated by ' - '
 
     Example:
         extract_value("Cost Center : 41872", "Cost Center")
         '41872'
         extract_value("CC - Budget : 41872 - TRAVEL TRAINEES", "CC - Budget")
-        {'value': '41872', 'description': 'TRAVEL TRAINEES'}
+        '41872 - TRAVEL TRAINEES'
     """
-    # with ":"
+    # Pattern 1: With colon
     match = re.search(r':\s*(.+?)(?:\s*-\s*(.+))?$', text)
     if match:
         value = match.group(1).strip()
         description = match.group(2).strip() if match.group(2) else None
 
         if description:
-            return {'value': value, 'description': description}
+            return f"{value} - {description}"
         return value
 
-    # without ":"
+    # Pattern 2: Without colon
     pattern = rf'{re.escape(keyword)}\s+(.+?)(?:\s*-\s*(.+))?$'
     match = re.search(pattern, text, re.IGNORECASE)
     if match:
@@ -492,7 +490,7 @@ def extract_value(text: str, keyword: str) -> str | dict:
         description = match.group(2).strip() if match.group(2) else None
 
         if description:
-            return {'value': value, 'description': description}
+            return f"{value} - {description}"
         return value
 
     return text
