@@ -104,7 +104,7 @@ class TestXmlParserHeader(unittest.TestCase):
     def test_format_sixt_number(self):
         number = "12345"
         coupa_po = format_sixt_number(number)
-        self.assertEqual("SIXT-000000012345", coupa_po)
+        self.assertEqual(None, coupa_po)
 
         number = "123456"
         coupa_po = format_sixt_number(number)
@@ -112,7 +112,7 @@ class TestXmlParserHeader(unittest.TestCase):
 
         number = "1234567"
         coupa_po = format_sixt_number(number)
-        self.assertEqual("SIXT-000001234567", coupa_po)
+        self.assertEqual(None, coupa_po)
 
         number = ''
         coupa_po = format_sixt_number(number)

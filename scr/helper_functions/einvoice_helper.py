@@ -333,23 +333,52 @@ def find_tax_data(root, json_config_paths, tax_name, max_rates=5) -> dict:
 
     return tax_rates
 
-
+# HW-5852
 def format_sixt_number(number: str) -> Optional[str]:
     """
-    Formats a number with the SIXT- prefix and zero-padding.
+    Formats a number with the SIXT- prefix according to specific rules.
 
     Args:
-    number: string or number
+        number: string representing a number or SIXT code
 
     Returns:
-    SIXT-XXXXXXXXXXXX format string (length 17)
+        Formatted string in SIXT-XXXXXXXXXXXX format or None
 
-    for exam number = 323914
-    :return SIXT-000000323914
-    for exam number = 5197871
-    :return SIXT-000005197871
+    Rules:
+    - length 6: pad to 12 digits and add SIXT- prefix
+    - length 12: add SIXT- prefix
+    - length 18: normalize existing SIXT-/sixt- prefix to uppercase
+    - otherwise: return None
+
+    Examples:
+        328137 (len=6) → SIXT-000000328137
+        000000328429 (len=12) → SIXT-000000328429
+        SIXT-000000320584 (len=18) → SIXT-000000320584
+        sixt-000000320584 (len=18) → SIXT-000000320584
     """
-    return f"SIXT-{str(number).zfill(12)}" if number else None
+    if not number:
+        return None
+
+    number_str = str(number).strip()
+    length = len(number_str)
+
+    if length == 6:
+        # Pad to 12 digits and add prefix
+        return f"SIXT-{number_str.zfill(12)}"
+
+    elif length == 12:
+        # Just add prefix
+        return f"SIXT-{number_str}"
+
+    elif length == 18:
+        # Check if it starts with SIXT- or sixt-
+        if number_str.upper().startswith("SIXT-"):
+            return number_str.upper()
+        else:
+            return None
+
+    else:
+        return None
 
 
 def load_config(config_path='config.json'):
