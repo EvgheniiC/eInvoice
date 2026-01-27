@@ -356,8 +356,9 @@ def format_sixt_number(number: str) -> Optional[str]:
         SIXT-000000320584 (len=18) → SIXT-000000320584
         sixt-000000320584 (len=18) → SIXT-000000320584
     """
-    if not number:
+    if not number or not number.isdigit():
         return None
+
 
     number_str = str(number).strip()
     length = len(number_str)
