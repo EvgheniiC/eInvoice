@@ -191,18 +191,18 @@
     "./AccountingSupplierParty/Contact/ElectronicMail"
   ],
   "tags_to_search_client_name_billing": [
-    "./AccountingSupplierParty/Party/Name"
+    "./AccountingCustomerParty/Party/Name"
   ],
   "tags_to_search_street_billing": [
-    "./AccountingSupplierParty/Party/PostalAddress/StreetName"
+    "./AccountingCustomerParty/Party/PostalAddress/StreetName"
   ],
   "tags_to_search_postcode_billing": [
-    "./AccountingSupplierParty/Party/PostalAddress/PostalZone"
+    "./AccountingCustomerParty/Party/PostalAddress/PostalZone"
   ],
   "tags_to_search_city_name_billing": [
-    "./AccountingSupplierParty/Party/PostalAddress/CityName"
+    "./AccountingCustomerParty/Party/PostalAddress/CityName"
   ],
   "tags_to_search_country_billing": [
-    "./AccountingSupplierParty/Party/Country/IdentificationCode"
+    "./AccountingCustomerParty/Party/Country/IdentificationCode"
   ]
 }
