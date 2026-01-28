@@ -26,11 +26,17 @@ def get_einvoice_vendor_data(m_cn_id: str, xml_text: str, logger) -> (dict, str)
     tags_to_search_city_name: list = get_tags_from_json('tags_to_search_city_name')
     tags_to_search_city_name_delivery: list = get_tags_from_json('tags_to_search_city_name_delivery')
     tags_to_search_country: list = get_tags_from_json('tags_to_search_country')
+    tags_to_search_country_delivery: list = get_tags_from_json('tags_to_search_country_delivery')
     tags_to_search_iban: list = get_tags_from_json('tags_to_search_iban')
     tags_to_search_supplier: list = get_tags_from_json('tags_to_search_supplier')
     tags_to_search_buyer_reference: list = get_tags_from_json('tags_to_search_buyer_reference')
+    tags_to_search_contact: list = get_tags_from_json('tags_to_search_contact')
+    tags_to_search_client_name_billing: list = get_tags_from_json('tags_to_search_client_name_billing')
+    tags_to_search_street_billing: list = get_tags_from_json('tags_to_search_street_billing')
+    tags_to_search_postcode_billing: list = get_tags_from_json('tags_to_search_postcode_billing')
+    tags_to_search_city_name_billing: list = get_tags_from_json('tags_to_search_city_name_billing')
+    tags_to_search_country_billing: list = get_tags_from_json('tags_to_search_country_billing')
 
-    # HW-5851 new field(S_KR_EMPLOYEE_ID,S_KR_BUDGET,S_KR_TRIP_INFO,S_KR_APPROVAL,S_KR_TRIP_PURPOSE)
     clients_data: dict = {
         "M_CN_ID": m_cn_id,
         "S_KR_NAME1": find_data_within_element(xml_vendor_data, tags_to_search_vendor_name),
@@ -41,6 +47,7 @@ def get_einvoice_vendor_data(m_cn_id: str, xml_text: str, logger) -> (dict, str)
         "S_KR_POSTLEITZAHL": find_data_within_element(xml_vendor_data, tags_to_search_postcode),
         "S_KR_POSTLEITZAHL_DELIVERY": find_data_within_element(xml_vendor_data, tags_to_search_postcode_delivery),
         "S_KR_LAND": find_data_within_element(xml_vendor_data, tags_to_search_country),
+        "S_KR_LAND_DELIVERY": find_data_within_element(xml_vendor_data, tags_to_search_country_delivery),
         "S_KR_USTID": find_data_within_element(xml_vendor_data, tags_to_search_tax_id),
         "S_KR_CLIENT_NAME": find_data_within_element(xml_vendor_data, tags_to_search_client_name),
         "S_KR_CLIENT_NAME_DELIVERY": find_data_within_element(xml_vendor_data, tags_to_search_client_name_delivery),
@@ -52,14 +59,23 @@ def get_einvoice_vendor_data(m_cn_id: str, xml_text: str, logger) -> (dict, str)
         "S_KR_TRIP_INFO": get_field_value(xml_tree, 'trip_purpose'),
         "S_KR_APPROVAL": get_field_value(xml_tree, 'pa_report_id'),
         "S_KR_TRIP_PURPOSE": get_field_value(xml_tree, 'private_extension'),
-        "S_KR_BUYERREFERENCE": find_data_within_element(xml_vendor_data, tags_to_search_buyer_reference)
+        "S_KR_BUYERREFERENCE": find_data_within_element(xml_vendor_data, tags_to_search_buyer_reference),
+        "S_KR_CONTACT": find_data_within_element(xml_vendor_data, tags_to_search_contact),
+        "S_KR_CLIENT_NAME_BILLING": find_data_within_element(xml_vendor_data, tags_to_search_client_name_billing),
+        "S_KR_STRASSE_BILLING": find_data_within_element(xml_vendor_data, tags_to_search_street_billing),
+        "S_KR_POSTLEITZAHL_BILLING": find_data_within_element(xml_vendor_data, tags_to_search_postcode_billing),
+        "S_KR_ORT_BILLING": find_data_within_element(xml_vendor_data, tags_to_search_city_name_billing),
+        "S_KR_LAND_BILLING": find_data_within_element(xml_vendor_data, tags_to_search_country_billing)
     }
+
+    # HW-5851 new field(S_KR_EMPLOYEE_ID,S_KR_BUDGET,S_KR_TRIP_INFO,S_KR_APPROVAL,S_KR_TRIP_PURPOSE)
     vendor: str = find_data_within_element(xml_vendor_data, tags_to_search_supplier)
 
     # sometimes len(IBAN) = 16(for client 35)
     if not clients_data["S_KR_IBAN"]:
-        clients_data["S_KR_IBAN"] = find_data_within_element_with_len(xml_vendor_data, tags_to_search_iban, 16).replace(" ",
-                                                                                                                        "") if find_data_within_element_with_len(
+        clients_data["S_KR_IBAN"] = find_data_within_element_with_len(xml_vendor_data, tags_to_search_iban, 16).replace(
+            " ",
+            "") if find_data_within_element_with_len(
             xml_vendor_data, tags_to_search_iban, 16) else None
 
     if vendor:
