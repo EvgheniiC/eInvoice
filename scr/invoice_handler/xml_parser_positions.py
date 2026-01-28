@@ -17,6 +17,9 @@ def get_xml_positions(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger)
     xml_positions_data: list = xml_tree.findall("./InvoiceLine")
     item_position: int = 1
     tags_to_search_description: list = get_tags_from_json('tags_to_search_description')
+    tags_to_search_additional_description_name: list = get_tags_from_json('tags_to_search_additional_description_name')
+    tags_to_search_additional_description_sellers_item_identification: list = get_tags_from_json(
+        'tags_to_search_additional_description_sellers_item_identification')
     tags_to_search_tax_rate: list = get_tags_from_json('tags_to_search_tax_rate')
     tags_to_search_quantity: list = get_tags_from_json('tags_to_search_quantity')
     tags_to_search_single_net_price: list = get_tags_from_json('tags_to_search_single_net_price')
@@ -32,7 +35,6 @@ def get_xml_positions(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger)
 
     # cost_center = xml_invoice_data.cost_center if xml_invoice_data.cost_center else None
     cost_center = check_cost_center(get_field_value(xml_tree, 'cost_center'))
-    print("cost_center ",cost_center)
 
     # positions IncludedSupplyChainTradeLineItem for ZUGPFERD, InvoiceLine for xml
     for position in xml_positions_data_zugpferd.iter(
@@ -40,6 +42,24 @@ def get_xml_positions(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger)
         description_text: str = find_data_within_element(position, tags_to_search_description)[
             0:499] if find_data_within_element(position,
                                                tags_to_search_description) else "Default text"
+
+        # HW-5851
+        additional_description_name: str = find_data_within_element(position,
+                                                                    tags_to_search_additional_description_name)[
+            0:499] if find_data_within_element(position,
+                                               tags_to_search_additional_description_name) else ""
+        additional_description_sellers_item_identification: str = find_data_within_element(position,
+                                                                                           tags_to_search_additional_description_sellers_item_identification)[
+            0:499] if find_data_within_element(position,
+                                               tags_to_search_additional_description_sellers_item_identification) else ""
+        # some clients write the same info in description_text and in additional_description_name -> description_text != additional_description_name
+        if additional_description_name and description_text != additional_description_name:
+            description_text = description_text + "\n" + additional_description_name
+
+        # some clients write the same info in description_text and in additional_description_sellers_item_identification -> description_text != additional_description_sellers_item_identification
+        if additional_description_sellers_item_identification and description_text != additional_description_sellers_item_identification:
+            description_text = description_text + "\n" + additional_description_sellers_item_identification
+
         tax_rate: float = string_to_float(find_data_within_element(position, tags_to_search_tax_rate))
         quantity: float = string_to_float(
             find_data_within_element(position, tags_to_search_quantity)) if find_data_within_element(
