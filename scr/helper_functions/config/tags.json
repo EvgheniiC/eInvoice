@@ -191,7 +191,7 @@
     "./AccountingSupplierParty/Contact/ElectronicMail"
   ],
   "tags_to_search_client_name_billing": [
-    "./AccountingCustomerParty/Party/Name"
+    "./AccountingCustomerParty/Party/PartyName/Name"
   ],
   "tags_to_search_street_billing": [
     "./AccountingCustomerParty/Party/PostalAddress/StreetName"
