@@ -188,7 +188,7 @@
     "./BuyerReference"
   ],
   "tags_to_search_contact": [
-    "./AccountingSupplierParty/Contact/ElectronicMail"
+    "./AccountingSupplierParty/Party/Contact/ElectronicMail"
   ],
   "tags_to_search_client_name_billing": [
     "./AccountingCustomerParty/Party/PartyName/Name"
