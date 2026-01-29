@@ -1,5 +1,5 @@
 from ..helper_functions import find_data_within_element, delete_all_prefills, find_data_within_element_with_len, \
-    get_tags_from_json, get_field_value
+    get_tags_from_json, get_field_value, get_vehicle_value
 from xml.etree.ElementTree import Element
 import xml.etree.ElementTree as ET
 
@@ -65,7 +65,10 @@ def get_einvoice_vendor_data(m_cn_id: str, xml_text: str, logger) -> (dict, str)
         "S_KR_STRASSE_BILLING": find_data_within_element(xml_vendor_data, tags_to_search_street_billing),
         "S_KR_POSTLEITZAHL_BILLING": find_data_within_element(xml_vendor_data, tags_to_search_postcode_billing),
         "S_KR_ORT_BILLING": find_data_within_element(xml_vendor_data, tags_to_search_city_name_billing),
-        "S_KR_LAND_BILLING": find_data_within_element(xml_vendor_data, tags_to_search_country_billing)
+        "S_KR_LAND_BILLING": find_data_within_element(xml_vendor_data, tags_to_search_country_billing),
+        "S_KR_VEHICLE_REGISTRATION": get_vehicle_value(xml_text, "registration"),
+        "S_KR_VEHICLE_ODOMETER_READING": get_vehicle_value(xml_text, "odometer"),
+        "S_KR_VEHICLE_ID": get_vehicle_value(xml_text, "Identification")
     }
 
     # HW-5851 new field(S_KR_EMPLOYEE_ID,S_KR_BUDGET,S_KR_TRIP_INFO,S_KR_APPROVAL,S_KR_TRIP_PURPOSE)

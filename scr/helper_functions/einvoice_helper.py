@@ -2,11 +2,10 @@ import sys
 import re
 from xml.etree.ElementTree import Element
 import xml.etree.ElementTree as ET
-from typing import Union
+from typing import Union, Dict, List, Optional
 import os
 import json
 import PyPDF2
-from typing import Optional
 from pathlib import Path
 
 sys.path.append("../")
@@ -333,6 +332,7 @@ def find_tax_data(root, json_config_paths, tax_name, max_rates=5) -> dict:
 
     return tax_rates
 
+
 # HW-5852
 def format_sixt_number(number: str) -> Optional[str]:
     """
@@ -358,7 +358,6 @@ def format_sixt_number(number: str) -> Optional[str]:
     """
     if not number or not number.isdigit():
         return None
-
 
     number_str = str(number).strip()
     length = len(number_str)
@@ -524,3 +523,80 @@ def extract_value(text, keyword):
         return value
 
     return text
+
+
+def parse_vehicle_info(xml_string: str) -> Dict[str, str]:
+    """
+    Parses XML and extracts data from AdditionalDocumentReference elements
+
+    Args:
+        xml_string: XML as a string
+
+    Returns:
+        Dictionary with format {description: id_value}
+    """
+    try:
+        root: ET.Element = ET.fromstring(xml_string)
+    except ET.ParseError as e:
+        print(f"Error parsing XML: {e}")
+        return {}
+
+    result: Dict[str, str] = {}
+
+    # Find all elements ending with 'AdditionalDocumentReference'
+    for doc_ref in root.iter():
+        if doc_ref.tag.endswith('AdditionalDocumentReference'):
+            doc_id: Optional[str] = None
+            doc_desc: Optional[str] = None
+
+            # Extract ID and Description from child elements
+            for child in doc_ref:
+                if child.tag.endswith('ID'):
+                    doc_id = child.text
+                elif child.tag.endswith('DocumentDescription'):
+                    doc_desc = child.text
+
+            # Add to result if both values exist
+            if doc_id and doc_desc:
+                result[doc_desc] = doc_id
+
+    return result
+
+
+def format_vehicle_info(xml_string: str) -> List[str]:
+    """
+    Parses XML and returns formatted strings
+
+    Args:
+        xml_string: XML as a string
+
+    Returns:
+        List of strings in format "Description: Value"
+    """
+    data: Dict[str, str] = parse_vehicle_info(xml_string)
+
+    formatted: List[str] = []
+    for description, value in data.items():
+        formatted.append(f"{description}: {value}")
+
+    return formatted
+
+
+def get_vehicle_value(xml_string: str, description_keyword: str) -> Optional[str]:
+    """
+    Gets specific value by keyword in description
+
+    Args:
+        xml_string: XML data as string
+        description_keyword: Part of description to search for (e.g., "registration")
+
+    Returns:
+        Found value or None if not found
+    """
+    data: Dict[str, str] = parse_vehicle_info(xml_string)
+
+    for description, value in data.items():
+        if description_keyword.lower() in description.lower():
+            return value
+
+    return None

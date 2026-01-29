@@ -34,7 +34,10 @@ class TestClientParser(unittest.TestCase):
                                         'S_KR_STRASSE_DELIVERY': None,
                                         'S_KR_TRIP_INFO': None,
                                         'S_KR_TRIP_PURPOSE': None,
-                                        'S_KR_USTID': 'DE 123456789'})
+                                        'S_KR_USTID': 'DE 123456789',
+                                        'S_KR_VEHICLE_ID': None,
+                                        'S_KR_VEHICLE_ODOMETER_READING': None,
+                                        'S_KR_VEHICLE_REGISTRATION': None})
         self.assertEqual(supplier, None)
 
     def test_get_einvoice_client_data_none(self):
@@ -67,7 +70,10 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_STRASSE_DELIVERY': 'Anderer Leistungsempfnger Strae 1',
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
-                          'S_KR_USTID': 'ATU13585627'})
+                          'S_KR_USTID': 'ATU13585627',
+                          'S_KR_VEHICLE_ID': None,
+                          'S_KR_VEHICLE_ODOMETER_READING': None,
+                          'S_KR_VEHICLE_REGISTRATION': None})
         self.assertEqual(supplier, None)
 
     def test_get_einvoice_client_data_all_data(self):
@@ -101,7 +107,10 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_STRASSE_DELIVERY': None,
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
-                          'S_KR_USTID': 'DE814742004'})
+                          'S_KR_USTID': 'DE814742004',
+                          'S_KR_VEHICLE_ID': None,
+                          'S_KR_VEHICLE_ODOMETER_READING': None,
+                          'S_KR_VEHICLE_REGISTRATION': None})
         self.assertEqual(supplier, None)
 
     def test_get_einvoice_client_data_no(self):
@@ -134,7 +143,10 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_STRASSE_DELIVERY': None,
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
-                          'S_KR_USTID': 'DE259922663'})
+                          'S_KR_USTID': 'DE259922663',
+                          'S_KR_VEHICLE_ID': None,
+                          'S_KR_VEHICLE_ODOMETER_READING': None,
+                          'S_KR_VEHICLE_REGISTRATION': None})
         self.assertEqual(supplier, '')
 
     # not zugpferd, only XML file
@@ -168,7 +180,10 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_STRASSE_DELIVERY': 'Leopoldstr. 1',
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
-                          'S_KR_USTID': 'DE260569738'})
+                          'S_KR_USTID': 'DE260569738',
+                          'S_KR_VEHICLE_ID': None,
+                          'S_KR_VEHICLE_ODOMETER_READING': None,
+                          'S_KR_VEHICLE_REGISTRATION': None})
 
         self.assertEqual(supplier, None)
 
@@ -202,7 +217,10 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_STRASSE_DELIVERY': None,
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
-                          'S_KR_USTID': 'DE814742004'})
+                          'S_KR_USTID': 'DE814742004',
+                          'S_KR_VEHICLE_ID': None,
+                          'S_KR_VEHICLE_ODOMETER_READING': None,
+                          'S_KR_VEHICLE_REGISTRATION': None})
 
         self.assertEqual(supplier, None)
 
@@ -217,7 +235,7 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_BUYERREFERENCE': 'KUNDE',
                           'S_KR_CLIENT_NAME': 'Autohaus Babelsberg  GmbH & Co.KG',
                           'S_KR_CLIENT_NAME_BILLING': 'Sixt GmbH & Co Autovermietg.KG Reparaturzentrum '
-                             'Berlin',
+                                                      'Berlin',
                           'S_KR_CLIENT_NAME_DELIVERY': 'Sixt GmbH & Co Autovermietg.KG Reparaturzentrum '
                                                        'Berlin',
                           'S_KR_CONTACT': 'service@autohaus-babelsberg.de',
@@ -238,7 +256,10 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_STRASSE_DELIVERY': 'Am Airport 7',
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
-                          'S_KR_USTID': 'DE138410797'})
+                          'S_KR_USTID': 'DE138410797',
+                          'S_KR_VEHICLE_ID': None,
+                          'S_KR_VEHICLE_ODOMETER_READING': None,
+                          'S_KR_VEHICLE_REGISTRATION': None})
 
         self.assertEqual(supplier, None)
 
@@ -252,8 +273,8 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_BUDGET': None,
                           'S_KR_BUYERREFERENCE': 'KUNDE',
                           'S_KR_CLIENT_NAME': 'Autohaus Babelsberg  GmbH & Co.KG',
-                          'S_KR_CLIENT_NAME_BILLING':  'Sixt GmbH & Co Autovermietg.KG Reparaturzentrum '
-                             'Berlin',
+                          'S_KR_CLIENT_NAME_BILLING': 'Sixt GmbH & Co Autovermietg.KG Reparaturzentrum '
+                                                      'Berlin',
                           'S_KR_CLIENT_NAME_DELIVERY': 'Sixt GmbH & Co Autovermietg.KG Reparaturzentrum '
                                                        'Berlin',
                           'S_KR_CONTACT': 'service@autohaus-babelsberg.de',
@@ -274,7 +295,10 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_STRASSE_DELIVERY': 'Am Airport 7',
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
-                          'S_KR_USTID': 'DE138410797'}
+                          'S_KR_USTID': 'DE138410797',
+                          'S_KR_VEHICLE_ID': None,
+                          'S_KR_VEHICLE_ODOMETER_READING': None,
+                          'S_KR_VEHICLE_REGISTRATION': None}
                          )
 
         self.assertEqual(supplier, None)
@@ -309,7 +333,10 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_STRASSE_DELIVERY': None,
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
-                          'S_KR_USTID': 'DE113527818'})
+                          'S_KR_USTID': 'DE113527818',
+                          'S_KR_VEHICLE_ID': None,
+                          'S_KR_VEHICLE_ODOMETER_READING': None,
+                          'S_KR_VEHICLE_REGISTRATION': None})
 
         self.assertEqual(supplier, None)
 
@@ -344,7 +371,10 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_STRASSE_DELIVERY': 'Delivery street 2',
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
-                          'S_KR_USTID': 'GB1232434'})
+                          'S_KR_USTID': 'GB1232434',
+                          'S_KR_VEHICLE_ID': None,
+                          'S_KR_VEHICLE_ODOMETER_READING': None,
+                          'S_KR_VEHICLE_REGISTRATION': None})
 
         self.assertEqual(supplier, '99887766')
 
@@ -378,7 +408,10 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_STRASSE_DELIVERY': 'Diestsepoort 1',
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
-                          'S_KR_USTID': 'BE0473329910'})
+                          'S_KR_USTID': 'BE0473329910',
+                          'S_KR_VEHICLE_ID': None,
+                          'S_KR_VEHICLE_ODOMETER_READING': None,
+                          'S_KR_VEHICLE_REGISTRATION': None})
 
         self.assertEqual(supplier, None)
 
@@ -413,7 +446,10 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_STRASSE_DELIVERY': 'Leuvensesteenweg 430',
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
-                          'S_KR_USTID': 'BE0821129645'})
+                          'S_KR_USTID': 'BE0821129645',
+                          'S_KR_VEHICLE_ID': None,
+                          'S_KR_VEHICLE_ODOMETER_READING': None,
+                          'S_KR_VEHICLE_REGISTRATION': None})
 
         self.assertEqual(supplier, None)
 
@@ -428,7 +464,7 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_BUDGET': '41872 - TRAVEL TRAINEES',
                           'S_KR_BUYERREFERENCE': None,
                           'S_KR_CLIENT_NAME': 'Egencia Belgium',
-                          'S_KR_CLIENT_NAME_BILLING':  'Sixt Belgium BV',
+                          'S_KR_CLIENT_NAME_BILLING': 'Sixt Belgium BV',
                           'S_KR_CLIENT_NAME_DELIVERY': None,
                           'S_KR_CONTACT': None,
                           'S_KR_EMPLOYEE_ID': '9000052024',
@@ -448,7 +484,10 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_STRASSE_DELIVERY': None,
                           'S_KR_TRIP_INFO': 'Branch Support/Different Work Location',
                           'S_KR_TRIP_PURPOSE': 'NO',
-                          'S_KR_USTID': 'BE0403266810'})
+                          'S_KR_USTID': 'BE0403266810',
+                          'S_KR_VEHICLE_ID': None,
+                          'S_KR_VEHICLE_ODOMETER_READING': None,
+                          'S_KR_VEHICLE_REGISTRATION': None})
 
         self.assertEqual(supplier, None)
 
@@ -483,7 +522,10 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_STRASSE_DELIVERY': 'Kouterveldstraat 6c',
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
-                          'S_KR_USTID': 'BE0757976014'})
+                          'S_KR_USTID': 'BE0757976014',
+                          'S_KR_VEHICLE_ID': None,
+                          'S_KR_VEHICLE_ODOMETER_READING': None,
+                          'S_KR_VEHICLE_REGISTRATION': None})
 
         self.assertEqual(supplier, None)
 
@@ -517,7 +559,10 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_STRASSE_DELIVERY': 'Nieuwlandlaan 5',
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
-                          'S_KR_USTID': 'BE0870392282'})
+                          'S_KR_USTID': 'BE0870392282',
+                          'S_KR_VEHICLE_ID': None,
+                          'S_KR_VEHICLE_ODOMETER_READING': None,
+                          'S_KR_VEHICLE_REGISTRATION': None})
 
         self.assertEqual(supplier, None)
 
@@ -551,7 +596,47 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_STRASSE_DELIVERY': 'Z. 3 DOORNVELD 60',
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
-                          'S_KR_USTID': 'BE0452263488'})
+                          'S_KR_USTID': 'BE0452263488',
+                          'S_KR_VEHICLE_ID': None,
+                          'S_KR_VEHICLE_ODOMETER_READING': None,
+                          'S_KR_VEHICLE_REGISTRATION': None})
+
+        self.assertEqual(supplier, None)
+
+    def test_get_additional_info(self):
+        m_cn_id = "8000039"
+        clear_xml_from_gerd = read_xml_file_to_str('xml_files/additions_info.xml')
+        clients_data, supplier = get_einvoice_vendor_data(m_cn_id=m_cn_id, xml_text=clear_xml_from_gerd, logger=Mock())
+        self.assertEqual(clients_data,
+                         {'M_CN_ID': '8000039',
+                          'S_KR_APPROVAL': None,
+                          'S_KR_BUDGET': None,
+                          'S_KR_BUYERREFERENCE': 'F-5073-2026-217',
+                          'S_KR_CLIENT_NAME': 'Midas Rhodes',
+                          'S_KR_CLIENT_NAME_BILLING': 'SIXT BELGIUM',
+                          'S_KR_CLIENT_NAME_DELIVERY': None,
+                          'S_KR_CONTACT': 'sint-genesius-rode@midasbelgium.net',
+                          'S_KR_EMPLOYEE_ID': None,
+                          'S_KR_IBAN': None,
+                          'S_KR_LAND': 'BE',
+                          'S_KR_LAND_BILLING': None,
+                          'S_KR_LAND_DELIVERY': None,
+                          'S_KR_NAME1': 'Midas Rhodes',
+                          'S_KR_ORT': 'Rhode-Saint-Genese',
+                          'S_KR_ORT_BILLING': 'DIEGEM',
+                          'S_KR_ORT_DELIVERY': 'Rhode-Saint-Genese',
+                          'S_KR_POSTLEITZAHL': '1640',
+                          'S_KR_POSTLEITZAHL_BILLING': '1831',
+                          'S_KR_POSTLEITZAHL_DELIVERY': '1640',
+                          'S_KR_STRASSE': 'Chaussée de Hal 28',
+                          'S_KR_STRASSE_BILLING': '6C KOUTERVELDSTRAAT',
+                          'S_KR_STRASSE_DELIVERY': 'Chaussée de Hal 28',
+                          'S_KR_TRIP_INFO': None,
+                          'S_KR_TRIP_PURPOSE': None,
+                          'S_KR_USTID': 'BE0423518034',
+                          'S_KR_VEHICLE_ID': 'VXFVLEHS2S7800434',
+                          'S_KR_VEHICLE_ODOMETER_READING': '37991',
+                          'S_KR_VEHICLE_REGISTRATION': '2GHA914'})
 
         self.assertEqual(supplier, None)
 

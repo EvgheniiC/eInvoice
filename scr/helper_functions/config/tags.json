@@ -77,10 +77,10 @@
     "Item/Name",
     "Note"
   ],
-    "tags_to_search_additional_description_name": [
+  "tags_to_search_additional_description_name": [
     "Item/Name"
   ],
-    "tags_to_search_additional_description_sellers_item_identification": [
+  "tags_to_search_additional_description_sellers_item_identification": [
     "Item/SellersItemIdentification/ID"
   ],
   "tags_to_search_tax_rate": [

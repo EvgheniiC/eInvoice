@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?><Invoice xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:udt="urn:oasis:names:specification:ubl:schema:xsd:UnqualifiedDataTypes-2" xmlns:qdt="urn:oasis:names:specification:ubl:schema:xsd:QualifiedDatatypes-2" xmlns:ccts="urn:un:unece:uncefact:documentation:2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" xmlns:sh="http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader">
+      <cbc:CustomizationID>urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0</cbc:CustomizationID>
+      <cbc:ProfileID>urn:fdc:peppol.eu:2017:poacc:billing:01:1.0</cbc:ProfileID>
+      <cbc:ID>F-5073-2026-217</cbc:ID>
+      <cbc:IssueDate>2026-01-21</cbc:IssueDate>
+      <cbc:DueDate>2026-01-21</cbc:DueDate>
+      <cbc:InvoiceTypeCode>380</cbc:InvoiceTypeCode>
+      <cbc:DocumentCurrencyCode>EUR</cbc:DocumentCurrencyCode>
+      <cbc:BuyerReference>F-5073-2026-217</cbc:BuyerReference>
+      <cac:InvoicePeriod>
+         <cbc:StartDate>2026-01-21</cbc:StartDate>
+         <cbc:EndDate>2026-01-21</cbc:EndDate>
+      </cac:InvoicePeriod>
+      <cac:BillingReference>
+         <cac:InvoiceDocumentReference>
+            <cbc:ID>F-5073-2026-217</cbc:ID>
+            <cbc:IssueDate>2026-01-21</cbc:IssueDate>
+         </cac:InvoiceDocumentReference>
+      </cac:BillingReference>
+      <cac:AdditionalDocumentReference>
+         <cbc:ID>2GHA914</cbc:ID>
+         <cbc:DocumentDescription>Vehicle registration number</cbc:DocumentDescription>
+      </cac:AdditionalDocumentReference>
+      <cac:AdditionalDocumentReference>
+         <cbc:ID>37991</cbc:ID>
+         <cbc:DocumentDescription>Vehicle odometer reading (kilometers)</cbc:DocumentDescription>
+      </cac:AdditionalDocumentReference>
+      <cac:AdditionalDocumentReference>
+         <cbc:ID>VXFVLEHS2S7800434</cbc:ID>
+         <cbc:DocumentDescription>Vehicle Identification Number</cbc:DocumentDescription>
+      </cac:AdditionalDocumentReference>
+      <cac:AccountingSupplierParty>
+         <cac:Party>
+            <cbc:EndpointID schemeID="0208">0423518034</cbc:EndpointID>
+            <cac:PartyName>
+               <cbc:Name>Midas Rhodes</cbc:Name>
+            </cac:PartyName>
+            <cac:PostalAddress>
+               <cbc:StreetName>Chaussée de Hal 28</cbc:StreetName>
+               <cbc:CityName>Rhode-Saint-Genese</cbc:CityName>
+               <cbc:PostalZone>1640</cbc:PostalZone>
+               <cac:Country>
+                  <cbc:IdentificationCode>BE</cbc:IdentificationCode>
+               </cac:Country>
+            </cac:PostalAddress>
+            <cac:PartyTaxScheme>
+               <cbc:CompanyID>BE0423518034</cbc:CompanyID>
+               <cac:TaxScheme>
+                  <cbc:ID>VAT</cbc:ID>
+               </cac:TaxScheme>
+            </cac:PartyTaxScheme>
+            <cac:PartyLegalEntity>
+               <cbc:RegistrationName>Midas Rhodes</cbc:RegistrationName>
+               <cbc:CompanyID schemeID="0208">0423518034</cbc:CompanyID>
+            </cac:PartyLegalEntity>
+            <cac:Contact>
+               <cbc:Name>Omar SERIFI</cbc:Name>
+               <cbc:ElectronicMail>sint-genesius-rode@midasbelgium.net</cbc:ElectronicMail>
+            </cac:Contact>
+         </cac:Party>
+      </cac:AccountingSupplierParty>
+      <cac:AccountingCustomerParty>
+         <cac:Party>
+            <cbc:EndpointID schemeID="0208">0465341266</cbc:EndpointID>
+            <cac:PartyIdentification>
+               <cbc:ID schemeID="0208">0465341266</cbc:ID>
+            </cac:PartyIdentification>
+            <cac:PartyName>
+               <cbc:Name>SIXT BELGIUM</cbc:Name>
+            </cac:PartyName>
+            <cac:PostalAddress>
+               <cbc:StreetName>6C KOUTERVELDSTRAAT</cbc:StreetName>
+               <cbc:CityName>DIEGEM</cbc:CityName>
+               <cbc:PostalZone>1831</cbc:PostalZone>
+               <cbc:CountrySubentity>BE</cbc:CountrySubentity>
+               <cac:Country>
+                  <cbc:IdentificationCode>BE</cbc:IdentificationCode>
+               </cac:Country>
+            </cac:PostalAddress>
+            <cac:PartyTaxScheme>
+               <cbc:CompanyID>BE0465341266</cbc:CompanyID>
+               <cac:TaxScheme>
+                  <cbc:ID>VAT</cbc:ID>
+               </cac:TaxScheme>
+            </cac:PartyTaxScheme>
+            <cac:PartyLegalEntity>
+               <cbc:RegistrationName>SIXT BELGIUM</cbc:RegistrationName>
+               <cbc:CompanyID schemeID="0208">0465341266</cbc:CompanyID>
+            </cac:PartyLegalEntity>
+            <cac:Contact>
+               <cbc:ElectronicMail>ACCOUNTSPAYABLE.BNL@SIXT.COM</cbc:ElectronicMail>
+            </cac:Contact>
+         </cac:Party>
+      </cac:AccountingCustomerParty>
+      <cac:TaxRepresentativeParty>
+         <cac:PartyName>
+            <cbc:Name>Midas Rhodes</cbc:Name>
+         </cac:PartyName>
+         <cac:PostalAddress>
+            <cbc:StreetName>Chaussée de Hal 28</cbc:StreetName>
+            <cbc:CityName>Rhode-Saint-Genese</cbc:CityName>
+            <cbc:PostalZone>1640</cbc:PostalZone>
+            <cac:Country>
+               <cbc:IdentificationCode>BE</cbc:IdentificationCode>
+            </cac:Country>
+         </cac:PostalAddress>
+         <cac:PartyTaxScheme>
+            <cbc:CompanyID>BE0423518034</cbc:CompanyID>
+            <cac:TaxScheme>
+               <cbc:ID>VAT</cbc:ID>
+            </cac:TaxScheme>
+         </cac:PartyTaxScheme>
+      </cac:TaxRepresentativeParty>
+      <cac:PaymentTerms>
+         <cbc:Note>2026-01-21</cbc:Note>
+      </cac:PaymentTerms>
+      <cac:TaxTotal>
+         <cbc:TaxAmount currencyID="EUR">34.06</cbc:TaxAmount>
+         <cac:TaxSubtotal>
+            <cbc:TaxableAmount currencyID="EUR">162.20</cbc:TaxableAmount>
+            <cbc:TaxAmount currencyID="EUR">34.06</cbc:TaxAmount>
+            <cac:TaxCategory>
+               <cbc:ID>S</cbc:ID>
+               <cbc:Percent>21.00</cbc:Percent>
+               <cac:TaxScheme>
+                  <cbc:ID>VAT</cbc:ID>
+               </cac:TaxScheme>
+            </cac:TaxCategory>
+         </cac:TaxSubtotal>
+      </cac:TaxTotal>
+      <cac:LegalMonetaryTotal>
+         <cbc:LineExtensionAmount currencyID="EUR">162.20</cbc:LineExtensionAmount>
+         <cbc:TaxExclusiveAmount currencyID="EUR">162.20</cbc:TaxExclusiveAmount>
+         <cbc:TaxInclusiveAmount currencyID="EUR">196.26</cbc:TaxInclusiveAmount>
+         <cbc:PrepaidAmount currencyID="EUR">0.00</cbc:PrepaidAmount>
+         <cbc:PayableRoundingAmount currencyID="EUR">0.00</cbc:PayableRoundingAmount>
+         <cbc:PayableAmount currencyID="EUR">196.26</cbc:PayableAmount>
+      </cac:LegalMonetaryTotal>
+      <cac:InvoiceLine>
+         <cbc:ID>277163284</cbc:ID>
+         <cbc:InvoicedQuantity unitCode="C62">1.00</cbc:InvoicedQuantity>
+         <cbc:LineExtensionAmount currencyID="EUR">77.00</cbc:LineExtensionAmount>
+         <cac:Item>
+            <cbc:Description>CAISSE PASSAGE CONTROLE TECHNIQUE</cbc:Description>
+            <cbc:Name>CAISSE PASSAGE CONTROLE TECHNIQUE</cbc:Name>
+            <cac:BuyersItemIdentification>
+               <cbc:ID>SIXT_CAISSECT.0741.0232_5073</cbc:ID>
+            </cac:BuyersItemIdentification>
+            <cac:ClassifiedTaxCategory>
+               <cbc:ID>S</cbc:ID>
+               <cbc:Percent>21.00</cbc:Percent>
+               <cac:TaxScheme>
+                  <cbc:ID>VAT</cbc:ID>
+               </cac:TaxScheme>
+            </cac:ClassifiedTaxCategory>
+         </cac:Item>
+         <cac:Price>
+            <cbc:PriceAmount currencyID="EUR">77.0000</cbc:PriceAmount>
+            <cbc:BaseQuantity unitCode="C62">1</cbc:BaseQuantity>
+         </cac:Price>
+      </cac:InvoiceLine>
+      <cac:InvoiceLine>
+         <cbc:ID>277163285</cbc:ID>
+         <cbc:InvoicedQuantity unitCode="C62">1.00</cbc:InvoicedQuantity>
+         <cbc:LineExtensionAmount currencyID="EUR">70.00</cbc:LineExtensionAmount>
+         <cac:Item>
+            <cbc:Description>PRE CONTROLE TECHNIQUE + PASSAGE CONTROLE TECHNIQUE</cbc:Description>
+            <cbc:Name>PRE CONTROLE TECHNIQUE + PASSAGE CONTROLE TECHNIQUE</cbc:Name>
+            <cac:BuyersItemIdentification>
+               <cbc:ID>CT_SIXT_5073_5073</cbc:ID>
+            </cac:BuyersItemIdentification>
+            <cac:ClassifiedTaxCategory>
+               <cbc:ID>S</cbc:ID>
+               <cbc:Percent>21.00</cbc:Percent>
+               <cac:TaxScheme>
+                  <cbc:ID>VAT</cbc:ID>
+               </cac:TaxScheme>
+            </cac:ClassifiedTaxCategory>
+         </cac:Item>
+         <cac:Price>
+            <cbc:PriceAmount currencyID="EUR">70.0000</cbc:PriceAmount>
+            <cbc:BaseQuantity unitCode="C62">1</cbc:BaseQuantity>
+         </cac:Price>
+      </cac:InvoiceLine>
+      <cac:InvoiceLine>
+         <cbc:ID>277163286</cbc:ID>
+         <cbc:InvoicedQuantity unitCode="C62">1.00</cbc:InvoicedQuantity>
+         <cbc:LineExtensionAmount currencyID="EUR">15.20</cbc:LineExtensionAmount>
+         <cac:Item>
+            <cbc:Description>ECHEANCE DEPASSEZ AU CONTROLE TECHNIQUE (RETARD CONTROLE ANNUEL)</cbc:Description>
+            <cbc:Name>ECHEANCE DEPASSEZ AU CONTROLE TECHNIQUE (RETARD CONTROLE ANNUEL)</cbc:Name>
+            <cac:BuyersItemIdentification>
+               <cbc:ID>SIXT_ECHEANCE634165130_5073</cbc:ID>
+            </cac:BuyersItemIdentification>
+            <cac:ClassifiedTaxCategory>
+               <cbc:ID>S</cbc:ID>
+               <cbc:Percent>21.00</cbc:Percent>
+               <cac:TaxScheme>
+                  <cbc:ID>VAT</cbc:ID>
+               </cac:TaxScheme>
+            </cac:ClassifiedTaxCategory>
+         </cac:Item>
+         <cac:Price>
+            <cbc:PriceAmount currencyID="EUR">15.2000</cbc:PriceAmount>
+            <cbc:BaseQuantity unitCode="C62">1</cbc:BaseQuantity>
+         </cac:Price>
+      </cac:InvoiceLine>
+   </Invoice>
