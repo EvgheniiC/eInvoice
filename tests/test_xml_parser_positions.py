@@ -978,6 +978,106 @@ class TestXmlParserHeader(unittest.TestCase):
                            'M_IP_TYP': 'ET'}]
                          )
 
+    # HW-HW-5891
+    def test_get_xml_negative_quantity(self):
+        m_cn_id = "8026941"
+        xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id)
+        xml_positions = read_xml_file_to_str('xml_files/negative_quantity.xml')
+
+        xml_invoice_positions = get_xml_positions(
+            xml_text=xml_positions,
+            xml_invoice_data=xml_invoice_header, logger=Mock())
+
+        self.assertEqual(xml_invoice_positions.get_xml_postions_map(),
+                         [{'M_CN_ID': None,
+                           'M_CN_INVOICEID': '8026941',
+                           'M_IP_ARTICLENUMBER': '',
+                           'M_IP_ARTICLENUMBER2': None,
+                           'M_IP_COSTCENTER': None,
+                           'M_IP_DISCOUNTAMOUNT': None,
+                           'M_IP_DISCOUNTPERCENT': None,
+                           'M_IP_ECLASS': '',
+                           'M_IP_GOODSINWARDPOSID': '',
+                           'M_IP_INVENTORYACC': None,
+                           'M_IP_ITEMPOS': 1,
+                           'M_IP_KOSTENTRAEGER': '',
+                           'M_IP_ORDERPOSID': None,
+                           'M_IP_POSITIONSTEXT': 'Forfaitaire bijdrage werknemers volgens pro rata '
+                                                 'regeling',
+                           'M_IP_QUANTITY': 11.17,
+                           'M_IP_QUANTITYUNIT': None,
+                           'M_IP_SINGLENETPRICE': 97.67,
+                           'M_IP_TAXCODE': None,
+                           'M_IP_TAXRATE': 0.0,
+                           'M_IP_TOTALNETPRICE': 1090.97,
+                           'M_IP_TYP': 'ET'},
+                          {'M_CN_ID': None,
+                           'M_CN_INVOICEID': '8026941',
+                           'M_IP_ARTICLENUMBER': '',
+                           'M_IP_ARTICLENUMBER2': None,
+                           'M_IP_COSTCENTER': None,
+                           'M_IP_DISCOUNTAMOUNT': None,
+                           'M_IP_DISCOUNTPERCENT': None,
+                           'M_IP_ECLASS': '',
+                           'M_IP_GOODSINWARDPOSID': '',
+                           'M_IP_INVENTORYACC': None,
+                           'M_IP_ITEMPOS': 2,
+                           'M_IP_KOSTENTRAEGER': '',
+                           'M_IP_ORDERPOSID': None,
+                           'M_IP_POSITIONSTEXT': 'Reeds gefactureerde " Employee Assistance Program "',
+                           'M_IP_QUANTITY': 1.0,
+                           'M_IP_QUANTITYUNIT': None,
+                           'M_IP_SINGLENETPRICE': 49.5,
+                           'M_IP_TAXCODE': None,
+                           'M_IP_TAXRATE': 0.0,
+                           'M_IP_TOTALNETPRICE': 49.5,
+                           'M_IP_TYP': 'ET'},
+                          {'M_CN_ID': None,
+                           'M_CN_INVOICEID': '8026941',
+                           'M_IP_ARTICLENUMBER': '',
+                           'M_IP_ARTICLENUMBER2': None,
+                           'M_IP_COSTCENTER': None,
+                           'M_IP_DISCOUNTAMOUNT': None,
+                           'M_IP_DISCOUNTPERCENT': None,
+                           'M_IP_ECLASS': '',
+                           'M_IP_GOODSINWARDPOSID': '',
+                           'M_IP_INVENTORYACC': None,
+                           'M_IP_ITEMPOS': 3,
+                           'M_IP_KOSTENTRAEGER': '',
+                           'M_IP_ORDERPOSID': None,
+                           'M_IP_POSITIONSTEXT': 'Employee Assistance Program ( New Basic ) voor 12 '
+                                                 'maanden',
+                           'M_IP_QUANTITY': 14.0,
+                           'M_IP_QUANTITYUNIT': None,
+                           'M_IP_SINGLENETPRICE': 4.95,
+                           'M_IP_TAXCODE': None,
+                           'M_IP_TAXRATE': 0.0,
+                           'M_IP_TOTALNETPRICE': 69.3,
+                           'M_IP_TYP': 'ET'},
+                          {'M_CN_ID': None,
+                           'M_CN_INVOICEID': '8026941',
+                           'M_IP_ARTICLENUMBER': '',
+                           'M_IP_ARTICLENUMBER2': None,
+                           'M_IP_COSTCENTER': None,
+                           'M_IP_DISCOUNTAMOUNT': None,
+                           'M_IP_DISCOUNTPERCENT': None,
+                           'M_IP_ECLASS': '',
+                           'M_IP_GOODSINWARDPOSID': '',
+                           'M_IP_INVENTORYACC': None,
+                           'M_IP_ITEMPOS': 4,
+                           'M_IP_KOSTENTRAEGER': '',
+                           'M_IP_ORDERPOSID': None,
+                           'M_IP_POSITIONSTEXT': 'Reeds gefactureerde " forfaitaire bijdrage per '
+                                                 'werknemer "',
+                           'M_IP_QUANTITY': 1.0,
+                           'M_IP_QUANTITYUNIT': None,
+                           'M_IP_SINGLENETPRICE': 976.7,
+                           'M_IP_TAXCODE': None,
+                           'M_IP_TAXRATE': 0.0,
+                           'M_IP_TOTALNETPRICE': 976.7,
+                           'M_IP_TYP': 'ET'}]
+                         )
+
 
 if __name__ == '__main__':
     unittest.main()

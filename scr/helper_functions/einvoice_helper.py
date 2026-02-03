@@ -130,7 +130,7 @@ def string_to_float(value, de_format=False) -> Union[float, int, None, str]:
     if not str(value).replace(",", "").replace(".", "").replace("-", "").strip().isdigit():
         return 0
     return value if isinstance(value, float) or isinstance(value, int) else float(
-        create_viable_float_or_int_string(value, de_format))
+        create_viable_float_or_int_string(value.replace("-", ""), de_format))
 
 
 def create_viable_float_or_int_string(value: str, de_format) -> Union[float, int, None, str]:
