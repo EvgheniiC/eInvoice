@@ -1,7 +1,7 @@
 import re
 from ..data_class import XmlInvoiceHeader, XmlInvoicePosition
 from ..helper_functions import get_xml_tree, find_data_within_element, get_tags_from_json, check_cost_center, \
-    get_field_value
+    get_field_value, string_to_float_negative
 from xml.etree.ElementTree import Element
 from ..helper_functions.einvoice_helper import string_to_float
 
@@ -65,9 +65,9 @@ def get_xml_positions(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger)
             find_data_within_element(position, tags_to_search_quantity)) if find_data_within_element(
             position,
             tags_to_search_quantity) else 1
-        single_net_price: float = string_to_float(
+        single_net_price: float = string_to_float_negative(
             find_data_within_element(position, tags_to_search_single_net_price))
-        total_net_price: float = string_to_float(
+        total_net_price: float = string_to_float_negative(
             find_data_within_element(position, tags_to_search_total_net_price))
         order_pos_id = find_data_within_element(position, tags_to_search_order_line_reference)
 

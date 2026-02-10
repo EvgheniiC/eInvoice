@@ -133,7 +133,27 @@ def string_to_float(value, de_format=False) -> Union[float, int, None, str]:
         create_viable_float_or_int_string(value.replace("-", ""), de_format))
 
 
-def create_viable_float_or_int_string(value: str, de_format) -> Union[float, int, None, str]:
+def string_to_float_negative(value, de_format=False) -> Union[float, int, None, str]:
+    """
+    for positions, we need negative value for position
+    Formats a none null value into a float value with this format: d{1,}.d{2}
+
+    :param value: The string value to convert
+    :type value: str
+    :param de_format: If de --> , instead of .
+    :type de_format: bool
+    :return: 0 if not an number, None if value == None, else the formatted float value
+    :rtype: float
+    """
+    if value is None:
+        return None
+    if not str(value).replace(",", "").replace(".", "").replace("-", "").strip().isdigit():
+        return 0
+    return value if isinstance(value, float) or isinstance(value, int) else float(
+        create_viable_float_or_int_string(value, de_format))
+
+
+def create_viable_float_or_int_string(value: str, de_format=False) -> Union[float, int, None, str]:
     """
     Creates a float / int string, by replacing every , / . except the last one and check
 

@@ -978,7 +978,7 @@ class TestXmlParserHeader(unittest.TestCase):
                            'M_IP_TYP': 'ET'}]
                          )
 
-    # HW-HW-5891
+    # HW-5891
     def test_get_xml_negative_quantity(self):
         m_cn_id = "8026941"
         xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id)
@@ -1030,7 +1030,7 @@ class TestXmlParserHeader(unittest.TestCase):
                            'M_IP_SINGLENETPRICE': 49.5,
                            'M_IP_TAXCODE': None,
                            'M_IP_TAXRATE': 0.0,
-                           'M_IP_TOTALNETPRICE': 49.5,
+                           'M_IP_TOTALNETPRICE': -49.5,
                            'M_IP_TYP': 'ET'},
                           {'M_CN_ID': None,
                            'M_CN_INVOICEID': '8026941',
@@ -1074,8 +1074,100 @@ class TestXmlParserHeader(unittest.TestCase):
                            'M_IP_SINGLENETPRICE': 976.7,
                            'M_IP_TAXCODE': None,
                            'M_IP_TAXRATE': 0.0,
-                           'M_IP_TOTALNETPRICE': 976.7,
+                           'M_IP_TOTALNETPRICE': -976.7,
                            'M_IP_TYP': 'ET'}]
+                         )
+
+    # HW-5945
+    def test_get_xml_negative_positions(self):
+        m_cn_id = "8089021"
+        xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id)
+        xml_positions = read_xml_file_to_str('xml_files/negative_positions_HW-5945.xml')
+        xml_invoice_positions = get_xml_positions(
+            xml_text=xml_positions,
+            xml_invoice_data=xml_invoice_header, logger=Mock())
+
+        print("xml_invoice_positions.get_xml_postions_map() ", xml_invoice_positions.get_xml_postions_map())
+
+        self.assertEqual(xml_invoice_positions.get_xml_postions_map(),
+                         [{'M_CN_ID': None, 'M_CN_INVOICEID': '8089021', 'M_IP_ITEMPOS': 1,
+                           'M_IP_POSITIONSTEXT': 'DSL - Korting lange termijn\n032000025218128', 'M_IP_QUANTITY': 1.0,
+                           'M_IP_SINGLENETPRICE': 1.0, 'M_IP_TOTALNETPRICE': -1.0, 'M_IP_TAXRATE': 21.0,
+                           'M_IP_COSTCENTER': None, 'M_IP_KOSTENTRAEGER': '', 'M_IP_INVENTORYACC': None,
+                           'M_IP_ARTICLENUMBER': '', 'M_IP_ARTICLENUMBER2': None, 'M_IP_DISCOUNTAMOUNT': None,
+                           'M_IP_QUANTITYUNIT': None, 'M_IP_TYP': 'ET', 'M_IP_DISCOUNTPERCENT': None,
+                           'M_IP_TAXCODE': None, 'M_IP_ORDERPOSID': None, 'M_IP_GOODSINWARDPOSID': '',
+                           'M_IP_ECLASS': ''},
+                          {'M_CN_ID': None, 'M_CN_INVOICEID': '8089021', 'M_IP_ITEMPOS': 2,
+                                                'M_IP_POSITIONSTEXT': 'DSL - Korting lange termijn\n032000025218128',
+                                                'M_IP_QUANTITY': 1.0, 'M_IP_SINGLENETPRICE': 9.69,
+                                                'M_IP_TOTALNETPRICE': -9.69, 'M_IP_TAXRATE': 21.0,
+                                                'M_IP_COSTCENTER': None, 'M_IP_KOSTENTRAEGER': '',
+                                                'M_IP_INVENTORYACC': None, 'M_IP_ARTICLENUMBER': '',
+                                                'M_IP_ARTICLENUMBER2': None, 'M_IP_DISCOUNTAMOUNT': None,
+                                                'M_IP_QUANTITYUNIT': None, 'M_IP_TYP': 'ET',
+                                                'M_IP_DISCOUNTPERCENT': None, 'M_IP_TAXCODE': None,
+                                                'M_IP_ORDERPOSID': None, 'M_IP_GOODSINWARDPOSID': '',
+                                                'M_IP_ECLASS': ''},
+                          {'M_CN_ID': None, 'M_CN_INVOICEID': '8089021', 'M_IP_ITEMPOS': 3,
+                           'M_IP_POSITIONSTEXT': 'Premium SLA.\n032000025218128', 'M_IP_QUANTITY': 1.0,
+                           'M_IP_SINGLENETPRICE': 10.0, 'M_IP_TOTALNETPRICE': 10.0, 'M_IP_TAXRATE': 21.0,
+                           'M_IP_COSTCENTER': None, 'M_IP_KOSTENTRAEGER': '', 'M_IP_INVENTORYACC': None,
+                           'M_IP_ARTICLENUMBER': '', 'M_IP_ARTICLENUMBER2': None, 'M_IP_DISCOUNTAMOUNT': None,
+                           'M_IP_QUANTITYUNIT': None, 'M_IP_TYP': 'ET', 'M_IP_DISCOUNTPERCENT': None,
+                           'M_IP_TAXCODE': None, 'M_IP_ORDERPOSID': None, 'M_IP_GOODSINWARDPOSID': '',
+                           'M_IP_ECLASS': ''}, {'M_CN_ID': None, 'M_CN_INVOICEID': '8089021', 'M_IP_ITEMPOS': 4,
+                                                'M_IP_POSITIONSTEXT': 'Internet Pro+\n032000025218128',
+                                                'M_IP_QUANTITY': 1.0, 'M_IP_SINGLENETPRICE': 96.9,
+                                                'M_IP_TOTALNETPRICE': 96.9, 'M_IP_TAXRATE': 21.0,
+                                                'M_IP_COSTCENTER': None, 'M_IP_KOSTENTRAEGER': '',
+                                                'M_IP_INVENTORYACC': None, 'M_IP_ARTICLENUMBER': '',
+                                                'M_IP_ARTICLENUMBER2': None, 'M_IP_DISCOUNTAMOUNT': None,
+                                                'M_IP_QUANTITYUNIT': None, 'M_IP_TYP': 'ET',
+                                                'M_IP_DISCOUNTPERCENT': None, 'M_IP_TAXCODE': None,
+                                                'M_IP_ORDERPOSID': None, 'M_IP_GOODSINWARDPOSID': '',
+                                                'M_IP_ECLASS': ''},
+                          {'M_CN_ID': None, 'M_CN_INVOICEID': '8089021', 'M_IP_ITEMPOS': 5,
+                           'M_IP_POSITIONSTEXT': 'Call Connect Dect Ip-Phone handset W52H\n032000025218128',
+                           'M_IP_QUANTITY': 1.0, 'M_IP_SINGLENETPRICE': 3.29, 'M_IP_TOTALNETPRICE': 3.29,
+                           'M_IP_TAXRATE': 21.0, 'M_IP_COSTCENTER': None, 'M_IP_KOSTENTRAEGER': '',
+                           'M_IP_INVENTORYACC': None, 'M_IP_ARTICLENUMBER': '', 'M_IP_ARTICLENUMBER2': None,
+                           'M_IP_DISCOUNTAMOUNT': None, 'M_IP_QUANTITYUNIT': None, 'M_IP_TYP': 'ET',
+                           'M_IP_DISCOUNTPERCENT': None, 'M_IP_TAXCODE': None, 'M_IP_ORDERPOSID': None,
+                           'M_IP_GOODSINWARDPOSID': '', 'M_IP_ECLASS': ''},
+                          {'M_CN_ID': None, 'M_CN_INVOICEID': '8089021', 'M_IP_ITEMPOS': 6,
+                           'M_IP_POSITIONSTEXT': 'Call Connect Dect Ip-Phone set W52P\n032000025218128',
+                           'M_IP_QUANTITY': 1.0, 'M_IP_SINGLENETPRICE': 4.52, 'M_IP_TOTALNETPRICE': 4.52,
+                           'M_IP_TAXRATE': 21.0, 'M_IP_COSTCENTER': None, 'M_IP_KOSTENTRAEGER': '',
+                           'M_IP_INVENTORYACC': None, 'M_IP_ARTICLENUMBER': '', 'M_IP_ARTICLENUMBER2': None,
+                           'M_IP_DISCOUNTAMOUNT': None, 'M_IP_QUANTITYUNIT': None, 'M_IP_TYP': 'ET',
+                           'M_IP_DISCOUNTPERCENT': None, 'M_IP_TAXCODE': None, 'M_IP_ORDERPOSID': None,
+                           'M_IP_GOODSINWARDPOSID': '', 'M_IP_ECLASS': ''},
+                          {'M_CN_ID': None, 'M_CN_INVOICEID': '8089021', 'M_IP_ITEMPOS': 7,
+                           'M_IP_POSITIONSTEXT': 'Call Connect Dect Ip-Phone set W52P\n032000025218128',
+                           'M_IP_QUANTITY': 1.0, 'M_IP_SINGLENETPRICE': 4.52, 'M_IP_TOTALNETPRICE': 4.52,
+                           'M_IP_TAXRATE': 21.0, 'M_IP_COSTCENTER': None, 'M_IP_KOSTENTRAEGER': '',
+                           'M_IP_INVENTORYACC': None, 'M_IP_ARTICLENUMBER': '', 'M_IP_ARTICLENUMBER2': None,
+                           'M_IP_DISCOUNTAMOUNT': None, 'M_IP_QUANTITYUNIT': None, 'M_IP_TYP': 'ET',
+                           'M_IP_DISCOUNTPERCENT': None, 'M_IP_TAXCODE': None, 'M_IP_ORDERPOSID': None,
+                           'M_IP_GOODSINWARDPOSID': '', 'M_IP_ECLASS': ''},
+                          {'M_CN_ID': None, 'M_CN_INVOICEID': '8089021', 'M_IP_ITEMPOS': 8,
+                           'M_IP_POSITIONSTEXT': 'Call Connect Executive Ip-Phone T48G\n032000025218128',
+                           'M_IP_QUANTITY': 1.0, 'M_IP_SINGLENETPRICE': 9.47, 'M_IP_TOTALNETPRICE': 9.47,
+                           'M_IP_TAXRATE': 21.0, 'M_IP_COSTCENTER': None, 'M_IP_KOSTENTRAEGER': '',
+                           'M_IP_INVENTORYACC': None, 'M_IP_ARTICLENUMBER': '', 'M_IP_ARTICLENUMBER2': None,
+                           'M_IP_DISCOUNTAMOUNT': None, 'M_IP_QUANTITYUNIT': None, 'M_IP_TYP': 'ET',
+                           'M_IP_DISCOUNTPERCENT': None, 'M_IP_TAXCODE': None, 'M_IP_ORDERPOSID': None,
+                           'M_IP_GOODSINWARDPOSID': '', 'M_IP_ECLASS': ''},
+                          {'M_CN_ID': None, 'M_CN_INVOICEID': '8089021', 'M_IP_ITEMPOS': 9,
+                           'M_IP_POSITIONSTEXT': 'Forum fanless 8p 10/100 switch with PoE\n032000025218128',
+                           'M_IP_QUANTITY': 1.0, 'M_IP_SINGLENETPRICE': 6.49, 'M_IP_TOTALNETPRICE': 6.49,
+                           'M_IP_TAXRATE': 21.0, 'M_IP_COSTCENTER': None, 'M_IP_KOSTENTRAEGER': '',
+                           'M_IP_INVENTORYACC': None, 'M_IP_ARTICLENUMBER': '', 'M_IP_ARTICLENUMBER2': None,
+                           'M_IP_DISCOUNTAMOUNT': None, 'M_IP_QUANTITYUNIT': None, 'M_IP_TYP': 'ET',
+                           'M_IP_DISCOUNTPERCENT': None, 'M_IP_TAXCODE': None, 'M_IP_ORDERPOSID': None,
+                           'M_IP_GOODSINWARDPOSID': '', 'M_IP_ECLASS': ''}]
+
                          )
 
 
