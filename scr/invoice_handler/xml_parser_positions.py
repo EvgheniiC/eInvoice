@@ -1,9 +1,8 @@
 import re
 from ..data_class import XmlInvoiceHeader, XmlInvoicePosition
 from ..helper_functions import get_xml_tree, find_data_within_element, get_tags_from_json, check_cost_center, \
-    get_field_value, string_to_float_negative
+    get_field_value, string_to_float_negative, string_to_float
 from xml.etree.ElementTree import Element
-from ..helper_functions.einvoice_helper import string_to_float
 
 
 # extract positions data from XML

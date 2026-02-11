@@ -1,0 +1,497 @@
+<?xml version="1.0" encoding="UTF-8"?><ubl:Invoice xmlns:ubl="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:ccts="urn:un:unece:uncefact:documentation:2" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:udt="urn:un:unece:uncefact:data:specification:UnqualifiedDataTypesSchemaModule:2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader">
+      <cbc:CustomizationID>urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0</cbc:CustomizationID>
+      <cbc:ProfileID>urn:fdc:peppol.eu:2017:poacc:billing:01:1.0</cbc:ProfileID>
+      <cbc:ID>1616890918</cbc:ID>
+      <cbc:IssueDate>2026-01-20</cbc:IssueDate>
+      <cbc:DueDate>2026-02-09</cbc:DueDate>
+      <cbc:InvoiceTypeCode>380</cbc:InvoiceTypeCode>
+      <cbc:DocumentCurrencyCode>EUR</cbc:DocumentCurrencyCode>
+      <cbc:BuyerReference>N/A</cbc:BuyerReference>
+      <cac:AccountingSupplierParty>
+         <cac:Party>
+            <cbc:EndpointID schemeID="0208">0459866904</cbc:EndpointID>
+            <cac:PartyName>
+               <cbc:Name>Verisure nv/sa</cbc:Name>
+            </cac:PartyName>
+            <cac:PostalAddress>
+               <cbc:StreetName>Raketstraat 66</cbc:StreetName>
+               <cbc:AdditionalStreetName>Rue de la Fusée 66</cbc:AdditionalStreetName>
+               <cbc:CityName>Haren</cbc:CityName>
+               <cbc:PostalZone>BE-1130</cbc:PostalZone>
+               <cac:Country>
+                  <cbc:IdentificationCode>BE</cbc:IdentificationCode>
+               </cac:Country>
+            </cac:PostalAddress>
+            <cac:PartyTaxScheme>
+               <cbc:CompanyID>BE0459866904</cbc:CompanyID>
+               <cac:TaxScheme>
+                  <cbc:ID>VAT</cbc:ID>
+               </cac:TaxScheme>
+            </cac:PartyTaxScheme>
+            <cac:PartyLegalEntity>
+               <cbc:RegistrationName>Verisure nv/sa</cbc:RegistrationName>
+            </cac:PartyLegalEntity>
+         </cac:Party>
+      </cac:AccountingSupplierParty>
+      <cac:AccountingCustomerParty>
+         <cac:Party>
+            <cbc:EndpointID schemeID="0208">0465341266</cbc:EndpointID>
+            <cac:PartyName>
+               <cbc:Name>Sixt Belgium Bv</cbc:Name>
+            </cac:PartyName>
+            <cac:PostalAddress>
+               <cbc:StreetName>Kouterveldstraat 6c</cbc:StreetName>
+               <cbc:CityName>Diegem</cbc:CityName>
+               <cbc:PostalZone>BE-1831</cbc:PostalZone>
+               <cac:Country>
+                  <cbc:IdentificationCode>BE</cbc:IdentificationCode>
+               </cac:Country>
+            </cac:PostalAddress>
+            <cac:PartyTaxScheme>
+               <cbc:CompanyID>BE0465341266</cbc:CompanyID>
+               <cac:TaxScheme>
+                  <cbc:ID>VAT</cbc:ID>
+               </cac:TaxScheme>
+            </cac:PartyTaxScheme>
+            <cac:PartyLegalEntity>
+               <cbc:RegistrationName>Sixt Belgium Bv</cbc:RegistrationName>
+            </cac:PartyLegalEntity>
+            <cac:Contact>
+               <cbc:ElectronicMail>Sixt Belgium Bv</cbc:ElectronicMail>
+            </cac:Contact>
+         </cac:Party>
+      </cac:AccountingCustomerParty>
+      <cac:AllowanceCharge>
+         <cbc:ChargeIndicator>false</cbc:ChargeIndicator>
+         <cbc:AllowanceChargeReasonCode>95</cbc:AllowanceChargeReasonCode>
+         <cbc:AllowanceChargeReason>Korting domiciliering</cbc:AllowanceChargeReason>
+         <cbc:Amount currencyID="EUR">5.4</cbc:Amount>
+         <cac:TaxCategory>
+            <cbc:ID>S</cbc:ID>
+            <cbc:Percent>21</cbc:Percent>
+            <cac:TaxScheme>
+               <cbc:ID>VAT</cbc:ID>
+            </cac:TaxScheme>
+         </cac:TaxCategory>
+      </cac:AllowanceCharge>
+      <cac:AllowanceCharge>
+         <cbc:ChargeIndicator>false</cbc:ChargeIndicator>
+         <cbc:AllowanceChargeReasonCode>95</cbc:AllowanceChargeReasonCode>
+         <cbc:AllowanceChargeReason>Discount</cbc:AllowanceChargeReason>
+         <cbc:Amount currencyID="EUR">2.59</cbc:Amount>
+         <cac:TaxCategory>
+            <cbc:ID>S</cbc:ID>
+            <cbc:Percent>21</cbc:Percent>
+            <cac:TaxScheme>
+               <cbc:ID>VAT</cbc:ID>
+            </cac:TaxScheme>
+         </cac:TaxCategory>
+      </cac:AllowanceCharge>
+      <cac:AllowanceCharge>
+         <cbc:ChargeIndicator>false</cbc:ChargeIndicator>
+         <cbc:AllowanceChargeReasonCode>95</cbc:AllowanceChargeReasonCode>
+         <cbc:AllowanceChargeReason>Korting domiciliering</cbc:AllowanceChargeReason>
+         <cbc:Amount currencyID="EUR">5.4</cbc:Amount>
+         <cac:TaxCategory>
+            <cbc:ID>S</cbc:ID>
+            <cbc:Percent>21</cbc:Percent>
+            <cac:TaxScheme>
+               <cbc:ID>VAT</cbc:ID>
+            </cac:TaxScheme>
+         </cac:TaxCategory>
+      </cac:AllowanceCharge>
+      <cac:AllowanceCharge>
+         <cbc:ChargeIndicator>false</cbc:ChargeIndicator>
+         <cbc:AllowanceChargeReasonCode>95</cbc:AllowanceChargeReasonCode>
+         <cbc:AllowanceChargeReason>Discount</cbc:AllowanceChargeReason>
+         <cbc:Amount currencyID="EUR">2.59</cbc:Amount>
+         <cac:TaxCategory>
+            <cbc:ID>S</cbc:ID>
+            <cbc:Percent>21</cbc:Percent>
+            <cac:TaxScheme>
+               <cbc:ID>VAT</cbc:ID>
+            </cac:TaxScheme>
+         </cac:TaxCategory>
+      </cac:AllowanceCharge>
+      <cac:AllowanceCharge>
+         <cbc:ChargeIndicator>false</cbc:ChargeIndicator>
+         <cbc:AllowanceChargeReasonCode>95</cbc:AllowanceChargeReasonCode>
+         <cbc:AllowanceChargeReason>Korting domiciliering</cbc:AllowanceChargeReason>
+         <cbc:Amount currencyID="EUR">5.4</cbc:Amount>
+         <cac:TaxCategory>
+            <cbc:ID>S</cbc:ID>
+            <cbc:Percent>21</cbc:Percent>
+            <cac:TaxScheme>
+               <cbc:ID>VAT</cbc:ID>
+            </cac:TaxScheme>
+         </cac:TaxCategory>
+      </cac:AllowanceCharge>
+      <cac:AllowanceCharge>
+         <cbc:ChargeIndicator>false</cbc:ChargeIndicator>
+         <cbc:AllowanceChargeReasonCode>95</cbc:AllowanceChargeReasonCode>
+         <cbc:AllowanceChargeReason>Discount</cbc:AllowanceChargeReason>
+         <cbc:Amount currencyID="EUR">2.59</cbc:Amount>
+         <cac:TaxCategory>
+            <cbc:ID>S</cbc:ID>
+            <cbc:Percent>21</cbc:Percent>
+            <cac:TaxScheme>
+               <cbc:ID>VAT</cbc:ID>
+            </cac:TaxScheme>
+         </cac:TaxCategory>
+      </cac:AllowanceCharge>
+      <cac:AllowanceCharge>
+         <cbc:ChargeIndicator>false</cbc:ChargeIndicator>
+         <cbc:AllowanceChargeReasonCode>95</cbc:AllowanceChargeReasonCode>
+         <cbc:AllowanceChargeReason>Korting domiciliering</cbc:AllowanceChargeReason>
+         <cbc:Amount currencyID="EUR">5.4</cbc:Amount>
+         <cac:TaxCategory>
+            <cbc:ID>S</cbc:ID>
+            <cbc:Percent>21</cbc:Percent>
+            <cac:TaxScheme>
+               <cbc:ID>VAT</cbc:ID>
+            </cac:TaxScheme>
+         </cac:TaxCategory>
+      </cac:AllowanceCharge>
+      <cac:AllowanceCharge>
+         <cbc:ChargeIndicator>false</cbc:ChargeIndicator>
+         <cbc:AllowanceChargeReasonCode>95</cbc:AllowanceChargeReasonCode>
+         <cbc:AllowanceChargeReason>Discount</cbc:AllowanceChargeReason>
+         <cbc:Amount currencyID="EUR">2.59</cbc:Amount>
+         <cac:TaxCategory>
+            <cbc:ID>S</cbc:ID>
+            <cbc:Percent>21</cbc:Percent>
+            <cac:TaxScheme>
+               <cbc:ID>VAT</cbc:ID>
+            </cac:TaxScheme>
+         </cac:TaxCategory>
+      </cac:AllowanceCharge>
+      <cac:AllowanceCharge>
+         <cbc:ChargeIndicator>false</cbc:ChargeIndicator>
+         <cbc:AllowanceChargeReasonCode>95</cbc:AllowanceChargeReasonCode>
+         <cbc:AllowanceChargeReason>Korting domiciliering</cbc:AllowanceChargeReason>
+         <cbc:Amount currencyID="EUR">5.4</cbc:Amount>
+         <cac:TaxCategory>
+            <cbc:ID>S</cbc:ID>
+            <cbc:Percent>21</cbc:Percent>
+            <cac:TaxScheme>
+               <cbc:ID>VAT</cbc:ID>
+            </cac:TaxScheme>
+         </cac:TaxCategory>
+      </cac:AllowanceCharge>
+      <cac:AllowanceCharge>
+         <cbc:ChargeIndicator>false</cbc:ChargeIndicator>
+         <cbc:AllowanceChargeReasonCode>95</cbc:AllowanceChargeReasonCode>
+         <cbc:AllowanceChargeReason>Discount</cbc:AllowanceChargeReason>
+         <cbc:Amount currencyID="EUR">2.59</cbc:Amount>
+         <cac:TaxCategory>
+            <cbc:ID>S</cbc:ID>
+            <cbc:Percent>21</cbc:Percent>
+            <cac:TaxScheme>
+               <cbc:ID>VAT</cbc:ID>
+            </cac:TaxScheme>
+         </cac:TaxCategory>
+      </cac:AllowanceCharge>
+      <cac:AllowanceCharge>
+         <cbc:ChargeIndicator>false</cbc:ChargeIndicator>
+         <cbc:AllowanceChargeReasonCode>95</cbc:AllowanceChargeReasonCode>
+         <cbc:AllowanceChargeReason>Korting domiciliering</cbc:AllowanceChargeReason>
+         <cbc:Amount currencyID="EUR">5.4</cbc:Amount>
+         <cac:TaxCategory>
+            <cbc:ID>S</cbc:ID>
+            <cbc:Percent>21</cbc:Percent>
+            <cac:TaxScheme>
+               <cbc:ID>VAT</cbc:ID>
+            </cac:TaxScheme>
+         </cac:TaxCategory>
+      </cac:AllowanceCharge>
+      <cac:AllowanceCharge>
+         <cbc:ChargeIndicator>false</cbc:ChargeIndicator>
+         <cbc:AllowanceChargeReasonCode>95</cbc:AllowanceChargeReasonCode>
+         <cbc:AllowanceChargeReason>Discount</cbc:AllowanceChargeReason>
+         <cbc:Amount currencyID="EUR">2.59</cbc:Amount>
+         <cac:TaxCategory>
+            <cbc:ID>S</cbc:ID>
+            <cbc:Percent>21</cbc:Percent>
+            <cac:TaxScheme>
+               <cbc:ID>VAT</cbc:ID>
+            </cac:TaxScheme>
+         </cac:TaxCategory>
+      </cac:AllowanceCharge>
+      <cac:AllowanceCharge>
+         <cbc:ChargeIndicator>false</cbc:ChargeIndicator>
+         <cbc:AllowanceChargeReasonCode>95</cbc:AllowanceChargeReasonCode>
+         <cbc:AllowanceChargeReason>Korting domiciliering</cbc:AllowanceChargeReason>
+         <cbc:Amount currencyID="EUR">5.4</cbc:Amount>
+         <cac:TaxCategory>
+            <cbc:ID>S</cbc:ID>
+            <cbc:Percent>21</cbc:Percent>
+            <cac:TaxScheme>
+               <cbc:ID>VAT</cbc:ID>
+            </cac:TaxScheme>
+         </cac:TaxCategory>
+      </cac:AllowanceCharge>
+      <cac:AllowanceCharge>
+         <cbc:ChargeIndicator>false</cbc:ChargeIndicator>
+         <cbc:AllowanceChargeReasonCode>95</cbc:AllowanceChargeReasonCode>
+         <cbc:AllowanceChargeReason>Discount</cbc:AllowanceChargeReason>
+         <cbc:Amount currencyID="EUR">2.59</cbc:Amount>
+         <cac:TaxCategory>
+            <cbc:ID>S</cbc:ID>
+            <cbc:Percent>21</cbc:Percent>
+            <cac:TaxScheme>
+               <cbc:ID>VAT</cbc:ID>
+            </cac:TaxScheme>
+         </cac:TaxCategory>
+      </cac:AllowanceCharge>
+      <cac:AllowanceCharge>
+         <cbc:ChargeIndicator>false</cbc:ChargeIndicator>
+         <cbc:AllowanceChargeReasonCode>95</cbc:AllowanceChargeReasonCode>
+         <cbc:AllowanceChargeReason>Korting domiciliering</cbc:AllowanceChargeReason>
+         <cbc:Amount currencyID="EUR">5.4</cbc:Amount>
+         <cac:TaxCategory>
+            <cbc:ID>S</cbc:ID>
+            <cbc:Percent>21</cbc:Percent>
+            <cac:TaxScheme>
+               <cbc:ID>VAT</cbc:ID>
+            </cac:TaxScheme>
+         </cac:TaxCategory>
+      </cac:AllowanceCharge>
+      <cac:TaxTotal>
+         <cbc:TaxAmount currencyID="EUR">104.31</cbc:TaxAmount>
+         <cac:TaxSubtotal>
+            <cbc:TaxableAmount currencyID="EUR">496.65</cbc:TaxableAmount>
+            <cbc:TaxAmount currencyID="EUR">104.31</cbc:TaxAmount>
+            <cac:TaxCategory>
+               <cbc:ID>S</cbc:ID>
+               <cbc:Percent>21</cbc:Percent>
+               <cac:TaxScheme>
+                  <cbc:ID>VAT</cbc:ID>
+               </cac:TaxScheme>
+            </cac:TaxCategory>
+         </cac:TaxSubtotal>
+      </cac:TaxTotal>
+      <cac:LegalMonetaryTotal>
+         <cbc:LineExtensionAmount currencyID="EUR">557.98</cbc:LineExtensionAmount>
+         <cbc:TaxExclusiveAmount currencyID="EUR">496.65</cbc:TaxExclusiveAmount>
+         <cbc:TaxInclusiveAmount currencyID="EUR">600.96</cbc:TaxInclusiveAmount>
+         <cbc:AllowanceTotalAmount currencyID="EUR">61.33</cbc:AllowanceTotalAmount>
+         <cbc:PayableRoundingAmount currencyID="EUR">0</cbc:PayableRoundingAmount>
+         <cbc:PayableAmount currencyID="EUR">600.96</cbc:PayableAmount>
+      </cac:LegalMonetaryTotal>
+      <cac:InvoiceLine>
+         <cbc:ID>1</cbc:ID>
+         <cbc:Note>Installatie: 320259039 Sixt Woluwe Sixt Belgium bv Leuvensesteenweg 36 1932 Sint-Stevens-Woluwe</cbc:Note>
+         <cbc:InvoicedQuantity unitCode="XUN">1</cbc:InvoicedQuantity>
+         <cbc:LineExtensionAmount currencyID="EUR">60.54</cbc:LineExtensionAmount>
+         <cac:InvoicePeriod>
+            <cbc:StartDate>2026-02-01</cbc:StartDate>
+            <cbc:EndDate>2026-02-28</cbc:EndDate>
+         </cac:InvoicePeriod>
+         <cac:Item>
+            <cbc:Description>Meldkamerabonnement (inclusief onderhoudspakket) 01.02.2026 - 28.02.2026</cbc:Description>
+            <cbc:Name>Meldkamerabonnement (inclusief onderhoudspakket) 01.02.2026 - 28.02.2026</cbc:Name>
+            <cac:ClassifiedTaxCategory>
+               <cbc:ID>S</cbc:ID>
+               <cbc:Percent>21</cbc:Percent>
+               <cac:TaxScheme>
+                  <cbc:ID>VAT</cbc:ID>
+               </cac:TaxScheme>
+            </cac:ClassifiedTaxCategory>
+         </cac:Item>
+         <cac:Price>
+            <cbc:PriceAmount currencyID="EUR">60.54</cbc:PriceAmount>
+         </cac:Price>
+      </cac:InvoiceLine>
+      <cac:InvoiceLine>
+         <cbc:ID>15</cbc:ID>
+         <cbc:Note>Installatie: 320259072 Sixt gare de midi Sixt Belgium bv Victor hortaplein (à la gare du midi) 1060 Brussel</cbc:Note>
+         <cbc:InvoicedQuantity unitCode="XUN">1</cbc:InvoicedQuantity>
+         <cbc:LineExtensionAmount currencyID="EUR">64.87</cbc:LineExtensionAmount>
+         <cac:InvoicePeriod>
+            <cbc:StartDate>2026-02-01</cbc:StartDate>
+            <cbc:EndDate>2026-02-28</cbc:EndDate>
+         </cac:InvoicePeriod>
+         <cac:Item>
+            <cbc:Description>Meldkamerabonnement (inclusief onderhoudspakket) 01.02.2026 - 28.02.2026</cbc:Description>
+            <cbc:Name>Meldkamerabonnement (inclusief onderhoudspakket) 01.02.2026 - 28.02.2026</cbc:Name>
+            <cac:ClassifiedTaxCategory>
+               <cbc:ID>S</cbc:ID>
+               <cbc:Percent>21</cbc:Percent>
+               <cac:TaxScheme>
+                  <cbc:ID>VAT</cbc:ID>
+               </cac:TaxScheme>
+            </cac:ClassifiedTaxCategory>
+         </cac:Item>
+         <cac:Price>
+            <cbc:PriceAmount currencyID="EUR">64.87</cbc:PriceAmount>
+         </cac:Price>
+      </cac:InvoiceLine>
+      <cac:InvoiceLine>
+         <cbc:ID>30</cbc:ID>
+         <cbc:Note>Installatie: 320259083 Sixt fleet depot Machelen Sixt Belgium bv Kouterveldstraat 6c 1831 Machelen</cbc:Note>
+         <cbc:InvoicedQuantity unitCode="XUN">1</cbc:InvoicedQuantity>
+         <cbc:LineExtensionAmount currencyID="EUR">72.41</cbc:LineExtensionAmount>
+         <cac:InvoicePeriod>
+            <cbc:StartDate>2026-02-01</cbc:StartDate>
+            <cbc:EndDate>2026-02-28</cbc:EndDate>
+         </cac:InvoicePeriod>
+         <cac:Item>
+            <cbc:Description>Meldkamerabonnement (inclusief onderhoudspakket) 01.02.2026 - 28.02.2026</cbc:Description>
+            <cbc:Name>Meldkamerabonnement (inclusief onderhoudspakket) 01.02.2026 - 28.02.2026</cbc:Name>
+            <cac:ClassifiedTaxCategory>
+               <cbc:ID>S</cbc:ID>
+               <cbc:Percent>21</cbc:Percent>
+               <cac:TaxScheme>
+                  <cbc:ID>VAT</cbc:ID>
+               </cac:TaxScheme>
+            </cac:ClassifiedTaxCategory>
+         </cac:Item>
+         <cac:Price>
+            <cbc:PriceAmount currencyID="EUR">72.41</cbc:PriceAmount>
+         </cac:Price>
+      </cac:InvoiceLine>
+      <cac:InvoiceLine>
+         <cbc:ID>50</cbc:ID>
+         <cbc:Note>Installatie: 320259139 Sixt Brussel airport parking Sixt Belgium bv Airport parking 1930 Zaventem</cbc:Note>
+         <cbc:InvoicedQuantity unitCode="XUN">1</cbc:InvoicedQuantity>
+         <cbc:LineExtensionAmount currencyID="EUR">60.54</cbc:LineExtensionAmount>
+         <cac:InvoicePeriod>
+            <cbc:StartDate>2026-02-01</cbc:StartDate>
+            <cbc:EndDate>2026-02-28</cbc:EndDate>
+         </cac:InvoicePeriod>
+         <cac:Item>
+            <cbc:Description>Meldkamerabonnement (inclusief onderhoudspakket) 01.02.2026 - 28.02.2026</cbc:Description>
+            <cbc:Name>Meldkamerabonnement (inclusief onderhoudspakket) 01.02.2026 - 28.02.2026</cbc:Name>
+            <cac:ClassifiedTaxCategory>
+               <cbc:ID>S</cbc:ID>
+               <cbc:Percent>21</cbc:Percent>
+               <cac:TaxScheme>
+                  <cbc:ID>VAT</cbc:ID>
+               </cac:TaxScheme>
+            </cac:ClassifiedTaxCategory>
+         </cac:Item>
+         <cac:Price>
+            <cbc:PriceAmount currencyID="EUR">60.54</cbc:PriceAmount>
+         </cac:Price>
+      </cac:InvoiceLine>
+      <cac:InvoiceLine>
+         <cbc:ID>64</cbc:ID>
+         <cbc:Note>Installatie: 320259152 airport arrival hall Sixt Belgium bv Arrival hal 1930 Zaventem</cbc:Note>
+         <cbc:InvoicedQuantity unitCode="XUN">1</cbc:InvoicedQuantity>
+         <cbc:LineExtensionAmount currencyID="EUR">60.54</cbc:LineExtensionAmount>
+         <cac:InvoicePeriod>
+            <cbc:StartDate>2026-02-01</cbc:StartDate>
+            <cbc:EndDate>2026-02-28</cbc:EndDate>
+         </cac:InvoicePeriod>
+         <cac:Item>
+            <cbc:Description>Meldkamerabonnement (inclusief onderhoudspakket) 01.02.2026 - 28.02.2026</cbc:Description>
+            <cbc:Name>Meldkamerabonnement (inclusief onderhoudspakket) 01.02.2026 - 28.02.2026</cbc:Name>
+            <cac:ClassifiedTaxCategory>
+               <cbc:ID>S</cbc:ID>
+               <cbc:Percent>21</cbc:Percent>
+               <cac:TaxScheme>
+                  <cbc:ID>VAT</cbc:ID>
+               </cac:TaxScheme>
+            </cac:ClassifiedTaxCategory>
+         </cac:Item>
+         <cac:Price>
+            <cbc:PriceAmount currencyID="EUR">60.54</cbc:PriceAmount>
+         </cac:Price>
+      </cac:InvoiceLine>
+      <cac:InvoiceLine>
+         <cbc:ID>78</cbc:ID>
+         <cbc:Note>Installatie: 320259195 Sixt Charleroi airport Sixt Belgium bv Rue des Frères Wright 8 6041 Charleroi</cbc:Note>
+         <cbc:InvoicedQuantity unitCode="XUN">1</cbc:InvoicedQuantity>
+         <cbc:LineExtensionAmount currencyID="EUR">63.78</cbc:LineExtensionAmount>
+         <cac:InvoicePeriod>
+            <cbc:StartDate>2026-02-01</cbc:StartDate>
+            <cbc:EndDate>2026-02-28</cbc:EndDate>
+         </cac:InvoicePeriod>
+         <cac:Item>
+            <cbc:Description>Meldkamerabonnement (inclusief onderhoudspakket) 01.02.2026 - 28.02.2026</cbc:Description>
+            <cbc:Name>Meldkamerabonnement (inclusief onderhoudspakket) 01.02.2026 - 28.02.2026</cbc:Name>
+            <cac:ClassifiedTaxCategory>
+               <cbc:ID>S</cbc:ID>
+               <cbc:Percent>21</cbc:Percent>
+               <cac:TaxScheme>
+                  <cbc:ID>VAT</cbc:ID>
+               </cac:TaxScheme>
+            </cac:ClassifiedTaxCategory>
+         </cac:Item>
+         <cac:Price>
+            <cbc:PriceAmount currencyID="EUR">63.78</cbc:PriceAmount>
+         </cac:Price>
+      </cac:InvoiceLine>
+      <cac:InvoiceLine>
+         <cbc:ID>93</cbc:ID>
+         <cbc:Note>Installatie: 320259240 Sixt gent Sixt Belgium bv Kortrijksesteenweg 1127c 9051 Gent</cbc:Note>
+         <cbc:InvoicedQuantity unitCode="XUN">1</cbc:InvoicedQuantity>
+         <cbc:LineExtensionAmount currencyID="EUR">60.54</cbc:LineExtensionAmount>
+         <cac:InvoicePeriod>
+            <cbc:StartDate>2026-02-01</cbc:StartDate>
+            <cbc:EndDate>2026-02-28</cbc:EndDate>
+         </cac:InvoicePeriod>
+         <cac:Item>
+            <cbc:Description>Meldkamerabonnement (inclusief onderhoudspakket) 01.02.2026 - 28.02.2026</cbc:Description>
+            <cbc:Name>Meldkamerabonnement (inclusief onderhoudspakket) 01.02.2026 - 28.02.2026</cbc:Name>
+            <cac:ClassifiedTaxCategory>
+               <cbc:ID>S</cbc:ID>
+               <cbc:Percent>21</cbc:Percent>
+               <cac:TaxScheme>
+                  <cbc:ID>VAT</cbc:ID>
+               </cac:TaxScheme>
+            </cac:ClassifiedTaxCategory>
+         </cac:Item>
+         <cac:Price>
+            <cbc:PriceAmount currencyID="EUR">60.54</cbc:PriceAmount>
+         </cac:Price>
+      </cac:InvoiceLine>
+      <cac:InvoiceLine>
+         <cbc:ID>107</cbc:ID>
+         <cbc:Note>Installatie: 320262827 Bv Sixt Antwerpen Vosseschijnstraat 11 2030 Antwerpen 3</cbc:Note>
+         <cbc:InvoicedQuantity unitCode="XUN">1</cbc:InvoicedQuantity>
+         <cbc:LineExtensionAmount currencyID="EUR">57.46</cbc:LineExtensionAmount>
+         <cac:InvoicePeriod>
+            <cbc:StartDate>2026-02-01</cbc:StartDate>
+            <cbc:EndDate>2026-02-28</cbc:EndDate>
+         </cac:InvoicePeriod>
+         <cac:Item>
+            <cbc:Description>Meldkamerabonnement (inclusief onderhoudspakket) 01.02.2026 - 28.02.2026</cbc:Description>
+            <cbc:Name>Meldkamerabonnement (inclusief onderhoudspakket) 01.02.2026 - 28.02.2026</cbc:Name>
+            <cac:ClassifiedTaxCategory>
+               <cbc:ID>S</cbc:ID>
+               <cbc:Percent>21</cbc:Percent>
+               <cac:TaxScheme>
+                  <cbc:ID>VAT</cbc:ID>
+               </cac:TaxScheme>
+            </cac:ClassifiedTaxCategory>
+         </cac:Item>
+         <cac:Price>
+            <cbc:PriceAmount currencyID="EUR">57.46</cbc:PriceAmount>
+         </cac:Price>
+      </cac:InvoiceLine>
+      <cac:InvoiceLine>
+         <cbc:ID>118</cbc:ID>
+         <cbc:Note>Installatie: 320273940 Bv Sixt Belgium Bd Cuivre et Zinc 37 4030 Grivegnée</cbc:Note>
+         <cbc:InvoicedQuantity unitCode="XUN">1</cbc:InvoicedQuantity>
+         <cbc:LineExtensionAmount currencyID="EUR">57.3</cbc:LineExtensionAmount>
+         <cac:InvoicePeriod>
+            <cbc:StartDate>2026-02-01</cbc:StartDate>
+            <cbc:EndDate>2026-02-28</cbc:EndDate>
+         </cac:InvoicePeriod>
+         <cac:Item>
+            <cbc:Description>Meldkamerabonnement (inclusief onderhoudspakket) 01.02.2026 - 28.02.2026</cbc:Description>
+            <cbc:Name>Meldkamerabonnement (inclusief onderhoudspakket) 01.02.2026 - 28.02.2026</cbc:Name>
+            <cac:ClassifiedTaxCategory>
+               <cbc:ID>S</cbc:ID>
+               <cbc:Percent>21</cbc:Percent>
+               <cac:TaxScheme>
+                  <cbc:ID>VAT</cbc:ID>
+               </cac:TaxScheme>
+            </cac:ClassifiedTaxCategory>
+         </cac:Item>
+         <cac:Price>
+            <cbc:PriceAmount currencyID="EUR">57.3</cbc:PriceAmount>
+         </cac:Price>
+      </cac:InvoiceLine>
+   </ubl:Invoice>
