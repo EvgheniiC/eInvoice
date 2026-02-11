@@ -119,9 +119,9 @@ def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) ->
                                                                tags_to_search_invoice_amount)
 
     # HW-5945 xml_invoice_data.invoice_amount = xml_invoice_data.invoice_amount - discount
-    discount:float = string_to_float(find_data_within_element(xml_invoice_head_money, tags_to_search_discount))
-    if discount:
-        xml_invoice_data.invoice_amount = str(round(string_to_float(xml_invoice_data.invoice_amount) - discount, 2))
+    xml_invoice_data.discount = string_to_float(find_data_within_element(xml_invoice_head_money, tags_to_search_discount))
+    if xml_invoice_data.discount:
+        xml_invoice_data.invoice_amount = str(round(string_to_float(xml_invoice_data.invoice_amount) - string_to_float(xml_invoice_data.discount), 2))
 
     xml_invoice_data.total_amount = find_data_within_element(xml_invoice_head_money, tags_to_search_total_amount)
     xml_invoice_data.total_tax_amount = find_data_within_element(xml_invoice_head_money,

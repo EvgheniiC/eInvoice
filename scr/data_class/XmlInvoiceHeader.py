@@ -111,7 +111,8 @@ class XmlInvoiceHeader:
                  m_cn_mail_id=None,
                  email_name=None,
                  license_number: str = None,
-                 sixt_vat_id: str = None
+                 sixt_vat_id: str = None,
+                 discount: str = None
                  ):
 
         self.m_cn_id = m_cn_id
@@ -158,6 +159,7 @@ class XmlInvoiceHeader:
         self.email_name = email_name
         self.license_number = license_number
         self.sixt_vat_id = sixt_vat_id
+        self.discount = discount
         self.__table = "CHRONOS_EINVOICE_HEADER"
         self.__table_pos = "CHRONOS_EINVOICE_POSITOINS"
         self.__positions = []
@@ -585,6 +587,14 @@ class XmlInvoiceHeader:
     @sixt_vat_id.setter
     def sixt_vat_id(self, value):
         self.__sixt_vat_id = value
+
+    @property
+    def discount(self):
+        return self.__discount
+
+    @discount.setter
+    def discount(self, value):
+        self.__discount = value
 
     def set_dates(self):
         """

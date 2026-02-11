@@ -24,6 +24,10 @@ def get_xml_positions(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger)
     tags_to_search_single_net_price: list = get_tags_from_json('tags_to_search_single_net_price')
     tags_to_search_total_net_price: list = get_tags_from_json('tags_to_search_total_net_price')
     tags_to_search_order_line_reference: list = get_tags_from_json('tags_to_search_order_line_reference')
+    tags_to_search_discount: list = get_tags_from_json('tags_to_search_discount')
+
+    xml_invoice_head_money: Element = xml_tree
+    discount: str = find_data_within_element(xml_invoice_head_money, tags_to_search_discount)
 
     if not xml_positions_data_zugpferd and not xml_positions_data:
         xml_positions_data: list = xml_tree.findall("./CreditNoteLine")
@@ -85,14 +89,21 @@ def get_xml_positions(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger)
                                article_number=article_number, order_pos_id=order_pos_id))
         item_position += 1
 
-    # if not positions
-    if not xml_positions_data_zugpferd and not xml_positions_data:
+    if discount and discount != "0.00":
+        discount = "-" + discount
         xml_invoice_data.add_position(
             XmlInvoicePosition(item_pos=item_position, position_text="description_text", quantity=1,
-                               single_net_price=0, tax_rate=0,
-                               total_net_price=0, invoice_id=xml_invoice_data.m_cn_id,
-                               article_number=None))
+                               single_net_price=string_to_float_negative(discount), tax_rate=tax_rate, cost_center=cost_center,
+                               total_net_price=string_to_float_negative(discount), invoice_id=xml_invoice_data.m_cn_id))
 
-    logger.info_log(f"Finish get_xml_header with m_cn_id = {xml_invoice_data.m_cn_id}")
+        # if not positions
+        if not xml_positions_data_zugpferd and not xml_positions_data:
+            xml_invoice_data.add_position(
+                XmlInvoicePosition(item_pos=item_position, position_text="description_text", quantity=1,
+                                   single_net_price=0, tax_rate=0,
+                                   total_net_price=0, invoice_id=xml_invoice_data.m_cn_id,
+                                   article_number=None))
+
+        logger.info_log(f"Finish get_xml_header with m_cn_id = {xml_invoice_data.m_cn_id}")
 
     return xml_invoice_data
