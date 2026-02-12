@@ -78,7 +78,7 @@ def extract_pdf_attachments(m_cn_id: str, data: dict, key: str) -> list:
                 "M_CN_ID": m_cn_id,
                 "ATTACHMENT": embedded.get('#text'),
                 "FILE_NAME": embedded.get('@filename'),
-                "FILE_TYPE": "pdf"
+                "FILE_TYPE": embedded.get('@filename').split('.')[-1] if embedded.get('@filename') else "pdf"
             }
 
             # Only add if we have at least the attachment content
