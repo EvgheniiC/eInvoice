@@ -1,0 +1,10 @@
+
+{
+  "_comment": "Mapping based on documentation: https://docs.peppol.eu/poacc/billing/3.0/codelist/eas/",
+  "attribute_mappings": {
+    "0208": "35",
+    "9956": "35",
+    "9930": "1",
+    "9931": "1"
+  }
+}

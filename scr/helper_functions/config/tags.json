@@ -207,5 +207,8 @@
   ],
   "tags_to_search_discount": [
     "./LegalMonetaryTotal/AllowanceTotalAmount"
+  ],
+  "tags_to_search_client_with_attribute": [
+    "./AccountingSupplierParty/Party/EndpointID"
   ]
 }

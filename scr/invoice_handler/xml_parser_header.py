@@ -3,7 +3,7 @@ import re
 from ..data_class import XmlInvoiceHeader
 from ..helper_functions import find_data_within_element, find_data_with_regex, get_xml_tree, \
     find_data_within_element_with_len, get_tags_from_json, check_cost_center, find_tax_data, format_sixt_number, \
-    get_field_value, string_to_float
+    get_field_value, string_to_float, find_attribute_within_element
 from xml.etree.ElementTree import Element
 
 
@@ -52,6 +52,7 @@ def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) ->
     tags_to_search_cost_center: list = get_tags_from_json('tags_to_search_cost_center')
     tags_to_search_client_vat_id: list = get_tags_from_json('tags_to_search_client_vat_id')
     tags_to_search_discount: list = get_tags_from_json('tags_to_search_discount')
+    tags_to_search_client_with_attribute: list = get_tags_from_json('tags_to_search_client_with_attribute')
 
     xml_invoice_data.invoice_number = find_data_within_element(xml_exchanged_document, tags_to_search_invoice_number)
 
@@ -119,9 +120,11 @@ def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) ->
                                                                tags_to_search_invoice_amount)
 
     # HW-5945 xml_invoice_data.invoice_amount = xml_invoice_data.invoice_amount - discount
-    xml_invoice_data.discount = string_to_float(find_data_within_element(xml_invoice_head_money, tags_to_search_discount))
+    xml_invoice_data.discount = string_to_float(
+        find_data_within_element(xml_invoice_head_money, tags_to_search_discount))
     if xml_invoice_data.discount:
-        xml_invoice_data.invoice_amount = str(round(string_to_float(xml_invoice_data.invoice_amount) - string_to_float(xml_invoice_data.discount), 2))
+        xml_invoice_data.invoice_amount = str(
+            round(string_to_float(xml_invoice_data.invoice_amount) - string_to_float(xml_invoice_data.discount), 2))
 
     xml_invoice_data.total_amount = find_data_within_element(xml_invoice_head_money, tags_to_search_total_amount)
     xml_invoice_data.total_tax_amount = find_data_within_element(xml_invoice_head_money,
@@ -178,7 +181,10 @@ def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) ->
     if not xml_invoice_data.cost_center:
         xml_invoice_data.cost_center = check_cost_center(get_field_value(xml_tree, 'cost_center'))
 
-    xml_invoice_data.client = get_field_value(xml_tree, 'legal_entity')
+    xml_invoice_data.client = find_attribute_within_element(xml_tree, tags_to_search_client_with_attribute, "schemeID")
+
+    if not xml_invoice_data.client:
+        xml_invoice_data.client = get_field_value(xml_tree, 'legal_entity')
     # some clients send 035 or 001
     if xml_invoice_data.client:
         xml_invoice_data.client = xml_invoice_data.client.lstrip('0')

@@ -35,6 +35,61 @@ def find_data_within_element(element: Element, tags: list, default: str = None) 
     return default
 
 
+def load_mappings() -> dict:
+    """
+    Load and cache attribute mappings from JSON configuration file.
+
+    Returns:
+        Dictionary with attribute mappings or empty dict if file not found.
+    """
+    try:
+        config_path = Path(__file__).parent / "config" / "mapping_client.json"
+        with open(config_path, 'r', encoding='utf-8') as f:
+            return json.load(f).get("attribute_mappings", {})
+    except FileNotFoundError as e:
+        print(f"Config file not found: {e}")
+        return {}
+    except json.JSONDecodeError as e:
+        print(f"Error parsing JSON: {e}")
+        return {}
+
+
+def find_attribute_within_element(
+        element: Element, tags: list, attribute_name: str, default: str = None) -> Union[str, None]:
+    """
+    Find and map attribute value within XML element.
+
+    Searches through provided tags within the XML element and extracts
+    the specified attribute value. Returns mapped value only if the
+    attribute value exists in the mapping configuration.
+
+    Args:
+        element: The XML element to search within.
+        tags: List of tag names to search for in the element.
+        attribute_name: Name of the attribute to extract from the tag.
+        default: Default value to return if attribute is not found or not in mapping.
+
+    Returns:
+        Mapped attribute value if found in mapping configuration.
+        Returns default if attribute is not found or not in mapping.
+    """
+
+    if not element:
+        return default
+
+    for tag in tags:
+        if (data := element.find(tag)) is not None:
+            if (value := data.get(attribute_name)):
+                value = value.strip()
+                mappings = load_mappings()
+
+                # Return mapped value only if exists in mapping
+                if value in mappings:
+                    return mappings[value]
+
+    return default
+
+
 def find_data_within_element_with_len(element: Element, tags: list, length: int) -> Union[str, None]:
     """
     Searches for data within XML elements based on provided tags and length.
