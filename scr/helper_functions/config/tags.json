@@ -1,8 +1,10 @@
 {
   "tags_to_search_tax_id": [
+    "./AccountingCustomerParty/Party/PartyLegalEntity/CompanyID",
     "./AccountingSupplierParty/Party/PartyTaxScheme/CompanyID",
     "./ApplicableHeaderTradeAgreement/SellerTradeParty/SpecifiedTaxRegistration/ID",
     "./Invoice/AccountingSupplierParty/Party/PartyTaxScheme/CompanyID"
+
   ],
   "tags_to_search_client_name": [
     "./AccountingSupplierParty/Party/PartyName/Name",
@@ -191,7 +193,7 @@
     "./AccountingSupplierParty/Party/Contact/ElectronicMail"
   ],
   "tags_to_search_client_name_billing": [
-    "./AccountingCustomerParty/Party/PartyName/Name"
+    "./AccountingCustomerParty/Party/PartyLegalEntity/RegistrationName"
   ],
   "tags_to_search_street_billing": [
     "./AccountingCustomerParty/Party/PostalAddress/StreetName"

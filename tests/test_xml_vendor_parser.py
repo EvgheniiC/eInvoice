@@ -50,7 +50,7 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_BUDGET': None,
                           'S_KR_BUYERREFERENCE': '99000000-01514-29',
                           'S_KR_CLIENT_NAME': 'EntServDE',
-                          'S_KR_CLIENT_NAME_BILLING': 'Abweichender Handelsname Rechnungsempfnger',
+                          'S_KR_CLIENT_NAME_BILLING': 'Deutsches Patent - und\n\t\t\t\t\tMarkenamt',
                           'S_KR_CLIENT_NAME_DELIVERY': 'Anderer Leistungsempfnger',
                           'S_KR_CONTACT': 'kontakt@Rechnungssteller.de',
                           'S_KR_EMPLOYEE_ID': None,
@@ -70,7 +70,7 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_STRASSE_DELIVERY': 'Anderer Leistungsempfnger Strae 1',
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
-                          'S_KR_USTID': 'ATU13585627',
+                          'S_KR_USTID': '90000000-03083-12',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
                           'S_KR_VEHICLE_REGISTRATION': None})
@@ -160,7 +160,7 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_BUDGET': None,
                           'S_KR_BUYERREFERENCE': 'Bestellung SIXT-000000025218',
                           'S_KR_CLIENT_NAME': None,
-                          'S_KR_CLIENT_NAME_BILLING': None,
+                          'S_KR_CLIENT_NAME_BILLING': 'Sixt GmbH & Co. Autovermietung KG',
                           'S_KR_CLIENT_NAME_DELIVERY': None,
                           'S_KR_CONTACT': 'inspire-buchhaltung@mrknow.ai',
                           'S_KR_EMPLOYEE_ID': None,
@@ -408,7 +408,7 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_STRASSE_DELIVERY': 'Diestsepoort 1',
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
-                          'S_KR_USTID': 'BE0473329910',
+                          'S_KR_USTID': '0465341266',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
                           'S_KR_VEHICLE_REGISTRATION': None})
@@ -446,7 +446,7 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_STRASSE_DELIVERY': 'Leuvensesteenweg 430',
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
-                          'S_KR_USTID': 'BE0821129645',
+                          'S_KR_USTID': '0465341266',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
                           'S_KR_VEHICLE_REGISTRATION': None})
@@ -484,7 +484,7 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_STRASSE_DELIVERY': None,
                           'S_KR_TRIP_INFO': 'Branch Support/Different Work Location',
                           'S_KR_TRIP_PURPOSE': 'NO',
-                          'S_KR_USTID': 'BE0403266810',
+                          'S_KR_USTID': 'BE0465341266',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
                           'S_KR_VEHICLE_REGISTRATION': None})
@@ -559,7 +559,7 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_STRASSE_DELIVERY': 'Nieuwlandlaan 5',
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
-                          'S_KR_USTID': 'BE0870392282',
+                          'S_KR_USTID': '419261',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
                           'S_KR_VEHICLE_REGISTRATION': None})
@@ -596,7 +596,7 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_STRASSE_DELIVERY': 'Z. 3 DOORNVELD 60',
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
-                          'S_KR_USTID': 'BE0452263488',
+                          'S_KR_USTID': '0465341266',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
                           'S_KR_VEHICLE_REGISTRATION': None})
@@ -633,10 +633,48 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_STRASSE_DELIVERY': 'Chaussée de Hal 28',
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
-                          'S_KR_USTID': 'BE0423518034',
+                          'S_KR_USTID': '0465341266',
                           'S_KR_VEHICLE_ID': 'VXFVLEHS2S7800434',
                           'S_KR_VEHICLE_ODOMETER_READING': '37991',
                           'S_KR_VEHICLE_REGISTRATION': '2GHA914'})
+
+        self.assertEqual(supplier, None)
+
+    # HW-5938
+    def test_get_ergenzungen(self):
+        m_cn_id = "8000039"
+        clear_xml_from_gerd = read_xml_file_to_str('xml_files/ergenzungen_HW-5938.xml')
+        clients_data, supplier = get_einvoice_vendor_data(m_cn_id=m_cn_id, xml_text=clear_xml_from_gerd, logger=Mock())
+        self.assertEqual(clients_data,
+                         {'M_CN_ID': '8000039',
+                          'S_KR_APPROVAL': None,
+                          'S_KR_BUDGET': None,
+                          'S_KR_BUYERREFERENCE': None,
+                          'S_KR_CLIENT_NAME': 'AG BXL',
+                          'S_KR_CLIENT_NAME_BILLING': 'SIXT BELGIUM BV',
+                          'S_KR_CLIENT_NAME_DELIVERY': None,
+                          'S_KR_CONTACT': 'info.autoglassbxl@gmail.com',
+                          'S_KR_EMPLOYEE_ID': None,
+                          'S_KR_IBAN': 'BE30363136136611',
+                          'S_KR_LAND': 'BE',
+                          'S_KR_LAND_BILLING': None,
+                          'S_KR_LAND_DELIVERY': None,
+                          'S_KR_NAME1': 'AG BXL',
+                          'S_KR_ORT': 'Evere',
+                          'S_KR_ORT_BILLING': 'Machelen (Brab.)',
+                          'S_KR_ORT_DELIVERY': 'Evere',
+                          'S_KR_POSTLEITZAHL': '1140',
+                          'S_KR_POSTLEITZAHL_BILLING': '1831',
+                          'S_KR_POSTLEITZAHL_DELIVERY': '1140',
+                          'S_KR_STRASSE': 'Haachtsesteenweg 1018',
+                          'S_KR_STRASSE_BILLING': 'Kouterveldstraat 6 bus C',
+                          'S_KR_STRASSE_DELIVERY': 'Haachtsesteenweg 1018',
+                          'S_KR_TRIP_INFO': None,
+                          'S_KR_TRIP_PURPOSE': None,
+                          'S_KR_USTID': '0465341266',
+                          'S_KR_VEHICLE_ID': None,
+                          'S_KR_VEHICLE_ODOMETER_READING': None,
+                          'S_KR_VEHICLE_REGISTRATION': None})
 
         self.assertEqual(supplier, None)
 

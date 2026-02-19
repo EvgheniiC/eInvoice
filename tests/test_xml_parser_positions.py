@@ -1199,8 +1199,6 @@ class TestXmlParserHeader(unittest.TestCase):
             xml_text=xml_positions,
             xml_invoice_data=xml_invoice_header, logger=Mock())
 
-        print(xml_invoice_positions.get_xml_postions_map())
-
         self.assertEqual(xml_invoice_positions.get_xml_postions_map(),
                          [{'M_CN_ID': None, 'M_CN_INVOICEID': '8004483', 'M_IP_ITEMPOS': 1,
                            'M_IP_POSITIONSTEXT': 'Meldkamerabonnement (inclusief onderhoudspakket) 01.02.2026 - 28.02.2026',
@@ -1282,6 +1280,62 @@ class TestXmlParserHeader(unittest.TestCase):
                            'M_IP_TYP': 'ET', 'M_IP_DISCOUNTPERCENT': None, 'M_IP_TAXCODE': None, 'M_IP_ORDERPOSID': '',
                            'M_IP_GOODSINWARDPOSID': '', 'M_IP_ECLASS': ''}]
 
+                         )
+
+    def test_get_xml_add_positions_discount(self):
+        m_cn_id = "8041064"
+        xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id)
+        xml_positions = read_xml_file_to_str('xml_files/discount_new_position.xml')
+        xml_invoice_positions = get_xml_positions(
+            xml_text=xml_positions,
+            xml_invoice_data=xml_invoice_header, logger=Mock())
+
+        print(xml_invoice_positions.get_xml_postions_map())
+
+        self.assertEqual(xml_invoice_positions.get_xml_postions_map(),
+                         [{'M_CN_ID': None, 'M_CN_INVOICEID': '8041064', 'M_IP_ITEMPOS': 1,
+                           'M_IP_POSITIONSTEXT': 'Water 19L (2026-01-23 a 2026-01-23)', 'M_IP_QUANTITY': 8.0,
+                           'M_IP_SINGLENETPRICE': 13.13, 'M_IP_TOTALNETPRICE': 105.04, 'M_IP_TAXRATE': 6.0,
+                           'M_IP_COSTCENTER': None, 'M_IP_KOSTENTRAEGER': '', 'M_IP_INVENTORYACC': None,
+                           'M_IP_ARTICLENUMBER': '', 'M_IP_ARTICLENUMBER2': None, 'M_IP_DISCOUNTAMOUNT': None,
+                           'M_IP_QUANTITYUNIT': None, 'M_IP_TYP': 'ET', 'M_IP_DISCOUNTPERCENT': None,
+                           'M_IP_TAXCODE': None, 'M_IP_ORDERPOSID': None, 'M_IP_GOODSINWARDPOSID': '',
+                           'M_IP_ECLASS': ''}, {'M_CN_ID': None, 'M_CN_INVOICEID': '8041064', 'M_IP_ITEMPOS': 2,
+                                                'M_IP_POSITIONSTEXT': 'Milk (200caps X 7g) (2026-01-23 a 2026-01-23)',
+                                                'M_IP_QUANTITY': 2.0, 'M_IP_SINGLENETPRICE': 25.6,
+                                                'M_IP_TOTALNETPRICE': 51.2, 'M_IP_TAXRATE': 6.0,
+                                                'M_IP_COSTCENTER': None, 'M_IP_KOSTENTRAEGER': '',
+                                                'M_IP_INVENTORYACC': None, 'M_IP_ARTICLENUMBER': '',
+                                                'M_IP_ARTICLENUMBER2': None, 'M_IP_DISCOUNTAMOUNT': None,
+                                                'M_IP_QUANTITYUNIT': None, 'M_IP_TYP': 'ET',
+                                                'M_IP_DISCOUNTPERCENT': None, 'M_IP_TAXCODE': None,
+                                                'M_IP_ORDERPOSID': None, 'M_IP_GOODSINWARDPOSID': '',
+                                                'M_IP_ECLASS': ''},
+                          {'M_CN_ID': None, 'M_CN_INVOICEID': '8041064', 'M_IP_ITEMPOS': 3,
+                           'M_IP_POSITIONSTEXT': 'Packaging charge 18,9L bottle', 'M_IP_QUANTITY': 8.0,
+                           'M_IP_SINGLENETPRICE': 0.27, 'M_IP_TOTALNETPRICE': 2.16, 'M_IP_TAXRATE': 6.0,
+                           'M_IP_COSTCENTER': None, 'M_IP_KOSTENTRAEGER': '', 'M_IP_INVENTORYACC': None,
+                           'M_IP_ARTICLENUMBER': '', 'M_IP_ARTICLENUMBER2': None, 'M_IP_DISCOUNTAMOUNT': None,
+                           'M_IP_QUANTITYUNIT': None, 'M_IP_TYP': 'ET', 'M_IP_DISCOUNTPERCENT': None,
+                           'M_IP_TAXCODE': None, 'M_IP_ORDERPOSID': None, 'M_IP_GOODSINWARDPOSID': '',
+                           'M_IP_ECLASS': ''}, {'M_CN_ID': None, 'M_CN_INVOICEID': '8041064', 'M_IP_ITEMPOS': 4,
+                                                'M_IP_POSITIONSTEXT': 'Kilometer charge', 'M_IP_QUANTITY': 1.0,
+                                                'M_IP_SINGLENETPRICE': 1.5, 'M_IP_TOTALNETPRICE': 1.5,
+                                                'M_IP_TAXRATE': 6.0, 'M_IP_COSTCENTER': None, 'M_IP_KOSTENTRAEGER': '',
+                                                'M_IP_INVENTORYACC': None, 'M_IP_ARTICLENUMBER': '',
+                                                'M_IP_ARTICLENUMBER2': None, 'M_IP_DISCOUNTAMOUNT': None,
+                                                'M_IP_QUANTITYUNIT': None, 'M_IP_TYP': 'ET',
+                                                'M_IP_DISCOUNTPERCENT': None, 'M_IP_TAXCODE': None,
+                                                'M_IP_ORDERPOSID': None, 'M_IP_GOODSINWARDPOSID': '',
+                                                'M_IP_ECLASS': ''},
+                          {'M_CN_ID': None, 'M_CN_INVOICEID': '8041064', 'M_IP_ITEMPOS': 5,
+                           'M_IP_POSITIONSTEXT': 'Empties water 18.9L', 'M_IP_QUANTITY': 2.0,
+                           'M_IP_SINGLENETPRICE': 12.8, 'M_IP_TOTALNETPRICE': -25.6, 'M_IP_TAXRATE': 0.0,
+                           'M_IP_COSTCENTER': None, 'M_IP_KOSTENTRAEGER': '', 'M_IP_INVENTORYACC': None,
+                           'M_IP_ARTICLENUMBER': '', 'M_IP_ARTICLENUMBER2': None, 'M_IP_DISCOUNTAMOUNT': None,
+                           'M_IP_QUANTITYUNIT': None, 'M_IP_TYP': 'ET', 'M_IP_DISCOUNTPERCENT': None,
+                           'M_IP_TAXCODE': None, 'M_IP_ORDERPOSID': None, 'M_IP_GOODSINWARDPOSID': '',
+                           'M_IP_ECLASS': ''}]
                          )
 
 
