@@ -37,7 +37,8 @@ class TestClientParser(unittest.TestCase):
                                         'S_KR_USTID': 'DE 123456789',
                                         'S_KR_VEHICLE_ID': None,
                                         'S_KR_VEHICLE_ODOMETER_READING': None,
-                                        'S_KR_VEHICLE_REGISTRATION': None})
+                                        'S_KR_VEHICLE_REGISTRATION': None,
+                                        'S_KR_PAYMENT_MEANS': []})
         self.assertEqual(supplier, None)
 
     def test_get_einvoice_client_data_none(self):
@@ -73,7 +74,11 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_USTID': '90000000-03083-12',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
-                          'S_KR_VEHICLE_REGISTRATION': None})
+                          'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_PAYMENT_MEANS': [
+                              {'PaymentMeansCode': '30', 'PaymentID': 'Verwendungszweck',
+                               'AccountID': 'DE84 6004 0071 0561 5158 01', 'BranchID': 'XXX0561515801'}
+                          ]})
         self.assertEqual(supplier, None)
 
     def test_get_einvoice_client_data_all_data(self):
@@ -110,7 +115,8 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_USTID': 'DE814742004',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
-                          'S_KR_VEHICLE_REGISTRATION': None})
+                          'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_PAYMENT_MEANS': []})
         self.assertEqual(supplier, None)
 
     def test_get_einvoice_client_data_no(self):
@@ -146,7 +152,8 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_USTID': 'DE259922663',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
-                          'S_KR_VEHICLE_REGISTRATION': None})
+                          'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_PAYMENT_MEANS': []})
         self.assertEqual(supplier, '')
 
     # not zugpferd, only XML file
@@ -183,7 +190,11 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_USTID': 'DE260569738',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
-                          'S_KR_VEHICLE_REGISTRATION': None})
+                          'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_PAYMENT_MEANS': [
+                              {'PaymentMeansCode': '58', 'PaymentID': '3250124002',
+                               'AccountID': 'DE13664900000023969700', 'BranchID': 'GENODE61OG1'}
+                          ]})
 
         self.assertEqual(supplier, None)
 
@@ -220,7 +231,8 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_USTID': 'DE814742004',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
-                          'S_KR_VEHICLE_REGISTRATION': None})
+                          'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_PAYMENT_MEANS': []})
 
         self.assertEqual(supplier, None)
 
@@ -259,7 +271,11 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_USTID': 'DE138410797',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
-                          'S_KR_VEHICLE_REGISTRATION': None})
+                          'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_PAYMENT_MEANS': [
+                              {'PaymentMeansCode': '30', 'PaymentID': None,
+                               'AccountID': 'DE55160500003504000405', 'BranchID': None}
+                          ]})
 
         self.assertEqual(supplier, None)
 
@@ -298,8 +314,11 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_USTID': 'DE138410797',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
-                          'S_KR_VEHICLE_REGISTRATION': None}
-                         )
+                          'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_PAYMENT_MEANS': [
+                              {'PaymentMeansCode': '30', 'PaymentID': None,
+                               'AccountID': 'DE55160500003504000405', 'BranchID': None}
+                          ]})
 
         self.assertEqual(supplier, None)
 
@@ -336,7 +355,8 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_USTID': 'DE113527818',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
-                          'S_KR_VEHICLE_REGISTRATION': None})
+                          'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_PAYMENT_MEANS': []})
 
         self.assertEqual(supplier, None)
 
@@ -374,7 +394,11 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_USTID': 'GB1232434',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
-                          'S_KR_VEHICLE_REGISTRATION': None})
+                          'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_PAYMENT_MEANS': [
+                              {'PaymentMeansCode': '30', 'PaymentID': 'Snippet1',
+                               'AccountID': 'IBAN32423940', 'BranchID': 'BIC324098'}
+                          ]})
 
         self.assertEqual(supplier, '99887766')
 
@@ -411,7 +435,11 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_USTID': '0465341266',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
-                          'S_KR_VEHICLE_REGISTRATION': None})
+                          'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_PAYMENT_MEANS': [
+                              {'PaymentMeansCode': '42', 'PaymentID': '+++004/4123/71362+++',
+                               'AccountID': 'BE64734003185952', 'BranchID': None}
+                          ]})
 
         self.assertEqual(supplier, None)
 
@@ -449,7 +477,11 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_USTID': '0465341266',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
-                          'S_KR_VEHICLE_REGISTRATION': None})
+                          'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_PAYMENT_MEANS': [
+                              {'PaymentMeansCode': '42', 'PaymentID': '+++900/3711/10695+++',
+                               'AccountID': 'BE09363065981157', 'BranchID': 'BBRUBEBB'}
+                          ]})
 
         self.assertEqual(supplier, None)
 
@@ -487,7 +519,11 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_USTID': 'BE0465341266',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
-                          'S_KR_VEHICLE_REGISTRATION': None})
+                          'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_PAYMENT_MEANS': [
+                              {'PaymentMeansCode': '48', 'PaymentID': None,
+                               'AccountID': None, 'BranchID': None}
+                          ]})
 
         self.assertEqual(supplier, None)
 
@@ -525,7 +561,11 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_USTID': 'BE0757976014',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
-                          'S_KR_VEHICLE_REGISTRATION': None})
+                          'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_PAYMENT_MEANS': [
+                              {'PaymentMeansCode': '30', 'PaymentID': '340600035974',
+                               'AccountID': 'BE62260003045061', 'BranchID': 'GEBABEBB'}
+                          ]})
 
         self.assertEqual(supplier, None)
 
@@ -562,7 +602,11 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_USTID': '419261',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
-                          'S_KR_VEHICLE_REGISTRATION': None})
+                          'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_PAYMENT_MEANS': [
+                              {'PaymentMeansCode': '57', 'PaymentID': None,
+                               'AccountID': 'BE36733023702281', 'BranchID': 'KREDBEBB'}
+                          ]})
 
         self.assertEqual(supplier, None)
 
@@ -599,7 +643,11 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_USTID': '0465341266',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
-                          'S_KR_VEHICLE_REGISTRATION': None})
+                          'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_PAYMENT_MEANS': [
+                              {'PaymentMeansCode': '42', 'PaymentID': '+++001/9620/02226+++',
+                               'AccountID': 'BE69393042417078', 'BranchID': 'BBRUBEBB'}
+                          ]})
 
         self.assertEqual(supplier, None)
 
@@ -636,7 +684,8 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_USTID': '0465341266',
                           'S_KR_VEHICLE_ID': 'VXFVLEHS2S7800434',
                           'S_KR_VEHICLE_ODOMETER_READING': '37991',
-                          'S_KR_VEHICLE_REGISTRATION': '2GHA914'})
+                          'S_KR_VEHICLE_REGISTRATION': '2GHA914',
+                          'S_KR_PAYMENT_MEANS': []})
 
         self.assertEqual(supplier, None)
 
@@ -674,9 +723,27 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_USTID': '0465341266',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
-                          'S_KR_VEHICLE_REGISTRATION': None})
+                          'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_PAYMENT_MEANS': [
+                              {'PaymentMeansCode': '1', 'PaymentID': '+++002/0260/04240+++',
+                               'AccountID': 'BE30363136136611', 'BranchID': 'BBRUBEBB'}
+                          ]})
 
         self.assertEqual(supplier, None)
+
+    def test_get_payment_means_from_ergenzungen(self):
+        """Test extraction of PaymentMeans list from ergenzungen_HW-5938.xml (cac:PaymentMeans block)."""
+        m_cn_id = "8000039"
+        xml_text = read_xml_file_to_str('xml_files/ergenzungen_HW-5938.xml')
+        clients_data, supplier = get_einvoice_vendor_data(m_cn_id=m_cn_id, xml_text=xml_text, logger=Mock())
+        payment_means = clients_data.get("S_KR_PAYMENT_MEANS")
+        self.assertIsInstance(payment_means, list)
+        self.assertEqual(len(payment_means), 1)
+        row = payment_means[0]
+        self.assertEqual(row["PaymentMeansCode"], "1")
+        self.assertEqual(row["PaymentID"], "+++002/0260/04240+++")
+        self.assertEqual(row["AccountID"], "BE30363136136611")
+        self.assertEqual(row["BranchID"], "BBRUBEBB")
 
 
 if __name__ == '__main__':
