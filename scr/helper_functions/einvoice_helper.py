@@ -78,8 +78,10 @@ def find_attribute_within_element(
         return default
 
     for tag in tags:
-        if (data := element.find(tag)) is not None:
-            if (value := data.get(attribute_name)):
+        data = element.find(tag)
+        if data is not None:
+            value = data.get(attribute_name)
+            if value:
                 value = value.strip()
                 mappings = load_mappings()
 
