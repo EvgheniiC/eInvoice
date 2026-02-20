@@ -1,7 +1,7 @@
 import unittest
 from scr.helper_functions.einvoice_helper import string_to_float, find_data_with_regex, find_data_within_element, \
     find_data_within_element_with_len, get_xml_tree, read_xml_file_to_str, is_zugpferd_pdf, check_cost_center, \
-    find_tax_data, get_tags_from_json, format_sixt_number
+    find_tax_data, get_tags_from_json, format_sixt_number, build_description_from_item
 from xml.etree.ElementTree import Element
 import os
 
@@ -117,6 +117,25 @@ class TestXmlParserHeader(unittest.TestCase):
         number = ''
         coupa_po = format_sixt_number(number)
         self.assertEqual(None, coupa_po)
+
+    def test_build_description_from_item_ubl(self):
+        """build_description_from_item returns Item Name + AdditionalItemProperty Name/Value pairs (UBL)."""
+        xml_text = read_xml_file_to_str('xml_files/ergenzungen_HW-5938.xml')
+        self.assertIsNotNone(xml_text)
+        xml_tree = get_xml_tree(xml_text)
+        invoice_line = xml_tree.find(".//InvoiceLine")
+        self.assertIsNotNone(invoice_line)
+        result = build_description_from_item(invoice_line)
+        expected = (
+            "6357AGACMOVZ Marque de véhicule OPEL Modèle de véhicule FRONTERA "
+            "Plaque d'immatriculation de véhicule 2 HWV 031 Numéro de châssis de véhicule VXKCSHPY7ST250531 "
+            "Kilométrage de véhicule 5281"
+        )
+        self.assertEqual(result, expected)
+
+    def test_build_description_from_item_none(self):
+        """build_description_from_item returns None for None element."""
+        self.assertIsNone(build_description_from_item(None))
 
 
 if __name__ == '__main__':

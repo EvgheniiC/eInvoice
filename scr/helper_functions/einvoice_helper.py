@@ -171,6 +171,51 @@ def get_xml_tree(xml_text: str) -> Element:
     return xml_tree
 
 
+def build_description_from_item(position: Element) -> Optional[str]:
+    """
+    Build position description from Item (UBL) or SpecifiedTradeProduct (ZUGPFERD):
+    main Name plus all Name/Value or Description/Value pairs, space-separated.
+
+    UBL: Item with cbc:Name and cac:AdditionalItemProperty (Name, Value).
+    ZUGPFERD: SpecifiedTradeProduct with Name and ApplicableProductCharacteristic (Description, Value).
+    """
+    if position is None:
+        return None
+    parts: List[str] = []
+
+    # UBL: Item with Name and AdditionalItemProperty (Name, Value)
+    item_elem: Optional[Element] = position.find("Item")
+    if item_elem is not None:
+        name_el: Optional[Element] = item_elem.find("Name")
+        if name_el is not None and name_el.text:
+            parts.append(name_el.text.strip())
+        for prop in item_elem.findall("AdditionalItemProperty"):
+            prop_name_el: Optional[Element] = prop.find("Name")
+            prop_value_el: Optional[Element] = prop.find("Value")
+            if prop_name_el is not None and prop_name_el.text and prop_value_el is not None and prop_value_el.text:
+                parts.append(prop_name_el.text.strip())
+                parts.append(prop_value_el.text.strip())
+        if parts:
+            return " ".join(parts)
+
+    # ZUGPFERD: SpecifiedTradeProduct with Name and ApplicableProductCharacteristic (Description, Value)
+    prod_elem: Optional[Element] = position.find("SpecifiedTradeProduct")
+    if prod_elem is not None:
+        name_el = prod_elem.find("Name")
+        if name_el is not None and name_el.text:
+            parts.append(name_el.text.strip())
+        for prop in prod_elem.findall("ApplicableProductCharacteristic"):
+            desc_el: Optional[Element] = prop.find("Description")
+            value_el: Optional[Element] = prop.find("Value")
+            if desc_el is not None and desc_el.text and value_el is not None and value_el.text:
+                parts.append(desc_el.text.strip())
+                parts.append(value_el.text.strip())
+        if parts:
+            return " ".join(parts)
+
+    return None
+
+
 def string_to_float(value, de_format=False) -> Union[float, int, None, str]:
     """
     Formats a none null value into a float value with this format: d{1,}.d{2}
