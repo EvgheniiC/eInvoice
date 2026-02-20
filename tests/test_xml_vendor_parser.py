@@ -35,6 +35,7 @@ class TestClientParser(unittest.TestCase):
                                         'S_KR_TRIP_INFO': None,
                                         'S_KR_TRIP_PURPOSE': None,
                                         'S_KR_USTID': 'DE 123456789',
+                                        'S_KR_USTID_BILLING': 'DE 123456789',
                                         'S_KR_VEHICLE_ID': None,
                                         'S_KR_VEHICLE_ODOMETER_READING': None,
                                         'S_KR_VEHICLE_REGISTRATION': None,
@@ -63,6 +64,10 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_ORT': 'Ort Rechnungssteller',
                           'S_KR_ORT_BILLING': 'Ort Rechnungsempfnger',
                           'S_KR_ORT_DELIVERY': 'Anderer Leistungsempfnger Ort',
+                          'S_KR_PAYMENT_MEANS': [{'AccountID': 'DE84 6004 0071 0561 5158 01',
+                                                  'BranchID': 'XXX0561515801',
+                                                  'PaymentID': 'Verwendungszweck',
+                                                  'PaymentMeansCode': '30'}],
                           'S_KR_POSTLEITZAHL': '12345',
                           'S_KR_POSTLEITZAHL_BILLING': '67890',
                           'S_KR_POSTLEITZAHL_DELIVERY': '45678',
@@ -71,14 +76,11 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_STRASSE_DELIVERY': 'Anderer Leistungsempfnger Strae 1',
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
-                          'S_KR_USTID': '90000000-03083-12',
+                          'S_KR_USTID': 'ATU13585627',
+                          'S_KR_USTID_BILLING': '90000000-03083-12',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
-                          'S_KR_VEHICLE_REGISTRATION': None,
-                          'S_KR_PAYMENT_MEANS': [
-                              {'PaymentMeansCode': '30', 'PaymentID': 'Verwendungszweck',
-                               'AccountID': 'DE84 6004 0071 0561 5158 01', 'BranchID': 'XXX0561515801'}
-                          ]})
+                          'S_KR_VEHICLE_REGISTRATION': None})
         self.assertEqual(supplier, None)
 
     def test_get_einvoice_client_data_all_data(self):
@@ -113,6 +115,7 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
                           'S_KR_USTID': 'DE814742004',
+                          'S_KR_USTID_BILLING': 'DE814742004',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
                           'S_KR_VEHICLE_REGISTRATION': None,
@@ -150,6 +153,7 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
                           'S_KR_USTID': 'DE259922663',
+                          'S_KR_USTID_BILLING': 'DE259922663',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
                           'S_KR_VEHICLE_REGISTRATION': None,
@@ -188,6 +192,7 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
                           'S_KR_USTID': 'DE260569738',
+                          'S_KR_USTID_BILLING': None,
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
                           'S_KR_VEHICLE_REGISTRATION': None,
@@ -229,6 +234,7 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
                           'S_KR_USTID': 'DE814742004',
+                          'S_KR_USTID_BILLING': 'DE814742004',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
                           'S_KR_VEHICLE_REGISTRATION': None,
@@ -269,6 +275,7 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
                           'S_KR_USTID': 'DE138410797',
+                          'S_KR_USTID_BILLING': None,
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
                           'S_KR_VEHICLE_REGISTRATION': None,
@@ -312,6 +319,7 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
                           'S_KR_USTID': 'DE138410797',
+                          'S_KR_USTID_BILLING': None,
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
                           'S_KR_VEHICLE_REGISTRATION': None,
@@ -353,6 +361,7 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
                           'S_KR_USTID': 'DE113527818',
+                          'S_KR_USTID_BILLING': 'DE113527818',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
                           'S_KR_VEHICLE_REGISTRATION': None,
@@ -392,6 +401,7 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
                           'S_KR_USTID': 'GB1232434',
+                          'S_KR_USTID_BILLING': None,
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
                           'S_KR_VEHICLE_REGISTRATION': None,
@@ -424,6 +434,10 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_ORT': 'Leuven',
                           'S_KR_ORT_BILLING': 'MACHELEN',
                           'S_KR_ORT_DELIVERY': 'Leuven',
+                          'S_KR_PAYMENT_MEANS': [{'AccountID': 'BE64734003185952',
+                                                  'BranchID': None,
+                                                  'PaymentID': '+++004/4123/71362+++',
+                                                  'PaymentMeansCode': '42'}],
                           'S_KR_POSTLEITZAHL': '3000',
                           'S_KR_POSTLEITZAHL_BILLING': '1831',
                           'S_KR_POSTLEITZAHL_DELIVERY': '3000',
@@ -432,14 +446,11 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_STRASSE_DELIVERY': 'Diestsepoort 1',
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
-                          'S_KR_USTID': '0465341266',
+                          'S_KR_USTID': 'BE0473329910',
+                          'S_KR_USTID_BILLING': '0465341266',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
-                          'S_KR_VEHICLE_REGISTRATION': None,
-                          'S_KR_PAYMENT_MEANS': [
-                              {'PaymentMeansCode': '42', 'PaymentID': '+++004/4123/71362+++',
-                               'AccountID': 'BE64734003185952', 'BranchID': None}
-                          ]})
+                          'S_KR_VEHICLE_REGISTRATION': None})
 
         self.assertEqual(supplier, None)
 
@@ -466,6 +477,10 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_ORT': 'Zaventem',
                           'S_KR_ORT_BILLING': 'Machelen',
                           'S_KR_ORT_DELIVERY': 'Zaventem',
+                          'S_KR_PAYMENT_MEANS': [{'AccountID': 'BE09363065981157',
+                                                  'BranchID': 'BBRUBEBB',
+                                                  'PaymentID': '+++900/3711/10695+++',
+                                                  'PaymentMeansCode': '42'}],
                           'S_KR_POSTLEITZAHL': '1930',
                           'S_KR_POSTLEITZAHL_BILLING': '1830',
                           'S_KR_POSTLEITZAHL_DELIVERY': '1930',
@@ -474,14 +489,11 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_STRASSE_DELIVERY': 'Leuvensesteenweg 430',
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
-                          'S_KR_USTID': '0465341266',
+                          'S_KR_USTID': 'BE0821129645',
+                          'S_KR_USTID_BILLING': '0465341266',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
-                          'S_KR_VEHICLE_REGISTRATION': None,
-                          'S_KR_PAYMENT_MEANS': [
-                              {'PaymentMeansCode': '42', 'PaymentID': '+++900/3711/10695+++',
-                               'AccountID': 'BE09363065981157', 'BranchID': 'BBRUBEBB'}
-                          ]})
+                          'S_KR_VEHICLE_REGISTRATION': None})
 
         self.assertEqual(supplier, None)
 
@@ -508,6 +520,10 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_ORT': 'Brussels',
                           'S_KR_ORT_BILLING': 'Zaventem',
                           'S_KR_ORT_DELIVERY': 'Brussels',
+                          'S_KR_PAYMENT_MEANS': [{'AccountID': None,
+                                                  'BranchID': None,
+                                                  'PaymentID': None,
+                                                  'PaymentMeansCode': '48'}],
                           'S_KR_POSTLEITZAHL': '1000',
                           'S_KR_POSTLEITZAHL_BILLING': '1930',
                           'S_KR_POSTLEITZAHL_DELIVERY': '1000',
@@ -516,14 +532,11 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_STRASSE_DELIVERY': None,
                           'S_KR_TRIP_INFO': 'Branch Support/Different Work Location',
                           'S_KR_TRIP_PURPOSE': 'NO',
-                          'S_KR_USTID': 'BE0465341266',
+                          'S_KR_USTID': 'BE0403266810',
+                          'S_KR_USTID_BILLING': 'BE0465341266',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
-                          'S_KR_VEHICLE_REGISTRATION': None,
-                          'S_KR_PAYMENT_MEANS': [
-                              {'PaymentMeansCode': '48', 'PaymentID': None,
-                               'AccountID': None, 'BranchID': None}
-                          ]})
+                          'S_KR_VEHICLE_REGISTRATION': None})
 
         self.assertEqual(supplier, None)
 
@@ -559,6 +572,7 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
                           'S_KR_USTID': 'BE0757976014',
+                          'S_KR_USTID_BILLING': None,
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
                           'S_KR_VEHICLE_REGISTRATION': None,
@@ -591,6 +605,10 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_ORT': 'Hamont-Achel',
                           'S_KR_ORT_BILLING': 'Machelen',
                           'S_KR_ORT_DELIVERY': 'Aarschot',
+                          'S_KR_PAYMENT_MEANS': [{'AccountID': 'BE36733023702281',
+                                                  'BranchID': 'KREDBEBB',
+                                                  'PaymentID': None,
+                                                  'PaymentMeansCode': '57'}],
                           'S_KR_POSTLEITZAHL': '3930',
                           'S_KR_POSTLEITZAHL_BILLING': '1831',
                           'S_KR_POSTLEITZAHL_DELIVERY': '3200',
@@ -599,14 +617,11 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_STRASSE_DELIVERY': 'Nieuwlandlaan 5',
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
-                          'S_KR_USTID': '419261',
+                          'S_KR_USTID': 'BE0870392282',
+                          'S_KR_USTID_BILLING': '419261',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
-                          'S_KR_VEHICLE_REGISTRATION': None,
-                          'S_KR_PAYMENT_MEANS': [
-                              {'PaymentMeansCode': '57', 'PaymentID': None,
-                               'AccountID': 'BE36733023702281', 'BranchID': 'KREDBEBB'}
-                          ]})
+                          'S_KR_VEHICLE_REGISTRATION': None})
 
         self.assertEqual(supplier, None)
 
@@ -632,6 +647,10 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_ORT': 'Zellik',
                           'S_KR_ORT_BILLING': 'Diegem',
                           'S_KR_ORT_DELIVERY': 'Zellik',
+                          'S_KR_PAYMENT_MEANS': [{'AccountID': 'BE69393042417078',
+                                                  'BranchID': 'BBRUBEBB',
+                                                  'PaymentID': '+++001/9620/02226+++',
+                                                  'PaymentMeansCode': '42'}],
                           'S_KR_POSTLEITZAHL': '1731',
                           'S_KR_POSTLEITZAHL_BILLING': '1831',
                           'S_KR_POSTLEITZAHL_DELIVERY': '1731',
@@ -640,14 +659,11 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_STRASSE_DELIVERY': 'Z. 3 DOORNVELD 60',
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
-                          'S_KR_USTID': '0465341266',
+                          'S_KR_USTID': 'BE0452263488',
+                          'S_KR_USTID_BILLING': '0465341266',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
-                          'S_KR_VEHICLE_REGISTRATION': None,
-                          'S_KR_PAYMENT_MEANS': [
-                              {'PaymentMeansCode': '42', 'PaymentID': '+++001/9620/02226+++',
-                               'AccountID': 'BE69393042417078', 'BranchID': 'BBRUBEBB'}
-                          ]})
+                          'S_KR_VEHICLE_REGISTRATION': None})
 
         self.assertEqual(supplier, None)
 
@@ -673,6 +689,7 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_ORT': 'Rhode-Saint-Genese',
                           'S_KR_ORT_BILLING': 'DIEGEM',
                           'S_KR_ORT_DELIVERY': 'Rhode-Saint-Genese',
+                          'S_KR_PAYMENT_MEANS': [],
                           'S_KR_POSTLEITZAHL': '1640',
                           'S_KR_POSTLEITZAHL_BILLING': '1831',
                           'S_KR_POSTLEITZAHL_DELIVERY': '1640',
@@ -681,11 +698,11 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_STRASSE_DELIVERY': 'Chaussée de Hal 28',
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
-                          'S_KR_USTID': '0465341266',
+                          'S_KR_USTID': 'BE0423518034',
+                          'S_KR_USTID_BILLING': '0465341266',
                           'S_KR_VEHICLE_ID': 'VXFVLEHS2S7800434',
                           'S_KR_VEHICLE_ODOMETER_READING': '37991',
-                          'S_KR_VEHICLE_REGISTRATION': '2GHA914',
-                          'S_KR_PAYMENT_MEANS': []})
+                          'S_KR_VEHICLE_REGISTRATION': '2GHA914'})
 
         self.assertEqual(supplier, None)
 
@@ -712,6 +729,10 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_ORT': 'Evere',
                           'S_KR_ORT_BILLING': 'Machelen (Brab.)',
                           'S_KR_ORT_DELIVERY': 'Evere',
+                          'S_KR_PAYMENT_MEANS': [{'AccountID': 'BE30363136136611',
+                                                  'BranchID': 'BBRUBEBB',
+                                                  'PaymentID': '+++002/0260/04240+++',
+                                                  'PaymentMeansCode': '1'}],
                           'S_KR_POSTLEITZAHL': '1140',
                           'S_KR_POSTLEITZAHL_BILLING': '1831',
                           'S_KR_POSTLEITZAHL_DELIVERY': '1140',
@@ -720,14 +741,11 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_STRASSE_DELIVERY': 'Haachtsesteenweg 1018',
                           'S_KR_TRIP_INFO': None,
                           'S_KR_TRIP_PURPOSE': None,
-                          'S_KR_USTID': '0465341266',
+                          'S_KR_USTID': 'BE0554904534',
+                          'S_KR_USTID_BILLING': '0465341266',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
-                          'S_KR_VEHICLE_REGISTRATION': None,
-                          'S_KR_PAYMENT_MEANS': [
-                              {'PaymentMeansCode': '1', 'PaymentID': '+++002/0260/04240+++',
-                               'AccountID': 'BE30363136136611', 'BranchID': 'BBRUBEBB'}
-                          ]})
+                          'S_KR_VEHICLE_REGISTRATION': None})
 
         self.assertEqual(supplier, None)
 

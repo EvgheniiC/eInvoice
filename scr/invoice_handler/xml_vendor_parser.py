@@ -58,6 +58,7 @@ def get_einvoice_vendor_data(m_cn_id: str, xml_text: str, logger) -> (dict, str)
 
     # SWFM-5490 AccountingCustomerParty -> for Address of the Sixt company, Delivery -> for Lieferanschrift (xxx_delivery)
     tags_to_search_tax_id: list = get_tags_from_json('tags_to_search_tax_id')
+    tags_to_search_tax_id_billing: list = get_tags_from_json('tags_to_search_tax_id_billing')
     tags_to_search_client_name: list = get_tags_from_json('tags_to_search_client_name')
     tags_to_search_client_name_delivery: list = get_tags_from_json('tags_to_search_client_name_delivery')
     tags_to_search_vendor_name: list = get_tags_from_json('tags_to_search_vendor_name')
@@ -91,6 +92,7 @@ def get_einvoice_vendor_data(m_cn_id: str, xml_text: str, logger) -> (dict, str)
         "S_KR_LAND": find_data_within_element(xml_vendor_data, tags_to_search_country),
         "S_KR_LAND_DELIVERY": find_data_within_element(xml_vendor_data, tags_to_search_country_delivery),
         "S_KR_USTID": find_data_within_element(xml_vendor_data, tags_to_search_tax_id),
+        "S_KR_USTID_BILLING": find_data_within_element(xml_vendor_data, tags_to_search_tax_id_billing),
         "S_KR_CLIENT_NAME": find_data_within_element(xml_vendor_data, tags_to_search_client_name),
         "S_KR_CLIENT_NAME_DELIVERY": find_data_within_element(xml_vendor_data, tags_to_search_client_name_delivery),
         "S_KR_IBAN": find_data_within_element_with_len(xml_vendor_data, tags_to_search_iban, 22).replace(" ",

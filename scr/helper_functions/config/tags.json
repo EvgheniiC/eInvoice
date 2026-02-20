@@ -1,10 +1,12 @@
 {
   "tags_to_search_tax_id": [
-    "./AccountingCustomerParty/Party/PartyLegalEntity/CompanyID",
     "./AccountingSupplierParty/Party/PartyTaxScheme/CompanyID",
     "./ApplicableHeaderTradeAgreement/SellerTradeParty/SpecifiedTaxRegistration/ID",
     "./Invoice/AccountingSupplierParty/Party/PartyTaxScheme/CompanyID"
-
+  ],
+  "tags_to_search_tax_id_billing": [
+    "./AccountingCustomerParty/Party/PartyLegalEntity/CompanyID",
+    "./ApplicableHeaderTradeAgreement/SellerTradeParty/SpecifiedTaxRegistration/ID"
   ],
   "tags_to_search_client_name": [
     "./AccountingSupplierParty/Party/PartyName/Name",
