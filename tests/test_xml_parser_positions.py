@@ -16,7 +16,8 @@ class TestXmlParserHeader(unittest.TestCase):
 
         self.assertEqual(xml_invoice_positions.get_xml_postions_map(),
                          [{'M_CN_ID': None, 'M_CN_INVOICEID': '6983825', 'M_IP_ITEMPOS': 1,
-                           'M_IP_POSITIONSTEXT': 'Arbeitspreis Zahlpunkt DE00721470565MU000000000000799440 Zahlernummer 21342703', 'M_IP_QUANTITY': 1352.0,
+                           'M_IP_POSITIONSTEXT': 'Arbeitspreis Zahlpunkt DE00721470565MU000000000000799440 Zahlernummer 21342703',
+                           'M_IP_QUANTITY': 1352.0,
                            'M_IP_SINGLENETPRICE': 0.09995, 'M_IP_TOTALNETPRICE': 135.13, 'M_IP_TAXRATE': 19.0,
                            'M_IP_COSTCENTER': None, 'M_IP_KOSTENTRAEGER': '', 'M_IP_INVENTORYACC': None,
                            'M_IP_ARTICLENUMBER': '', 'M_IP_ARTICLENUMBER2': None, 'M_IP_DISCOUNTAMOUNT': None,
@@ -24,7 +25,8 @@ class TestXmlParserHeader(unittest.TestCase):
                            'M_IP_TAXCODE': None, 'M_IP_ORDERPOSID': None, 'M_IP_GOODSINWARDPOSID': '',
                            'M_IP_ECLASS': ''},
                           {'M_CN_ID': None, 'M_CN_INVOICEID': '6983825', 'M_IP_ITEMPOS': 2,
-                           'M_IP_POSITIONSTEXT': 'Stromsteuer Zahlpunkt DE00721470565MU000000000000799440 Zahlernummer 21342703', 'M_IP_QUANTITY': 1352.0, 'M_IP_SINGLENETPRICE': 0.0205,
+                           'M_IP_POSITIONSTEXT': 'Stromsteuer Zahlpunkt DE00721470565MU000000000000799440 Zahlernummer 21342703',
+                           'M_IP_QUANTITY': 1352.0, 'M_IP_SINGLENETPRICE': 0.0205,
                            'M_IP_TOTALNETPRICE': 27.72, 'M_IP_TAXRATE': 19.0, 'M_IP_COSTCENTER': None,
                            'M_IP_KOSTENTRAEGER': '', 'M_IP_INVENTORYACC': None, 'M_IP_ARTICLENUMBER': '',
                            'M_IP_ARTICLENUMBER2': None, 'M_IP_DISCOUNTAMOUNT': None, 'M_IP_QUANTITYUNIT': None,
@@ -32,7 +34,8 @@ class TestXmlParserHeader(unittest.TestCase):
                            'M_IP_ORDERPOSID': None,
                            'M_IP_GOODSINWARDPOSID': '', 'M_IP_ECLASS': ''},
                           {'M_CN_ID': None, 'M_CN_INVOICEID': '6983825', 'M_IP_ITEMPOS': 3,
-                           'M_IP_POSITIONSTEXT': 'Arbeitspreis Netz Zahlpunkt DE00721470565MU000000000000799440 Zahlernummer 21342703', 'M_IP_QUANTITY': 1352.0,
+                           'M_IP_POSITIONSTEXT': 'Arbeitspreis Netz Zahlpunkt DE00721470565MU000000000000799440 Zahlernummer 21342703',
+                           'M_IP_QUANTITY': 1352.0,
                            'M_IP_SINGLENETPRICE': 0.0762, 'M_IP_TOTALNETPRICE': 103.02, 'M_IP_TAXRATE': 19.0,
                            'M_IP_COSTCENTER': None, 'M_IP_KOSTENTRAEGER': '', 'M_IP_INVENTORYACC': None,
                            'M_IP_ARTICLENUMBER': '', 'M_IP_ARTICLENUMBER2': None, 'M_IP_DISCOUNTAMOUNT': None,
@@ -40,7 +43,8 @@ class TestXmlParserHeader(unittest.TestCase):
                            'M_IP_TAXCODE': None, 'M_IP_ORDERPOSID': None, 'M_IP_GOODSINWARDPOSID': '',
                            'M_IP_ECLASS': ''},
                           {'M_CN_ID': None, 'M_CN_INVOICEID': '6983825', 'M_IP_ITEMPOS': 4,
-                           'M_IP_POSITIONSTEXT': 'Leistungspreis Netz Zahlpunkt DE00721470565MU000000000000799440 Zahlernummer 21342703', 'M_IP_QUANTITY': 7.0,
+                           'M_IP_POSITIONSTEXT': 'Leistungspreis Netz Zahlpunkt DE00721470565MU000000000000799440 Zahlernummer 21342703',
+                           'M_IP_QUANTITY': 7.0,
                            'M_IP_SINGLENETPRICE': 22.36, 'M_IP_TOTALNETPRICE': 13.29, 'M_IP_TAXRATE': 19.0,
                            'M_IP_COSTCENTER': None, 'M_IP_KOSTENTRAEGER': '', 'M_IP_INVENTORYACC': None,
                            'M_IP_ARTICLENUMBER': '', 'M_IP_ARTICLENUMBER2': None, 'M_IP_DISCOUNTAMOUNT': None,
@@ -48,7 +52,8 @@ class TestXmlParserHeader(unittest.TestCase):
                            'M_IP_TAXCODE': None, 'M_IP_ORDERPOSID': None, 'M_IP_GOODSINWARDPOSID': '',
                            'M_IP_ECLASS': ''},
                           {'M_CN_ID': None, 'M_CN_INVOICEID': '6983825', 'M_IP_ITEMPOS': 5,
-                           'M_IP_POSITIONSTEXT': 'Messkosten Zahlpunkt DE00721470565MU000000000000799440 Zahlernummer 21342703', 'M_IP_QUANTITY': 31.0, 'M_IP_SINGLENETPRICE': 98.5,
+                           'M_IP_POSITIONSTEXT': 'Messkosten Zahlpunkt DE00721470565MU000000000000799440 Zahlernummer 21342703',
+                           'M_IP_QUANTITY': 31.0, 'M_IP_SINGLENETPRICE': 98.5,
                            'M_IP_TOTALNETPRICE': 8.37, 'M_IP_TAXRATE': 19.0, 'M_IP_COSTCENTER': None,
                            'M_IP_KOSTENTRAEGER': '', 'M_IP_INVENTORYACC': None, 'M_IP_ARTICLENUMBER': '',
                            'M_IP_ARTICLENUMBER2': None, 'M_IP_DISCOUNTAMOUNT': None, 'M_IP_QUANTITYUNIT': None,
@@ -56,7 +61,8 @@ class TestXmlParserHeader(unittest.TestCase):
                            'M_IP_ORDERPOSID': None,
                            'M_IP_GOODSINWARDPOSID': '', 'M_IP_ECLASS': ''},
                           {'M_CN_ID': None, 'M_CN_INVOICEID': '6983825', 'M_IP_ITEMPOS': 6,
-                           'M_IP_POSITIONSTEXT': 'Entgelt fur Messstellenbetrieb,Messung Zahlpunkt DE00721470565MU000000000000799440 Zahlernummer 21342703', 'M_IP_QUANTITY': 31.0,
+                           'M_IP_POSITIONSTEXT': 'Entgelt fur Messstellenbetrieb,Messung Zahlpunkt DE00721470565MU000000000000799440 Zahlernummer 21342703',
+                           'M_IP_QUANTITY': 31.0,
                            'M_IP_SINGLENETPRICE': 330.27, 'M_IP_TOTALNETPRICE': 28.05, 'M_IP_TAXRATE': 19.0,
                            'M_IP_COSTCENTER': None, 'M_IP_KOSTENTRAEGER': '', 'M_IP_INVENTORYACC': None,
                            'M_IP_ARTICLENUMBER': '', 'M_IP_ARTICLENUMBER2': None, 'M_IP_DISCOUNTAMOUNT': None,
@@ -64,7 +70,8 @@ class TestXmlParserHeader(unittest.TestCase):
                            'M_IP_TAXCODE': None, 'M_IP_ORDERPOSID': None, 'M_IP_GOODSINWARDPOSID': '',
                            'M_IP_ECLASS': ''},
                           {'M_CN_ID': None, 'M_CN_INVOICEID': '6983825', 'M_IP_ITEMPOS': 7,
-                           'M_IP_POSITIONSTEXT': 'Kraft-Warme-Kopplung (KWK) Zahlpunkt DE00721470565MU000000000000799440 Zahlernummer 21342703', 'M_IP_QUANTITY': 1352.0,
+                           'M_IP_POSITIONSTEXT': 'Kraft-Warme-Kopplung (KWK) Zahlpunkt DE00721470565MU000000000000799440 Zahlernummer 21342703',
+                           'M_IP_QUANTITY': 1352.0,
                            'M_IP_SINGLENETPRICE': 0.00277, 'M_IP_TOTALNETPRICE': 3.75, 'M_IP_TAXRATE': 19.0,
                            'M_IP_COSTCENTER': None, 'M_IP_KOSTENTRAEGER': '', 'M_IP_INVENTORYACC': None,
                            'M_IP_ARTICLENUMBER': '', 'M_IP_ARTICLENUMBER2': None, 'M_IP_DISCOUNTAMOUNT': None,
@@ -72,7 +79,8 @@ class TestXmlParserHeader(unittest.TestCase):
                            'M_IP_TAXCODE': None, 'M_IP_ORDERPOSID': None, 'M_IP_GOODSINWARDPOSID': '',
                            'M_IP_ECLASS': ''},
                           {'M_CN_ID': None, 'M_CN_INVOICEID': '6983825', 'M_IP_ITEMPOS': 8,
-                           'M_IP_POSITIONSTEXT': 'Aufschlag fur besondere Netznutzung Zahlpunkt DE00721470565MU000000000000799440 Zahlernummer 21342703', 'M_IP_QUANTITY': 1352.0,
+                           'M_IP_POSITIONSTEXT': 'Aufschlag fur besondere Netznutzung Zahlpunkt DE00721470565MU000000000000799440 Zahlernummer 21342703',
+                           'M_IP_QUANTITY': 1352.0,
                            'M_IP_SINGLENETPRICE': 0.01558, 'M_IP_TOTALNETPRICE': 21.06, 'M_IP_TAXRATE': 19.0,
                            'M_IP_COSTCENTER': None, 'M_IP_KOSTENTRAEGER': '', 'M_IP_INVENTORYACC': None,
                            'M_IP_ARTICLENUMBER': '', 'M_IP_ARTICLENUMBER2': None, 'M_IP_DISCOUNTAMOUNT': None,
@@ -80,7 +88,8 @@ class TestXmlParserHeader(unittest.TestCase):
                            'M_IP_TAXCODE': None, 'M_IP_ORDERPOSID': None, 'M_IP_GOODSINWARDPOSID': '',
                            'M_IP_ECLASS': ''},
                           {'M_CN_ID': None, 'M_CN_INVOICEID': '6983825', 'M_IP_ITEMPOS': 9,
-                           'M_IP_POSITIONSTEXT': 'Offshore-Umlage Zahlpunkt DE00721470565MU000000000000799440 Zahlernummer 21342703', 'M_IP_QUANTITY': 1352.0,
+                           'M_IP_POSITIONSTEXT': 'Offshore-Umlage Zahlpunkt DE00721470565MU000000000000799440 Zahlernummer 21342703',
+                           'M_IP_QUANTITY': 1352.0,
                            'M_IP_SINGLENETPRICE': 0.00816, 'M_IP_TOTALNETPRICE': 11.03, 'M_IP_TAXRATE': 19.0,
                            'M_IP_COSTCENTER': None, 'M_IP_KOSTENTRAEGER': '', 'M_IP_INVENTORYACC': None,
                            'M_IP_ARTICLENUMBER': '', 'M_IP_ARTICLENUMBER2': None, 'M_IP_DISCOUNTAMOUNT': None,
@@ -88,7 +97,8 @@ class TestXmlParserHeader(unittest.TestCase):
                            'M_IP_TAXCODE': None, 'M_IP_ORDERPOSID': None, 'M_IP_GOODSINWARDPOSID': '',
                            'M_IP_ECLASS': ''},
                           {'M_CN_ID': None, 'M_CN_INVOICEID': '6983825', 'M_IP_ITEMPOS': 10,
-                           'M_IP_POSITIONSTEXT': 'Konzessionsabgabe Sonderkunde Zahlpunkt DE00721470565MU000000000000799440 Zahlernummer 21342703', 'M_IP_QUANTITY': 1352.0,
+                           'M_IP_POSITIONSTEXT': 'Konzessionsabgabe Sonderkunde Zahlpunkt DE00721470565MU000000000000799440 Zahlernummer 21342703',
+                           'M_IP_QUANTITY': 1352.0,
                            'M_IP_SINGLENETPRICE': 0.0011, 'M_IP_TOTALNETPRICE': 1.49, 'M_IP_TAXRATE': 19.0,
                            'M_IP_COSTCENTER': None, 'M_IP_KOSTENTRAEGER': '', 'M_IP_INVENTORYACC': None,
                            'M_IP_ARTICLENUMBER': '', 'M_IP_ARTICLENUMBER2': None, 'M_IP_DISCOUNTAMOUNT': None,
@@ -317,7 +327,7 @@ class TestXmlParserHeader(unittest.TestCase):
         self.assertEqual(len(positions), 11)
         for i, pos in enumerate(positions):
             self.assertTrue(pos['M_IP_POSITIONSTEXT'].startswith(expected_starts[i]),
-                            f"Position {i+1} text should start with {expected_starts[i]!r}")
+                            f"Position {i + 1} text should start with {expected_starts[i]!r}")
             self.assertEqual(pos['M_IP_ITEMPOS'], i + 1)
             self.assertEqual(pos['M_IP_SINGLENETPRICE'], expected_prices[i][0])
             self.assertEqual(pos['M_IP_TOTALNETPRICE'], expected_prices[i][1])
@@ -340,11 +350,12 @@ class TestXmlParserHeader(unittest.TestCase):
             'Elektrische Bauteile und Sonderbestellungen sind vom Umtausch / Rckgabe ausgeschlossen.',
             '(04) Original Teile / Zubehr Geprfte Qualitt, auf die Sie sich verlassen knnen.',
         ]
-        expected_quantity_price = [(0.0, 0.0, 0.0), (1.0, 111.56, 97.62), (0.0, 0.0, 0.0), (0.0, 0.0, 0.0), (0.0, 0.0, 0.0)]
+        expected_quantity_price = [(0.0, 0.0, 0.0), (1.0, 111.56, 97.62), (0.0, 0.0, 0.0), (0.0, 0.0, 0.0),
+                                   (0.0, 0.0, 0.0)]
         self.assertEqual(len(positions), 5)
         for i, pos in enumerate(positions):
             self.assertTrue(pos['M_IP_POSITIONSTEXT'].startswith(expected_prefixes[i]),
-                            f"Position {i+1} should start with expected prefix")
+                            f"Position {i + 1} should start with expected prefix")
             self.assertEqual(pos['M_IP_QUANTITY'], expected_quantity_price[i][0])
             self.assertEqual(pos['M_IP_SINGLENETPRICE'], expected_quantity_price[i][1])
             self.assertEqual(pos['M_IP_TOTALNETPRICE'], expected_quantity_price[i][2])
@@ -376,7 +387,7 @@ class TestXmlParserHeader(unittest.TestCase):
         self.assertEqual(len(positions), 7)
         for i, pos in enumerate(positions):
             self.assertTrue(pos['M_IP_POSITIONSTEXT'].startswith(expected_prefixes[i]),
-                            f"Position {i+1} should start with expected prefix")
+                            f"Position {i + 1} should start with expected prefix")
             self.assertEqual((pos['M_IP_QUANTITY'], pos['M_IP_SINGLENETPRICE'], pos['M_IP_TOTALNETPRICE']),
                              expected_qty_price[i])
 
@@ -398,11 +409,12 @@ class TestXmlParserHeader(unittest.TestCase):
             'Elektrische Bauteile und Sonderbestellungen sind vom Umtausch / Rckgabe ausgeschlossen.',
             '(04) Original Teile / Zubehr Geprfte Qualitt, auf die Sie sich verlassen knnen.',
         ]
-        expected_quantity_price = [(0.0, 0.0, 0.0), (1.0, 111.56, 97.62), (0.0, 0.0, 0.0), (0.0, 0.0, 0.0), (0.0, 0.0, 0.0)]
+        expected_quantity_price = [(0.0, 0.0, 0.0), (1.0, 111.56, 97.62), (0.0, 0.0, 0.0), (0.0, 0.0, 0.0),
+                                   (0.0, 0.0, 0.0)]
         self.assertEqual(len(positions), 5)
         for i, pos in enumerate(positions):
             self.assertTrue(pos['M_IP_POSITIONSTEXT'].startswith(expected_prefixes[i]),
-                            f"Position {i+1} should start with expected prefix")
+                            f"Position {i + 1} should start with expected prefix")
             self.assertEqual(pos['M_IP_QUANTITY'], expected_quantity_price[i][0])
             self.assertEqual(pos['M_IP_SINGLENETPRICE'], expected_quantity_price[i][1])
             self.assertEqual(pos['M_IP_TOTALNETPRICE'], expected_quantity_price[i][2])
@@ -421,7 +433,7 @@ class TestXmlParserHeader(unittest.TestCase):
         self.assertEqual(len(positions), 3)
         for i, pos in enumerate(positions):
             self.assertTrue(pos['M_IP_POSITIONSTEXT'].startswith('item name'),
-                            f"Position {i+1} should start with 'item name'")
+                            f"Position {i + 1} should start with 'item name'")
         self.assertEqual(positions[0]['M_IP_QUANTITY'], 10.0)
         self.assertEqual(positions[0]['M_IP_SINGLENETPRICE'], 410.0)
         self.assertEqual(positions[0]['M_IP_TOTALNETPRICE'], 4000.0)
@@ -504,7 +516,7 @@ class TestXmlParserHeader(unittest.TestCase):
         self.assertEqual(len(positions), 3)
         for i, pos in enumerate(positions):
             self.assertTrue(pos['M_IP_POSITIONSTEXT'].startswith(expected_prefixes[i]),
-                            f"Position {i+1} should start with expected prefix")
+                            f"Position {i + 1} should start with expected prefix")
             self.assertEqual(pos['M_IP_TOTALNETPRICE'], expected_total[i])
             self.assertEqual(pos['M_IP_TAXRATE'], 21.0)
 
@@ -633,7 +645,7 @@ class TestXmlParserHeader(unittest.TestCase):
         self.assertEqual(len(positions), 9)
         for i, pos in enumerate(positions):
             self.assertTrue(pos['M_IP_POSITIONSTEXT'].startswith(expected_prefixes[i]),
-                            f"Position {i+1} should start with expected prefix")
+                            f"Position {i + 1} should start with expected prefix")
             self.assertEqual(pos['M_IP_TOTALNETPRICE'], expected_totals[i])
 
     # HW-5945
@@ -780,6 +792,131 @@ class TestXmlParserHeader(unittest.TestCase):
                            'M_IP_QUANTITYUNIT': None, 'M_IP_TYP': 'ET', 'M_IP_DISCOUNTPERCENT': None,
                            'M_IP_TAXCODE': None, 'M_IP_ORDERPOSID': None, 'M_IP_GOODSINWARDPOSID': '',
                            'M_IP_ECLASS': ''}]
+                         )
+
+    # HW-5979
+    def test_get_xml_minus_in_positions(self):
+        m_cn_id = "8117534"
+        xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id)
+        xml_positions = read_xml_file_to_str('xml_files/minus_in_positions_HW-5979.xml')
+        xml_invoice_positions = get_xml_positions(
+            xml_text=xml_positions,
+            xml_invoice_data=xml_invoice_header, logger=Mock())
+
+        self.assertEqual(xml_invoice_positions.get_xml_postions_map(),
+                         [{'M_CN_ID': None,
+                           'M_CN_INVOICEID': '8117534',
+                           'M_IP_ARTICLENUMBER': '',
+                           'M_IP_ARTICLENUMBER2': None,
+                           'M_IP_COSTCENTER': None,
+                           'M_IP_DISCOUNTAMOUNT': None,
+                           'M_IP_DISCOUNTPERCENT': None,
+                           'M_IP_ECLASS': '',
+                           'M_IP_GOODSINWARDPOSID': '',
+                           'M_IP_INVENTORYACC': None,
+                           'M_IP_ITEMPOS': 1,
+                           'M_IP_KOSTENTRAEGER': '',
+                           'M_IP_ORDERPOSID': None,
+                           'M_IP_POSITIONSTEXT': 'ARBEIDSLOON WERKPLAATS VIN ZCFCE35A30D789845 license '
+                                                 'plate 2HME510 mileage 26223\n'
+                                                 'ARBEIDSLOON WERKPLAATS',
+                           'M_IP_QUANTITY': 1.0,
+                           'M_IP_QUANTITYUNIT': None,
+                           'M_IP_SINGLENETPRICE': 391.98,
+                           'M_IP_TAXCODE': None,
+                           'M_IP_TAXRATE': 21.0,
+                           'M_IP_TOTALNETPRICE': 391.98,
+                           'M_IP_TYP': 'ET'},
+                          {'M_CN_ID': None,
+                           'M_CN_INVOICEID': '8117534',
+                           'M_IP_ARTICLENUMBER': '',
+                           'M_IP_ARTICLENUMBER2': None,
+                           'M_IP_COSTCENTER': None,
+                           'M_IP_DISCOUNTAMOUNT': None,
+                           'M_IP_DISCOUNTPERCENT': None,
+                           'M_IP_ECLASS': '',
+                           'M_IP_GOODSINWARDPOSID': '',
+                           'M_IP_INVENTORYACC': None,
+                           'M_IP_ITEMPOS': 2,
+                           'M_IP_KOSTENTRAEGER': '',
+                           'M_IP_ORDERPOSID': None,
+                           'M_IP_POSITIONSTEXT': 'GLOEILAMP VIN ZCFCE35A30D789845 license plate 2HME510 '
+                                                 'mileage 26223\n'
+                                                 'GLOEILAMP',
+                           'M_IP_QUANTITY': 1.0,
+                           'M_IP_QUANTITYUNIT': None,
+                           'M_IP_SINGLENETPRICE': 1.14,
+                           'M_IP_TAXCODE': None,
+                           'M_IP_TAXRATE': 21.0,
+                           'M_IP_TOTALNETPRICE': 1.03,
+                           'M_IP_TYP': 'ET'},
+                          {'M_CN_ID': None,
+                           'M_CN_INVOICEID': '8117534',
+                           'M_IP_ARTICLENUMBER': '',
+                           'M_IP_ARTICLENUMBER2': None,
+                           'M_IP_COSTCENTER': None,
+                           'M_IP_DISCOUNTAMOUNT': None,
+                           'M_IP_DISCOUNTPERCENT': None,
+                           'M_IP_ECLASS': '',
+                           'M_IP_GOODSINWARDPOSID': '',
+                           'M_IP_INVENTORYACC': None,
+                           'M_IP_ITEMPOS': 3,
+                           'M_IP_KOSTENTRAEGER': '',
+                           'M_IP_ORDERPOSID': None,
+                           'M_IP_POSITIONSTEXT': 'ARBEIDSLOON WERKPLAATS VIN ZCFCE35A30D789845 license '
+                                                 'plate 2HME510 mileage 26223\n'
+                                                 'ARBEIDSLOON WERKPLAATS',
+                           'M_IP_QUANTITY': 1.0,
+                           'M_IP_QUANTITYUNIT': None,
+                           'M_IP_SINGLENETPRICE': 391.98,
+                           'M_IP_TAXCODE': None,
+                           'M_IP_TAXRATE': 21.0,
+                           'M_IP_TOTALNETPRICE': -391.98,
+                           'M_IP_TYP': 'ET'},
+                          {'M_CN_ID': None,
+                           'M_CN_INVOICEID': '8117534',
+                           'M_IP_ARTICLENUMBER': '',
+                           'M_IP_ARTICLENUMBER2': None,
+                           'M_IP_COSTCENTER': None,
+                           'M_IP_DISCOUNTAMOUNT': None,
+                           'M_IP_DISCOUNTPERCENT': None,
+                           'M_IP_ECLASS': '',
+                           'M_IP_GOODSINWARDPOSID': '',
+                           'M_IP_INVENTORYACC': None,
+                           'M_IP_ITEMPOS': 4,
+                           'M_IP_KOSTENTRAEGER': '',
+                           'M_IP_ORDERPOSID': None,
+                           'M_IP_POSITIONSTEXT': 'ARBEIDSLOON WERKPLAATS VIN ZCFCE35A30D789845 license '
+                                                 'plate 2HME510 mileage 26223\n'
+                                                 'ARBEIDSLOON WERKPLAATS',
+                           'M_IP_QUANTITY': 1.0,
+                           'M_IP_QUANTITYUNIT': None,
+                           'M_IP_SINGLENETPRICE': 18.8,
+                           'M_IP_TAXCODE': None,
+                           'M_IP_TAXRATE': 21.0,
+                           'M_IP_TOTALNETPRICE': 18.8,
+                           'M_IP_TYP': 'ET'},
+                          {'M_CN_ID': None,
+                           'M_CN_INVOICEID': '8117534',
+                           'M_IP_ARTICLENUMBER': None,
+                           'M_IP_ARTICLENUMBER2': None,
+                           'M_IP_COSTCENTER': None,
+                           'M_IP_DISCOUNTAMOUNT': None,
+                           'M_IP_DISCOUNTPERCENT': None,
+                           'M_IP_ECLASS': '',
+                           'M_IP_GOODSINWARDPOSID': '',
+                           'M_IP_INVENTORYACC': None,
+                           'M_IP_ITEMPOS': 5,
+                           'M_IP_KOSTENTRAEGER': '',
+                           'M_IP_ORDERPOSID': '',
+                           'M_IP_POSITIONSTEXT': 'description_text',
+                           'M_IP_QUANTITY': 1,
+                           'M_IP_QUANTITYUNIT': None,
+                           'M_IP_SINGLENETPRICE': -0.0,
+                           'M_IP_TAXCODE': None,
+                           'M_IP_TAXRATE': 21.0,
+                           'M_IP_TOTALNETPRICE': -0.0,
+                           'M_IP_TYP': 'ET'}]
                          )
 
 
