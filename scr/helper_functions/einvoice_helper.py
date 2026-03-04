@@ -722,3 +722,44 @@ def get_vehicle_value(xml_string: str, description_keyword: str) -> Optional[str
             return value
 
     return None
+
+
+def _text_or_none(elem: Optional[Element]) -> Optional[str]:
+    """Return stripped text of element or None if missing/empty."""
+    if elem is not None and elem.text:
+        return elem.text.strip()
+    return None
+
+
+def extract_payment_means_list(element: Optional[Element]) -> List[Dict[str, Optional[str]]]:
+    """
+    Extract all PaymentMeans blocks from XML element as a list of dicts (table-friendly for PDF).
+    Each dict has: PaymentMeansCode, PaymentID, AccountID (PayeeFinancialAccount/ID), BranchID (BIC).
+    """
+    if element is None:
+        return []
+    result: List[Dict[str, Optional[str]]] = []
+    for pm in element.findall(".//PaymentMeans"):
+        code_elem = pm.find("PaymentMeansCode")
+        pid_elem = pm.find("PaymentID")
+        payee = pm.find("PayeeFinancialAccount")
+        account_id: Optional[str] = None
+        branch_id: Optional[str] = None
+        if payee is not None:
+            id_elem = payee.find("ID")
+            account_id = _text_or_none(id_elem)
+            branch = payee.find("FinancialInstitutionBranch")
+            if branch is not None:
+                branch_id_elem = branch.find("ID")
+                if branch_id_elem is None:
+                    fin_inst = branch.find("FinancialInstitution")
+                    if fin_inst is not None:
+                        branch_id_elem = fin_inst.find("ID")
+                branch_id = _text_or_none(branch_id_elem)
+        result.append({
+            "PaymentMeansCode": _text_or_none(code_elem),
+            "PaymentID": _text_or_none(pid_elem),
+            "AccountID": account_id,
+            "BranchID": branch_id,
+        })
+    return result

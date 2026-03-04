@@ -1,49 +1,7 @@
 from ..helper_functions import find_data_within_element, delete_all_prefills, find_data_within_element_with_len, \
-    get_tags_from_json, get_field_value, get_vehicle_value
+    get_tags_from_json, get_field_value, get_vehicle_value, extract_payment_means_list
 from xml.etree.ElementTree import Element
 import xml.etree.ElementTree as ET
-from typing import List, Dict, Optional
-
-
-def _text_or_none(elem: Optional[Element]) -> Optional[str]:
-    """Return stripped text of element or None if missing/empty."""
-    if elem is not None and elem.text:
-        return elem.text.strip()
-    return None
-
-
-def extract_payment_means_list(element: Optional[Element]) -> List[Dict[str, Optional[str]]]:
-    """
-    Extract all PaymentMeans blocks from XML element as a list of dicts (table-friendly for PDF).
-    Each dict has: PaymentMeansCode, PaymentID, AccountID (PayeeFinancialAccount/ID), BranchID (BIC).
-    """
-    if element is None:
-        return []
-    result: List[Dict[str, Optional[str]]] = []
-    for pm in element.findall(".//PaymentMeans"):
-        code_elem = pm.find("PaymentMeansCode")
-        pid_elem = pm.find("PaymentID")
-        payee = pm.find("PayeeFinancialAccount")
-        account_id: Optional[str] = None
-        branch_id: Optional[str] = None
-        if payee is not None:
-            id_elem = payee.find("ID")
-            account_id = _text_or_none(id_elem)
-            branch = payee.find("FinancialInstitutionBranch")
-            if branch is not None:
-                branch_id_elem = branch.find("ID")
-                if branch_id_elem is None:
-                    fin_inst = branch.find("FinancialInstitution")
-                    if fin_inst is not None:
-                        branch_id_elem = fin_inst.find("ID")
-                branch_id = _text_or_none(branch_id_elem)
-        result.append({
-            "PaymentMeansCode": _text_or_none(code_elem),
-            "PaymentID": _text_or_none(pid_elem),
-            "AccountID": account_id,
-            "BranchID": branch_id,
-        })
-    return result
 
 
 def get_einvoice_vendor_data(m_cn_id: str, xml_text: str, logger) -> (dict, str):
@@ -79,6 +37,7 @@ def get_einvoice_vendor_data(m_cn_id: str, xml_text: str, logger) -> (dict, str)
     tags_to_search_postcode_billing: list = get_tags_from_json('tags_to_search_postcode_billing')
     tags_to_search_city_name_billing: list = get_tags_from_json('tags_to_search_city_name_billing')
     tags_to_search_country_billing: list = get_tags_from_json('tags_to_search_country_billing')
+    tags_to_search_peppol_id: list = get_tags_from_json('tags_to_search_peppol_id')
 
     clients_data: dict = {
         "M_CN_ID": m_cn_id,
@@ -114,6 +73,7 @@ def get_einvoice_vendor_data(m_cn_id: str, xml_text: str, logger) -> (dict, str)
         "S_KR_VEHICLE_ODOMETER_READING": get_vehicle_value(xml_text, "odometer"),
         "S_KR_VEHICLE_ID": get_vehicle_value(xml_text, "Identification"),
         "S_KR_PAYMENT_MEANS": extract_payment_means_list(xml_vendor_data),
+        "S_KR_PEPPOL_ID": find_data_within_element(xml_vendor_data, tags_to_search_peppol_id)
     }
 
     # HW-5851 new field(S_KR_EMPLOYEE_ID,S_KR_BUDGET,S_KR_TRIP_INFO,S_KR_APPROVAL,S_KR_TRIP_PURPOSE)

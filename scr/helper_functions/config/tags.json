@@ -214,5 +214,8 @@
   ],
   "tags_to_search_client_with_attribute": [
     "./AccountingSupplierParty/Party/EndpointID"
+  ],
+    "tags_to_search_peppol_id": [
+    "./AccountingSupplierParty/Party/EndpointID"
   ]
 }
