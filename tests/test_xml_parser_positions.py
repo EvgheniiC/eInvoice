@@ -930,47 +930,99 @@ class TestXmlParserHeader(unittest.TestCase):
 
         self.assertEqual(xml_invoice_positions.get_xml_postions_map(),
                          [{'M_CN_ID': None,
-                            'M_CN_INVOICEID': '8139641',
-                            'M_IP_ARTICLENUMBER': '',
-                            'M_IP_ARTICLENUMBER2': None,
-                            'M_IP_COSTCENTER': None,
-                            'M_IP_DISCOUNTAMOUNT': None,
-                            'M_IP_DISCOUNTPERCENT': None,
-                            'M_IP_ECLASS': '',
-                            'M_IP_GOODSINWARDPOSID': '',
-                            'M_IP_INVENTORYACC': None,
-                            'M_IP_ITEMPOS': 1,
-                            'M_IP_KOSTENTRAEGER': '',
-                            'M_IP_ORDERPOSID': None,
-                            'M_IP_POSITIONSTEXT': 'T 180 L2\n42086513_0001',
-                            'M_IP_QUANTITY': 1.0,
-                            'M_IP_QUANTITYUNIT': None,
-                            'M_IP_SINGLENETPRICE': 39157.0,
-                            'M_IP_TAXCODE': None,
-                            'M_IP_TAXRATE': 21.0,
-                            'M_IP_TOTALNETPRICE': 39157.0,
-                            'M_IP_TYP': 'ET'},
-                           {'M_CN_ID': None,
-                            'M_CN_INVOICEID': '8139641',
-                            'M_IP_ARTICLENUMBER': '',
-                            'M_IP_ARTICLENUMBER2': None,
-                            'M_IP_COSTCENTER': None,
-                            'M_IP_DISCOUNTAMOUNT': None,
-                            'M_IP_DISCOUNTPERCENT': None,
-                            'M_IP_ECLASS': '',
-                            'M_IP_GOODSINWARDPOSID': '',
-                            'M_IP_INVENTORYACC': None,
-                            'M_IP_ITEMPOS': 2,
-                            'M_IP_KOSTENTRAEGER': '',
-                            'M_IP_ORDERPOSID': None,
-                            'M_IP_POSITIONSTEXT': 'REMISE VEHICULE\nREMISE',
-                            'M_IP_QUANTITY': 1.0,
-                            'M_IP_QUANTITYUNIT': None,
-                            'M_IP_SINGLENETPRICE': 12257.0,
-                            'M_IP_TAXCODE': None,
-                            'M_IP_TAXRATE': 21.0,
-                            'M_IP_TOTALNETPRICE': -12257.0,
-                            'M_IP_TYP': 'ET'}]
+                           'M_CN_INVOICEID': '8139641',
+                           'M_IP_ARTICLENUMBER': '',
+                           'M_IP_ARTICLENUMBER2': None,
+                           'M_IP_COSTCENTER': None,
+                           'M_IP_DISCOUNTAMOUNT': None,
+                           'M_IP_DISCOUNTPERCENT': None,
+                           'M_IP_ECLASS': '',
+                           'M_IP_GOODSINWARDPOSID': '',
+                           'M_IP_INVENTORYACC': None,
+                           'M_IP_ITEMPOS': 1,
+                           'M_IP_KOSTENTRAEGER': '',
+                           'M_IP_ORDERPOSID': None,
+                           'M_IP_POSITIONSTEXT': 'T 180 L2\n42086513_0001',
+                           'M_IP_QUANTITY': 1.0,
+                           'M_IP_QUANTITYUNIT': None,
+                           'M_IP_SINGLENETPRICE': 39157.0,
+                           'M_IP_TAXCODE': None,
+                           'M_IP_TAXRATE': 21.0,
+                           'M_IP_TOTALNETPRICE': 39157.0,
+                           'M_IP_TYP': 'ET'},
+                          {'M_CN_ID': None,
+                           'M_CN_INVOICEID': '8139641',
+                           'M_IP_ARTICLENUMBER': '',
+                           'M_IP_ARTICLENUMBER2': None,
+                           'M_IP_COSTCENTER': None,
+                           'M_IP_DISCOUNTAMOUNT': None,
+                           'M_IP_DISCOUNTPERCENT': None,
+                           'M_IP_ECLASS': '',
+                           'M_IP_GOODSINWARDPOSID': '',
+                           'M_IP_INVENTORYACC': None,
+                           'M_IP_ITEMPOS': 2,
+                           'M_IP_KOSTENTRAEGER': '',
+                           'M_IP_ORDERPOSID': None,
+                           'M_IP_POSITIONSTEXT': 'REMISE VEHICULE\nREMISE',
+                           'M_IP_QUANTITY': 1.0,
+                           'M_IP_QUANTITYUNIT': None,
+                           'M_IP_SINGLENETPRICE': 12257.0,
+                           'M_IP_TAXCODE': None,
+                           'M_IP_TAXRATE': 21.0,
+                           'M_IP_TOTALNETPRICE': -12257.0,
+                           'M_IP_TYP': 'ET'}]
+                         )
+
+    # HW-6052
+    def test_get_xml_minus_in_positions_3(self):
+        m_cn_id = "8139641"
+        xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id)
+        xml_positions = read_xml_file_to_str('xml_files/no_text_position.xml')
+        xml_invoice_positions = get_xml_positions(
+            xml_text=xml_positions,
+            xml_invoice_data=xml_invoice_header, logger=Mock())
+
+        self.assertEqual(xml_invoice_positions.get_xml_postions_map(),
+                         [{'M_CN_ID': None, 'M_CN_INVOICEID': '8139641', 'M_IP_ITEMPOS': 1, 'M_IP_POSITIONSTEXT': '-',
+                           'M_IP_QUANTITY': 1.0, 'M_IP_SINGLENETPRICE': 24598.0, 'M_IP_TOTALNETPRICE': 24598.0,
+                           'M_IP_TAXRATE': 21.0, 'M_IP_COSTCENTER': None, 'M_IP_KOSTENTRAEGER': '',
+                           'M_IP_INVENTORYACC': None, 'M_IP_ARTICLENUMBER': '', 'M_IP_ARTICLENUMBER2': None,
+                           'M_IP_DISCOUNTAMOUNT': None, 'M_IP_QUANTITYUNIT': None, 'M_IP_TYP': 'ET',
+                           'M_IP_DISCOUNTPERCENT': None, 'M_IP_TAXCODE': None, 'M_IP_ORDERPOSID': None,
+                           'M_IP_GOODSINWARDPOSID': '', 'M_IP_ECLASS': ''}]
+                         )
+
+    # HW-5954
+    def test_get_xml_first_FR(self):
+        m_cn_id = "8139641"
+        xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id)
+        xml_positions = read_xml_file_to_str('xml_files/first_frankreich.xml')
+        xml_invoice_positions = get_xml_positions(
+            xml_text=xml_positions,
+            xml_invoice_data=xml_invoice_header, logger=Mock())
+
+        self.assertEqual(xml_invoice_positions.get_xml_postions_map(),
+                         [{'M_CN_ID': None,
+                           'M_CN_INVOICEID': '8139641',
+                           'M_IP_ARTICLENUMBER': '',
+                           'M_IP_ARTICLENUMBER2': None,
+                           'M_IP_COSTCENTER': None,
+                           'M_IP_DISCOUNTAMOUNT': None,
+                           'M_IP_DISCOUNTPERCENT': None,
+                           'M_IP_ECLASS': '',
+                           'M_IP_GOODSINWARDPOSID': '',
+                           'M_IP_INVENTORYACC': None,
+                           'M_IP_ITEMPOS': 1,
+                           'M_IP_KOSTENTRAEGER': '',
+                           'M_IP_ORDERPOSID': None,
+                           'M_IP_POSITIONSTEXT': '245/45R19 102Y HANKOOK',
+                           'M_IP_QUANTITY': 2.0,
+                           'M_IP_QUANTITYUNIT': None,
+                           'M_IP_SINGLENETPRICE': 141.0,
+                           'M_IP_TAXCODE': None,
+                           'M_IP_TAXRATE': 20.0,
+                           'M_IP_TOTALNETPRICE': 282.0,
+                           'M_IP_TYP': 'ET'}]
                          )
 
 
