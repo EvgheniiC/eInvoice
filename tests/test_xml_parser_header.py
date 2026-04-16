@@ -1096,7 +1096,7 @@ class TestXmlParserHeader(unittest.TestCase):
                           'M_IV_KREDITOR': None,
                           'M_IV_LICENSE_NUMBER': None,
                           'M_IV_MAIL_SUBJECT': None,
-                          'M_IV_MANDANT': None,
+                          'M_IV_MANDANT': "60",
                           'M_IV_ORDERID': None,
                           'M_IV_QUELLSYSTEM': 'eInvoice',
                           'M_IV_RECEIPTDATE': None,
