@@ -13,7 +13,7 @@ the script receives an XML file in str format, processes and finds data in it an
 ## Setup
 
 ```shell
-0 in com.sixt.lib.python.eInvoice -> source venv/bin/activate -> you will get something like  (venv) "yousession" com.sixt.lib.python.eInvoice)
+0 in com.sixt.lib.python.eInvoice -> source venv/bin/activate -> you will get something like ->  (venv) "yousession" com.sixt.lib.python.eInvoice)
 1 in com.sixt.lib.python.eInvoice ->(venv) python setup.py sdist
 2 copy .tar.gz file from folder dist (for exam com.sixt.lib.python.eInvoice-0.1.tar.gz)
 3 in Chronos_new repository -> chronox_extraction/eInvoice/eInvoice_repo, for exam com.sixt.lib.python.eInvoice-0.1.tar.gz
