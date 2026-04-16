@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsm:CrossIndustryInvoice xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                          xmlns:a="urn:un:unece:uncefact:data:standard:QualifiedDataType:100"
+                          xmlns:rsm="urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100"
+                          xmlns:qdt="urn:un:unece:uncefact:data:standard:QualifiedDataType:10"
+                          xmlns:ram="urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100"
+                          xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                          xmlns:udt="urn:un:unece:uncefact:data:standard:UnqualifiedDataType:100">
+   <rsm:ExchangedDocumentContext>
+      <ram:TestIndicator>
+         <udt:Indicator>false</udt:Indicator>
+      </ram:TestIndicator>
+      <ram:GuidelineSpecifiedDocumentContextParameter>
+         <ram:ID>urn:cen.eu:en16931:2017#conformant#urn:factur-x.eu:1p0:extended</ram:ID>
+      </ram:GuidelineSpecifiedDocumentContextParameter>
+   </rsm:ExchangedDocumentContext>
+   <rsm:ExchangedDocument>
+      <ram:ID>9434355594</ram:ID>
+      <ram:Name>RECHNUNG</ram:Name>
+      <ram:TypeCode>380</ram:TypeCode>
+      <ram:IssueDateTime>
+         <udt:DateTimeString format="102">20260324</udt:DateTimeString>
+      </ram:IssueDateTime>
+      <ram:IncludedNote>
+         <ram:Content>Rechnung gemäß Bestellung Nr. SIXT-000000338994 vom 24.03.2026</ram:Content>
+      </ram:IncludedNote>
+      <ram:IncludedNote>
+         <ram:Content>Bei Rückfragen: Telefon: +49 941 39600-0 E-Mail : regensburg@bechtle.com</ram:Content>
+      </ram:IncludedNote>
+      <ram:IncludedNote>
+         <ram:Content>Sofern nicht anders vereinbart, gelten unsere Allgemeinen Geschäftsbedingungen (Stand: 01.12.2022) abrufbar unter www.bechtle.com/de/agb Wir liefern unter Eigentumsvorbehalt. Sofern nichts anderes angegeben, entspricht der Rechnungsempfänger dem Leistungsempfänger. Es gilt der zum Zeitpunkt der Ausführung der Lieferung/Leistung gültige Mehrwertsteuersatz. Preisänderungen bei Dollar-abhängigen Produkten vorbehalten. Soweit Geräte gemäß § 54 UrhG Gegenstand dieser Rechnung sind, so ist die Urheberrechtsabgabe für diese Geräte entrichtet und im Rechnungsbetrag enthalten. Mit freundlichen Grüßen Mit freundlichen Grüßen Ihr Vertriebsteam Bechtle GmbH &amp; Co. KG Phone: +49 941 39600-209 Wir weisen auf EU-Verordnung Nr. 833/2014 Artikel 12g (Russland-Sanktionsverordnung) hin: https://www.bechtle.com/privacy-policy/eu-export-restrictions Sofern nicht anders angegeben, gilt der Zeitpunkt der Rechnungsstellung als Zeitpunkt der Leistung. </ram:Content>
+      </ram:IncludedNote>
+      <ram:IncludedNote>
+         <ram:Content>OnlineNr.: 9113349869</ram:Content>
+      </ram:IncludedNote>
+      <ram:IncludedNote>
+         <ram:Content>HandelsregisterNr.: HRB 7992</ram:Content>
+         <ram:SubjectCode>REG</ram:SubjectCode>
+      </ram:IncludedNote>
+   </rsm:ExchangedDocument>
+   <rsm:SupplyChainTradeTransaction>
+      <ram:IncludedSupplyChainTradeLineItem>
+         <ram:AssociatedDocumentLineDocument>
+            <ram:LineID>20000</ram:LineID>
+         </ram:AssociatedDocumentLineDocument>
+         <ram:SpecifiedTradeProduct>
+            <ram:SellerAssignedID>4592090</ram:SellerAssignedID>
+            <ram:Name>Logitech Roommate</ram:Name>
+            <ram:Description>Logitech Roommate / Ref.Nr:950-000084 / SerNr:2542FGS4BF19, / Info:Produkttyp: Basisstation Kompatible Software: GoToRoom, Microsoft Teams, RingCentral Rooms, Zoom Rooms Anschlüsse: 1 x HDMI, 1 x RJ45, 2 x HDMI Out, 3 x USB Typ A Abmessungen (B x H x T): 161 x 35 x 211mm Lieferumfang: Fernbedienung, Montage-Zubehör, Netzkabel, Netzteil Mit RoomMate, einer speziell für die Video Collaboration entwickelten Lösung, verwandeln Sie jeden Raum in einen gerätebasierten Vid eokonferenzraum. RoomMate nutzt CollabOS, das einheitliche Betriebssystem von Logitech und kann dadurch in allen Konferenzräumen einfach und einheitlich eingesetzt werden. RoomMate ist eine skalierbare Lösung für die Bereitstellung und Verwaltung von Videokonferenzsoftware. Mit seinem flachen Design bietet RoomMate alle Funktionen, die für HD-Videokonferenzen mit einem oder zwei Bildschirmen erforderlich sind und kann sicher und unauffällig montiert werden. RoomMate lässt sich zusammen mit anderen Geräten über Logitech Sync, Teams Admin Center oder Zoom Device Management kinderleicht überwachen und verwalten. Hinweis: Beim Kauf dieses Produktes empfehlen wir einen den ergänzenden Logitech Select Services! Der Select Service umfasst unter anderem eine Garantieverlängerung, technischen Support rund um die Uhr, erweiterte RMA-Leistung und Integration von Sync Insights sowie ServiceNow. Sie können zwischen folgenden Optionen wählen (siehe auch unter Zubehör): Logitech Ein-Jahres-Plan Select Service (994-000149) Logitech Zwei-Jahres-Plan Select Service (994-000194) Logitech Drei-Jahres-Plan Select Service (994-000148) Logitech Vier-Jahres-Plan Select Service (994-000195) Logitech Fünf-Jahres-Plan Select Service (994-000196) Herstellergarantie:2 Jahre Bring-In (Details siehe Hersteller-Website) </ram:Description>
+         </ram:SpecifiedTradeProduct>
+         <ram:SpecifiedLineTradeAgreement>
+            <ram:BuyerOrderReferencedDocument>
+               <ram:IssuerAssignedID>SIXT-000000338994</ram:IssuerAssignedID>
+               <ram:LineID>1</ram:LineID>
+            </ram:BuyerOrderReferencedDocument>
+            <ram:GrossPriceProductTradePrice>
+               <ram:ChargeAmount>661.99</ram:ChargeAmount>
+               <ram:BasisQuantity unitCode="C62">1</ram:BasisQuantity>
+            </ram:GrossPriceProductTradePrice>
+            <ram:NetPriceProductTradePrice>
+               <ram:ChargeAmount>661.99</ram:ChargeAmount>
+               <ram:BasisQuantity unitCode="C62">1</ram:BasisQuantity>
+            </ram:NetPriceProductTradePrice>
+         </ram:SpecifiedLineTradeAgreement>
+         <ram:SpecifiedLineTradeDelivery>
+            <ram:BilledQuantity unitCode="C62">1.000</ram:BilledQuantity>
+            <ram:DespatchAdviceReferencedDocument>
+               <ram:IssuerAssignedID>943-41433825</ram:IssuerAssignedID>
+            </ram:DespatchAdviceReferencedDocument>
+         </ram:SpecifiedLineTradeDelivery>
+         <ram:SpecifiedLineTradeSettlement>
+            <ram:ApplicableTradeTax>
+               <ram:TypeCode>VAT</ram:TypeCode>
+               <ram:CategoryCode>S</ram:CategoryCode>
+               <ram:RateApplicablePercent>19.00</ram:RateApplicablePercent>
+            </ram:ApplicableTradeTax>
+            <ram:SpecifiedTradeSettlementLineMonetarySummation>
+               <ram:LineTotalAmount>661.99</ram:LineTotalAmount>
+            </ram:SpecifiedTradeSettlementLineMonetarySummation>
+         </ram:SpecifiedLineTradeSettlement>
+      </ram:IncludedSupplyChainTradeLineItem>
+      <ram:ApplicableHeaderTradeAgreement>
+         <ram:SellerTradeParty>
+            <ram:Name>Bechtle GmbH &amp; Co .KG IT-Systemhaus</ram:Name>
+            <ram:DefinedTradeContact>
+               <ram:PersonName>Ihr Vertriebsteam</ram:PersonName>
+               <ram:TelephoneUniversalCommunication>
+                  <ram:CompleteNumber>+49 941 39600-0</ram:CompleteNumber>
+               </ram:TelephoneUniversalCommunication>
+               <ram:EmailURIUniversalCommunication>
+                  <ram:URIID>regensburg@bechtle.com</ram:URIID>
+               </ram:EmailURIUniversalCommunication>
+            </ram:DefinedTradeContact>
+            <ram:PostalTradeAddress>
+               <ram:PostcodeCode>93049</ram:PostcodeCode>
+               <ram:LineOne>Dr.-Leo-Ritter-Straße 4</ram:LineOne>
+               <ram:CityName>Regensburg</ram:CityName>
+               <ram:CountryID>DE</ram:CountryID>
+            </ram:PostalTradeAddress>
+            <ram:URIUniversalCommunication>
+               <ram:URIID schemeID="EM">regensburg@bechtle.com</ram:URIID>
+            </ram:URIUniversalCommunication>
+            <ram:SpecifiedTaxRegistration>
+               <ram:ID schemeID="VA">DE 813 141 349</ram:ID>
+            </ram:SpecifiedTaxRegistration>
+         </ram:SellerTradeParty>
+         <ram:BuyerTradeParty>
+            <ram:ID>9000536363</ram:ID>
+            <ram:Name>Sixt GmbH &amp; Co. Autovermietung KG</ram:Name>
+            <ram:DefinedTradeContact>
+               <ram:PersonName>Felix Eckstein</ram:PersonName>
+               <ram:EmailURIUniversalCommunication>
+                  <ram:URIID>felix.eckstein@sixt.com</ram:URIID>
+               </ram:EmailURIUniversalCommunication>
+            </ram:DefinedTradeContact>
+            <ram:PostalTradeAddress>
+               <ram:PostcodeCode>82049</ram:PostcodeCode>
+               <ram:LineOne>Zugspitzstraße 1</ram:LineOne>
+               <ram:CityName>Pullach i. Isartal</ram:CityName>
+               <ram:CountryID>DE</ram:CountryID>
+            </ram:PostalTradeAddress>
+         </ram:BuyerTradeParty>
+         <ram:SellerOrderReferencedDocument>
+            <ram:IssuerAssignedID>943-2180742</ram:IssuerAssignedID>
+         </ram:SellerOrderReferencedDocument>
+         <ram:BuyerOrderReferencedDocument>
+            <ram:IssuerAssignedID>SIXT-000000338994</ram:IssuerAssignedID>
+         </ram:BuyerOrderReferencedDocument>
+      </ram:ApplicableHeaderTradeAgreement>
+      <ram:ApplicableHeaderTradeDelivery>
+         <ram:ShipToTradeParty>
+            <ram:Name>Sixt GmbH &amp; Co. Autovermietung KG</ram:Name>
+            <ram:DefinedTradeContact>
+               <ram:PersonName>Felix Eckstein</ram:PersonName>
+               <ram:EmailURIUniversalCommunication>
+                  <ram:URIID>felix.eckstein@sixt.com</ram:URIID>
+               </ram:EmailURIUniversalCommunication>
+            </ram:DefinedTradeContact>
+            <ram:PostalTradeAddress>
+               <ram:PostcodeCode>82049</ram:PostcodeCode>
+               <ram:LineOne>Zugspitzstrasse 1</ram:LineOne>
+               <ram:CityName>Pullach</ram:CityName>
+               <ram:CountryID>DE</ram:CountryID>
+            </ram:PostalTradeAddress>
+         </ram:ShipToTradeParty>
+         <ram:ActualDeliverySupplyChainEvent>
+            <ram:OccurrenceDateTime>
+               <udt:DateTimeString format="102">20260320</udt:DateTimeString>
+            </ram:OccurrenceDateTime>
+         </ram:ActualDeliverySupplyChainEvent>
+         <ram:DespatchAdviceReferencedDocument>
+            <ram:IssuerAssignedID>943-41433825</ram:IssuerAssignedID>
+         </ram:DespatchAdviceReferencedDocument>
+      </ram:ApplicableHeaderTradeDelivery>
+      <ram:ApplicableHeaderTradeSettlement>
+         <ram:PaymentReference>9434355594</ram:PaymentReference>
+         <ram:InvoiceCurrencyCode>EUR</ram:InvoiceCurrencyCode>
+         <ram:InvoiceeTradeParty>
+            <ram:ID>9000536363</ram:ID>
+            <ram:Name>Sixt GmbH &amp; Co. Autovermietung KG</ram:Name>
+            <ram:DefinedTradeContact/>
+            <ram:PostalTradeAddress>
+               <ram:PostcodeCode>82049</ram:PostcodeCode>
+               <ram:LineOne>Zugspitzstraße 1</ram:LineOne>
+               <ram:CityName>Pullach i. Isartal</ram:CityName>
+               <ram:CountryID>DE</ram:CountryID>
+            </ram:PostalTradeAddress>
+            <ram:SpecifiedTaxRegistration>
+               <ram:ID schemeID="VA">DE223999470</ram:ID>
+            </ram:SpecifiedTaxRegistration>
+         </ram:InvoiceeTradeParty>
+         <ram:ApplicableTradeTax>
+            <ram:CalculatedAmount>125.78</ram:CalculatedAmount>
+            <ram:TypeCode>VAT</ram:TypeCode>
+            <ram:BasisAmount>661.99</ram:BasisAmount>
+            <ram:CategoryCode>S</ram:CategoryCode>
+            <ram:RateApplicablePercent>19.00</ram:RateApplicablePercent>
+         </ram:ApplicableTradeTax>
+         <ram:SpecifiedTradePaymentTerms>
+            <ram:Description>30 Tage ohne Abzug</ram:Description>
+            <ram:DueDateDateTime>
+               <udt:DateTimeString format="102">20260423</udt:DateTimeString>
+            </ram:DueDateDateTime>
+         </ram:SpecifiedTradePaymentTerms>
+         <ram:SpecifiedTradeSettlementHeaderMonetarySummation>
+            <ram:LineTotalAmount>661.99</ram:LineTotalAmount>
+            <ram:ChargeTotalAmount>0.00</ram:ChargeTotalAmount>
+            <ram:AllowanceTotalAmount>0.00</ram:AllowanceTotalAmount>
+            <ram:TaxBasisTotalAmount>661.99</ram:TaxBasisTotalAmount>
+            <ram:TaxTotalAmount currencyID="EUR">125.78</ram:TaxTotalAmount>
+            <ram:GrandTotalAmount>787.77</ram:GrandTotalAmount>
+            <ram:TotalPrepaidAmount>0.00</ram:TotalPrepaidAmount>
+            <ram:DuePayableAmount>787.77</ram:DuePayableAmount>
+         </ram:SpecifiedTradeSettlementHeaderMonetarySummation>
+      </ram:ApplicableHeaderTradeSettlement>
+   </rsm:SupplyChainTradeTransaction>
+</rsm:CrossIndustryInvoice>
