@@ -1,5 +1,6 @@
 from datetime import datetime
 import re
+from typing import Optional
 from ..data_class import XmlInvoiceHeader
 from ..helper_functions import find_data_within_element, find_data_with_regex, get_xml_tree, \
     find_data_within_element_with_len, get_tags_from_json, check_cost_center, find_tax_data, format_sixt_number, \
@@ -41,6 +42,8 @@ def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) ->
     tags_to_search_delivery_date_till: list = get_tags_from_json('tags_to_search_delivery_date_till')
     tags_to_search_currency: list = get_tags_from_json('tags_to_search_currency')
     tags_to_search_invoice_amount: list = get_tags_from_json('tags_to_search_invoice_amount')
+    tags_to_search_line_extension_amount: list = get_tags_from_json('tags_to_search_line_extension_amount')
+    tags_to_search_tax_exclusive_amount: list = get_tags_from_json('tags_to_search_tax_exclusive_amount')
     tags_to_search_total_amount: list = get_tags_from_json('tags_to_search_total_amount')
     tags_to_search_total_tax_amount: list = get_tags_from_json('tags_to_search_total_tax_amount')
     tags_to_search_supplier: list = get_tags_from_json('tags_to_search_supplier')
@@ -116,13 +119,27 @@ def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) ->
                 print(f"Order was not found {e}")
                 logger.error_log(f"Order bis was not found {e}")
 
-    xml_invoice_data.invoice_amount = find_data_within_element(xml_invoice_head_money,
-                                                               tags_to_search_invoice_amount)
+    # EN 16931: TaxExclusiveAmount reflects document-level allowances/charges; LineExtensionAmount does not.
+    # Use TaxExclusiveAmount only when it differs from LineExtensionAmount (avoids breaking SBD-wrapped
+    # invoices where LegalMonetaryTotal totals match but TaxSubtotal/TaxableAmount is authoritative).
+    line_extension_amount: Optional[str] = find_data_within_element(
+        xml_invoice_head_money, tags_to_search_line_extension_amount)
+    tax_exclusive_amount: Optional[str] = find_data_within_element(
+        xml_invoice_head_money, tags_to_search_tax_exclusive_amount)
+    use_tax_exclusive_for_net: bool = bool(
+        line_extension_amount and tax_exclusive_amount
+        and string_to_float(line_extension_amount) != string_to_float(tax_exclusive_amount)
+    )
+    if use_tax_exclusive_for_net:
+        xml_invoice_data.invoice_amount = tax_exclusive_amount
+    else:
+        xml_invoice_data.invoice_amount = find_data_within_element(xml_invoice_head_money,
+                                                                     tags_to_search_invoice_amount)
 
-    # HW-5945 xml_invoice_data.invoice_amount = xml_invoice_data.invoice_amount - discount
+    # HW-5945: subtract AllowanceTotalAmount only when net was derived from LineExtensionAmount chain
     xml_invoice_data.discount = string_to_float(
         find_data_within_element(xml_invoice_head_money, tags_to_search_discount))
-    if xml_invoice_data.discount:
+    if xml_invoice_data.discount and not use_tax_exclusive_for_net:
         xml_invoice_data.invoice_amount = str(
             round(string_to_float(xml_invoice_data.invoice_amount) - string_to_float(xml_invoice_data.discount), 2))
 

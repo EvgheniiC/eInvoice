@@ -209,6 +209,14 @@
   "tags_to_search_country_billing": [
     "./AccountingCustomerParty/Party/Country/IdentificationCode"
   ],
+  "tags_to_search_line_extension_amount": [
+    "./LegalMonetaryTotal/LineExtensionAmount",
+    "./Invoice/LegalMonetaryTotal/LineExtensionAmount"
+  ],
+  "tags_to_search_tax_exclusive_amount": [
+    "./LegalMonetaryTotal/TaxExclusiveAmount",
+    "./Invoice/LegalMonetaryTotal/TaxExclusiveAmount"
+  ],
   "tags_to_search_discount": [
     "./LegalMonetaryTotal/AllowanceTotalAmount"
   ],

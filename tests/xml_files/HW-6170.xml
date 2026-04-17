@@ -1,0 +1,235 @@
+<Invoice xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2"
+         xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
+         xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
+         xmlns:sh="http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader">
+    <cbc:UBLVersionID>2.1</cbc:UBLVersionID>
+    <cbc:CustomizationID>urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0
+    </cbc:CustomizationID>
+    <cbc:ProfileID>urn:fdc:peppol.eu:2017:poacc:billing:01:1.0</cbc:ProfileID>
+    <cbc:ID>3595748</cbc:ID>
+    <cbc:IssueDate>2026-04-14</cbc:IssueDate>
+    <cbc:DueDate>2026-05-14</cbc:DueDate>
+    <cbc:InvoiceTypeCode listAgencyID="6" listID="UNCL1001">380</cbc:InvoiceTypeCode>
+    <cbc:TaxPointDate>2026-04-14</cbc:TaxPointDate>
+    <cbc:DocumentCurrencyCode listAgencyID="6" listID="ISO 4217 Alpha">EUR</cbc:DocumentCurrencyCode>
+    <cbc:BuyerReference>9600767250 2HVZ035</cbc:BuyerReference>
+    <cac:OrderReference>
+        <cbc:ID>9600767250</cbc:ID>
+    </cac:OrderReference>
+    <cac:AdditionalDocumentReference>
+        <cbc:ID>INVOICE</cbc:ID>
+        <cac:Attachment>
+            <cbc:EmbeddedDocumentBinaryObject filename="0419261_3595748.pdf" mimeCode="application/pdf">
+                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
+            </cbc:EmbeddedDocumentBinaryObject>
+        </cac:Attachment>
+    </cac:AdditionalDocumentReference>
+    <cac:AccountingSupplierParty>
+        <cac:Party>
+            <cbc:EndpointID schemeID="0208">0870392282</cbc:EndpointID>
+            <cac:PartyName>
+                <cbc:Name>Geevers Auto Parts Belgium NV</cbc:Name>
+            </cac:PartyName>
+            <cac:PostalAddress>
+                <cbc:StreetName>Nijverheidsstraat</cbc:StreetName>
+                <cbc:BuildingNumber>14</cbc:BuildingNumber>
+                <cbc:CityName>Hamont-Achel</cbc:CityName>
+                <cbc:PostalZone>3930</cbc:PostalZone>
+                <cac:Country>
+                    <cbc:IdentificationCode listAgencyID="6" listID="ISO3166-1:Alpha2">BE</cbc:IdentificationCode>
+                </cac:Country>
+            </cac:PostalAddress>
+            <cac:PartyTaxScheme>
+                <cbc:CompanyID>BE0870392282</cbc:CompanyID>
+                <cac:TaxScheme>
+                    <cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5153">VAT</cbc:ID>
+                </cac:TaxScheme>
+            </cac:PartyTaxScheme>
+            <cac:PartyLegalEntity>
+                <cbc:RegistrationName>Geevers Auto Parts Belgium NV</cbc:RegistrationName>
+                <cbc:CompanyID>870392282</cbc:CompanyID>
+            </cac:PartyLegalEntity>
+            <cac:Contact>
+                <cbc:Telephone>089-845208</cbc:Telephone>
+                <cbc:ElectronicMail>info@geevers.be</cbc:ElectronicMail>
+            </cac:Contact>
+        </cac:Party>
+    </cac:AccountingSupplierParty>
+    <cac:AccountingCustomerParty>
+        <cbc:CustomerAssignedAccountID>419261</cbc:CustomerAssignedAccountID>
+        <cac:Party>
+            <cbc:EndpointID schemeID="0208">0465341266</cbc:EndpointID>
+            <cac:PartyName>
+                <cbc:Name>BV SIXT BELGIUM</cbc:Name>
+            </cac:PartyName>
+            <cac:PostalAddress>
+                <cbc:StreetName>Kouterveldstraat 6c</cbc:StreetName>
+                <cbc:CityName>Machelen</cbc:CityName>
+                <cbc:PostalZone>1831</cbc:PostalZone>
+                <cac:Country>
+                    <cbc:IdentificationCode listAgencyID="6" listID="ISO3166-1:Alpha2">BE</cbc:IdentificationCode>
+                </cac:Country>
+            </cac:PostalAddress>
+            <cac:PartyTaxScheme>
+                <cbc:CompanyID>BE0465341266</cbc:CompanyID>
+                <cac:TaxScheme>
+                    <cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5153">VAT</cbc:ID>
+                </cac:TaxScheme>
+            </cac:PartyTaxScheme>
+            <cac:PartyLegalEntity>
+                <cbc:RegistrationName>BV SIXT BELGIUM</cbc:RegistrationName>
+                <cbc:CompanyID>419261</cbc:CompanyID>
+            </cac:PartyLegalEntity>
+            <cac:Contact>
+                <cbc:Name>BV SIXT BELGIUM</cbc:Name>
+                <cbc:Telephone>00321610096737</cbc:Telephone>
+                <cbc:ElectronicMail>accountspayable.bnl@sixt.com</cbc:ElectronicMail>
+            </cac:Contact>
+        </cac:Party>
+    </cac:AccountingCustomerParty>
+    <cac:Delivery>
+        <cac:DeliveryLocation>
+            <cac:Address>
+                <cbc:StreetName>Nieuwlandlaan 5</cbc:StreetName>
+                <cbc:CityName>Aarschot</cbc:CityName>
+                <cbc:PostalZone>3200</cbc:PostalZone>
+                <cac:Country>
+                    <cbc:IdentificationCode listAgencyID="6" listID="ISO3166-1:Alpha2">BE</cbc:IdentificationCode>
+                </cac:Country>
+            </cac:Address>
+        </cac:DeliveryLocation>
+    </cac:Delivery>
+    <cac:PaymentMeans>
+        <cbc:PaymentMeansCode>57</cbc:PaymentMeansCode>
+        <cac:PayeeFinancialAccount>
+            <cbc:ID schemeID="IBAN">BE36733023702281</cbc:ID>
+            <cbc:Name>Geevers Auto Parts Belgium NV</cbc:Name>
+            <cbc:CurrencyCode>EUR</cbc:CurrencyCode>
+            <cac:FinancialInstitutionBranch>
+                <cac:FinancialInstitution>
+                    <cbc:ID schemeID="BIC">KREDBEBB</cbc:ID>
+                </cac:FinancialInstitution>
+            </cac:FinancialInstitutionBranch>
+            <cac:Country>
+                <cbc:IdentificationCode>BE</cbc:IdentificationCode>
+            </cac:Country>
+        </cac:PayeeFinancialAccount>
+    </cac:PaymentMeans>
+    <cac:AllowanceCharge>
+        <cbc:ChargeIndicator>true</cbc:ChargeIndicator>
+        <cbc:AllowanceChargeReasonCode listID="UNCL4465">ADO</cbc:AllowanceChargeReasonCode>
+        <cbc:AllowanceChargeReason>Brandstof toeslag.</cbc:AllowanceChargeReason>
+        <cbc:Amount currencyID="EUR">1.39</cbc:Amount>
+        <cac:TaxCategory>
+            <cbc:ID schemeAgencyID="6" schemeID="UNCL5305">S</cbc:ID>
+            <cbc:Percent>21</cbc:Percent>
+            <cac:TaxScheme>
+                <cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5153">VAT</cbc:ID>
+            </cac:TaxScheme>
+        </cac:TaxCategory>
+    </cac:AllowanceCharge>
+    <cac:TaxTotal>
+        <cbc:TaxAmount currencyID="EUR">111.79</cbc:TaxAmount>
+        <cac:TaxSubtotal>
+            <cbc:TaxableAmount currencyID="EUR">532.31</cbc:TaxableAmount>
+            <cbc:TaxAmount currencyID="EUR">111.79</cbc:TaxAmount>
+            <cac:TaxCategory>
+                <cbc:ID schemeAgencyID="6" schemeID="UNCL5305">S</cbc:ID>
+                <cbc:Percent>21</cbc:Percent>
+                <cac:TaxScheme>
+                    <cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5153">VAT</cbc:ID>
+                </cac:TaxScheme>
+            </cac:TaxCategory>
+        </cac:TaxSubtotal>
+    </cac:TaxTotal>
+    <cac:LegalMonetaryTotal>
+        <cbc:LineExtensionAmount currencyID="EUR">530.92</cbc:LineExtensionAmount>
+        <cbc:TaxExclusiveAmount currencyID="EUR">532.31</cbc:TaxExclusiveAmount>
+        <cbc:TaxInclusiveAmount currencyID="EUR">644.10</cbc:TaxInclusiveAmount>
+        <cbc:ChargeTotalAmount currencyID="EUR">1.39</cbc:ChargeTotalAmount>
+        <cbc:PayableAmount currencyID="EUR">644.10</cbc:PayableAmount>
+    </cac:LegalMonetaryTotal>
+    <cac:InvoiceLine>
+        <cbc:ID>10</cbc:ID>
+        <cbc:InvoicedQuantity unitCode="C62">1</cbc:InvoicedQuantity>
+        <cbc:LineExtensionAmount currencyID="EUR">415.95</cbc:LineExtensionAmount>
+        <cac:OrderLineReference>
+            <cbc:LineID>00010</cbc:LineID>
+        </cac:OrderLineReference>
+        <cac:TaxTotal>
+            <cbc:TaxAmount currencyID="EUR">87.35</cbc:TaxAmount>
+            <cac:TaxSubtotal>
+                <cbc:TaxableAmount currencyID="EUR">415.95</cbc:TaxableAmount>
+                <cbc:TaxAmount currencyID="EUR">87.35</cbc:TaxAmount>
+                <cbc:TransactionCurrencyTaxAmount currencyID="EUR">87.35</cbc:TransactionCurrencyTaxAmount>
+                <cbc:Percent>21</cbc:Percent>
+                <cac:TaxCategory>
+                    <cbc:ID schemeAgencyID="6" schemeID="UNCL5305">S</cbc:ID>
+                    <cbc:Percent>21</cbc:Percent>
+                    <cac:TaxScheme>
+                        <cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5153">VAT</cbc:ID>
+                    </cac:TaxScheme>
+                </cac:TaxCategory>
+            </cac:TaxSubtotal>
+        </cac:TaxTotal>
+        <cac:Item>
+            <cbc:Name>PORTIERSPIEGEL RE</cbc:Name>
+            <cac:SellersItemIdentification>
+                <cbc:ID>1093324104</cbc:ID>
+            </cac:SellersItemIdentification>
+            <cac:ClassifiedTaxCategory>
+                <cbc:ID schemeAgencyID="6" schemeID="UNCL5305">S</cbc:ID>
+                <cbc:Percent>21</cbc:Percent>
+                <cac:TaxScheme>
+                    <cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5153">VAT</cbc:ID>
+                </cac:TaxScheme>
+            </cac:ClassifiedTaxCategory>
+        </cac:Item>
+        <cac:Price>
+            <cbc:PriceAmount currencyID="EUR">415.9500</cbc:PriceAmount>
+            <cbc:BaseQuantity unitCode="C62">1</cbc:BaseQuantity>
+        </cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+        <cbc:ID>20</cbc:ID>
+        <cbc:InvoicedQuantity unitCode="C62">1</cbc:InvoicedQuantity>
+        <cbc:LineExtensionAmount currencyID="EUR">114.97</cbc:LineExtensionAmount>
+        <cac:OrderLineReference>
+            <cbc:LineID>00020</cbc:LineID>
+        </cac:OrderLineReference>
+        <cac:TaxTotal>
+            <cbc:TaxAmount currencyID="EUR">24.14</cbc:TaxAmount>
+            <cac:TaxSubtotal>
+                <cbc:TaxableAmount currencyID="EUR">114.97</cbc:TaxableAmount>
+                <cbc:TaxAmount currencyID="EUR">24.14</cbc:TaxAmount>
+                <cbc:TransactionCurrencyTaxAmount currencyID="EUR">24.14</cbc:TransactionCurrencyTaxAmount>
+                <cbc:Percent>21</cbc:Percent>
+                <cac:TaxCategory>
+                    <cbc:ID schemeAgencyID="6" schemeID="UNCL5305">S</cbc:ID>
+                    <cbc:Percent>21</cbc:Percent>
+                    <cac:TaxScheme>
+                        <cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5153">VAT</cbc:ID>
+                    </cac:TaxScheme>
+                </cac:TaxCategory>
+            </cac:TaxSubtotal>
+        </cac:TaxTotal>
+        <cac:Item>
+            <cbc:Name>SPIEGELGLAS RE</cbc:Name>
+            <cac:SellersItemIdentification>
+                <cbc:ID>1093324124</cbc:ID>
+            </cac:SellersItemIdentification>
+            <cac:ClassifiedTaxCategory>
+                <cbc:ID schemeAgencyID="6" schemeID="UNCL5305">S</cbc:ID>
+                <cbc:Percent>21</cbc:Percent>
+                <cac:TaxScheme>
+                    <cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5153">VAT</cbc:ID>
+                </cac:TaxScheme>
+            </cac:ClassifiedTaxCategory>
+        </cac:Item>
+        <cac:Price>
+            <cbc:PriceAmount currencyID="EUR">114.9700</cbc:PriceAmount>
+            <cbc:BaseQuantity unitCode="C62">1</cbc:BaseQuantity>
+        </cac:Price>
+    </cac:InvoiceLine>
+</Invoice>
