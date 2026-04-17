@@ -235,6 +235,27 @@ def string_to_float(value, de_format=False) -> Union[float, int, None, str]:
         create_viable_float_or_int_string(value.replace("-", ""), de_format))
 
 
+def document_charge_description(xml_tree: Element) -> str:
+    """
+    Build position text from invoice-level AllowanceCharge elements with ChargeIndicator true.
+    """
+    reasons: List[str] = []
+    for path in ("./AllowanceCharge", "./Invoice/AllowanceCharge"):
+        for ac in xml_tree.findall(path):
+            indicator = ac.find("ChargeIndicator")
+            if indicator is None or not indicator.text or indicator.text.strip().lower() != "true":
+                continue
+            amount_el = ac.find("Amount")
+            if amount_el is None or not amount_el.text:
+                continue
+            if string_to_float(amount_el.text) <= 0:
+                continue
+            reason_el = ac.find("AllowanceChargeReason")
+            if reason_el is not None and reason_el.text:
+                reasons.append(reason_el.text.strip())
+    return "\n".join(reasons) if reasons else "Document charge"
+
+
 def string_to_float_negative(value, de_format=False) -> Union[float, int, None, str]:
     """
     for positions, we need negative value for position

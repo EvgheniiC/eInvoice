@@ -217,6 +217,10 @@
     "./LegalMonetaryTotal/TaxExclusiveAmount",
     "./Invoice/LegalMonetaryTotal/TaxExclusiveAmount"
   ],
+  "tags_to_search_charge_total_amount": [
+    "./LegalMonetaryTotal/ChargeTotalAmount",
+    "./Invoice/LegalMonetaryTotal/ChargeTotalAmount"
+  ],
   "tags_to_search_discount": [
     "./LegalMonetaryTotal/AllowanceTotalAmount"
   ],

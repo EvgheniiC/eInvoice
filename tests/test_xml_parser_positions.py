@@ -1025,6 +1025,82 @@ class TestXmlParserHeader(unittest.TestCase):
                            'M_IP_TYP': 'ET'}]
                          )
 
+    # HW-6170
+    def test_get_xml_HW_6170(self):
+        m_cn_id = "8139641"
+        xml_invoice_header = XmlInvoiceHeader(m_cn_id=m_cn_id)
+        xml_positions = read_xml_file_to_str('xml_files/HW-6170.xml')
+        xml_invoice_positions = get_xml_positions(
+            xml_text=xml_positions,
+            xml_invoice_data=xml_invoice_header, logger=Mock())
+
+        self.assertEqual(xml_invoice_positions.get_xml_postions_map(),
+                         [{'M_CN_ID': None,
+                           'M_CN_INVOICEID': '8139641',
+                           'M_IP_ARTICLENUMBER': '',
+                           'M_IP_ARTICLENUMBER2': None,
+                           'M_IP_COSTCENTER': None,
+                           'M_IP_DISCOUNTAMOUNT': None,
+                           'M_IP_DISCOUNTPERCENT': None,
+                           'M_IP_ECLASS': '',
+                           'M_IP_GOODSINWARDPOSID': '',
+                           'M_IP_INVENTORYACC': None,
+                           'M_IP_ITEMPOS': 1,
+                           'M_IP_KOSTENTRAEGER': '',
+                           'M_IP_ORDERPOSID': '00010',
+                           'M_IP_POSITIONSTEXT': 'PORTIERSPIEGEL RE\n1093324104',
+                           'M_IP_QUANTITY': 1.0,
+                           'M_IP_QUANTITYUNIT': None,
+                           'M_IP_SINGLENETPRICE': 415.95,
+                           'M_IP_TAXCODE': None,
+                           'M_IP_TAXRATE': 21.0,
+                           'M_IP_TOTALNETPRICE': 415.95,
+                           'M_IP_TYP': 'ET'},
+                          {'M_CN_ID': None,
+                           'M_CN_INVOICEID': '8139641',
+                           'M_IP_ARTICLENUMBER': '',
+                           'M_IP_ARTICLENUMBER2': None,
+                           'M_IP_COSTCENTER': None,
+                           'M_IP_DISCOUNTAMOUNT': None,
+                           'M_IP_DISCOUNTPERCENT': None,
+                           'M_IP_ECLASS': '',
+                           'M_IP_GOODSINWARDPOSID': '',
+                           'M_IP_INVENTORYACC': None,
+                           'M_IP_ITEMPOS': 2,
+                           'M_IP_KOSTENTRAEGER': '',
+                           'M_IP_ORDERPOSID': '00020',
+                           'M_IP_POSITIONSTEXT': 'SPIEGELGLAS RE\n1093324124',
+                           'M_IP_QUANTITY': 1.0,
+                           'M_IP_QUANTITYUNIT': None,
+                           'M_IP_SINGLENETPRICE': 114.97,
+                           'M_IP_TAXCODE': None,
+                           'M_IP_TAXRATE': 21.0,
+                           'M_IP_TOTALNETPRICE': 114.97,
+                           'M_IP_TYP': 'ET'},
+                          {'M_CN_ID': None,
+                           'M_CN_INVOICEID': '8139641',
+                           'M_IP_ARTICLENUMBER': '',
+                           'M_IP_ARTICLENUMBER2': None,
+                           'M_IP_COSTCENTER': None,
+                           'M_IP_DISCOUNTAMOUNT': None,
+                           'M_IP_DISCOUNTPERCENT': None,
+                           'M_IP_ECLASS': '',
+                           'M_IP_GOODSINWARDPOSID': '',
+                           'M_IP_INVENTORYACC': None,
+                           'M_IP_ITEMPOS': 3,
+                           'M_IP_KOSTENTRAEGER': '',
+                           'M_IP_ORDERPOSID': '',
+                           'M_IP_POSITIONSTEXT': 'Brandstof toeslag.',
+                           'M_IP_QUANTITY': 1.0,
+                           'M_IP_QUANTITYUNIT': None,
+                           'M_IP_SINGLENETPRICE': 1.39,
+                           'M_IP_TAXCODE': None,
+                           'M_IP_TAXRATE': 0.0,
+                           'M_IP_TOTALNETPRICE': 1.39,
+                           'M_IP_TYP': 'ET'}]
+                         )
+
+
 
 if __name__ == '__main__':
     unittest.main()

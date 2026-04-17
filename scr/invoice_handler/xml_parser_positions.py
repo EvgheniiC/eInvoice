@@ -1,7 +1,9 @@
 import re
+from typing import Optional
+
 from ..data_class import XmlInvoiceHeader, XmlInvoicePosition
 from ..helper_functions import get_xml_tree, find_data_within_element, get_tags_from_json, check_cost_center, \
-    get_field_value, string_to_float_negative, string_to_float, build_description_from_item
+    get_field_value, string_to_float_negative, string_to_float, build_description_from_item, document_charge_description
 from xml.etree.ElementTree import Element
 
 
@@ -24,6 +26,9 @@ def get_xml_positions(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger)
     tags_to_search_total_net_price: list = get_tags_from_json('tags_to_search_total_net_price')
     tags_to_search_order_line_reference: list = get_tags_from_json('tags_to_search_order_line_reference')
     tags_to_search_discount: list = get_tags_from_json('tags_to_search_discount')
+    tags_to_search_charge_total_amount: list = get_tags_from_json('tags_to_search_charge_total_amount')
+    tags_to_search_line_extension_amount: list = get_tags_from_json('tags_to_search_line_extension_amount')
+    tags_to_search_tax_exclusive_amount: list = get_tags_from_json('tags_to_search_tax_exclusive_amount')
 
     xml_invoice_head_money: Element = xml_tree
     discount: str = find_data_within_element(xml_invoice_head_money, tags_to_search_discount)
@@ -85,6 +90,36 @@ def get_xml_positions(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger)
                                single_net_price=single_net_price, tax_rate=tax_rate, cost_center=cost_center,
                                total_net_price=total_net_price, invoice_id=xml_invoice_data.m_cn_id,
                                article_number=article_number, order_pos_id=order_pos_id))
+        item_position += 1
+
+    # HW-6170
+    charge_total_str: Optional[str] = find_data_within_element(xml_invoice_head_money,
+                                                                 tags_to_search_charge_total_amount)
+    charge_total_value: Optional[float] = string_to_float(charge_total_str) if charge_total_str else None
+    if charge_total_value is not None and charge_total_value <= 0:
+        charge_total_value = None
+
+    line_ext_str: Optional[str] = find_data_within_element(xml_invoice_head_money,
+                                                           tags_to_search_line_extension_amount)
+    tax_exc_str: Optional[str] = find_data_within_element(xml_invoice_head_money,
+                                                          tags_to_search_tax_exclusive_amount)
+    line_ext_val: Optional[float] = string_to_float(line_ext_str) if line_ext_str else None
+    tax_exc_val: Optional[float] = string_to_float(tax_exc_str) if tax_exc_str else None
+    # Net document charge increases tax base vs sum of lines (not netted by header allowances)
+    add_document_charge_line: bool = bool(
+        charge_total_value
+        and line_ext_val is not None
+        and tax_exc_val is not None
+        and tax_exc_val > line_ext_val
+    )
+
+    if add_document_charge_line:
+        charge_position_text: str = document_charge_description(xml_tree)
+        xml_invoice_data.add_position(
+            XmlInvoicePosition(item_pos=item_position, position_text=charge_position_text, quantity=1.0,
+                               single_net_price=charge_total_value, tax_rate=0.0, cost_center=cost_center,
+                               total_net_price=charge_total_value, invoice_id=xml_invoice_data.m_cn_id,
+                               article_number="", order_pos_id=""))
         item_position += 1
 
     if discount and discount != "0.00":
