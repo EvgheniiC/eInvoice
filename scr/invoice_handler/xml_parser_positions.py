@@ -42,6 +42,7 @@ def get_xml_positions(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger)
 
     # cost_center = xml_invoice_data.cost_center if xml_invoice_data.cost_center else None
     cost_center = check_cost_center(get_field_value(xml_tree, 'cost_center'))
+    reference_tax_rate: Optional[float] = None
 
     # positions IncludedSupplyChainTradeLineItem for ZUGPFERD, InvoiceLine for xml
     for position in xml_positions_data_zugpferd.iter(
@@ -67,6 +68,8 @@ def get_xml_positions(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger)
             description_text = description_text + "\n" + additional_description_sellers_item_identification
 
         tax_rate: float = string_to_float(find_data_within_element(position, tags_to_search_tax_rate))
+        if reference_tax_rate is None:
+            reference_tax_rate = tax_rate
         quantity: float = string_to_float(
             find_data_within_element(position, tags_to_search_quantity)) if find_data_within_element(
             position,
@@ -115,9 +118,10 @@ def get_xml_positions(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger)
 
     if add_document_charge_line:
         charge_position_text: str = document_charge_description(xml_tree)
+        charge_tax_rate: float = reference_tax_rate if reference_tax_rate is not None else 0.0
         xml_invoice_data.add_position(
             XmlInvoicePosition(item_pos=item_position, position_text=charge_position_text, quantity=1.0,
-                               single_net_price=charge_total_value, tax_rate=0.0, cost_center=cost_center,
+                               single_net_price=charge_total_value, tax_rate=charge_tax_rate, cost_center=cost_center,
                                total_net_price=charge_total_value, invoice_id=xml_invoice_data.m_cn_id,
                                article_number="", order_pos_id=""))
         item_position += 1
