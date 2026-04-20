@@ -160,15 +160,6 @@ def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) ->
     xml_invoice_data.tax_rate3 = tax_rate["tax_rate3"]
     xml_invoice_data.tax_rate4 = tax_rate["tax_rate4"]
     xml_invoice_data.tax_rate5 = tax_rate["tax_rate5"]
-    # If header net differs from sum of lines (document allowance/charge), expose it in tax bucket 2
-    # with the same rate as the main invoice tax (tax_rate1).
-    if use_tax_exclusive_for_net and not xml_invoice_data.tax_amount2 and not xml_invoice_data.tax_rate2:
-        adjustment_amount: float = abs(
-            string_to_float(tax_exclusive_amount) - string_to_float(line_extension_amount)
-        )
-        xml_invoice_data.tax_amount2 = f"{adjustment_amount:.2f}"
-        if xml_invoice_data.tax_rate1:
-            xml_invoice_data.tax_rate2 = xml_invoice_data.tax_rate1
 
     xml_invoice_data.supplier = find_data_within_element(xml_supplier_data, tags_to_search_supplier)
     # for BE
