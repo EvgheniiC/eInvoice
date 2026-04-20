@@ -1095,7 +1095,7 @@ class TestXmlParserHeader(unittest.TestCase):
                            'M_IP_QUANTITYUNIT': None,
                            'M_IP_SINGLENETPRICE': 1.39,
                            'M_IP_TAXCODE': None,
-                           'M_IP_TAXRATE': 0.0,
+                           'M_IP_TAXRATE': 21.0,
                            'M_IP_TOTALNETPRICE': 1.39,
                            'M_IP_TYP': 'ET'}]
                          )
