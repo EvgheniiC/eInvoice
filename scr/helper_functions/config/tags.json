@@ -222,13 +222,14 @@
     "./Invoice/LegalMonetaryTotal/ChargeTotalAmount"
   ],
   "tags_to_search_discount": [
-    "./LegalMonetaryTotal/AllowanceTotalAmount"
+    "./LegalMonetaryTotal/AllowanceTotalAmount",
+    "./SupplyChainTradeTransaction/ApplicableHeaderTradeSettlement/SpecifiedTradeSettlementHeaderMonetarySummation/AllowanceTotalAmount"
   ],
   "tags_to_search_client_with_attribute": [
     "./AccountingSupplierParty/Party/EndpointID",
     "./SupplyChainTradeTransaction/ApplicableHeaderTradeAgreement/SellerTradeParty/GlobalID"
   ],
-    "tags_to_search_peppol_id": [
+  "tags_to_search_peppol_id": [
     "./AccountingSupplierParty/Party/EndpointID"
   ]
 }

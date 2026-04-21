@@ -2,7 +2,7 @@ import sys
 import re
 from xml.etree.ElementTree import Element
 import xml.etree.ElementTree as ET
-from typing import Union, Dict, List, Optional
+from typing import Union, Dict, List, Optional, Tuple
 import os
 import json
 import PyPDF2
@@ -254,6 +254,53 @@ def document_charge_description(xml_tree: Element) -> str:
             if reason_el is not None and reason_el.text:
                 reasons.append(reason_el.text.strip())
     return "\n".join(reasons) if reasons else "Document charge"
+
+# HW-6192
+def get_header_trade_allowance_discount(
+    xml_tree: Element,
+) -> Optional[Tuple[float, str, Optional[float]]]:
+    """
+    ZUGFeRD / Factur-X: sum document-level allowances from ApplicableHeaderTradeSettlement
+    SpecifiedTradeAllowanceCharge where ChargeIndicator is false (discount).
+    Returns (net amount, combined reason text, VAT percent from CategoryTradeTax) or None.
+    """
+    settlement: Optional[Element] = xml_tree.find(
+        "./SupplyChainTradeTransaction/ApplicableHeaderTradeSettlement"
+    )
+    if settlement is None:
+        return None
+    total_amount: float = 0.0
+    reasons: List[str] = []
+    tax_rate: Optional[float] = None
+    for ac in settlement.findall("SpecifiedTradeAllowanceCharge"):
+        charge_ind: Optional[Element] = ac.find("ChargeIndicator")
+        if charge_ind is None:
+            continue
+        indicator_el: Optional[Element] = charge_ind.find("Indicator")
+        ind_text: str = ""
+        if indicator_el is not None and indicator_el.text:
+            ind_text = indicator_el.text.strip().lower()
+        elif charge_ind.text:
+            ind_text = charge_ind.text.strip().lower()
+        if ind_text not in ("false", "0"):
+            continue
+        amt_el: Optional[Element] = ac.find("ActualAmount")
+        if amt_el is None or not amt_el.text:
+            continue
+        amt: float = string_to_float(amt_el.text.strip())
+        if amt <= 0:
+            continue
+        total_amount += amt
+        reason_el: Optional[Element] = ac.find("Reason")
+        if reason_el is not None and reason_el.text:
+            reasons.append(reason_el.text.strip())
+        rt_el: Optional[Element] = ac.find("CategoryTradeTax/RateApplicablePercent")
+        if rt_el is not None and rt_el.text:
+            tax_rate = string_to_float(rt_el.text.strip())
+    if total_amount <= 0:
+        return None
+    description: str = " / ".join(reasons) if reasons else "Discount"
+    return (total_amount, description, tax_rate)
 
 
 def string_to_float_negative(value, de_format=False) -> Union[float, int, None, str]:

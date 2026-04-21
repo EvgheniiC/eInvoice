@@ -1,9 +1,10 @@
 import re
-from typing import Optional
+from typing import Optional, Tuple
 
 from ..data_class import XmlInvoiceHeader, XmlInvoicePosition
 from ..helper_functions import get_xml_tree, find_data_within_element, get_tags_from_json, check_cost_center, \
-    get_field_value, string_to_float_negative, string_to_float, build_description_from_item, document_charge_description
+    get_field_value, string_to_float_negative, string_to_float, build_description_from_item, document_charge_description, \
+    get_header_trade_allowance_discount
 from xml.etree.ElementTree import Element
 
 
@@ -31,7 +32,6 @@ def get_xml_positions(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger)
     tags_to_search_tax_exclusive_amount: list = get_tags_from_json('tags_to_search_tax_exclusive_amount')
 
     xml_invoice_head_money: Element = xml_tree
-    discount: str = find_data_within_element(xml_invoice_head_money, tags_to_search_discount)
 
     if not xml_positions_data_zugpferd and not xml_positions_data:
         xml_positions_data: list = xml_tree.findall("./CreditNoteLine")
@@ -43,6 +43,7 @@ def get_xml_positions(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger)
     # cost_center = xml_invoice_data.cost_center if xml_invoice_data.cost_center else None
     cost_center = check_cost_center(get_field_value(xml_tree, 'cost_center'))
     reference_tax_rate: Optional[float] = None
+    last_line_tax_rate: Optional[float] = None
 
     # positions IncludedSupplyChainTradeLineItem for ZUGPFERD, InvoiceLine for xml
     for position in xml_positions_data_zugpferd.iter(
@@ -68,6 +69,7 @@ def get_xml_positions(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger)
             description_text = description_text + "\n" + additional_description_sellers_item_identification
 
         tax_rate: float = string_to_float(find_data_within_element(position, tags_to_search_tax_rate))
+        last_line_tax_rate = tax_rate
         if reference_tax_rate is None:
             reference_tax_rate = tax_rate
         quantity: float = string_to_float(
@@ -92,7 +94,7 @@ def get_xml_positions(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger)
             XmlInvoicePosition(item_pos=item_position, position_text=description_text, quantity=quantity,
                                single_net_price=single_net_price, tax_rate=tax_rate, cost_center=cost_center,
                                total_net_price=total_net_price, invoice_id=xml_invoice_data.m_cn_id,
-                               article_number=article_number, order_pos_id=order_pos_id))
+                               article_number=article_number,order_pos_id=order_pos_id))
         item_position += 1
 
     # HW-6170
@@ -126,20 +128,48 @@ def get_xml_positions(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger)
                                article_number="", order_pos_id=""))
         item_position += 1
 
-    if discount and discount != "0.00":
-        discount = "-" + discount
-        xml_invoice_data.add_position(
-            XmlInvoicePosition(item_pos=item_position, position_text="description_text", quantity=1,
-                               single_net_price=string_to_float_negative(discount), tax_rate=tax_rate, cost_center=cost_center,
-                               total_net_price=string_to_float_negative(discount), invoice_id=xml_invoice_data.m_cn_id))
+    header_allowance: Optional[Tuple[float, str, Optional[float]]] = get_header_trade_allowance_discount(xml_tree)
+    discount_amount_str: Optional[str] = find_data_within_element(
+        xml_invoice_head_money, tags_to_search_discount
+    )
+    discount_amount: Optional[float] = None
+    discount_position_text: str = "description_text"
+    discount_tax_rate: float = 0.0
 
-        # if not positions
-        if not xml_positions_data_zugpferd and not xml_positions_data:
-            xml_invoice_data.add_position(
-                XmlInvoicePosition(item_pos=item_position, position_text="description_text", quantity=1,
-                                   single_net_price=0, tax_rate=0,
-                                   total_net_price=0, invoice_id=xml_invoice_data.m_cn_id,
-                                   article_number=None))
+    if header_allowance is not None:
+        discount_amount = header_allowance[0]
+        discount_position_text = header_allowance[1][:1000]
+        header_vat: Optional[float] = header_allowance[2]
+        if header_vat is not None:
+            discount_tax_rate = header_vat
+        elif reference_tax_rate is not None:
+            discount_tax_rate = reference_tax_rate
+        elif last_line_tax_rate is not None:
+            discount_tax_rate = last_line_tax_rate
+    elif discount_amount_str:
+        parsed_from_tags: float = string_to_float(discount_amount_str)
+        if parsed_from_tags > 0:
+            discount_amount = parsed_from_tags
+            if reference_tax_rate is not None:
+                discount_tax_rate = reference_tax_rate
+            elif last_line_tax_rate is not None:
+                discount_tax_rate = last_line_tax_rate
+
+    if discount_amount is not None and discount_amount > 0:
+        net_discount: float = -discount_amount
+        net_price_val = string_to_float_negative(str(net_discount))
+        xml_invoice_data.add_position(
+            XmlInvoicePosition(item_pos=item_position, position_text=discount_position_text, quantity=1,
+                               single_net_price=net_price_val, tax_rate=discount_tax_rate, cost_center=cost_center,
+                               total_net_price=net_price_val, invoice_id=xml_invoice_data.m_cn_id))
+
+    # if not positions
+    if not xml_positions_data_zugpferd and not xml_positions_data:
+        xml_invoice_data.add_position(
+            XmlInvoicePosition(item_pos=item_position, position_text=discount_position_text, quantity=1,
+                               single_net_price=0, tax_rate=0,
+                               total_net_price=0, invoice_id=xml_invoice_data.m_cn_id,
+                               article_number=None))
 
         logger.info_log(f"Finish get_xml_header with m_cn_id = {xml_invoice_data.m_cn_id}")
 
