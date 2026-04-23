@@ -137,6 +137,16 @@ class TestXmlParserHeader(unittest.TestCase):
         """build_description_from_item returns None for None element."""
         self.assertIsNone(build_description_from_item(None))
 
+    def test_build_description_from_item_ubl_placeholder_name_uses_description(self):
+        """UBL: placeholder cbc:Name (-) with real cbc:Description uses Description (HW-6052)."""
+        xml_text = read_xml_file_to_str('xml_files/HW-6052.xml')
+        self.assertIsNotNone(xml_text)
+        xml_tree = get_xml_tree(xml_text)
+        invoice_line = xml_tree.find(".//InvoiceLine")
+        self.assertIsNotNone(invoice_line)
+        result = build_description_from_item(invoice_line)
+        self.assertEqual(result, "OAPP DEPOT")
+
 
 if __name__ == '__main__':
     unittest.main()

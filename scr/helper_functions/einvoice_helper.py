@@ -2,7 +2,7 @@ import sys
 import re
 from xml.etree.ElementTree import Element
 import xml.etree.ElementTree as ET
-from typing import Union, Dict, List, Optional, Tuple
+from typing import Union, Dict, List, Optional, Tuple, FrozenSet
 import os
 import json
 import PyPDF2
@@ -171,12 +171,32 @@ def get_xml_tree(xml_text: str) -> Element:
     return xml_tree
 
 
+# UBL Item/cbc:Name values treated as placeholders; use cbc:Description when present instead.
+_UBL_ITEM_NAME_PLACEHOLDERS: FrozenSet[str] = frozenset({"-", ".", "/", "—", "–"})
+
+
+def _ubl_item_name_is_placeholder(name: str) -> bool:
+    """True if supplier used a sentinel instead of a real article name (HW-6052-style)."""
+    trimmed: str = name.strip()
+    if not trimmed:
+        return True
+    return trimmed in _UBL_ITEM_NAME_PLACEHOLDERS
+
+
+def is_ubl_placeholder_text(value: Optional[str]) -> bool:
+    """True if text is empty or an Item/line placeholder (-, ., /); skip when merging extra fields."""
+    if value is None:
+        return True
+    return _ubl_item_name_is_placeholder(value)
+
+
 def build_description_from_item(position: Element) -> Optional[str]:
     """
     Build position description from Item (UBL) or SpecifiedTradeProduct (ZUGPFERD):
     main Name plus all Name/Value or Description/Value pairs, space-separated.
 
     UBL: Item with cbc:Name and cac:AdditionalItemProperty (Name, Value).
+    If Name is a placeholder (-, ., /) but cbc:Description is present, Description is used as primary text.
     ZUGPFERD: SpecifiedTradeProduct with Name and ApplicableProductCharacteristic (Description, Value).
     """
     if position is None:
@@ -187,8 +207,17 @@ def build_description_from_item(position: Element) -> Optional[str]:
     item_elem: Optional[Element] = position.find("Item")
     if item_elem is not None:
         name_el: Optional[Element] = item_elem.find("Name")
-        if name_el is not None and name_el.text:
-            parts.append(name_el.text.strip())
+        desc_el_item: Optional[Element] = item_elem.find("Description")
+        name_raw: str = name_el.text.strip() if name_el is not None and name_el.text else ""
+        desc_raw: str = (
+            desc_el_item.text.strip() if desc_el_item is not None and desc_el_item.text else ""
+        )
+        if name_raw and not _ubl_item_name_is_placeholder(name_raw):
+            parts.append(name_raw)
+        elif desc_raw:
+            parts.append(desc_raw)
+        elif name_raw:
+            parts.append(name_raw)
         for prop in item_elem.findall("AdditionalItemProperty"):
             prop_name_el: Optional[Element] = prop.find("Name")
             prop_value_el: Optional[Element] = prop.find("Value")

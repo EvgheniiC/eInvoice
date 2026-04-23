@@ -3,7 +3,8 @@ from typing import Optional, Tuple
 
 from ..data_class import XmlInvoiceHeader, XmlInvoicePosition
 from ..helper_functions import get_xml_tree, find_data_within_element, get_tags_from_json, check_cost_center, \
-    get_field_value, string_to_float_negative, string_to_float, build_description_from_item, document_charge_description, \
+    get_field_value, string_to_float_negative, string_to_float, build_description_from_item, \
+    is_ubl_placeholder_text, document_charge_description, \
     get_header_trade_allowance_discount
 from xml.etree.ElementTree import Element
 
@@ -61,11 +62,14 @@ def get_xml_positions(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger)
             0:1000] if find_data_within_element(position,
                                                tags_to_search_additional_description_sellers_item_identification) else ""
         # some clients write the same info in description_text and in additional_description_name -> description_text != additional_description_name
-        if additional_description_name and description_text != additional_description_name:
+        if (additional_description_name and not is_ubl_placeholder_text(additional_description_name)
+                and description_text != additional_description_name):
             description_text = description_text + "\n" + additional_description_name
 
         # some clients write the same info in description_text and in additional_description_sellers_item_identification -> description_text != additional_description_sellers_item_identification
-        if additional_description_sellers_item_identification and description_text != additional_description_sellers_item_identification:
+        if (additional_description_sellers_item_identification
+                and not is_ubl_placeholder_text(additional_description_sellers_item_identification)
+                and description_text != additional_description_sellers_item_identification):
             description_text = description_text + "\n" + additional_description_sellers_item_identification
 
         tax_rate: float = string_to_float(find_data_within_element(position, tags_to_search_tax_rate))
