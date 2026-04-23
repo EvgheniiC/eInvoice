@@ -1,12 +1,11 @@
 {
   "tags_to_search_tax_id": [
     "./AccountingSupplierParty/Party/PartyTaxScheme/CompanyID",
-    "./ApplicableHeaderTradeAgreement/SellerTradeParty/SpecifiedTaxRegistration/ID",
     "./Invoice/AccountingSupplierParty/Party/PartyTaxScheme/CompanyID"
   ],
   "tags_to_search_tax_id_billing": [
     "./AccountingCustomerParty/Party/PartyLegalEntity/CompanyID",
-    "./ApplicableHeaderTradeAgreement/SellerTradeParty/SpecifiedTaxRegistration/ID"
+    "./AccountingCustomerParty/Party/PartyTaxScheme/CompanyID"
   ],
   "tags_to_search_client_name": [
     "./AccountingSupplierParty/Party/PartyName/Name",
@@ -19,6 +18,7 @@
     "./AccountingCustomerParty/Party/PartyTaxScheme/CompanyID"
   ],
   "tags_to_search_client_name_delivery": [
+    "./ApplicableHeaderTradeDelivery/ShipToTradeParty/Name",
     "Delivery/DeliveryParty/PartyName/Name",
     "Invoice/Delivery/DeliveryParty/PartyName/Name"
   ],
@@ -34,6 +34,7 @@
     "./ApplicableHeaderTradeAgreement/SellerTradeParty/PostalTradeAddress/LineOne"
   ],
   "tags_to_search_address_delivery": [
+    "./ApplicableHeaderTradeDelivery/ShipToTradeParty/PostalTradeAddress/LineOne",
     "Delivery/DeliveryLocation/Address/StreetName",
     "Invoice/Delivery/DeliveryLocation/Address/StreetName",
     "AccountingSupplierParty/Party/PostalAddress/StreetName"
@@ -45,6 +46,7 @@
     "./ApplicableHeaderTradeAgreement/SellerTradeParty/PostalTradeAddress/PostcodeCode"
   ],
   "tags_to_search_postcode_delivery": [
+    "./ApplicableHeaderTradeDelivery/ShipToTradeParty/PostalTradeAddress/PostcodeCode",
     "Delivery/DeliveryLocation/Address/PostalZone",
     "Invoice/Delivery/DeliveryLocation/Address/PostalZone",
     "AccountingSupplierParty/Party/PostalAddress/PostalZone"
@@ -56,6 +58,7 @@
     "./ApplicableHeaderTradeAgreement/SellerTradeParty/PostalTradeAddress/CityName"
   ],
   "tags_to_search_city_name_delivery": [
+    "./ApplicableHeaderTradeDelivery/ShipToTradeParty/PostalTradeAddress/CityName",
     "Delivery/DeliveryLocation/Address/CityName",
     "Invoice/Delivery/DeliveryLocation/Address/CityName",
     "AccountingSupplierParty/Party/PostalAddress/CityName"
@@ -66,6 +69,7 @@
     "./ApplicableHeaderTradeAgreement/SellerTradeParty/PostalTradeAddress/CountryID"
   ],
   "tags_to_search_country_delivery": [
+    "./ApplicableHeaderTradeDelivery/ShipToTradeParty/PostalTradeAddress/CountryID",
     "Delivery/DeliveryLocation/Country/IdentificationCode"
   ],
   "tags_to_search_iban": [
@@ -192,21 +196,33 @@
     "./BuyerReference"
   ],
   "tags_to_search_contact": [
+    "./ApplicableHeaderTradeAgreement/SellerTradeParty/DefinedTradeContact/EmailURIUniversalCommunication/URIID",
+    "./ApplicableHeaderTradeAgreement/SellerTradeParty/URIUniversalCommunication/URIID",
     "./AccountingSupplierParty/Party/Contact/ElectronicMail"
   ],
   "tags_to_search_client_name_billing": [
+    "./ApplicableHeaderTradeSettlement/InvoiceeTradeParty/Name",
+    "./ApplicableHeaderTradeAgreement/BuyerTradeParty/Name",
     "./AccountingCustomerParty/Party/PartyLegalEntity/RegistrationName"
   ],
   "tags_to_search_street_billing": [
+    "./ApplicableHeaderTradeSettlement/InvoiceeTradeParty/PostalTradeAddress/LineOne",
+    "./ApplicableHeaderTradeAgreement/BuyerTradeParty/PostalTradeAddress/LineOne",
     "./AccountingCustomerParty/Party/PostalAddress/StreetName"
   ],
   "tags_to_search_postcode_billing": [
+    "./ApplicableHeaderTradeSettlement/InvoiceeTradeParty/PostalTradeAddress/PostcodeCode",
+    "./ApplicableHeaderTradeAgreement/BuyerTradeParty/PostalTradeAddress/PostcodeCode",
     "./AccountingCustomerParty/Party/PostalAddress/PostalZone"
   ],
   "tags_to_search_city_name_billing": [
+    "./ApplicableHeaderTradeSettlement/InvoiceeTradeParty/PostalTradeAddress/CityName",
+    "./ApplicableHeaderTradeAgreement/BuyerTradeParty/PostalTradeAddress/CityName",
     "./AccountingCustomerParty/Party/PostalAddress/CityName"
   ],
   "tags_to_search_country_billing": [
+    "./ApplicableHeaderTradeSettlement/InvoiceeTradeParty/PostalTradeAddress/CountryID",
+    "./ApplicableHeaderTradeAgreement/BuyerTradeParty/PostalTradeAddress/CountryID",
     "./AccountingCustomerParty/Party/Country/IdentificationCode"
   ],
   "tags_to_search_line_extension_amount": [
