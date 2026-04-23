@@ -116,6 +116,23 @@ def find_data_within_element_with_len(element: Element, tags: list, length: int)
     return None
 
 
+def join_all_texts_for_tags(element: Optional[Element], tags: List[str], separator: str = ".") -> Optional[str]:
+    """
+    Collect non-empty text from every element matching each XPath in tags (document order),
+    then join with separator. Used for all IncludedNote/Content values in one field.
+    """
+    if element is None:
+        return None
+    parts: List[str] = []
+    for tag in tags:
+        for node in element.findall(tag):
+            if node.text:
+                chunk: str = node.text.strip()
+                if chunk:
+                    parts.append(chunk)
+    return separator.join(parts) if parts else None
+
+
 # delete all prefixes from xml
 def delete_all_prefills(xml_tree: ET) -> ET:
     """

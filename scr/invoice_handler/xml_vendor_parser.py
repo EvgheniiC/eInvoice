@@ -1,5 +1,5 @@
 from ..helper_functions import find_data_within_element, delete_all_prefills, find_data_within_element_with_len, \
-    get_tags_from_json, get_field_value, get_vehicle_value, extract_payment_means_list, \
+    join_all_texts_for_tags, get_tags_from_json, get_field_value, get_vehicle_value, extract_payment_means_list, \
     extract_seller_vat_id_zugferd, extract_invoicee_or_buyer_vat_id
 from xml.etree.ElementTree import Element
 import xml.etree.ElementTree as ET
@@ -39,6 +39,7 @@ def get_einvoice_vendor_data(m_cn_id: str, xml_text: str, logger) -> (dict, str)
     tags_to_search_city_name_billing: list = get_tags_from_json('tags_to_search_city_name_billing')
     tags_to_search_country_billing: list = get_tags_from_json('tags_to_search_country_billing')
     tags_to_search_peppol_id: list = get_tags_from_json('tags_to_search_peppol_id')
+    tags_to_search_client_number: list = get_tags_from_json('tags_to_search_client_number')
 
     clients_data: dict = {
         "M_CN_ID": m_cn_id,
@@ -76,7 +77,8 @@ def get_einvoice_vendor_data(m_cn_id: str, xml_text: str, logger) -> (dict, str)
         "S_KR_VEHICLE_ODOMETER_READING": get_vehicle_value(xml_text, "odometer"),
         "S_KR_VEHICLE_ID": get_vehicle_value(xml_text, "Identification"),
         "S_KR_PAYMENT_MEANS": extract_payment_means_list(xml_vendor_data),
-        "S_KR_PEPPOL_ID": find_data_within_element(xml_vendor_data, tags_to_search_peppol_id)
+        "S_KR_PEPPOL_ID": find_data_within_element(xml_vendor_data, tags_to_search_peppol_id),
+        "S_KR_CLIENT_NUMBER": join_all_texts_for_tags(xml_tree, tags_to_search_client_number)
     }
 
     # HW-5851 new field(S_KR_EMPLOYEE_ID,S_KR_BUDGET,S_KR_TRIP_INFO,S_KR_APPROVAL,S_KR_TRIP_PURPOSE)

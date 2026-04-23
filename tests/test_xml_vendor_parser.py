@@ -40,6 +40,7 @@ class TestClientParser(unittest.TestCase):
                                         'S_KR_VEHICLE_ID': None,
                                         'S_KR_VEHICLE_ODOMETER_READING': None,
                                         'S_KR_VEHICLE_REGISTRATION': None,
+                                        'S_KR_CLIENT_NUMBER': 'Es gelten unsere Allgem. Geschftsbedingungen, die Sie unter [] finden..Die letzte Lieferung im Rahmen des abgerechneten Abonnements erfolgt in 12/2016 Lieferung erfolgt / erfolgte direkt vom Verlag',
                                         'S_KR_PAYMENT_MEANS': [{'PaymentMeansCode': '58',
                                                                 'PaymentID': None,
                                                                 'AccountID': 'DE75512108001245126199',
@@ -85,7 +86,8 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_USTID_BILLING': '90000000-03083-12',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
-                          'S_KR_VEHICLE_REGISTRATION': None})
+                          'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_CLIENT_NUMBER': None})
         self.assertEqual(supplier, None)
 
     def test_get_einvoice_client_data_all_data(self):
@@ -125,6 +127,7 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
                           'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_CLIENT_NUMBER': 'Die in Ihrem Auftrag erbrachten Leistungen werden vereinbarungsgemass wie folgt abgerechnet:.Commerzbank Munchen IBAN: DE95700400410228840500 BIC: COBADEFFXXX.Bartel, Tim',
                           'S_KR_PAYMENT_MEANS': [{'PaymentMeansCode': '30',
                                                   'PaymentID': None,
                                                   'AccountID': 'DE95700400410228840500',
@@ -167,6 +170,7 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
                           'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_CLIENT_NUMBER': 'Weitere Angaben zu §40 EnWG entnehmen Sie dem Papierbeleg.Die vor der Ausfuhrung der Leistung vereinnahmten Teilentgelte und die darauf entfallenden Steuerbetrage sind in Abschnitt 1 in der CSV-Datei im Anhang der E-Rechnung aufgefuhrt..Ihr neuer Abschlag und ein Uberblick der Falligkeiten fur das kommende Verbrauchsjahr sind in Abschnitt 2 in der CSV-Datei im Anhang der E-Rechnung aufgefuhrt..[Erlaeuterung, Datum, Art, Betrag Brutto].Abschlagszahlungen:20240123,gezahlte Abschlage Strom, 22.15;20240207,gezahlte Abschlage Strom, 13.85;20240306,gezahlte Abschlage Strom, 36.00;20240404,gezahlte Abschlage Strom, 36.00;20240503,gezahlte Abschlage Strom, 36.00;20240605,gezahlte Abschlage Strom, 36.00;20240703,gezahlte Abschlage Strom, 36.00;20240805,gezahlte Abschlage Strom, 36.00;20240904,gezahlte Abschlage Strom, 36.00;20241002,gezahlte Abschlage Strom, 36.00;20241106,gezahlte Abschlage Strom, 36.00;20241204,gezahlte Abschlage Strom, 36.00;.[Erlaeuterung, Zahlernummer, Datum-Von, Datum-Bis, Zahlerstand-von, Zahlerstand-bis, Faktor, Verbrauch].Zaehlerstaende:12247797,20240101,20240528,224481,224589,108,1;  1APA0184432582,20240529,20241231,1,181,180,1;.[Erlaeuterung, Datum, Betrag].Abschlagsplan:20250506, 26.00;20250606, 26.00;20250707, 26.00;20250806, 26.00;20250908, 26.00;20251006, 26.00;20251106, 26.00;20251208, 26.00;',
                           'S_KR_PAYMENT_MEANS': [{'PaymentMeansCode': '30',
                                                   'PaymentID': '232081412135',
                                                   'AccountID': None,
@@ -210,6 +214,7 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
                           'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_CLIENT_NUMBER': None,
                           'S_KR_PAYMENT_MEANS': [
                               {'PaymentMeansCode': '58', 'PaymentID': '3250124002',
                                'AccountID': 'DE13664900000023969700', 'BranchID': 'GENODE61OG1'}
@@ -253,6 +258,7 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
                           'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_CLIENT_NUMBER': 'Die in Ihrem Auftrag erbrachten Leistungen werden vereinbarungsgemass wie folgt abgerechnet:.Commerzbank Munchen IBAN: DE95700400410228840500 BIC: COBADEFFXXX.Bartel, Tim',
                           'S_KR_PAYMENT_MEANS': [{'PaymentMeansCode': '30',
                                                   'PaymentID': None,
                                                   'AccountID': 'DE95700400410228840500',
@@ -298,6 +304,7 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
                           'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_CLIENT_NUMBER': None,
                           'S_KR_PAYMENT_MEANS': [
                               {'PaymentMeansCode': '30', 'PaymentID': None,
                                'AccountID': 'DE55160500003504000405', 'BranchID': None}
@@ -343,6 +350,7 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
                           'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_CLIENT_NUMBER': None,
                           'S_KR_PAYMENT_MEANS': [
                               {'PaymentMeansCode': '30', 'PaymentID': None,
                                'AccountID': 'DE55160500003504000405', 'BranchID': None}
@@ -386,6 +394,7 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
                           'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_CLIENT_NUMBER': 'M-BW 5472 BMW 520d',
                           'S_KR_PAYMENT_MEANS': [{'PaymentMeansCode': '58',
                                                   'PaymentID': 'OF-R2517108',
                                                   'AccountID': 'DE36512500000001178040',
@@ -430,6 +439,7 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
                           'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_CLIENT_NUMBER': None,
                           'S_KR_PAYMENT_MEANS': [
                               {'PaymentMeansCode': '30', 'PaymentID': 'Snippet1',
                                'AccountID': 'IBAN32423940', 'BranchID': 'BIC324098'}
@@ -476,7 +486,8 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_USTID_BILLING': '0465341266',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
-                          'S_KR_VEHICLE_REGISTRATION': None})
+                          'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_CLIENT_NUMBER': None})
 
         self.assertEqual(supplier, None)
 
@@ -520,7 +531,8 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_USTID_BILLING': '0465341266',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
-                          'S_KR_VEHICLE_REGISTRATION': None})
+                          'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_CLIENT_NUMBER': None})
 
         self.assertEqual(supplier, None)
 
@@ -564,7 +576,8 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_USTID_BILLING': 'BE0465341266',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
-                          'S_KR_VEHICLE_REGISTRATION': None})
+                          'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_CLIENT_NUMBER': None})
 
         self.assertEqual(supplier, None)
 
@@ -608,7 +621,8 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_PAYMENT_MEANS': [
                               {'PaymentMeansCode': '30', 'PaymentID': '340600035974',
                                'AccountID': 'BE62260003045061', 'BranchID': 'GEBABEBB'}
-                          ]})
+                          ],
+                          'S_KR_CLIENT_NUMBER': None})
 
         self.assertEqual(supplier, None)
 
@@ -651,7 +665,8 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_USTID_BILLING': '419261',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
-                          'S_KR_VEHICLE_REGISTRATION': None})
+                          'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_CLIENT_NUMBER': None})
 
         self.assertEqual(supplier, None)
 
@@ -694,7 +709,8 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_USTID_BILLING': '0465341266',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
-                          'S_KR_VEHICLE_REGISTRATION': None})
+                          'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_CLIENT_NUMBER': None})
 
         self.assertEqual(supplier, None)
 
@@ -734,7 +750,8 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_USTID_BILLING': '0465341266',
                           'S_KR_VEHICLE_ID': 'VXFVLEHS2S7800434',
                           'S_KR_VEHICLE_ODOMETER_READING': '37991',
-                          'S_KR_VEHICLE_REGISTRATION': '2GHA914'})
+                          'S_KR_VEHICLE_REGISTRATION': '2GHA914',
+                          'S_KR_CLIENT_NUMBER': None})
 
         self.assertEqual(supplier, None)
 
@@ -778,7 +795,8 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_USTID_BILLING': '0465341266',
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
-                          'S_KR_VEHICLE_REGISTRATION': None})
+                          'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_CLIENT_NUMBER': None})
 
         self.assertEqual(supplier, None)
 
@@ -836,7 +854,8 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_USTID_BILLING': None,
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
-                          'S_KR_VEHICLE_REGISTRATION': None})
+                          'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_CLIENT_NUMBER': None})
 
         self.assertEqual(supplier, None)
 
@@ -881,7 +900,8 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_USTID_BILLING': None,
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
-                          'S_KR_VEHICLE_REGISTRATION': None})
+                          'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_CLIENT_NUMBER': 'Motorolfilter erneuern\nMotorol erneuern\nDichtring fur Olablassschraube\n                        erneuern'})
 
         self.assertEqual(supplier, None)
 
@@ -926,9 +946,39 @@ class TestClientParser(unittest.TestCase):
                           'S_KR_USTID_BILLING': None,
                           'S_KR_VEHICLE_ID': None,
                           'S_KR_VEHICLE_ODOMETER_READING': None,
-                          'S_KR_VEHICLE_REGISTRATION': None})
+                          'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_CLIENT_NUMBER': 'Auftragsnummer: 9600614865\nSchaden-Nr.: \nKennzeichen: M- JP 1461\nvon: Sixt\n                        Celle \nnach: Stellantis Nedderfeld Hamburg'})
 
         self.assertEqual(supplier, None)
+
+    # HW-5930
+    def test_get_ergenzungen_44138108_add_client_number(self):
+        m_cn_id = "8206925"
+        clear_xml_from_gerd = read_xml_file_to_str('xml_files/HW-5930_add_client_number.xml')
+        clients_data, supplier = get_einvoice_vendor_data(m_cn_id=m_cn_id, xml_text=clear_xml_from_gerd,
+                                                          logger=Mock())
+
+        self.assertEqual(clients_data,
+                         {'M_CN_ID': '8206925', 'S_KR_NAME1': 'R-TECH AUTOGLAS GMBH',
+                          'S_KR_STRASSE': 'Lebacherstrae 123', 'S_KR_STRASSE_DELIVERY': None, 'S_KR_ORT': 'Saarbrcken',
+                          'S_KR_ORT_DELIVERY': None, 'S_KR_POSTLEITZAHL': '66113', 'S_KR_POSTLEITZAHL_DELIVERY': None,
+                          'S_KR_LAND': 'DE', 'S_KR_LAND_DELIVERY': None, 'S_KR_USTID': 'DE451426873',
+                          'S_KR_USTID_BILLING': 'DE223999470',
+                          'S_KR_CLIENT_NAME': 'Sixt GmbH Co. Autovermietung KG Reparaturen',
+                          'S_KR_CLIENT_NAME_DELIVERY': None, 'S_KR_IBAN': 'DE67100179977977328460',
+                          'S_KR_EMPLOYEE_ID': None, 'S_KR_BUDGET': None, 'S_KR_TRIP_INFO': None, 'S_KR_APPROVAL': None,
+                          'S_KR_TRIP_PURPOSE': None, 'S_KR_BUYERREFERENCE': None,
+                          'S_KR_CONTACT': 'info@r-tech-autoglas.de',
+                          'S_KR_CLIENT_NAME_BILLING': 'Sixt GmbH Co. Autovermietung KG Reparaturen',
+                          'S_KR_STRASSE_BILLING': None, 'S_KR_POSTLEITZAHL_BILLING': '18049',
+                          'S_KR_ORT_BILLING': 'Rostock', 'S_KR_LAND_BILLING': 'DE', 'S_KR_VEHICLE_REGISTRATION': None,
+                          'S_KR_VEHICLE_ODOMETER_READING': None, 'S_KR_VEHICLE_ID': None, 'S_KR_PAYMENT_MEANS': [
+                             {'PaymentMeansCode': '42', 'PaymentID': None, 'AccountID': 'DE67100179977977328460',
+                              'BranchID': 'HOLVDEB1XXX'}], 'S_KR_PEPPOL_ID': None,
+                          'S_KR_CLIENT_NUMBER': 'Kunde-Nr.: 6790.Kunde-ID.: 9700.Der Kunde ist vorsteuerabzugsberechtigt..KFZ-Kennz.: M - JP 2960.Fahrgestell-Nr.: WVGZZZR4XSW027614.Modellbezeichnung: VW TIGUAN III.Kilometerstand: 14925.Geschftsfhrer: Bahram Rahmati.Handelsregister: HRB 110802.Registergericht: Saarbrcken.USt-IdNr: DE451426873.Steuernummer: 040/117/01987.Bankverbindung: Holvi IBAN: DE67 1001 7997 7977 3284 60 BIC: HOLVDEB1XXX.Rechnungsanteil Kunde - 610.64'}
+                         )
+
+        self.assertEqual(supplier, '')
 
 
 if __name__ == '__main__':
