@@ -4,14 +4,8 @@ from typing import Optional
 from ..data_class import XmlInvoiceHeader
 from ..helper_functions import find_data_within_element, find_data_with_regex, get_xml_tree, \
     find_data_within_element_with_len, get_tags_from_json, check_cost_center, find_tax_data, format_sixt_number, \
-    get_field_value, string_to_float, find_attribute_within_element
+    get_field_value, string_to_float, find_attribute_within_element, make_amount_non_negative
 from xml.etree.ElementTree import Element
-
-
-def _make_amount_non_negative(value: Optional[str]) -> Optional[str]:
-    if value and value.startswith("-"):
-        return value[1:]
-    return value
 
 
 # extract xml data from pdf file
@@ -150,12 +144,12 @@ def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) ->
         xml_invoice_data.invoice_amount = str(
             round(string_to_float(xml_invoice_data.invoice_amount) - string_to_float(xml_invoice_data.discount), 2))
 
-    xml_invoice_data.total_amount = _make_amount_non_negative(
+    xml_invoice_data.total_amount = make_amount_non_negative(
         find_data_within_element(xml_invoice_head_money, tags_to_search_total_amount))
-    xml_invoice_data.total_tax_amount = _make_amount_non_negative(
+    xml_invoice_data.total_tax_amount = make_amount_non_negative(
         find_data_within_element(xml_invoice_head_money, tags_to_search_total_tax_amount))
     tax_amount: dict = find_tax_data(xml_tree, tags_to_search_tax_amount1, "tax_amount")
-    xml_invoice_data.tax_amount1 = _make_amount_non_negative(tax_amount["tax_amount1"])
+    xml_invoice_data.tax_amount1 = make_amount_non_negative(tax_amount["tax_amount1"])
     xml_invoice_data.tax_amount2 = tax_amount["tax_amount2"]
     xml_invoice_data.tax_amount3 = tax_amount["tax_amount3"]
     xml_invoice_data.tax_amount4 = tax_amount["tax_amount4"]

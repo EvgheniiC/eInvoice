@@ -262,6 +262,17 @@ def build_description_from_item(position: Element) -> Optional[str]:
     return None
 
 
+def make_amount_non_negative(value: Optional[str]) -> Optional[str]:
+    """
+    Return the same monetary string without a leading minus sign.
+
+    Used for header totals/tax amounts stored as strings where the sign must be non-negative.
+    """
+    if value and value.startswith("-"):
+        return value[1:]
+    return value
+
+
 def string_to_float(value, de_format=False) -> Union[float, int, None, str]:
     """
     Formats a none null value into a float value with this format: d{1,}.d{2}
