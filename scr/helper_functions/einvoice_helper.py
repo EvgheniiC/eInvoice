@@ -327,6 +327,31 @@ def _xml_root_local_name(element: Element) -> str:
     return tag
 
 
+def _is_gu_document(xml_tree: Element, kind_of_invoice: Optional[str] = None) -> bool:
+    """
+    Whether the document is GU (credit note): negative amounts in XML should map to positive display values.
+
+    If kind_of_invoice is already resolved to GU/RE, that wins. Else UBL type code 381 => GU,
+    else CreditNote root implies GU for legacy UBL credit notes.
+    """
+    if kind_of_invoice in ("GU", "RE"):
+        return kind_of_invoice == "GU"
+
+    kind_code: Optional[str] = find_data_within_element(
+        xml_tree,
+        [
+            "./CreditNoteTypeCode",
+            "./Invoice/CreditNoteTypeCode",
+            "./InvoiceTypeCode",
+            "./Invoice/InvoiceTypeCode",
+        ],
+    )
+    if kind_code:
+        return kind_code == "381"
+
+    return _xml_root_local_name(xml_tree) == "CreditNote"
+
+
 def document_charge_description(xml_tree: Element) -> str:
     """
     Build position text from invoice-level AllowanceCharge elements with ChargeIndicator true.

@@ -5,7 +5,7 @@ from ..data_class import XmlInvoiceHeader, XmlInvoicePosition
 from ..helper_functions import get_xml_tree, find_data_within_element, get_tags_from_json, check_cost_center, \
     get_field_value, string_to_float_negative, string_to_float, build_description_from_item, \
     is_ubl_placeholder_text, document_charge_description, \
-    get_header_trade_allowance_discount, make_amount_non_negative, _xml_root_local_name
+    get_header_trade_allowance_discount, make_amount_non_negative, _is_gu_document
 from xml.etree.ElementTree import Element
 
 
@@ -15,7 +15,7 @@ def get_xml_positions(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger)
     logger.info_log(f"START get_xml_header with m_cn_id = {xml_invoice_data.m_cn_id}")
 
     xml_tree: Element = get_xml_tree(xml_text)
-    is_credit_note_ubl: bool = _xml_root_local_name(xml_tree) == "CreditNote"
+    is_gu_document: bool = _is_gu_document(xml_tree, xml_invoice_data.kind_of_invoice)
     xml_positions_data_zugpferd: Element = xml_tree.find("./SupplyChainTradeTransaction")
     # some XML invoices have a tag InvoiceLine for positions
     xml_positions_data: list = xml_tree.findall("./InvoiceLine")
@@ -83,7 +83,7 @@ def get_xml_positions(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger)
             tags_to_search_quantity) else 1
         single_raw: Optional[str] = find_data_within_element(position, tags_to_search_single_net_price)
         total_raw: Optional[str] = find_data_within_element(position, tags_to_search_total_net_price)
-        if is_credit_note_ubl:
+        if is_gu_document:
             single_net_price = make_amount_non_negative(single_raw)
             total_net_price = make_amount_non_negative(total_raw)
         else:
@@ -165,8 +165,11 @@ def get_xml_positions(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger)
                 discount_tax_rate = last_line_tax_rate
 
     if discount_amount is not None and discount_amount > 0:
-        net_discount: float = -discount_amount
-        net_price_val = string_to_float_negative(str(net_discount))
+        if is_gu_document:
+            net_price_val = make_amount_non_negative(str(discount_amount))
+        else:
+            net_discount: float = -discount_amount
+            net_price_val = string_to_float_negative(str(net_discount))
         xml_invoice_data.add_position(
             XmlInvoicePosition(item_pos=item_position, position_text=discount_position_text, quantity=1,
                                single_net_price=net_price_val, tax_rate=discount_tax_rate, cost_center=cost_center,

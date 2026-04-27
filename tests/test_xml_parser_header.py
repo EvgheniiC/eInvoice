@@ -679,7 +679,7 @@ class TestXmlParserHeader(unittest.TestCase):
                           'TRIGGER_HIGHWAY': '0'}
                          )
 
-    # HW-5823
+    # HW-5823 - GU
     def test_get_gu(self):
         m_cn_id = "7952984"
         barcode = "14961075"
