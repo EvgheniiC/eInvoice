@@ -82,7 +82,7 @@ class TestXmlParserHeader(unittest.TestCase):
                           'M_IV_DELIVERYDATE': datetime(2025, 5, 1, 0, 0),
                           'M_IV_DELIVERYDATE_BIS': datetime(2025, 5, 7, 0, 0),
                           'M_IV_INVOICEAMOUNT': '18219.38', 'M_IV_TOTALAMOUNT': '18219.38',
-                          'M_IV_TOTALTAXAMOUNT': '0.00', 'M_IV_TAXRATE1': '0', 'M_IV_TAXAMOUNT1': '0.00',
+                          'M_IV_TOTALTAXAMOUNT': '0', 'M_IV_TAXRATE1': '0', 'M_IV_TAXAMOUNT1': '0',
                           'M_IV_TAXRATE2': None, 'M_IV_TAXAMOUNT2': None, 'M_IV_TAXRATE3': None,
                           'M_IV_TAXAMOUNT3': None, 'M_IV_TAXRATE4': None, 'M_IV_TAXAMOUNT4': None,
                           'M_IV_TAXRATE5': None, 'M_IV_TAXAMOUNT5': None, 'M_IV_CURRENCY': 'EUR', 'M_IV_VIN': None,
@@ -566,7 +566,7 @@ class TestXmlParserHeader(unittest.TestCase):
                           'M_IV_TAXRATE4': None,
                           'M_IV_TAXRATE5': None,
                           'M_IV_TOTALAMOUNT': '7125',
-                          'M_IV_TOTALTAXAMOUNT': '1225.00',
+                          'M_IV_TOTALTAXAMOUNT': '1225',
                           'M_IV_VIN': None,
                           'TRIGGER_HIGHWAY': '0'}
                          )
@@ -620,7 +620,7 @@ class TestXmlParserHeader(unittest.TestCase):
                           'M_IV_TAXRATE4': None,
                           'M_IV_TAXRATE5': None,
                           'M_IV_TOTALAMOUNT': '7125',
-                          'M_IV_TOTALTAXAMOUNT': '1225.00',
+                          'M_IV_TOTALTAXAMOUNT': '1225',
                           'M_IV_VIN': None,
                           'TRIGGER_HIGHWAY': '0'}
                          )
@@ -673,7 +673,7 @@ class TestXmlParserHeader(unittest.TestCase):
                           'M_IV_TAXRATE4': None,
                           'M_IV_TAXRATE5': None,
                           'M_IV_TOTALAMOUNT': '147974.37',
-                          'M_IV_TOTALTAXAMOUNT': '0.00',
+                          'M_IV_TOTALTAXAMOUNT': '0',
                           'M_IV_VIN': None,
                           'SIXT_VAT_ID': 'BE0465341266',
                           'TRIGGER_HIGHWAY': '0'}
@@ -837,7 +837,7 @@ class TestXmlParserHeader(unittest.TestCase):
                           'M_IV_TAXRATE3': None,
                           'M_IV_TAXRATE4': None,
                           'M_IV_TAXRATE5': None,
-                          'M_IV_TOTALAMOUNT': '732.4',
+                          'M_IV_TOTALAMOUNT': '732.40',
                           'M_IV_TOTALTAXAMOUNT': '126.89',
                           'M_IV_VIN': None,
                           'SIXT_VAT_ID': 'BE0465341266',
@@ -937,7 +937,7 @@ class TestXmlParserHeader(unittest.TestCase):
                           'M_IV_QUELLSYSTEM': 'eInvoice',
                           'M_IV_RECEIPTDATE': None,
                           'M_IV_SCANLOCATION': 'E-Mail',
-                          'M_IV_TAXAMOUNT1': '0.00',
+                          'M_IV_TAXAMOUNT1': '0',
                           'M_IV_TAXAMOUNT2': None,
                           'M_IV_TAXAMOUNT3': None,
                           'M_IV_TAXAMOUNT4': None,
@@ -948,7 +948,7 @@ class TestXmlParserHeader(unittest.TestCase):
                           'M_IV_TAXRATE4': None,
                           'M_IV_TAXRATE5': None,
                           'M_IV_TOTALAMOUNT': '210.09',
-                          'M_IV_TOTALTAXAMOUNT': '0.00',
+                          'M_IV_TOTALTAXAMOUNT': '0',
                           'M_IV_VIN': None,
                           'SIXT_VAT_ID': 'BE0465341266',
                           'TRIGGER_HIGHWAY': '0'}

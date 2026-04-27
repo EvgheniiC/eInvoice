@@ -262,17 +262,6 @@ def build_description_from_item(position: Element) -> Optional[str]:
     return None
 
 
-def make_amount_non_negative(value: Optional[str]) -> Optional[str]:
-    """
-    Return the same monetary string without a leading minus sign.
-
-    Used for header totals/tax amounts stored as strings where the sign must be non-negative.
-    """
-    if value and value.startswith("-"):
-        return value[1:]
-    return value
-
-
 def string_to_float(value, de_format=False) -> Union[float, int, None, str]:
     """
     Formats a none null value into a float value with this format: d{1,}.d{2}
@@ -290,6 +279,52 @@ def string_to_float(value, de_format=False) -> Union[float, int, None, str]:
         return 0
     return value if isinstance(value, float) or isinstance(value, int) else float(
         create_viable_float_or_int_string(value.replace("-", ""), de_format))
+
+
+def make_amount_non_negative(value: Optional[str]) -> Optional[float]:
+    """
+    Parse a monetary string and return its absolute value as a non-negative float.
+
+    Returns None if value is None or blank.
+    """
+    if value is None:
+        return None
+    stripped: str = str(value).strip()
+    if not stripped:
+        return None
+    parsed: Union[float, int, None, str] = string_to_float(stripped)
+    if parsed is None:
+        return None
+    if isinstance(parsed, str):
+        try:
+            normalized: float = float(parsed.replace(",", ".").replace(" ", ""))
+        except ValueError:
+            return None
+        return abs(normalized)
+    return abs(float(parsed))
+
+
+def format_header_amount_string(value: Optional[float]) -> Optional[str]:
+    """
+    Format a float for XmlInvoice header attributes (stored as strings).
+    Whole numbers are serialized without a fractional part (e.g. 1225 -> "1225").
+    """
+    if value is None:
+        return None
+    rounded: float = round(value, 2)
+    if rounded == int(rounded):
+        return str(int(rounded))
+    return format(rounded, ".2f")
+
+
+def _xml_root_local_name(element: Element) -> str:
+    """
+    Return local name of root (or any) XML element tag, stripping namespace URI if present.
+    """
+    tag: str = element.tag
+    if tag.startswith("{") and "}" in tag:
+        return tag.split("}", 1)[1]
+    return tag
 
 
 def document_charge_description(xml_tree: Element) -> str:
