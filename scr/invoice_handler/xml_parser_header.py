@@ -145,6 +145,10 @@ def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) ->
         xml_invoice_data.invoice_amount = str(
             round(string_to_float(xml_invoice_data.invoice_amount) - string_to_float(xml_invoice_data.discount), 2))
 
+    # Net invoice amount (M_IV_INVOICEAMOUNT) is always stored as a non-negative string, same as tax/totals.
+    xml_invoice_data.invoice_amount = format_header_amount_string(
+        make_amount_non_negative(xml_invoice_data.invoice_amount))
+
     xml_invoice_data.total_amount = format_header_amount_string(
         make_amount_non_negative(
             find_data_within_element(xml_invoice_head_money, tags_to_search_total_amount)))
