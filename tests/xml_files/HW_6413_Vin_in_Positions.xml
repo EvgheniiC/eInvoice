@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rsm:CrossIndustryInvoice xmlns:a="urn:un:unece:uncefact:data:standard:QualifiedDataType:100" xmlns:rsm="urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100" xmlns:qdt="urn:un:unece:uncefact:data:standard:QualifiedDataType:100" xmlns:ram="urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:udt="urn:un:unece:uncefact:data:standard:UnqualifiedDataType:100">
+  <rsm:ExchangedDocumentContext>
+    <ram:BusinessProcessSpecifiedDocumentContextParameter>
+      <ram:ID>urn:fdc:peppol.eu:2017:poacc:billing:01:1.0</ram:ID>
+    </ram:BusinessProcessSpecifiedDocumentContextParameter>
+    <ram:GuidelineSpecifiedDocumentContextParameter>
+      <ram:ID>urn:cen.eu:en16931:2017#compliant#urn:xeinkauf.de:kosit:xrechnung_3.0</ram:ID>
+    </ram:GuidelineSpecifiedDocumentContextParameter>
+  </rsm:ExchangedDocumentContext>
+  <rsm:ExchangedDocument>
+    <ram:ID>2610015571</ram:ID>
+    <ram:TypeCode>380</ram:TypeCode>
+    <ram:IssueDateTime>
+      <udt:DateTimeString format="102">20260330</udt:DateTimeString>
+    </ram:IssueDateTime>
+  </rsm:ExchangedDocument>
+  <rsm:SupplyChainTradeTransaction>
+    <ram:IncludedSupplyChainTradeLineItem>
+      <ram:AssociatedDocumentLineDocument>
+        <ram:LineID>1</ram:LineID>
+        <ram:IncludedNote>
+          <ram:Content>CHASSIS: ZCFCE35B305741779</ram:Content>
+        </ram:IncludedNote>
+        <ram:IncludedNote>
+          <ram:Content>VAN-------: 0012616437</ram:Content>
+        </ram:IncludedNote>
+        <ram:IncludedNote>
+          <ram:Content>ENGINE: 4907241</ram:Content>
+        </ram:IncludedNote>
+        <ram:IncludedNote>
+          <ram:Content>VEHICLE MODEL: 35S16BA8 V</ram:Content>
+        </ram:IncludedNote>
+        <ram:IncludedNote>
+          <ram:Content>VERSION: FURGONE</ram:Content>
+        </ram:IncludedNote>
+        <ram:IncludedNote>
+          <ram:Content>WHEELBASE: 4100</ram:Content>
+        </ram:IncludedNote>
+        <ram:IncludedNote>
+          <ram:Content>VEH. COLOUR: 50105 WHITE IC 194</ram:Content>
+        </ram:IncludedNote>
+        <ram:IncludedNote>
+          <ram:Content>SPECIFIC T: No 004 26113 VanContact 4S 225/65</ram:Content>
+        </ram:IncludedNote>
+      </ram:AssociatedDocumentLineDocument>
+      <ram:SpecifiedTradeProduct>
+        <ram:Name>Van 35S Daily 4x2 MY2024</ram:Name>
+        <ram:ApplicableProductCharacteristic>
+          <ram:Description>BT8</ram:Description>
+          <ram:Value>3</ram:Value>
+        </ram:ApplicableProductCharacteristic>
+        <ram:ApplicableProductCharacteristic>
+          <ram:Description>COD_IVA</ram:Description>
+          <ram:Value>69</ram:Value>
+        </ram:ApplicableProductCharacteristic>
+        <ram:ApplicableProductCharacteristic>
+          <ram:Description>DOCAR</ram:Description>
+          <ram:Value>2610015571</ram:Value>
+        </ram:ApplicableProductCharacteristic>
+        <ram:ApplicableProductCharacteristic>
+          <ram:Description>SM</ram:Description>
+          <ram:Value>VEHI</ram:Value>
+        </ram:ApplicableProductCharacteristic>
+        <ram:ApplicableProductCharacteristic>
+          <ram:Description>Vehicle Mo</ram:Description>
+          <ram:Value>35S16BA8 V</ram:Value>
+        </ram:ApplicableProductCharacteristic>
+        <ram:ApplicableProductCharacteristic>
+          <ram:Description>VERSION</ram:Description>
+          <ram:Value>FURGONE</ram:Value>
+        </ram:ApplicableProductCharacteristic>
+        <ram:ApplicableProductCharacteristic>
+          <ram:Description>WHEELBASE</ram:Description>
+          <ram:Value>4100</ram:Value>
+        </ram:ApplicableProductCharacteristic>
+        <ram:ApplicableProductCharacteristic>
+          <ram:Description>DRIVE HAND</ram:Description>
+          <ram:Value>SX</ram:Value>
+        </ram:ApplicableProductCharacteristic>
+        <ram:ApplicableProductCharacteristic>
+          <ram:Description>PWR. / IND</ram:Description>
+          <ram:Value>156-E6E</ram:Value>
+        </ram:ApplicableProductCharacteristic>
+        <ram:ApplicableProductCharacteristic>
+          <ram:Description>VEH. COLOU</ram:Description>
+          <ram:Value>50105 WHITE IC 194</ram:Value>
+        </ram:ApplicableProductCharacteristic>
+        <ram:ApplicableProductCharacteristic>
+          <ram:Description>SPECIFIC T</ram:Description>
+          <ram:Value>No 004 26113 VanContact 4S 225/65</ram:Value>
+        </ram:ApplicableProductCharacteristic>
+        <ram:ApplicableProductCharacteristic>
+          <ram:Description>AXLE CONFI</ram:Description>
+          <ram:Value>4X2</ram:Value>
+        </ram:ApplicableProductCharacteristic>
+        <ram:ApplicableProductCharacteristic>
+          <ram:Description>GEAR BOX T</ram:Description>
+          <ram:Value>HIMATIC</ram:Value>
+        </ram:ApplicableProductCharacteristic>
+        <ram:ApplicableProductCharacteristic>
+          <ram:Description>G.V.W.</ram:Description>
+          <ram:Value>3,5</ram:Value>
+        </ram:ApplicableProductCharacteristic>
+        <ram:ApplicableProductCharacteristic>
+          <ram:Description>FRONT SUSP</ram:Description>
+          <ram:Value>Q-LEAF</ram:Value>
+        </ram:ApplicableProductCharacteristic>
+        <ram:ApplicableProductCharacteristic>
+          <ram:Description>LOAD COM.</ram:Description>
+          <ram:Value>1900</ram:Value>
+        </ram:ApplicableProductCharacteristic>
+        <ram:ApplicableProductCharacteristic>
+          <ram:Description>TYPE</ram:Description>
+          <ram:Value>SPMN</ram:Value>
+        </ram:ApplicableProductCharacteristic>
+        <ram:ApplicableProductCharacteristic>
+          <ram:Description>RUOTE POST</ram:Description>
+          <ram:Value>RS 3,5</ram:Value>
+        </ram:ApplicableProductCharacteristic>
+        <ram:ApplicableProductCharacteristic>
+          <ram:Description>TELAIO----</ram:Description>
+          <ram:Value>ZCFCE35B305741779</ram:Value>
+        </ram:ApplicableProductCharacteristic>
+        <ram:ApplicableProductCharacteristic>
+          <ram:Description>MOTORE----</ram:Description>
+          <ram:Value>4907241</ram:Value>
+        </ram:ApplicableProductCharacteristic>
+        <ram:ApplicableProductCharacteristic>
+          <ram:Description>VAN-------</ram:Description>
+          <ram:Value>0012616437</ram:Value>
+        </ram:ApplicableProductCharacteristic>
+        <ram:ApplicableProductCharacteristic>
+          <ram:Description>Q.TA'</ram:Description>
+          <ram:Value>1</ram:Value>
+        </ram:ApplicableProductCharacteristic>
+        <ram:ApplicableProductCharacteristic>
+          <ram:Description>30001</ram:Description>
+          <ram:Value>CHARGED BATTERY</ram:Value>
+        </ram:ApplicableProductCharacteristic>
+        <ram:ApplicableProductCharacteristic>
+          <ram:Description>30539</ram:Description>
+          <ram:Value>ger</ram:Value>
+        </ram:ApplicableProductCharacteristic>
+      </ram:SpecifiedTradeProduct>
+      <ram:SpecifiedLineTradeAgreement>
+        <ram:NetPriceProductTradePrice>
+          <ram:ChargeAmount>30100.0000</ram:ChargeAmount>
+        </ram:NetPriceProductTradePrice>
+      </ram:SpecifiedLineTradeAgreement>
+      <ram:SpecifiedLineTradeDelivery>
+        <ram:BilledQuantity unitCode="H87">1.0000</ram:BilledQuantity>
+      </ram:SpecifiedLineTradeDelivery>
+      <ram:SpecifiedLineTradeSettlement>
+        <ram:ApplicableTradeTax>
+          <ram:TypeCode>VAT</ram:TypeCode>
+          <ram:CategoryCode>S</ram:CategoryCode>
+          <ram:RateApplicablePercent>19.00</ram:RateApplicablePercent>
+        </ram:ApplicableTradeTax>
+        <ram:SpecifiedTradeSettlementLineMonetarySummation>
+          <ram:LineTotalAmount>30100.00</ram:LineTotalAmount>
+        </ram:SpecifiedTradeSettlementLineMonetarySummation>
+      </ram:SpecifiedLineTradeSettlement>
+    </ram:IncludedSupplyChainTradeLineItem>
+    <ram:ApplicableHeaderTradeAgreement>
+      <ram:BuyerReference>9930:DE223999470</ram:BuyerReference>
+      <ram:SellerTradeParty>
+        <ram:Name>IVECO Deutschland AG</ram:Name>
+        <ram:DefinedTradeContact>
+          <ram:PersonName>VORSITZENDER DES AUFSICHTSRATES: OLOF PERSSON VORSTAND: CHRISTIAN SULSER (VORSITZENDER), SASCHA BREITSCHEIDEL, KLAUS REKITT</ram:PersonName>
+          <ram:TelephoneUniversalCommunication>
+            <ram:CompleteNumber>+49731408-0</ram:CompleteNumber>
+          </ram:TelephoneUniversalCommunication>
+          <ram:EmailURIUniversalCommunication>
+            <ram:URIID>EBILLING_DE_IVECO@IVECOGROUP.COM</ram:URIID>
+          </ram:EmailURIUniversalCommunication>
+        </ram:DefinedTradeContact>
+        <ram:PostalTradeAddress>
+          <ram:PostcodeCode>89079</ram:PostcodeCode>
+          <ram:LineOne>Nicolaus-Otto-Strasse 27</ram:LineOne>
+          <ram:CityName>Ulm</ram:CityName>
+          <ram:CountryID>DE</ram:CountryID>
+        </ram:PostalTradeAddress>
+        <ram:URIUniversalCommunication>
+          <ram:URIID schemeID="9930">DE147032117</ram:URIID>
+        </ram:URIUniversalCommunication>
+        <ram:SpecifiedTaxRegistration>
+          <ram:ID schemeID="FC">147032117</ram:ID>
+        </ram:SpecifiedTaxRegistration>
+        <ram:SpecifiedTaxRegistration>
+          <ram:ID schemeID="VA">DE147032117</ram:ID>
+        </ram:SpecifiedTaxRegistration>
+      </ram:SellerTradeParty>
+      <ram:BuyerTradeParty>
+        <ram:ID>13592</ram:ID>
+        <ram:Name>SIXT GMBH &amp; CO AUTOVERMIETUNG KG</ram:Name>
+        <ram:PostalTradeAddress>
+          <ram:PostcodeCode>82049</ram:PostcodeCode>
+          <ram:LineOne>ZUGSPITZSTR. 1</ram:LineOne>
+          <ram:CityName>PULLACH</ram:CityName>
+          <ram:CountryID>DE</ram:CountryID>
+        </ram:PostalTradeAddress>
+        <ram:URIUniversalCommunication>
+          <ram:URIID schemeID="EM">einvoices-germany@identity.sixt.com</ram:URIID>
+        </ram:URIUniversalCommunication>
+        <ram:SpecifiedTaxRegistration>
+          <ram:ID schemeID="VA">DE223999470</ram:ID>
+        </ram:SpecifiedTaxRegistration>
+      </ram:BuyerTradeParty>
+      <ram:BuyerOrderReferencedDocument>
+        <ram:IssuerAssignedID>OPP-189232</ram:IssuerAssignedID>
+      </ram:BuyerOrderReferencedDocument>
+    </ram:ApplicableHeaderTradeAgreement>
+    <ram:ApplicableHeaderTradeDelivery>
+      <ram:ShipToTradeParty>
+        <ram:PostalTradeAddress>
+          <ram:PostcodeCode>41460</ram:PostcodeCode>
+          <ram:LineOne>Lindberghstrasse</ram:LineOne>
+          <ram:CityName>NEUSS</ram:CityName>
+          <ram:CountryID>DE</ram:CountryID>
+        </ram:PostalTradeAddress>
+      </ram:ShipToTradeParty>
+      <ram:ActualDeliverySupplyChainEvent>
+        <ram:OccurrenceDateTime>
+          <udt:DateTimeString format="102">20260331</udt:DateTimeString>
+        </ram:OccurrenceDateTime>
+      </ram:ActualDeliverySupplyChainEvent>
+      <ram:DespatchAdviceReferencedDocument>
+        <ram:IssuerAssignedID>204330463</ram:IssuerAssignedID>
+      </ram:DespatchAdviceReferencedDocument>
+    </ram:ApplicableHeaderTradeDelivery>
+    <ram:ApplicableHeaderTradeSettlement>
+      <ram:InvoiceCurrencyCode>EUR</ram:InvoiceCurrencyCode>
+      <ram:SpecifiedTradeSettlementPaymentMeans>
+        <ram:TypeCode>31</ram:TypeCode>
+        <ram:PayeePartyCreditorFinancialAccount>
+          <ram:IBANID>DE83630700880011791100</ram:IBANID>
+        </ram:PayeePartyCreditorFinancialAccount>
+      </ram:SpecifiedTradeSettlementPaymentMeans>
+      <ram:ApplicableTradeTax>
+        <ram:CalculatedAmount>5719.00</ram:CalculatedAmount>
+        <ram:TypeCode>VAT</ram:TypeCode>
+        <ram:BasisAmount>30100.00</ram:BasisAmount>
+        <ram:CategoryCode>S</ram:CategoryCode>
+        <ram:RateApplicablePercent>19.00</ram:RateApplicablePercent>
+      </ram:ApplicableTradeTax>
+      <ram:SpecifiedTradePaymentTerms>
+        <ram:DueDateDateTime>
+          <udt:DateTimeString format="102">20260420</udt:DateTimeString>
+        </ram:DueDateDateTime>
+      </ram:SpecifiedTradePaymentTerms>
+      <ram:SpecifiedTradeSettlementHeaderMonetarySummation>
+        <ram:LineTotalAmount>30100.00</ram:LineTotalAmount>
+        <ram:ChargeTotalAmount>0.00</ram:ChargeTotalAmount>
+        <ram:AllowanceTotalAmount>0.00</ram:AllowanceTotalAmount>
+        <ram:TaxBasisTotalAmount>30100.00</ram:TaxBasisTotalAmount>
+        <ram:TaxTotalAmount currencyID="EUR">5719.00</ram:TaxTotalAmount>
+        <ram:GrandTotalAmount>35819.00</ram:GrandTotalAmount>
+        <ram:TotalPrepaidAmount>0.00</ram:TotalPrepaidAmount>
+        <ram:DuePayableAmount>35819.00</ram:DuePayableAmount>
+      </ram:SpecifiedTradeSettlementHeaderMonetarySummation>
+    </ram:ApplicableHeaderTradeSettlement>
+  </rsm:SupplyChainTradeTransaction>
+</rsm:CrossIndustryInvoice>

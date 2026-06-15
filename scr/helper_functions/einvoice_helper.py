@@ -182,6 +182,27 @@ def find_data_with_regex(element: Element, regex_pattern: str) -> Union[str, Non
     return None
 
 
+def find_vin_in_content(element: Element) -> Optional[str]:
+    """
+    Find a VIN in Content tags.
+
+    Some suppliers write vehicle data in free text notes, for example
+    "CHASSIS: ZCFCE35B305741779".
+    """
+    if element is None:
+        return None
+
+    vin_pattern: str = r"\b[A-Z0-9]{17}\b"
+    for content in element.findall(".//Content"):
+        if not content.text:
+            continue
+        match: Optional[re.Match] = re.search(vin_pattern, content.text.strip())
+        if match:
+            return match.group(0)
+
+    return None
+
+
 def get_xml_tree(xml_text: str) -> Element:
     xml_tree: Element = ET.fromstring(xml_text)
     xml_tree = delete_all_prefills(xml_tree)

@@ -5,7 +5,7 @@ from ..data_class import XmlInvoiceHeader
 from ..helper_functions import find_data_within_element, find_data_with_regex, get_xml_tree, \
     find_data_within_element_with_len, get_tags_from_json, check_cost_center, find_tax_data, format_sixt_number, \
     get_field_value, string_to_float, find_attribute_within_element, make_amount_non_negative, \
-    format_header_amount_string
+    format_header_amount_string, find_vin_in_content
 from xml.etree.ElementTree import Element
 
 
@@ -178,6 +178,10 @@ def get_xml_header(xml_text: str, xml_invoice_data: XmlInvoiceHeader, logger) ->
     xml_invoice_data.sixt_vat_id = find_data_within_element(xml_supplier_data, tags_to_search_client_vat_id)
     xml_invoice_data.image_path = xml_invoice_data.barcode + ".pdf"
     xml_invoice_data.vin = find_data_within_element(xml_tree, tags_to_search_vin)
+    # sometimes VIN number in positions
+    if not xml_invoice_data.vin:
+        xml_invoice_data.vin = find_vin_in_content(xml_positions_data)
+
     # Vin number should be = 17
     if xml_invoice_data.vin and len(xml_invoice_data.vin) != 17:
         xml_invoice_data.vin = None
