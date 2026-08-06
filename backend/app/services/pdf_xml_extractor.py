@@ -43,17 +43,27 @@ def _xml_from_attachments(attachments: dict) -> Optional[str]:
     return preferred if preferred is not None else fallback
 
 
+def _resolve(obj: object) -> object:
+    """Resolve PDF IndirectObject references to concrete objects."""
+    if hasattr(obj, "get_object"):
+        try:
+            return obj.get_object()
+        except Exception:
+            return obj
+    return obj
+
+
 def _xml_from_name_tree(reader: PyPDF2.PdfReader) -> Optional[str]:
     """Fallback: walk /Names /EmbeddedFiles name tree for XML streams."""
     try:
-        root = reader.trailer["/Root"]
-        names = root.get("/Names")
+        root = _resolve(reader.trailer["/Root"])
+        names = _resolve(root.get("/Names")) if hasattr(root, "get") else None
         if names is None:
             return None
-        embedded = names.get("/EmbeddedFiles")
+        embedded = _resolve(names.get("/EmbeddedFiles")) if hasattr(names, "get") else None
         if embedded is None:
             return None
-        name_list = embedded.get("/Names")
+        name_list = embedded.get("/Names") if hasattr(embedded, "get") else None
         if not name_list:
             return None
 
@@ -61,14 +71,15 @@ def _xml_from_name_tree(reader: PyPDF2.PdfReader) -> Optional[str]:
         for index in range(0, len(name_list), 2):
             if index + 1 >= len(name_list):
                 break
-            filespec = name_list[index + 1]
-            if filespec is None:
+            filespec = _resolve(name_list[index + 1])
+            if filespec is None or not hasattr(filespec, "get"):
                 continue
-            ef = filespec.get("/EF") if hasattr(filespec, "get") else None
-            if ef is None:
+            ef_raw = filespec.get("/EF")
+            ef = _resolve(ef_raw) if ef_raw is not None else None
+            if ef is None or not hasattr(ef, "get"):
                 continue
-            stream = ef.get("/F") or ef.get("/UF")
-            if stream is None:
+            stream = _resolve(ef.get("/F") or ef.get("/UF"))
+            if stream is None or not hasattr(stream, "get_data"):
                 continue
             data: bytes = stream.get_data()
             decoded: Optional[str] = _decode_xml_bytes(data)
