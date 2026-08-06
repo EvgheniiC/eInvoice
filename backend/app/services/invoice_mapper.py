@@ -92,7 +92,28 @@ def build_next_steps(response: InvoiceParseResponse) -> List[str]:
     """German UX hints for what the user should do next."""
     steps: List[str] = []
     if response.status == ParseStatus.ERROR:
-        steps.append("Andere Datei wählen (XRechnung-XML oder ZUGFeRD-PDF) und erneut hochladen.")
+        issue_codes: set[str] = {
+            issue.code for issue in response.validation_issues if issue.code
+        }
+        if "UNSUPPORTED_OPENTRANS" in issue_codes:
+            steps.append(
+                "Lieferanten um XRechnung (UBL/CII) oder ZUGFeRD-PDF bitten — "
+                "openTRANS wird hier noch nicht verarbeitet."
+            )
+        elif "UNSUPPORTED_XML_FORMAT" in issue_codes:
+            steps.append(
+                "Bitte prüfen, ob die Datei eine XRechnung ist "
+                "(UBL Invoice/CreditNote oder CII CrossIndustryInvoice)."
+            )
+        elif "NOT_ZUGFERD" in issue_codes:
+            steps.append(
+                "PDF ohne eingebettetes Rechnungs-XML: separates XRechnung-XML hochladen "
+                "oder ein ZUGFeRD-/Factur-X-PDF anfordern."
+            )
+        else:
+            steps.append(
+                "Andere Datei wählen (XRechnung-XML oder ZUGFeRD-PDF) und erneut hochladen."
+            )
         return steps
 
     if response.validation_status == ValidationStatus.INVALID:

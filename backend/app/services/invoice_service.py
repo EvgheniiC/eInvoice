@@ -1,3 +1,4 @@
+import re
 import tempfile
 import uuid
 from pathlib import Path
@@ -19,6 +20,8 @@ from app.services.invoice_mapper import build_next_steps, map_to_parse_response
 from app.services.logger_adapter import ServiceLogger
 from app.services.pdf_xml_extractor import extract_embedded_xml_from_pdf
 from app.services.zugferd_consistency import compare_pdf_with_xml
+
+_ROOT_TAG_RE: re.Pattern[str] = re.compile(r"<\s*([A-Za-z_][\w:.-]*)")
 
 
 class InvoiceService:
@@ -72,6 +75,31 @@ class InvoiceService:
                     message="XML-Datei konnte nicht gelesen werden (Encoding).",
                     code="XML_DECODE_ERROR",
                     detail="Die Datei ist kein gültiges UTF-8/UTF-16 XML.",
+                )
+            dialect: str = self._classify_invoice_xml(xml_text)
+            if dialect == "opentrans":
+                return self._error_response(
+                    filename=filename,
+                    file_type="opentrans_xml",
+                    message="openTRANS-XML erkannt — Format wird derzeit nicht unterstützt.",
+                    code="UNSUPPORTED_OPENTRANS",
+                    detail=(
+                        "Die Datei ist openTRANS 2.1, kein XRechnung-/EN-16931-XML. "
+                        "Bitte eine XRechnung (UBL/CII) oder ein ZUGFeRD-PDF hochladen. "
+                        "openTRANS-Unterstützung ist für später vorgesehen."
+                    ),
+                )
+            if dialect == "unknown":
+                return self._error_response(
+                    filename=filename,
+                    file_type="unsupported_xml",
+                    message="XML ist kein erkennbares XRechnung-/EN-16931-Format.",
+                    code="UNSUPPORTED_XML_FORMAT",
+                    detail=(
+                        "Erwartet wird XRechnung (UBL Invoice/CreditNote) oder "
+                        "UN/CEFACT CII (CrossIndustryInvoice), z. B. aus ZUGFeRD/Factur-X. "
+                        "Andere XML-Formate werden nicht gelesen."
+                    ),
                 )
         elif file_type == "zugferd_pdf":
             xml_text = extract_embedded_xml_from_pdf(content)
@@ -204,6 +232,41 @@ class InvoiceService:
             if text.lstrip().startswith("<"):
                 return text
         return None
+
+    def _classify_invoice_xml(self, xml_text: str) -> str:
+        """
+        Classify XML dialect before parsing.
+
+        Returns:
+            "en16931" for UBL/CII XRechnung-compatible invoices,
+            "opentrans" for openTRANS 2.x,
+            "unknown" for other XML.
+        """
+        sample: str = xml_text[:12000].lower()
+        if "opentrans.org" in sample:
+            return "opentrans"
+
+        if "crossindustryinvoice" in sample:
+            return "en16931"
+        if "urn:oasis:names:specification:ubl:schema:xsd:invoice" in sample:
+            return "en16931"
+        if "urn:oasis:names:specification:ubl:schema:xsd:creditnote" in sample:
+            return "en16931"
+
+        match: Optional[re.Match[str]] = _ROOT_TAG_RE.search(xml_text.lstrip("\ufeff").lstrip())
+        if match is None:
+            return "unknown"
+
+        local_name: str = match.group(1).split(":")[-1].lower()
+        if local_name == "crossindustryinvoice":
+            return "en16931"
+        if local_name in {"invoice", "creditnote"} and (
+            "cbc:" in sample or "cac:" in sample or "ubl" in sample
+        ):
+            return "en16931"
+        if local_name == "invoice" and "bmecat" in sample:
+            return "opentrans"
+        return "unknown"
 
     def _is_zugferd_content(self, content: bytes) -> bool:
         tmp_path: Optional[str] = None
