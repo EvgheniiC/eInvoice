@@ -1,0 +1,18 @@
+# Web API
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+python-multipart>=0.0.12
+pydantic-settings>=2.6.0
+
+# Existing parser stack
+setuptools>=78.1.1
+jsonpath-ng>=1.7.0
+xmltodict>=0.13.0
+PyPDF2>=3.0.0
+requests>=2.31.0
+
+# Export
+openpyxl>=3.1.0
+
+# Dev / tests
+pytest>=8.0.0

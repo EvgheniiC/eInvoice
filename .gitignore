@@ -172,3 +172,25 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Markdown docs / notes (local only)
+*.md
+!README.md
+
+# Frontend (Node / Vite)
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+
+# Backend local env / venv
+backend/.venv/
+backend/.env
+backend/*.egg-info/
+
+# Local invoice test fixtures (keep on disk; do not commit)
+backend/tests/xml_files/
+backend/tests/pdf_files/
+*.pdf
+*.xml
+!backend/app/helper_functions/config/*.json

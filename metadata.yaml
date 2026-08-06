@@ -1,1 +1,3 @@
-
+name: einvoice
+version: 0.1.0
+description: eInvoice receiver — XRechnung / ZUGFeRD parse and validate

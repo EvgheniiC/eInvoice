@@ -1,0 +1,6 @@
+{
+  "fields": {
+    "cost_center": ["Cost Center", "CC"],
+    "legal_entity": ["Legal Entity"]
+  }
+}
