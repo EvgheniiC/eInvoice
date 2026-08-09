@@ -4,6 +4,10 @@
   padding: 3rem 1.25rem 4rem;
 }
 
+.page--split {
+  max-width: 90rem;
+}
+
 .page__header {
   margin-bottom: 2rem;
 }
@@ -401,4 +405,99 @@
 .export-bar__actions button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.pdf-toggle {
+  margin-top: 1.25rem;
+}
+
+.pdf-toggle button {
+  border: 1px solid #2f6b4f;
+  background: transparent;
+  color: #2f6b4f;
+  border-radius: 8px;
+  padding: 0.4rem 0.85rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.pdf-toggle button:hover {
+  background: #e8f0ec;
+}
+
+.pdf-toggle__hint {
+  margin: 0.45rem 0 0;
+  color: #5c6770;
+  font-size: 0.9rem;
+}
+
+.invoice-split {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  margin-top: 1.25rem;
+  align-items: start;
+}
+
+.invoice-split__data .invoice {
+  margin-top: 0;
+}
+
+.pdf-preview {
+  display: flex;
+  flex-direction: column;
+  min-height: 28rem;
+  height: min(70vh, 52rem);
+  border: 1px solid #d5dcd7;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  overflow: hidden;
+}
+
+.pdf-preview__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0.9rem;
+  border-bottom: 1px solid #e1e7e3;
+  background: #f7f9f8;
+}
+
+.pdf-preview__header h3 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.pdf-preview__download {
+  color: #2f6b4f;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.pdf-preview__download:hover {
+  text-decoration: underline;
+}
+
+.pdf-preview__frame {
+  flex: 1;
+  width: 100%;
+  border: 0;
+  min-height: 24rem;
+  background: #fff;
+}
+
+@media (min-width: 960px) {
+  .invoice-split {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 1.75rem;
+  }
+
+  .pdf-preview {
+    position: sticky;
+    top: 1rem;
+    height: calc(100vh - 2rem);
+    max-height: 56rem;
+  }
 }

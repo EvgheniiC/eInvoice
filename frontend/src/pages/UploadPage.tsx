@@ -2,19 +2,24 @@ import { useState } from 'react'
 import { parseInvoice } from '../api/client'
 import { FileUpload } from '../components/FileUpload'
 import { InvoiceView } from '../components/InvoiceView'
+import { PdfPreview } from '../components/PdfPreview'
 import type { InvoiceParseResponse } from '../types/invoice'
 
 export function UploadPage() {
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedFilename, setSelectedFilename] = useState<string | null>(null)
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [result, setResult] = useState<InvoiceParseResponse | null>(null)
+  const [showPdf, setShowPdf] = useState<boolean>(true)
 
   async function handleFile(file: File): Promise<void> {
     setLoading(true)
     setError(null)
     setResult(null)
+    setUploadedFile(file)
     setSelectedFilename(file.name)
+    setShowPdf(true)
     try {
       const response: InvoiceParseResponse = await parseInvoice(file)
       setResult(response)
@@ -26,8 +31,17 @@ export function UploadPage() {
     }
   }
 
+  const canShowPdfSideBySide: boolean =
+    result !== null &&
+    result.status !== 'error' &&
+    result.file_type === 'zugferd_pdf' &&
+    uploadedFile !== null
+
+  const pageClassName: string =
+    canShowPdfSideBySide && showPdf ? 'page page--split' : 'page'
+
   return (
-    <main className="page">
+    <main className={pageClassName}>
       <header className="page__header">
         <p className="brand">eInvoice</p>
         <h1>Rechnung empfangen</h1>
@@ -46,7 +60,31 @@ export function UploadPage() {
         </section>
       )}
 
-      {result && result.status !== 'error' && <InvoiceView invoice={result} />}
+      {canShowPdfSideBySide && (
+        <div className="pdf-toggle">
+          <button type="button" onClick={() => setShowPdf((prev: boolean) => !prev)}>
+            {showPdf ? 'PDF ausblenden' : 'PDF neben Daten anzeigen'}
+          </button>
+          <p className="pdf-toggle__hint">
+            ZUGFeRD: visuelle PDF neben den aus dem XML gelesenen Daten — hilfreich bei Abweichungen.
+          </p>
+        </div>
+      )}
+
+      {result && result.status !== 'error' && canShowPdfSideBySide && showPdf && uploadedFile && (
+        <div className="invoice-split">
+          <div className="invoice-split__pdf">
+            <PdfPreview file={uploadedFile} title="Visuelle PDF" />
+          </div>
+          <div className="invoice-split__data">
+            <InvoiceView invoice={result} />
+          </div>
+        </div>
+      )}
+
+      {result && result.status !== 'error' && !(canShowPdfSideBySide && showPdf) && (
+        <InvoiceView invoice={result} />
+      )}
 
       {result && result.status === 'error' && (
         <section className="status status--error" aria-live="polite">
