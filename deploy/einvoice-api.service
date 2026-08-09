@@ -1,0 +1,22 @@
+[Unit]
+Description=eInvoice FastAPI backend (uvicorn)
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/eInvoice/backend
+Environment=PATH=/opt/eInvoice/backend/.venv/bin
+ExecStart=/opt/eInvoice/backend/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 1
+Restart=always
+RestartSec=3
+TimeoutStopSec=15
+
+# Mild hardening
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
