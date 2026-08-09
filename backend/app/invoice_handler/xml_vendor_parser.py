@@ -1,13 +1,12 @@
 from typing import Any, Dict, Optional, Tuple
 from xml.etree.ElementTree import Element
-import xml.etree.ElementTree as ET
 
 from ..helper_functions import (
     find_data_within_element,
-    delete_all_prefills,
     find_data_within_element_with_len,
     join_all_texts_for_tags,
     get_tags_from_json,
+    get_xml_tree,
     extract_payment_means_list,
     extract_seller_vat_id_zugferd,
     extract_invoicee_or_buyer_vat_id,
@@ -21,8 +20,7 @@ def get_einvoice_vendor_data(
     """Extract seller / buyer party data with neutral DTO keys."""
     logger.info_log(f"START get_einvoice_vendor_data invoice_id={invoice_id}")
 
-    xml_tree: Element = ET.fromstring(xml_text)
-    xml_tree = delete_all_prefills(xml_tree)
+    xml_tree: Element = get_xml_tree(xml_text)
     xml_vendor_data: Element = xml_tree.find("./SupplyChainTradeTransaction")
     if xml_vendor_data is None:
         xml_vendor_data = xml_tree

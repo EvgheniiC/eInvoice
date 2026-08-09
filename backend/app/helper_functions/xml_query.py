@@ -4,8 +4,8 @@ import re
 from datetime import datetime
 from typing import List, Optional, Tuple
 from xml.etree.ElementTree import Element
-import xml.etree.ElementTree as ET
 
+from .safe_xml import parse_xml
 from .tags_config import load_mappings
 
 
@@ -104,8 +104,8 @@ def find_data_with_regex(element: Optional[Element], regex_pattern: str) -> Opti
 
 
 def get_xml_tree(xml_text: str) -> Element:
-    """Parse XML text and strip namespace prefixes."""
-    xml_tree: Element = ET.fromstring(xml_text)
+    """Parse XML text safely (no XXE/DTD) and strip namespace prefixes."""
+    xml_tree: Element = parse_xml(xml_text)
     return delete_all_prefills(xml_tree)
 
 

@@ -58,7 +58,8 @@ def get_pdf_file(invoice_id: str, xml_text: str) -> Optional[list]:
     """Extract embedded PDF attachments from an Invoice XML document."""
     xml_tree: Element = get_xml_tree(xml_text)
     xml_str: str = tostring(xml_tree).decode()
-    xml_dict: dict = xmltodict.parse(xml_str)
+    # disable_entities is True by default; keep explicit for XXE safety
+    xml_dict: dict = xmltodict.parse(xml_str, disable_entities=True)
     data_dict: dict = json.loads(json.dumps(xml_dict, indent=4))
 
     try:

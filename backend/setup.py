@@ -18,6 +18,7 @@ setup(
         "requests>=2.31.0",
         "jsonpath-ng>=1.7.0",
         "xmltodict>=0.13.0",
+        "defusedxml>=0.7.1",
         "PyPDF2>=3.0.0",
         "openpyxl>=3.1.0",
     ],

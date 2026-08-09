@@ -4,9 +4,10 @@ import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Optional
-from xml.etree import ElementTree as ET
+from xml.etree.ElementTree import ParseError as EtParseError
 
 from app.core.config import settings
+from app.helper_functions.safe_xml import UnsafeXmlError, parse_xml
 from app.schemas.invoice import (
     InvoiceParseResponse,
     ValidationIssue,
@@ -61,9 +62,18 @@ def validate_invoice(xml_text: str, parsed: InvoiceParseResponse) -> ValidationR
 
 def _check_well_formed_xml(xml_text: str) -> List[ValidationIssue]:
     try:
-        ET.fromstring(xml_text)
+        parse_xml(xml_text)
         return []
-    except ET.ParseError as exc:
+    except UnsafeXmlError as exc:
+        return [
+            ValidationIssue(
+                level="error",
+                category="schema",
+                code="UNSAFE_XML",
+                message=str(exc),
+            )
+        ]
+    except EtParseError as exc:
         return [
             ValidationIssue(
                 level="error",

@@ -6,6 +6,7 @@ from typing import Any, Dict, Optional, Tuple
 
 from app.data_class.XmlInvoiceHeader import XmlInvoiceHeader
 from app.helper_functions.einvoice_helper import is_zugpferd_pdf
+from app.helper_functions.safe_xml import UnsafeXmlError, assert_xml_safe
 from app.invoice_handler.xml_parser_header import get_xml_header
 from app.invoice_handler.xml_parser_positions import get_xml_positions
 from app.invoice_handler.xml_vendor_parser import get_einvoice_vendor_data
@@ -76,6 +77,16 @@ class InvoiceService:
                     code="XML_DECODE_ERROR",
                     detail="Die Datei ist kein gültiges UTF-8/UTF-16 XML.",
                 )
+            try:
+                assert_xml_safe(xml_text)
+            except UnsafeXmlError as exc:
+                return self._error_response(
+                    filename=filename,
+                    file_type=file_type,
+                    message="XML aus Sicherheitsgründen abgelehnt.",
+                    code="UNSAFE_XML",
+                    detail=str(exc),
+                )
             dialect: str = self._classify_invoice_xml(xml_text)
             if dialect == "opentrans":
                 return self._error_response(
@@ -111,10 +122,28 @@ class InvoiceService:
                     code="ZUGFERD_XML_EXTRACT_FAILED",
                     detail="Embedded XML fehlt oder ist beschädigt.",
                 )
+            try:
+                assert_xml_safe(xml_text)
+            except UnsafeXmlError as exc:
+                return self._error_response(
+                    filename=filename,
+                    file_type=file_type,
+                    message="XML aus Sicherheitsgründen abgelehnt.",
+                    code="UNSAFE_XML",
+                    detail=str(exc),
+                )
 
         assert xml_text is not None
         try:
             header, vendor_data = self._run_parsers(xml_text=xml_text)
+        except UnsafeXmlError as exc:
+            return self._error_response(
+                filename=filename,
+                file_type=file_type,
+                message="XML aus Sicherheitsgründen abgelehnt.",
+                code="UNSAFE_XML",
+                detail=str(exc),
+            )
         except Exception as exc:
             return self._error_response(
                 filename=filename,
