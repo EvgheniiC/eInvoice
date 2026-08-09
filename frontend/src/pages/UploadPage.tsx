@@ -7,12 +7,14 @@ import type { InvoiceParseResponse } from '../types/invoice'
 export function UploadPage() {
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
+  const [selectedFilename, setSelectedFilename] = useState<string | null>(null)
   const [result, setResult] = useState<InvoiceParseResponse | null>(null)
 
   async function handleFile(file: File): Promise<void> {
     setLoading(true)
     setError(null)
     setResult(null)
+    setSelectedFilename(file.name)
     try {
       const response: InvoiceParseResponse = await parseInvoice(file)
       setResult(response)
@@ -37,12 +39,18 @@ export function UploadPage() {
       <FileUpload onFileSelected={handleFile} disabled={loading} />
 
       {loading && <p className="status status--info">Datei wird verarbeitet…</p>}
-      {error && <p className="status status--error">{error}</p>}
+      {error && (
+        <section className="status status--error" aria-live="polite">
+          {selectedFilename && <p className="status__file">Datei: {selectedFilename}</p>}
+          <p>{error}</p>
+        </section>
+      )}
 
       {result && result.status !== 'error' && <InvoiceView invoice={result} />}
 
       {result && result.status === 'error' && (
         <section className="status status--error" aria-live="polite">
+          {result.filename && <p className="status__file">Datei: {result.filename}</p>}
           <p>
             <strong>{result.message}</strong>
           </p>
