@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { exportInvoice } from '../api/client'
+import { downloadAccountantPackage, exportInvoice } from '../api/client'
 import type {
   ExportFormat,
   InvoiceParseResponse,
@@ -10,8 +10,11 @@ import type {
   ValidationStatus,
 } from '../types/invoice'
 
+type ExportAction = ExportFormat | 'package'
+
 interface InvoiceViewProps {
   invoice: InvoiceParseResponse
+  sourceFile?: File | null
 }
 
 function formatAmount(value: number | null | undefined, currency: string | null): string {
@@ -66,10 +69,10 @@ function PartyBlock({ title, party }: { title: string; party: PartyInfo | null }
   )
 }
 
-export function InvoiceView({ invoice }: InvoiceViewProps) {
+export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps) {
   const currency: string | null = invoice.totals?.currency ?? null
   const [exportError, setExportError] = useState<string | null>(null)
-  const [exporting, setExporting] = useState<ExportFormat | null>(null)
+  const [exporting, setExporting] = useState<ExportAction | null>(null)
 
   const statusClass: string =
     invoice.status === 'success'
@@ -99,6 +102,20 @@ export function InvoiceView({ invoice }: InvoiceViewProps) {
     }
   }
 
+  async function handleAccountantPackage(): Promise<void> {
+    setExportError(null)
+    setExporting('package')
+    try {
+      await downloadAccountantPackage(invoice, sourceFile)
+    } catch (err: unknown) {
+      const message: string =
+        err instanceof Error ? err.message : 'Paket-Download fehlgeschlagen.'
+      setExportError(message)
+    } finally {
+      setExporting(null)
+    }
+  }
+
   return (
     <section className="invoice" aria-live="polite">
       <div className="invoice__meta">
@@ -119,6 +136,14 @@ export function InvoiceView({ invoice }: InvoiceViewProps) {
       <div className="export-bar">
         <p className="export-bar__label">Für Buchhaltung exportieren</p>
         <div className="export-bar__actions">
+          <button
+            type="button"
+            className="export-bar__primary"
+            disabled={exporting !== null}
+            onClick={() => void handleAccountantPackage()}
+          >
+            {exporting === 'package' ? 'Paket…' : 'Paket für Steuerberater'}
+          </button>
           <button type="button" disabled={exporting !== null} onClick={() => handleExport('csv')}>
             {exporting === 'csv' ? 'CSV…' : 'CSV'}
           </button>
@@ -129,6 +154,10 @@ export function InvoiceView({ invoice }: InvoiceViewProps) {
             {exporting === 'datev' ? 'DATEV…' : 'DATEV'}
           </button>
         </div>
+        <p className="export-bar__hint">
+          Paket = Kurzfassung + Excel + DATEV
+          {invoice.file_type === 'zugferd_pdf' ? ' + visuelle PDF' : ''}.
+        </p>
         {exportError && <p className="status status--error">{exportError}</p>}
       </div>
 

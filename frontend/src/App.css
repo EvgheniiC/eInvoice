@@ -398,13 +398,28 @@
   cursor: pointer;
 }
 
-.export-bar__actions button:hover:not(:disabled) {
+.export-bar__actions button:not(.export-bar__primary) {
+  background: transparent;
+  color: #2f6b4f;
+}
+
+.export-bar__actions button:not(.export-bar__primary):hover:not(:disabled) {
+  background: #e8f0ec;
+}
+
+.export-bar__actions button.export-bar__primary:hover:not(:disabled) {
   background: #24553e;
 }
 
 .export-bar__actions button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.export-bar__hint {
+  margin: 0.55rem 0 0;
+  color: #5c6770;
+  font-size: 0.85rem;
 }
 
 .pdf-toggle {

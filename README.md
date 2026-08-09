@@ -85,6 +85,7 @@ cd tests && python -m unittest discover -s . -v
 - `GET /api/health` — health check
 - `POST /api/invoices/parse` — upload `.xml` / `.pdf`
 - `POST /api/invoices/export` — export parsed DTO as `csv` / `excel` / `datev`
+- `POST /api/invoices/export/accountant-package` — ZIP: summary + Excel + DATEV + optional PDF
 - `GET /api/invoices/export/mapping` — column mapping for Steuerberater
 
 See [docs/EXPORT_MAPPING.md](docs/EXPORT_MAPPING.md).

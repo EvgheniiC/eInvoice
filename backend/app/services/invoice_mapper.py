@@ -131,7 +131,10 @@ def build_next_steps(response: InvoiceParseResponse) -> List[str]:
         steps.append("PDF und XML stimmen überein — Betrag und IBAN vor Zahlung nochmals prüfen.")
 
     if response.totals and response.totals.gross is not None:
-        steps.append("Bei Freigabe: Betrag zahlen und für die Buchhaltung exportieren (folgt).")
+        steps.append(
+            "Bei Freigabe: Betrag zahlen und „Paket für Steuerberater“ "
+            "(Excel + DATEV + PDF) herunterladen."
+        )
     else:
         steps.append("Daten unvollständig — Export erst nach Klärung der Beträge.")
 

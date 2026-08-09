@@ -38,21 +38,55 @@ export async function exportInvoice(
   })
 
   if (!response.ok) {
-    let detail: string = 'Export fehlgeschlagen.'
-    try {
-      const errorBody: { detail?: string } = await response.json()
-      if (errorBody.detail) {
-        detail = errorBody.detail
-      }
-    } catch {
-      // keep default
-    }
-    throw new Error(detail)
+    throw new Error(await readErrorDetail(response, 'Export fehlgeschlagen.'))
   }
 
+  await downloadResponseBlob(response, defaultFilename(invoice, format))
+}
+
+export async function downloadAccountantPackage(
+  invoice: InvoiceParseResponse,
+  sourceFile?: File | null,
+): Promise<void> {
+  const body: {
+    invoice: InvoiceParseResponse
+    pdf_base64?: string
+    pdf_filename?: string
+  } = { invoice }
+
+  if (sourceFile && isPdfFile(sourceFile)) {
+    body.pdf_base64 = await fileToBase64(sourceFile)
+    body.pdf_filename = sourceFile.name
+  }
+
+  const response: Response = await fetch(`${API_BASE}/invoices/export/accountant-package`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response, 'Paket-Download fehlgeschlagen.'))
+  }
+
+  await downloadResponseBlob(
+    response,
+    `buchhaltung_${invoice.invoice_number ?? 'invoice'}.zip`,
+  )
+}
+
+export async function checkHealth(): Promise<{ status: string }> {
+  const response: Response = await fetch(`${API_BASE}/health`)
+  if (!response.ok) {
+    throw new Error('API nicht erreichbar.')
+  }
+  return response.json() as Promise<{ status: string }>
+}
+
+async function downloadResponseBlob(response: Response, fallbackName: string): Promise<void> {
   const blob: Blob = await response.blob()
   const disposition: string | null = response.headers.get('Content-Disposition')
-  const filename: string = parseFilename(disposition) ?? defaultFilename(invoice, format)
+  const filename: string = parseFilename(disposition) ?? fallbackName
 
   const url: string = URL.createObjectURL(blob)
   const anchor: HTMLAnchorElement = document.createElement('a')
@@ -64,12 +98,35 @@ export async function exportInvoice(
   URL.revokeObjectURL(url)
 }
 
-export async function checkHealth(): Promise<{ status: string }> {
-  const response: Response = await fetch(`${API_BASE}/health`)
-  if (!response.ok) {
-    throw new Error('API nicht erreichbar.')
+async function readErrorDetail(response: Response, fallback: string): Promise<string> {
+  try {
+    const errorBody: { detail?: string } = await response.json()
+    if (errorBody.detail) {
+      return errorBody.detail
+    }
+  } catch {
+    // keep fallback
   }
-  return response.json() as Promise<{ status: string }>
+  return fallback
+}
+
+function isPdfFile(file: File): boolean {
+  if (file.type === 'application/pdf') {
+    return true
+  }
+  return file.name.toLowerCase().endsWith('.pdf')
+}
+
+async function fileToBase64(file: File): Promise<string> {
+  const buffer: ArrayBuffer = await file.arrayBuffer()
+  const bytes: Uint8Array = new Uint8Array(buffer)
+  let binary: string = ''
+  const chunkSize: number = 0x8000
+  for (let offset: number = 0; offset < bytes.length; offset += chunkSize) {
+    const chunk: Uint8Array = bytes.subarray(offset, offset + chunkSize)
+    binary += String.fromCharCode(...chunk)
+  }
+  return btoa(binary)
 }
 
 function parseFilename(disposition: string | null): string | null {

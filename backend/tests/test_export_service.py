@@ -1,6 +1,8 @@
+import base64
 import csv
 import io
 import unittest
+import zipfile
 from pathlib import Path
 
 from fastapi.testclient import TestClient
@@ -12,10 +14,18 @@ from app.schemas.invoice import (
     InvoiceParseResponse,
     InvoiceTotals,
     LineItem,
+    MismatchField,
     PartyInfo,
     ParseStatus,
+    ValidationStatus,
 )
-from app.services.export_service import ExportService, build_export_filename, build_flat_rows
+from app.services.export_service import (
+    ExportService,
+    build_export_filename,
+    build_flat_rows,
+    build_package_filename,
+    build_package_summary,
+)
 
 
 def _sample_invoice() -> InvoiceParseResponse:
@@ -103,6 +113,47 @@ class TestExportService(unittest.TestCase):
         self.assertEqual(rows[0]["seller_name"], "")
         self.assertEqual(rows[0]["line_description"], "")
 
+    def test_accountant_package_zip_contents(self) -> None:
+        pdf_bytes: bytes = b"%PDF-1.4 minimal test pdf"
+        content, media, filename = self.service.build_accountant_package(
+            invoice=self.invoice,
+            pdf_bytes=pdf_bytes,
+            pdf_filename="Beleg_Test.PDF",
+        )
+        self.assertEqual(media, "application/zip")
+        self.assertTrue(filename.startswith("buchhaltung_"))
+        self.assertTrue(filename.endswith(".zip"))
+
+        with zipfile.ZipFile(io.BytesIO(content)) as archive:
+            names: list[str] = sorted(archive.namelist())
+            self.assertIn("summary.txt", names)
+            self.assertTrue(any(name.endswith(".xlsx") for name in names))
+            self.assertTrue(any(name.startswith("datev_") for name in names))
+            self.assertIn("Beleg_Test.pdf", names)
+            summary: str = archive.read("summary.txt").decode("utf-8")
+            self.assertIn("2025/10294", summary)
+            self.assertIn("270,73", summary)
+
+    def test_package_summary_mismatch_line(self) -> None:
+        invoice: InvoiceParseResponse = _sample_invoice()
+        invoice.file_type = "zugferd_pdf"
+        invoice.validation_status = ValidationStatus.WARNING
+        invoice.mismatch_fields = [
+            MismatchField(
+                field="gross",
+                label="Brutto",
+                xml_value="100.00",
+                pdf_value="99.00",
+                matched=False,
+            )
+        ]
+        text: str = build_package_summary(invoice)
+        self.assertIn("Abweichung (Brutto)", text)
+        self.assertEqual(
+            build_package_filename(invoice),
+            "buchhaltung_KMLZ_Rechtsanwaltsges_mbH_2025_10294_20250131.zip",
+        )
+
 
 class TestExportApi(unittest.TestCase):
     def setUp(self) -> None:
@@ -137,6 +188,23 @@ class TestExportApi(unittest.TestCase):
         )
         self.assertEqual(export_response.status_code, 200)
         self.assertTrue(len(export_response.content) > 100)
+
+    def test_accountant_package_endpoint(self) -> None:
+        pdf_b64: str = base64.b64encode(b"%PDF-1.4 package").decode("ascii")
+        response = self.client.post(
+            "/api/invoices/export/accountant-package",
+            json={
+                "invoice": _sample_invoice().model_dump(mode="json"),
+                "pdf_base64": pdf_b64,
+                "pdf_filename": "original.pdf",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("application/zip", response.headers["content-type"])
+        self.assertIn("buchhaltung_", response.headers.get("content-disposition", ""))
+        with zipfile.ZipFile(io.BytesIO(response.content)) as archive:
+            self.assertIn("summary.txt", archive.namelist())
+            self.assertIn("original.pdf", archive.namelist())
 
 
 if __name__ == "__main__":

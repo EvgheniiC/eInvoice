@@ -21,6 +21,20 @@ class ExportRequest(BaseModel):
     invoice: InvoiceParseResponse
 
 
+class AccountantPackageRequest(BaseModel):
+    """ZIP package for Steuerberater: summary + Excel + DATEV + optional PDF."""
+
+    invoice: InvoiceParseResponse
+    pdf_base64: Optional[str] = Field(
+        default=None,
+        description="Optional visual PDF (ZUGFeRD original) as base64.",
+    )
+    pdf_filename: Optional[str] = Field(
+        default=None,
+        description="Original PDF filename when pdf_base64 is set.",
+    )
+
+
 # Stable column schema for CSV / Excel (one row per line item).
 EXPORT_COLUMNS: List[str] = [
     "invoice_number",

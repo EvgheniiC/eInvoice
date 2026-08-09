@@ -77,13 +77,13 @@ export function UploadPage() {
             <PdfPreview file={uploadedFile} title="Visuelle PDF" />
           </div>
           <div className="invoice-split__data">
-            <InvoiceView invoice={result} />
+            <InvoiceView invoice={result} sourceFile={uploadedFile} />
           </div>
         </div>
       )}
 
       {result && result.status !== 'error' && !(canShowPdfSideBySide && showPdf) && (
-        <InvoiceView invoice={result} />
+        <InvoiceView invoice={result} sourceFile={uploadedFile} />
       )}
 
       {result && result.status === 'error' && (
