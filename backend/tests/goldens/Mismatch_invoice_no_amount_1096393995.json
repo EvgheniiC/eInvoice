@@ -1,0 +1,88 @@
+{
+  "buyer": {
+    "address": "Zugspitzstr. 1, 82049 Pullach Höllriegelskreuth, DE",
+    "iban": null,
+    "name": "Sixt GmbH & Co. Autovermietung KG  23338",
+    "vat_id": "DE223999470"
+  },
+  "due_date": "2026-08-04",
+  "file_type": "zugferd_pdf",
+  "invoice_number": "MISMATCH-99999",
+  "issue_date": "2026-08-04",
+  "line_items": [
+    {
+      "description": "FREIE SICHT GEBRAUCHSFERTIG25L",
+      "gross_amount": 10001.0,
+      "net_amount": 8404.2,
+      "position": 1,
+      "quantity": 2.0,
+      "tax_rate": 19.0,
+      "unit": null,
+      "unit_price": 22.25
+    }
+  ],
+  "mismatch_fields": [
+    {
+      "field": "gross",
+      "matched": false,
+      "pdf_value": null,
+      "xml_value": "9999.99"
+    },
+    {
+      "field": "iban",
+      "matched": true,
+      "pdf_value": "DE93622515500005005505",
+      "xml_value": "DE93622515500005005505"
+    },
+    {
+      "field": "invoice_number",
+      "matched": false,
+      "pdf_value": "Sixt",
+      "xml_value": "MISMATCH-99999"
+    },
+    {
+      "field": "issue_date",
+      "matched": true,
+      "pdf_value": "04.08.2026",
+      "xml_value": "2026-08-04"
+    },
+    {
+      "field": "tax",
+      "matched": false,
+      "pdf_value": null,
+      "xml_value": "1595.79"
+    }
+  ],
+  "payment_reference": "MISMATCH-99999",
+  "seller": {
+    "address": "Bernerstraße    4, 74653 Künzelsau Garnberg, DE",
+    "iban": "DE93622515500005005505",
+    "name": "Albert Berner Deutschland GmbH",
+    "vat_id": "DE146279846"
+  },
+  "status": "partial",
+  "totals": {
+    "currency": "EUR",
+    "gross": 9999.99,
+    "net": 8404.2,
+    "tax": 1595.79
+  },
+  "validation_issues": [
+    {
+      "category": "mismatch",
+      "code": "MISMATCH_GROSS",
+      "level": "warning"
+    },
+    {
+      "category": "mismatch",
+      "code": "MISMATCH_INVOICE_NUMBER",
+      "level": "warning"
+    },
+    {
+      "category": "mismatch",
+      "code": "MISMATCH_TAX",
+      "level": "warning"
+    }
+  ],
+  "validation_status": "warning"
+}

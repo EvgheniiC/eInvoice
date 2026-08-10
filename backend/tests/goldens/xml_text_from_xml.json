@@ -1,0 +1,57 @@
+{
+  "buyer": {
+    "address": "[Buyer address line 1], 12345 [Buyer city], DE",
+    "iban": null,
+    "name": "[Buyer name]",
+    "vat_id": null
+  },
+  "due_date": null,
+  "file_type": "xrechnung_xml",
+  "invoice_number": "123456XX",
+  "issue_date": null,
+  "line_items": [
+    {
+      "description": "Zeitschrift [...]",
+      "gross_amount": 309.01,
+      "net_amount": 288.79,
+      "position": 1,
+      "quantity": 1.0,
+      "tax_rate": 7.0,
+      "unit": null,
+      "unit_price": 288.79
+    },
+    {
+      "description": "Porto + Versandkosten",
+      "gross_amount": 27.89,
+      "net_amount": 26.07,
+      "position": 2,
+      "quantity": 1.0,
+      "tax_rate": 7.0,
+      "unit": null,
+      "unit_price": 26.07
+    }
+  ],
+  "mismatch_fields": [],
+  "payment_reference": null,
+  "seller": {
+    "address": "[Seller address line 1], 12345 [Seller city], DE",
+    "iban": "DE75512108001245126199",
+    "name": "[Seller name]",
+    "vat_id": "DE 123456789"
+  },
+  "status": "partial",
+  "totals": {
+    "currency": "EUR",
+    "gross": 336.9,
+    "net": 314.86,
+    "tax": 22.04
+  },
+  "validation_issues": [
+    {
+      "category": "business",
+      "code": "BT-2_MISSING",
+      "level": "error"
+    }
+  ],
+  "validation_status": "invalid"
+}

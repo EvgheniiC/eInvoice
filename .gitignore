@@ -194,3 +194,6 @@ backend/tests/pdf_files/
 *.pdf
 *.xml
 !backend/app/helper_functions/config/*.json
+
+# Golden-file diffs written on mismatch (committed baselines stay in tests/goldens/)
+backend/tests/goldens/*.actual.json

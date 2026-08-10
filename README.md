@@ -89,6 +89,8 @@ UI: http://127.0.0.1:5173 (proxies `/api` → backend)
 ```bash
 cd backend
 pytest
+# golden-file regression (needs local tests/xml_files + tests/pdf_files):
+pytest tests/test_golden_files.py
 # or, for legacy path-relative fixtures:
 cd tests && python -m unittest discover -s . -v
 ```

@@ -20,3 +20,17 @@ uvicorn app.main:app --reload --port 8000
 - `app/invoice_handler` — XML / PDF parsers (existing logic)
 - `app/helper_functions` — shared XML helpers + config JSON
 - `app/data_class` — internal domain models
+
+## Golden-file tests
+
+Regression snapshots for `parse_upload` live in `tests/goldens/` (JSON).
+Invoice fixture bytes stay local under `tests/xml_files/` and `tests/pdf_files/`.
+
+```bash
+pytest tests/test_golden_files.py
+# after intentional parse changes:
+# Windows PowerShell:
+$env:UPDATE_GOLDENS=1; pytest tests/test_golden_files.py
+# Linux/macOS:
+UPDATE_GOLDENS=1 pytest tests/test_golden_files.py
+```

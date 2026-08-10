@@ -1,0 +1,51 @@
+{
+  "buyer": {
+    "address": "Zugspitzstr.1, 82049 Pullach, DE",
+    "iban": null,
+    "name": "Demo Buyer SE",
+    "vat_id": null
+  },
+  "due_date": "2025-01-31",
+  "file_type": "xrechnung_xml",
+  "invoice_number": "2025/10294",
+  "issue_date": "2025-01-31",
+  "line_items": [
+    {
+      "description": "Umsatzsteuerrechtliche Beratung gemass Zeitaufstellung\n\nPartner:",
+      "gross_amount": 116.02,
+      "net_amount": 97.5,
+      "position": 1,
+      "quantity": 0.25,
+      "tax_rate": 19.0,
+      "unit": null,
+      "unit_price": 390.0
+    },
+    {
+      "description": "Associates:",
+      "gross_amount": 154.7,
+      "net_amount": 130.0,
+      "position": 2,
+      "quantity": 0.5,
+      "tax_rate": 19.0,
+      "unit": null,
+      "unit_price": 260.0
+    }
+  ],
+  "mismatch_fields": [],
+  "payment_reference": null,
+  "seller": {
+    "address": "Unterer Anger 3, 80331 Munchen, DE",
+    "iban": "DE95700400410228840500",
+    "name": "KMLZ Rechtsanwaltsges. mbH",
+    "vat_id": "DE814742004"
+  },
+  "status": "success",
+  "totals": {
+    "currency": "EUR",
+    "gross": 270.73,
+    "net": 227.5,
+    "tax": 43.23
+  },
+  "validation_issues": [],
+  "validation_status": "valid"
+}

@@ -1,0 +1,78 @@
+{
+  "buyer": {
+    "address": "Zugspitzstr. 1, 82049 Pullach Höllriegelskreuth, DE",
+    "iban": null,
+    "name": "Sixt GmbH & Co. Autovermietung KG  23338",
+    "vat_id": "DE223999470"
+  },
+  "due_date": "2026-08-04",
+  "file_type": "zugferd_pdf",
+  "invoice_number": "1096393995",
+  "issue_date": "2026-08-04",
+  "line_items": [
+    {
+      "description": "FREIE SICHT GEBRAUCHSFERTIG25L",
+      "gross_amount": 52.95,
+      "net_amount": 44.5,
+      "position": 1,
+      "quantity": 2.0,
+      "tax_rate": 19.0,
+      "unit": null,
+      "unit_price": 22.25
+    }
+  ],
+  "mismatch_fields": [
+    {
+      "field": "gross",
+      "matched": true,
+      "pdf_value": "52,96",
+      "xml_value": "52.96"
+    },
+    {
+      "field": "iban",
+      "matched": true,
+      "pdf_value": "DE93622515500005005505",
+      "xml_value": "DE93622515500005005505"
+    },
+    {
+      "field": "invoice_number",
+      "matched": true,
+      "pdf_value": "1096393995",
+      "xml_value": "1096393995"
+    },
+    {
+      "field": "issue_date",
+      "matched": true,
+      "pdf_value": "04.08.2026",
+      "xml_value": "2026-08-04"
+    },
+    {
+      "field": "tax",
+      "matched": true,
+      "pdf_value": "8,46",
+      "xml_value": "8.46"
+    }
+  ],
+  "payment_reference": "1096393995",
+  "seller": {
+    "address": "Bernerstraße    4, 74653 Künzelsau Garnberg, DE",
+    "iban": "DE93622515500005005505",
+    "name": "Albert Berner Deutschland GmbH",
+    "vat_id": "DE146279846"
+  },
+  "status": "success",
+  "totals": {
+    "currency": "EUR",
+    "gross": 52.96,
+    "net": 44.5,
+    "tax": 8.46
+  },
+  "validation_issues": [
+    {
+      "category": "mismatch",
+      "code": "PDF_XML_MATCH",
+      "level": "info"
+    }
+  ],
+  "validation_status": "valid"
+}

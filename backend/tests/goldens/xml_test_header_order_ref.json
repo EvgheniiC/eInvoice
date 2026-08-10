@@ -1,0 +1,131 @@
+{
+  "buyer": {
+    "address": "18049 Rostock, DE",
+    "iban": null,
+    "name": "Demo Buyer GmbH & Co. Autovermietung KG Reparaturen",
+    "vat_id": "DE000000000"
+  },
+  "due_date": "2025-02-19",
+  "file_type": "xrechnung_xml",
+  "invoice_number": "22247",
+  "issue_date": "2025-02-19",
+  "line_items": [
+    {
+      "description": "WSS OE 8894354944",
+      "gross_amount": 708.48,
+      "net_amount": 595.36,
+      "position": 1,
+      "quantity": 1.0,
+      "tax_rate": 19.0,
+      "unit": null,
+      "unit_price": 595.36
+    },
+    {
+      "description": "Klebesatz",
+      "gross_amount": 40.0,
+      "net_amount": 33.61,
+      "position": 2,
+      "quantity": 1.0,
+      "tax_rate": 19.0,
+      "unit": null,
+      "unit_price": 33.61
+    },
+    {
+      "description": "Primer",
+      "gross_amount": 17.85,
+      "net_amount": 15.0,
+      "position": 3,
+      "quantity": 1.0,
+      "tax_rate": 19.0,
+      "unit": null,
+      "unit_price": 15.0
+    },
+    {
+      "description": "Montage-Arbeitswerte [12AW=1 Std.]",
+      "gross_amount": 232.95,
+      "net_amount": 195.76,
+      "position": 4,
+      "quantity": 23.5,
+      "tax_rate": 19.0,
+      "unit": null,
+      "unit_price": 8.33
+    },
+    {
+      "description": "Altglasentsorgung PKW\nBundes- & Landesentsorgungs-\nverordnung / KFZ-Verbundglas",
+      "gross_amount": 5.13,
+      "net_amount": 4.31,
+      "position": 5,
+      "quantity": 1.0,
+      "tax_rate": 19.0,
+      "unit": null,
+      "unit_price": 4.31
+    },
+    {
+      "description": "FSP",
+      "gross_amount": 5.95,
+      "net_amount": 5.0,
+      "position": 6,
+      "quantity": 1.0,
+      "tax_rate": 19.0,
+      "unit": null,
+      "unit_price": 5.0
+    },
+    {
+      "description": "Schadennummer 9074743424",
+      "gross_amount": 0.0,
+      "net_amount": 0.0,
+      "position": 7,
+      "quantity": 1.0,
+      "tax_rate": 19.0,
+      "unit": null,
+      "unit_price": 0.0
+    },
+    {
+      "description": "Auftragsnummer 9307162373",
+      "gross_amount": 0.0,
+      "net_amount": 0.0,
+      "position": 8,
+      "quantity": 1.0,
+      "tax_rate": 19.0,
+      "unit": null,
+      "unit_price": 0.0
+    },
+    {
+      "description": "Durchgefuhrt am 17.02.25",
+      "gross_amount": 0.0,
+      "net_amount": 0.0,
+      "position": 9,
+      "quantity": 1.0,
+      "tax_rate": 19.0,
+      "unit": null,
+      "unit_price": 0.0
+    },
+    {
+      "description": "Rabatt",
+      "gross_amount": -525.38,
+      "net_amount": -441.5,
+      "position": 10,
+      "quantity": 1.0,
+      "tax_rate": 19.0,
+      "unit": null,
+      "unit_price": -441.5
+    }
+  ],
+  "mismatch_fields": [],
+  "payment_reference": "0",
+  "seller": {
+    "address": "Lebacherstrasse 123, 66113 Saarbrucken, DE",
+    "iban": "DE24590501010074280249",
+    "name": "R-Tech Autoglas",
+    "vat_id": "DE264625443"
+  },
+  "status": "success",
+  "totals": {
+    "currency": "EUR",
+    "gross": 484.96,
+    "net": 407.53,
+    "tax": 77.43
+  },
+  "validation_issues": [],
+  "validation_status": "valid"
+}

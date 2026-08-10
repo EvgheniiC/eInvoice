@@ -1,0 +1,72 @@
+{
+  "buyer": {
+    "address": "Delivery street 2, 21234 Stockholm",
+    "iban": null,
+    "name": "BuyerTradingName AS",
+    "vat_id": null
+  },
+  "due_date": "2032-12-31",
+  "file_type": "xrechnung_xml",
+  "invoice_number": "TickstarAP-BIS3-test-01",
+  "issue_date": "2023-12-19",
+  "line_items": [
+    {
+      "description": "item name\n97iugug876",
+      "gross_amount": 5000.0,
+      "net_amount": 4000.0,
+      "position": 1,
+      "quantity": 10.0,
+      "tax_rate": 25.0,
+      "unit": null,
+      "unit_price": 410.0
+    },
+    {
+      "description": "item name AdditionalItemName AdditionalItemValue\nitem name\n97iugug876",
+      "gross_amount": 1000.0,
+      "net_amount": 1000.0,
+      "position": 2,
+      "quantity": 10.0,
+      "tax_rate": 0.0,
+      "unit": null,
+      "unit_price": 200.0
+    },
+    {
+      "description": "item name AdditionalItemName AdditionalItemValue\nitem name\n97iugug876",
+      "gross_amount": 1125.0,
+      "net_amount": 900.0,
+      "position": 3,
+      "quantity": 10.0,
+      "tax_rate": 25.0,
+      "unit": null,
+      "unit_price": 100.0
+    }
+  ],
+  "mismatch_fields": [],
+  "payment_reference": "Snippet1",
+  "seller": {
+    "address": "Postbus 81, 1930 Zaventem, GB",
+    "iban": null,
+    "name": "SupplierTradingName Ltd.",
+    "vat_id": "BE0465341266"
+  },
+  "status": "partial",
+  "totals": {
+    "currency": "EUR",
+    "gross": 7125.0,
+    "net": 4900.0,
+    "tax": 1225.0
+  },
+  "validation_issues": [
+    {
+      "category": "business",
+      "code": "AMOUNT_INCONSISTENT",
+      "level": "warning"
+    },
+    {
+      "category": "business",
+      "code": "LINE_SUM_MISMATCH",
+      "level": "warning"
+    }
+  ],
+  "validation_status": "warning"
+}

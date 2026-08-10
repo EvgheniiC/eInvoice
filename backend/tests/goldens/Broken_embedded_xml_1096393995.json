@@ -1,0 +1,21 @@
+{
+  "buyer": null,
+  "due_date": null,
+  "file_type": "zugferd_pdf",
+  "invoice_number": null,
+  "issue_date": null,
+  "line_items": [],
+  "mismatch_fields": [],
+  "payment_reference": null,
+  "seller": null,
+  "status": "error",
+  "totals": null,
+  "validation_issues": [
+    {
+      "category": "schema",
+      "code": "PARSE_EXCEPTION",
+      "level": "error"
+    }
+  ],
+  "validation_status": "invalid"
+}
