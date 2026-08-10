@@ -1,8 +1,10 @@
 from typing import List, Optional
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.responses import Response
 
+from app.core.error_events import format_safe_stack, log_api_error
+from app.core.middleware import get_request_id
 from app.schemas.export import (
     EXPORT_DOCS,
     AccountantPackageRequest,
@@ -23,7 +25,7 @@ def export_mapping_docs() -> List[ExportMappingDoc]:
 
 
 @router.post("/export")
-def export_invoice(body: ExportRequest) -> Response:
+def export_invoice(body: ExportRequest, request: Request) -> Response:
     """
     Export a previously parsed invoice DTO as CSV, Excel, or DATEV CSV.
     """
@@ -36,6 +38,21 @@ def export_invoice(body: ExportRequest) -> Response:
         )
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    except Exception as exc:
+        log_api_error(
+            event="export_failed",
+            method=request.method,
+            path=request.url.path,
+            status_code=500,
+            request_id=get_request_id(request),
+            detail=type(exc).__name__,
+            exc_type=type(exc).__name__,
+            stack=format_safe_stack(exc),
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Export fehlgeschlagen.",
+        ) from exc
 
     headers: dict[str, str] = {
         "Content-Disposition": f'attachment; filename="{filename}"',
@@ -44,7 +61,7 @@ def export_invoice(body: ExportRequest) -> Response:
 
 
 @router.post("/export/accountant-package")
-def export_accountant_package(body: AccountantPackageRequest) -> Response:
+def export_accountant_package(body: AccountantPackageRequest, request: Request) -> Response:
     """
     ZIP for Steuerberater: summary + Excel + DATEV + optional visual PDF.
     """
@@ -70,6 +87,21 @@ def export_accountant_package(body: AccountantPackageRequest) -> Response:
         )
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    except Exception as exc:
+        log_api_error(
+            event="accountant_package_failed",
+            method=request.method,
+            path=request.url.path,
+            status_code=500,
+            request_id=get_request_id(request),
+            detail=type(exc).__name__,
+            exc_type=type(exc).__name__,
+            stack=format_safe_stack(exc),
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Accountant-Paket fehlgeschlagen.",
+        ) from exc
 
     headers: dict[str, str] = {
         "Content-Disposition": f'attachment; filename="{filename}"',

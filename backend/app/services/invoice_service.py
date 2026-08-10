@@ -1,9 +1,11 @@
+import logging
 import re
 import tempfile
 import uuid
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
+from app.core.error_events import log_parse_failure
 from app.data_class.XmlInvoiceHeader import XmlInvoiceHeader
 from app.helper_functions.einvoice_helper import is_zugpferd_pdf
 from app.helper_functions.safe_xml import UnsafeXmlError, assert_xml_safe
@@ -24,6 +26,14 @@ from app.services.zugferd_consistency import compare_pdf_with_xml
 
 _ROOT_TAG_RE: re.Pattern[str] = re.compile(r"<\s*([A-Za-z_][\w:.-]*)")
 
+# Unexpected / security / extract failures → ERROR; expected format rejects → WARNING.
+_PARSE_ERROR_LEVELS: Dict[str, int] = {
+    "PARSE_EXCEPTION": logging.ERROR,
+    "UNSAFE_XML": logging.ERROR,
+    "ZUGFERD_XML_EXTRACT_FAILED": logging.ERROR,
+    "XML_DECODE_ERROR": logging.ERROR,
+}
+
 
 class InvoiceService:
     """Facade over existing XML/PDF parsers for the public upload API."""
@@ -41,8 +51,15 @@ class InvoiceService:
             return "pdf_unknown"
         return "unsupported"
 
-    def parse_upload(self, filename: str, content: bytes) -> InvoiceParseResponse:
+    def parse_upload(
+        self,
+        filename: str,
+        content: bytes,
+        *,
+        request_id: Optional[str] = None,
+    ) -> InvoiceParseResponse:
         """Parse an uploaded invoice file into the public DTO."""
+        size_bytes: int = len(content)
         file_type: str = self.detect_file_type(filename=filename, content=content)
 
         if file_type == "unsupported":
@@ -52,6 +69,8 @@ class InvoiceService:
                 message="Nicht unterstützter Dateityp. Erlaubt: .xml / .pdf",
                 code="UNSUPPORTED_TYPE",
                 detail="Nur XRechnung-XML oder ZUGFeRD-PDF werden unterstützt.",
+                size_bytes=size_bytes,
+                request_id=request_id,
             )
 
         if file_type == "pdf_unknown":
@@ -64,6 +83,8 @@ class InvoiceService:
                     "Die PDF enthält kein erkennbares eingebettetes Rechnungs-XML. "
                     "Bitte XRechnung-XML oder ZUGFeRD-PDF verwenden."
                 ),
+                size_bytes=size_bytes,
+                request_id=request_id,
             )
 
         xml_text: Optional[str] = None
@@ -76,6 +97,8 @@ class InvoiceService:
                     message="XML-Datei konnte nicht gelesen werden (Encoding).",
                     code="XML_DECODE_ERROR",
                     detail="Die Datei ist kein gültiges UTF-8/UTF-16 XML.",
+                    size_bytes=size_bytes,
+                    request_id=request_id,
                 )
             try:
                 assert_xml_safe(xml_text)
@@ -86,6 +109,9 @@ class InvoiceService:
                     message="XML aus Sicherheitsgründen abgelehnt.",
                     code="UNSAFE_XML",
                     detail=str(exc),
+                    size_bytes=size_bytes,
+                    request_id=request_id,
+                    exc_type=type(exc).__name__,
                 )
             dialect: str = self._classify_invoice_xml(xml_text)
             if dialect == "opentrans":
@@ -99,6 +125,8 @@ class InvoiceService:
                         "Bitte eine XRechnung (UBL/CII) oder ein ZUGFeRD-PDF hochladen. "
                         "openTRANS-Unterstützung ist für später vorgesehen."
                     ),
+                    size_bytes=size_bytes,
+                    request_id=request_id,
                 )
             if dialect == "unknown":
                 return self._error_response(
@@ -111,6 +139,8 @@ class InvoiceService:
                         "UN/CEFACT CII (CrossIndustryInvoice), z. B. aus ZUGFeRD/Factur-X. "
                         "Andere XML-Formate werden nicht gelesen."
                     ),
+                    size_bytes=size_bytes,
+                    request_id=request_id,
                 )
         elif file_type == "zugferd_pdf":
             xml_text = extract_embedded_xml_from_pdf(content)
@@ -121,6 +151,8 @@ class InvoiceService:
                     message="ZUGFeRD erkannt, aber eingebettetes XML konnte nicht extrahiert werden.",
                     code="ZUGFERD_XML_EXTRACT_FAILED",
                     detail="Embedded XML fehlt oder ist beschädigt.",
+                    size_bytes=size_bytes,
+                    request_id=request_id,
                 )
             try:
                 assert_xml_safe(xml_text)
@@ -131,6 +163,9 @@ class InvoiceService:
                     message="XML aus Sicherheitsgründen abgelehnt.",
                     code="UNSAFE_XML",
                     detail=str(exc),
+                    size_bytes=size_bytes,
+                    request_id=request_id,
+                    exc_type=type(exc).__name__,
                 )
 
         assert xml_text is not None
@@ -143,6 +178,9 @@ class InvoiceService:
                 message="XML aus Sicherheitsgründen abgelehnt.",
                 code="UNSAFE_XML",
                 detail=str(exc),
+                size_bytes=size_bytes,
+                request_id=request_id,
+                exc_type=type(exc).__name__,
             )
         except Exception as exc:
             return self._error_response(
@@ -150,7 +188,10 @@ class InvoiceService:
                 file_type=file_type,
                 message="Fehler beim Parsen der Rechnung.",
                 code="PARSE_EXCEPTION",
-                detail=str(exc),
+                detail=type(exc).__name__,
+                size_bytes=size_bytes,
+                request_id=request_id,
+                exc_type=type(exc).__name__,
             )
 
         response: InvoiceParseResponse = map_to_parse_response(
@@ -161,10 +202,27 @@ class InvoiceService:
         )
 
         if response.status == ParseStatus.ERROR:
+            issue_code: str = (
+                response.validation_issues[0].code
+                if response.validation_issues
+                else "MAPPER_ERROR"
+            )
+            log_parse_failure(
+                code=issue_code,
+                filename=filename,
+                file_type=file_type,
+                size_bytes=size_bytes,
+                request_id=request_id,
+                level=logging.ERROR,
+            )
             response.next_steps = build_next_steps(response)
             return response
 
-        validation: ValidationResult = validate_invoice(xml_text=xml_text, parsed=response)
+        validation: ValidationResult = validate_invoice(
+            xml_text=xml_text,
+            parsed=response,
+            request_id=request_id,
+        )
         response.validation_status = validation.status
         response.validation_issues.extend(validation.issues)
 
@@ -219,7 +277,27 @@ class InvoiceService:
         message: str,
         code: str,
         detail: str,
+        size_bytes: Optional[int] = None,
+        request_id: Optional[str] = None,
+        exc_type: Optional[str] = None,
     ) -> InvoiceParseResponse:
+        # Client-facing detail stays German/user-facing; logs never include invoice body.
+        log_parse_failure(
+            code=code,
+            filename=filename,
+            file_type=file_type,
+            size_bytes=size_bytes,
+            request_id=request_id,
+            exc_type=exc_type,
+            detail=detail if code != "PARSE_EXCEPTION" else None,
+            level=_PARSE_ERROR_LEVELS.get(code, logging.WARNING),
+        )
+        # For PARSE_EXCEPTION keep a stable German message in the API (no raw traceback).
+        issue_message: str = (
+            "Unerwarteter Fehler beim Lesen der Datei."
+            if code == "PARSE_EXCEPTION"
+            else detail
+        )
         response: InvoiceParseResponse = InvoiceParseResponse(
             status=ParseStatus.ERROR,
             message=message,
@@ -231,7 +309,7 @@ class InvoiceService:
                     level="error",
                     category="schema",
                     code=code,
-                    message=detail,
+                    message=issue_message,
                 )
             ],
         )

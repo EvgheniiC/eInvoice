@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     app_name: str = "eInvoice API"
     app_version: str = "0.1.0"
     debug: bool = False
+    log_level: str = "INFO"
     cors_origins: List[str] = [
         "http://localhost:5173",
         "http://127.0.0.1:5173",

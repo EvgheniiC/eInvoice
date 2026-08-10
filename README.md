@@ -74,6 +74,13 @@ KOSIT_JAVA_BIN=java
 
 Without KoSIT the API still runs structural/business checks and labels them clearly.
 
+Logging (no invoice bodies): set `LOG_LEVEL=INFO` (default). On production, errors go to journald:
+
+```bash
+journalctl -u einvoice-api -f
+journalctl -u einvoice-api --since "1 hour ago" | grep -E 'parse_failed|unhandled_exception|timeout|http_exception'
+```
+
 ### Frontend
 
 ```bash

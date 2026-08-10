@@ -1,1 +1,1 @@
-"""Core configuration and shared utilities."""
+"""Core configuration, logging, and shared utilities."""

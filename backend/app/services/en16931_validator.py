@@ -1,3 +1,4 @@
+import logging
 import re
 import subprocess
 import tempfile
@@ -7,6 +8,7 @@ from typing import List, Optional
 from xml.etree.ElementTree import ParseError as EtParseError
 
 from app.core.config import settings
+from app.core.error_events import log_event, log_timeout
 from app.helper_functions.safe_xml import UnsafeXmlError, parse_xml
 from app.schemas.invoice import (
     InvoiceParseResponse,
@@ -24,7 +26,12 @@ class ValidationResult:
     engine: str = "business_rules"
 
 
-def validate_invoice(xml_text: str, parsed: InvoiceParseResponse) -> ValidationResult:
+def validate_invoice(
+    xml_text: str,
+    parsed: InvoiceParseResponse,
+    *,
+    request_id: Optional[str] = None,
+) -> ValidationResult:
     """
     Validate invoice XML against business rules and optionally KoSIT.
 
@@ -37,7 +44,10 @@ def validate_invoice(xml_text: str, parsed: InvoiceParseResponse) -> ValidationR
     issues.extend(_check_required_business_fields(parsed))
     issues.extend(_check_amount_consistency(parsed))
 
-    kosit_issues: List[ValidationIssue] = _run_kosit_if_configured(xml_text)
+    kosit_issues: List[ValidationIssue] = _run_kosit_if_configured(
+        xml_text,
+        request_id=request_id,
+    )
     if kosit_issues:
         issues.extend(kosit_issues)
         engine: str = "kosit"
@@ -222,17 +232,27 @@ def _check_amount_consistency(parsed: InvoiceParseResponse) -> List[ValidationIs
     return issues
 
 
-def _run_kosit_if_configured(xml_text: str) -> List[ValidationIssue]:
+def _run_kosit_if_configured(
+    xml_text: str,
+    *,
+    request_id: Optional[str] = None,
+) -> List[ValidationIssue]:
     """
     Optionally invoke official KoSIT validator via Java CLI.
 
     Requires settings.kosit_validator_jar and settings.kosit_scenarios_xml.
+    Never logs invoice XML contents.
     """
     jar: Optional[str] = settings.kosit_validator_jar
     scenarios: Optional[str] = settings.kosit_scenarios_xml
     if not jar or not scenarios:
         return []
     if not Path(jar).is_file() or not Path(scenarios).is_file():
+        log_event(
+            logging.WARNING,
+            "kosit_path_invalid",
+            fields={"request_id": request_id},
+        )
         return [
             ValidationIssue(
                 level="warning",
@@ -277,6 +297,11 @@ def _run_kosit_if_configured(xml_text: str) -> List[ValidationIssue]:
             ]
 
         detail: str = _extract_kosit_message(combined) or "KoSIT meldet Validierungsfehler."
+        log_event(
+            logging.WARNING,
+            "kosit_failed",
+            fields={"request_id": request_id, "detail": detail},
+        )
         return [
             ValidationIssue(
                 level="error",
@@ -286,6 +311,11 @@ def _run_kosit_if_configured(xml_text: str) -> List[ValidationIssue]:
             )
         ]
     except FileNotFoundError:
+        log_event(
+            logging.ERROR,
+            "kosit_java_missing",
+            fields={"request_id": request_id, "java_bin": settings.kosit_java_bin},
+        )
         return [
             ValidationIssue(
                 level="warning",
@@ -295,6 +325,11 @@ def _run_kosit_if_configured(xml_text: str) -> List[ValidationIssue]:
             )
         ]
     except subprocess.TimeoutExpired:
+        log_timeout(
+            component="kosit",
+            request_id=request_id,
+            timeout_seconds=settings.kosit_timeout_seconds,
+        )
         return [
             ValidationIssue(
                 level="warning",
@@ -304,12 +339,17 @@ def _run_kosit_if_configured(xml_text: str) -> List[ValidationIssue]:
             )
         ]
     except Exception as exc:
+        log_event(
+            logging.ERROR,
+            "kosit_error",
+            fields={"request_id": request_id, "exc_type": type(exc).__name__},
+        )
         return [
             ValidationIssue(
                 level="warning",
                 category="info",
                 code="KOSIT_ERROR",
-                message=f"KoSIT konnte nicht ausgeführt werden: {exc}",
+                message="KoSIT konnte nicht ausgeführt werden.",
             )
         ]
     finally:
