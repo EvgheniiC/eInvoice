@@ -32,8 +32,21 @@ eInvoice/
 │       ├── pages/
 │       └── types/
 ├── docs/
+├── deploy/                  # systemd unit + deploy.sh (prod)
 └── TODO_LIST_MVP.md
 ```
+
+## Deploy (production host)
+
+On the server (paths match `erechnung-smart` defaults):
+
+```bash
+cd /opt/eInvoice
+sudo ./deploy/deploy.sh
+```
+
+Options: `--frontend-only`, `--backend-only`, `--skip-pull`.  
+Override paths via env: `APP_ROOT`, `WEB_ROOT`, `API_SERVICE`.
 
 ## Setup
 
