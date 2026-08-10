@@ -113,7 +113,7 @@ if [[ "${DO_FRONTEND}" -eq 1 ]]; then
     exit 1
   fi
 
-  if ! grep -Rqs "PDF ausblenden\|Paket für Steuerberater\|eInvoice" dist/assets/; then
+  if ! grep -Rqs "Rechnung hochladen\|PDF ausblenden\|Paket für Steuerberater\|eInvoice" dist/assets/; then
     echo "Warning: expected UI strings not found in dist/assets (check build)." >&2
   fi
 

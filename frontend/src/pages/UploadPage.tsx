@@ -1,11 +1,15 @@
-import { useState } from 'react'
+import { useState, type JSX } from 'react'
 import { parseInvoice } from '../api/client'
 import { FileUpload } from '../components/FileUpload'
 import { InvoiceView } from '../components/InvoiceView'
 import { PdfPreview } from '../components/PdfPreview'
 import type { InvoiceParseResponse } from '../types/invoice'
 
-export function UploadPage() {
+type UploadPageProps = {
+  onNavigateHome: () => void
+}
+
+export function UploadPage({ onNavigateHome }: UploadPageProps): JSX.Element {
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedFilename, setSelectedFilename] = useState<string | null>(null)
@@ -43,7 +47,9 @@ export function UploadPage() {
   return (
     <main className={pageClassName}>
       <header className="page__header">
-        <p className="brand">eInvoice</p>
+        <button type="button" className="page__home" onClick={onNavigateHome}>
+          ← eInvoice
+        </button>
         <h1>Rechnung empfangen</h1>
         <p className="page__lead">
           XRechnung-XML oder ZUGFeRD-PDF hochladen — lesbare Ansicht der Rechnungsdaten.

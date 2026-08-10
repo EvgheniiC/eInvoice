@@ -1,10 +1,17 @@
 :root {
-  color: #1a1f24;
+  --color-ink: #1a1f24;
+  --color-muted: #4a5560;
+  --color-brand: #2f6b4f;
+  --color-brand-dark: #24553e;
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-body: "Manrope", "Segoe UI", sans-serif;
+
+  color: var(--color-ink);
   background:
     radial-gradient(ellipse 80% 50% at 20% -10%, #d7e8df 0%, transparent 55%),
     radial-gradient(ellipse 70% 40% at 90% 0%, #e8dfd0 0%, transparent 50%),
     #f3f5f4;
-  font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+  font-family: var(--font-body);
   line-height: 1.5;
   font-weight: 400;
   font-synthesis: none;
