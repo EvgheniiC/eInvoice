@@ -56,7 +56,7 @@ export function LandingPage({ onStart }: LandingPageProps): JSX.Element {
             <span className="landing-steps__num">3</span>
             <div>
               <strong>Exportieren</strong>
-              <p>Excel, DATEV oder fertiges Paket für den Steuerberater.</p>
+              <p>Excel, DATEV-CSV oder fertiges Paket für den Steuerberater.</p>
             </div>
           </li>
         </ol>
@@ -78,7 +78,7 @@ export function LandingPage({ onStart }: LandingPageProps): JSX.Element {
         <ul className="landing-benefits">
           <li>XML als verständliche Rechnung anzeigen</li>
           <li>Standard prüfen und PDF mit eingebettetem XML abgleichen</li>
-          <li>CSV, Excel, DATEV-Datei oder Steuerberater-Paket exportieren</li>
+          <li>CSV, Excel, DATEV-CSV oder Steuerberater-Paket exportieren</li>
         </ul>
       </section>
 
@@ -92,7 +92,8 @@ export function LandingPage({ onStart }: LandingPageProps): JSX.Element {
         </p>
         <p className="landing-limitations">
           Normale PDFs ohne eingebettetes XML, Scans, openTRANS und andere XML-Formate werden
-          derzeit nicht verarbeitet.
+          derzeit nicht verarbeitet. Der DATEV-Export ist eine Buchungsstapel-CSV und kein
+          DATEVconnect.
         </p>
       </section>
 

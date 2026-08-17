@@ -2,7 +2,6 @@ import base64
 import binascii
 import csv
 import io
-import re
 import zipfile
 from decimal import Decimal
 from typing import Any, Dict, List, Optional, Tuple
@@ -10,14 +9,23 @@ from typing import Any, Dict, List, Optional, Tuple
 from openpyxl import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
 
-from app.schemas.export import DATEV_COLUMNS, EXPORT_COLUMNS, ExportFormat
+from app.helper_functions.filenames import safe_filename_stem
+from app.schemas.export import (
+    DATEV_COLUMNS,
+    DATEV_LIMITATIONS,
+    EXPORT_COLUMNS,
+    EXPORT_FORMAT_VERSION,
+    ExportFormat,
+)
 from app.schemas.invoice import InvoiceParseResponse, LineItem, MismatchField, ValidationMeta
+from app.services.pdf_xml_extractor import extract_embedded_xml_from_pdf
 from app.services.validation_report import (
     build_validation_report,
     build_validation_report_filename,
 )
 
-MAX_PACKAGE_PDF_BYTES: int = 12 * 1024 * 1024
+MAX_PACKAGE_SOURCE_BYTES: int = 12 * 1024 * 1024
+ORIGINAL_DIR: str = "original"
 
 
 class ExportService:
@@ -46,19 +54,35 @@ class ExportService:
         invoice: InvoiceParseResponse,
         pdf_bytes: Optional[bytes] = None,
         pdf_filename: Optional[str] = None,
+        xml_bytes: Optional[bytes] = None,
+        xml_filename: Optional[str] = None,
     ) -> Tuple[bytes, str, str]:
         """
-        ZIP for Steuerberater: summary.txt + Prüfbericht + Excel + DATEV + optional visual PDF.
+        ZIP for Steuerberater: original + summary + Prüfbericht + Excel + DATEV.
         Returns (zip_bytes, media_type, download_filename).
         """
-        if pdf_bytes is not None and len(pdf_bytes) > MAX_PACKAGE_PDF_BYTES:
-            raise ValueError(
-                f"PDF zu groß für das Paket (max. {MAX_PACKAGE_PDF_BYTES // (1024 * 1024)} MB)."
-            )
+        _assert_source_size(pdf_bytes, "PDF")
+        _assert_source_size(xml_bytes, "XML")
+
+        extracted_xml: Optional[bytes] = None
+        if xml_bytes is None and pdf_bytes is not None:
+            extracted_xml = _extract_xml_from_zugferd(pdf_bytes)
+
+        original_xml: Optional[bytes] = xml_bytes if xml_bytes is not None else extracted_xml
+        has_pdf: bool = pdf_bytes is not None
+        has_xml: bool = original_xml is not None
 
         buffer: io.BytesIO = io.BytesIO()
         with zipfile.ZipFile(buffer, mode="w", compression=zipfile.ZIP_DEFLATED) as archive:
-            archive.writestr("summary.txt", build_package_summary(invoice))
+            archive.writestr(
+                "export_manifest.txt",
+                build_export_manifest(invoice, has_xml=has_xml, has_pdf=has_pdf),
+            )
+            archive.writestr("datev_hinweise.txt", build_datev_notes())
+            archive.writestr(
+                "summary.txt",
+                build_package_summary(invoice, has_xml=has_xml, has_pdf=has_pdf),
+            )
             archive.writestr(
                 build_validation_report_filename(invoice),
                 build_validation_report(invoice),
@@ -70,9 +94,16 @@ class ExportService:
             datev_bytes, _, datev_name = self.export(invoice, ExportFormat.DATEV)
             archive.writestr(datev_name, datev_bytes)
 
-            if pdf_bytes:
-                member_name: str = _package_pdf_member_name(invoice, pdf_filename)
-                archive.writestr(member_name, pdf_bytes)
+            if original_xml is not None:
+                archive.writestr(
+                    _package_source_member_name(invoice, xml_filename, "xml"),
+                    original_xml,
+                )
+            if pdf_bytes is not None:
+                archive.writestr(
+                    _package_source_member_name(invoice, pdf_filename, "pdf"),
+                    pdf_bytes,
+                )
 
         zip_name: str = build_package_filename(invoice)
         return buffer.getvalue(), "application/zip", zip_name
@@ -82,12 +113,14 @@ class ExportService:
         writer: csv.DictWriter = csv.DictWriter(
             buffer,
             fieldnames=EXPORT_COLUMNS,
+            delimiter=";",
             extrasaction="ignore",
-            lineterminator="\n",
+            lineterminator="\r\n",
+            quoting=csv.QUOTE_MINIMAL,
         )
         writer.writeheader()
         for row in build_flat_rows(invoice):
-            writer.writerow(row)
+            writer.writerow(_localize_csv_row(row))
         # UTF-8 BOM helps Excel on Windows open umlauts correctly
         return ("\ufeff" + buffer.getvalue()).encode("utf-8")
 
@@ -96,20 +129,21 @@ class ExportService:
         header_sheet: Worksheet = workbook.active
         header_sheet.title = "Invoice"
 
-        header_rows: List[Tuple[str, Optional[str]]] = [
-            ("invoice_number", invoice.invoice_number),
-            ("issue_date", invoice.issue_date),
-            ("due_date", invoice.due_date),
-            ("seller_name", invoice.seller.name if invoice.seller else None),
-            ("seller_vat_id", invoice.seller.vat_id if invoice.seller else None),
-            ("seller_iban", invoice.seller.iban if invoice.seller else None),
-            ("buyer_name", invoice.buyer.name if invoice.buyer else None),
-            ("buyer_vat_id", invoice.buyer.vat_id if invoice.buyer else None),
-            ("currency", invoice.totals.currency if invoice.totals else None),
-            ("net", _num_str(invoice.totals.net if invoice.totals else None)),
-            ("tax", _num_str(invoice.totals.tax if invoice.totals else None)),
-            ("gross", _num_str(invoice.totals.gross if invoice.totals else None)),
-            ("payment_reference", invoice.payment_reference),
+        header_rows: List[Tuple[str, object]] = [
+            ("export_format_version", EXPORT_FORMAT_VERSION),
+            ("invoice_number", invoice.invoice_number or ""),
+            ("issue_date", _de_date(invoice.issue_date)),
+            ("due_date", _de_date(invoice.due_date)),
+            ("seller_name", invoice.seller.name if invoice.seller else ""),
+            ("seller_vat_id", invoice.seller.vat_id if invoice.seller else ""),
+            ("seller_iban", invoice.seller.iban if invoice.seller else ""),
+            ("buyer_name", invoice.buyer.name if invoice.buyer else ""),
+            ("buyer_vat_id", invoice.buyer.vat_id if invoice.buyer else ""),
+            ("currency", invoice.totals.currency if invoice.totals else ""),
+            ("net", invoice.totals.net if invoice.totals else ""),
+            ("tax", invoice.totals.tax if invoice.totals else ""),
+            ("gross", invoice.totals.gross if invoice.totals else ""),
+            ("payment_reference", invoice.payment_reference or ""),
         ]
         header_sheet.append(["field", "value"])
         for key, value in header_rows:
@@ -145,7 +179,8 @@ class ExportService:
         flat_sheet: Worksheet = workbook.create_sheet("Flat")
         flat_sheet.append(EXPORT_COLUMNS)
         for row in build_flat_rows(invoice):
-            flat_sheet.append([row.get(col, "") for col in EXPORT_COLUMNS])
+            localized: Dict[str, Any] = _localize_csv_row(row)
+            flat_sheet.append([localized.get(col, "") for col in EXPORT_COLUMNS])
 
         output: io.BytesIO = io.BytesIO()
         workbook.save(output)
@@ -157,7 +192,7 @@ class ExportService:
         - semicolon separator
         - German decimal comma
         - CP1252 encoding
-        - one Soll line for gross amount
+        - one Soll/Haben line for gross amount
         """
         buffer: io.StringIO = io.StringIO()
         writer: csv.DictWriter = csv.DictWriter(
@@ -234,10 +269,13 @@ def build_datev_row(invoice: InvoiceParseResponse) -> Dict[str, str]:
     currency: str = (
         invoice.totals.currency if invoice.totals and invoice.totals.currency else "EUR"
     )
+    signed_amount: Decimal = amount if amount is not None else Decimal("0")
+    is_credit: bool = invoice.document_type == "credit_note" or signed_amount < 0
+    kennzeichen: str = "H" if is_credit else "S"
 
     return {
-        "Umsatz": _de_amount(amount),
-        "Soll/Haben-Kennzeichen": "S",
+        "Umsatz": _de_amount(abs(signed_amount) if amount is not None else None),
+        "Soll/Haben-Kennzeichen": kennzeichen,
         "WKZ Umsatz": currency,
         "Kurs": "",
         "Basis-Umsatz": "",
@@ -255,8 +293,8 @@ def build_datev_row(invoice: InvoiceParseResponse) -> Dict[str, str]:
 
 def build_export_filename(invoice: InvoiceParseResponse, export_format: ExportFormat) -> str:
     """Filename convention: supplier_invoiceNo_date.ext"""
-    supplier: str = _slug(invoice.seller.name if invoice.seller else None) or "supplier"
-    number: str = _slug(invoice.invoice_number) or "invoice"
+    supplier: str = safe_filename_stem(invoice.seller.name if invoice.seller else None) or "supplier"
+    number: str = safe_filename_stem(invoice.invoice_number) or "invoice"
     date_part: str = (invoice.issue_date or "nodate").replace("-", "")
     extension: str = {
         ExportFormat.CSV: "csv",
@@ -269,13 +307,17 @@ def build_export_filename(invoice: InvoiceParseResponse, export_format: ExportFo
 
 def build_package_filename(invoice: InvoiceParseResponse) -> str:
     """ZIP filename: buchhaltung_supplier_invoiceNo_date.zip"""
-    supplier: str = _slug(invoice.seller.name if invoice.seller else None) or "supplier"
-    number: str = _slug(invoice.invoice_number) or "invoice"
+    supplier: str = safe_filename_stem(invoice.seller.name if invoice.seller else None) or "supplier"
+    number: str = safe_filename_stem(invoice.invoice_number) or "invoice"
     date_part: str = (invoice.issue_date or "nodate").replace("-", "")
     return f"buchhaltung_{supplier}_{number}_{date_part}.zip"
 
 
-def build_package_summary(invoice: InvoiceParseResponse) -> str:
+def build_package_summary(
+    invoice: InvoiceParseResponse,
+    has_xml: bool = False,
+    has_pdf: bool = False,
+) -> str:
     """Short German summary for the accountant package."""
     currency: str = (
         invoice.totals.currency if invoice.totals and invoice.totals.currency else "EUR"
@@ -292,9 +334,10 @@ def build_package_summary(invoice: InvoiceParseResponse) -> str:
         "Buchhaltungspaket — eInvoice",
         "============================",
         "",
+        f"Exportformat: {EXPORT_FORMAT_VERSION}",
         f"Rechnung: {invoice.invoice_number or '—'}",
-        f"Datum: {invoice.issue_date or '—'}",
-        f"Fälligkeitsdatum: {invoice.due_date or '—'}",
+        f"Datum: {_de_date(invoice.issue_date) or '—'}",
+        f"Fälligkeitsdatum: {_de_date(invoice.due_date) or '—'}",
         f"Zahlungsreferenz: {invoice.payment_reference or '—'}",
         f"Quelldatei: {invoice.filename}",
         f"Typ: {invoice.file_type or '—'}",
@@ -315,15 +358,28 @@ def build_package_summary(invoice: InvoiceParseResponse) -> str:
         f"PDF↔XML: {mismatch_line}",
         "",
         "Inhalt dieses ZIP:",
+        "- export_manifest.txt (Formatversion und Dateiliste)",
+        "- datev_hinweise.txt (DATEV-Grenzen, kein DATEVconnect)",
         "- summary.txt (diese Datei)",
         "- Prüfbericht (für Lieferant oder Steuerberater)",
         "- Excel-Export (Übersicht + Positionen)",
-        "- DATEV-Export (Buchungsvorschlag)",
-        "- optionale visuelle PDF (bei ZUGFeRD)",
-        "",
-        "Hinweis: Die Prüfung betrifft Schema-/Standardkonformität.",
-        "Die Entscheidung über den Vorsteuerabzug liegt beim Steuerberater.",
+        "- DATEV-Export (Buchungsvorschlag-CSV)",
     ]
+    if has_xml:
+        lines.append("- original/*.xml (ursprüngliches Rechnungs-XML)")
+    if has_pdf:
+        lines.append("- original/*.pdf (ZUGFeRD-PDF mit eingebettetem XML)")
+    if not has_xml and not has_pdf:
+        lines.append("- Originaldatei fehlt in diesem Paket")
+
+    lines.extend(
+        [
+            "",
+            "Hinweis: Die Prüfung betrifft Schema-/Standardkonformität.",
+            "Die Entscheidung über den Vorsteuerabzug liegt beim Steuerberater.",
+            DATEV_LIMITATIONS,
+        ]
+    )
 
     if invoice.mismatch_warnings:
         lines.extend(["", "Abweichungen / Hinweise:"])
@@ -347,26 +403,141 @@ def build_package_summary(invoice: InvoiceParseResponse) -> str:
     return "\n".join(lines)
 
 
-def decode_pdf_base64(value: str) -> bytes:
-    """Decode raw or data-URL base64 PDF content."""
+def build_export_manifest(invoice: InvoiceParseResponse, has_xml: bool, has_pdf: bool) -> str:
+    """Versioned inventory so Kanzlei imports stay stable across product updates."""
+    lines: List[str] = [
+        "eInvoice Export-Manifest",
+        "========================",
+        "",
+        f"Formatversion: {EXPORT_FORMAT_VERSION}",
+        "Bei einer inkompatiblen Änderung wird die Hauptversion erhöht.",
+        "",
+        f"Quelldatei: {invoice.filename}",
+        f"Typ: {invoice.file_type or '—'}",
+        f"Rechnung: {invoice.invoice_number or '—'}",
+        f"Datum: {_de_date(invoice.issue_date) or '—'}",
+        "",
+        "Dateien:",
+        "- export_manifest.txt",
+        "- datev_hinweise.txt",
+        "- summary.txt",
+        "- Prüfbericht (.txt)",
+        "- Excel (.xlsx, Blätter Invoice / Lines / Flat)",
+        "- DATEV-CSV (Buchungsstapel-kompatibel, CP1252)",
+    ]
+    if has_xml:
+        lines.append("- original/*.xml")
+    if has_pdf:
+        lines.append("- original/*.pdf")
+    lines.extend(
+        [
+            "",
+            "CSV/Excel-Spalten und DATEV-Felder: siehe GET /api/invoices/export/mapping",
+            "und docs/EXPORT_MAPPING.md.",
+            "",
+            DATEV_LIMITATIONS,
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def build_datev_notes() -> str:
+    """German DATEV import notes shipped with every accountant package."""
+    return "\n".join(
+        [
+            "DATEV-Export — Hinweise",
+            "=======================",
+            "",
+            f"Formatversion: {EXPORT_FORMAT_VERSION}",
+            "",
+            DATEV_LIMITATIONS,
+            "",
+            "Technische Form:",
+            "- Trennzeichen: Semikolon",
+            "- Dezimaltrennzeichen: Komma",
+            "- Zeichensatz: Windows-1252 (CP1252)",
+            "- Belegdatum: TTMMJJJJ",
+            "- Umsatz immer positiv; Richtung über Soll (S) / Haben (H)",
+            "",
+            "Enthalten:",
+            "- Eine Buchungszeile über den Bruttobetrag",
+            "- Belegfeld 1 = Rechnungsnummer",
+            "- Buchungstext = Lieferant + Rechnungsnummer",
+            "",
+            "Durch die Kanzlei zu ergänzen:",
+            "- Beraternummer, Mandantennummer, Wirtschaftsjahr",
+            "- Konto und Gegenkonto (Kontenrahmen)",
+            "- BU-Schlüssel, Kostenstellen, Skonto",
+            "- DATEV-EXTF-Kopfzeile, falls der Import sie verlangt",
+            "",
+        ]
+    )
+
+
+def decode_base64_payload(value: str) -> bytes:
+    """Decode raw or data-URL base64 content."""
     raw: str = value.strip()
     if raw.startswith("data:") and "," in raw:
         raw = raw.split(",", 1)[1]
     try:
         return base64.b64decode(raw, validate=False)
     except (binascii.Error, ValueError) as exc:
-        raise ValueError("PDF konnte nicht gelesen werden (ungültiges Base64).") from exc
+        raise ValueError("Datei konnte nicht gelesen werden (ungültiges Base64).") from exc
 
 
-def _package_pdf_member_name(invoice: InvoiceParseResponse, pdf_filename: Optional[str]) -> str:
-    if pdf_filename:
-        base: str = pdf_filename.rsplit("/", 1)[-1].rsplit("\\", 1)[-1]
-        if base.lower().endswith(".pdf"):
-            stem: str = _slug(base[:-4]) or "rechnung"
-            return f"{stem}.pdf"
-    supplier: str = _slug(invoice.seller.name if invoice.seller else None) or "supplier"
-    number: str = _slug(invoice.invoice_number) or "invoice"
-    return f"{supplier}_{number}.pdf"
+def decode_pdf_base64(value: str) -> bytes:
+    """Decode raw or data-URL base64 PDF content."""
+    return decode_base64_payload(value)
+
+
+def assert_xml_bytes(data: bytes) -> None:
+    """Reject payloads that are clearly not XML."""
+    stripped: bytes = data.lstrip(b"\xef\xbb\xbf \t\r\n")
+    if not stripped.startswith(b"<"):
+        raise ValueError("Die angehängte Datei ist kein gültiges XML.")
+
+
+def _extract_xml_from_zugferd(pdf_bytes: bytes) -> Optional[bytes]:
+    try:
+        xml_text: Optional[str] = extract_embedded_xml_from_pdf(pdf_bytes)
+    except Exception:
+        return None
+    if not xml_text:
+        return None
+    encoded: bytes = xml_text.encode("utf-8")
+    try:
+        assert_xml_bytes(encoded)
+    except ValueError:
+        return None
+    return encoded
+
+
+def _assert_source_size(data: Optional[bytes], label: str) -> None:
+    if data is not None and len(data) > MAX_PACKAGE_SOURCE_BYTES:
+        raise ValueError(
+            f"{label} zu groß für das Paket (max. {MAX_PACKAGE_SOURCE_BYTES // (1024 * 1024)} MB)."
+        )
+
+
+def _package_source_member_name(
+    invoice: InvoiceParseResponse,
+    original_filename: Optional[str],
+    extension: str,
+) -> str:
+    stem: str = ""
+    if original_filename:
+        base: str = original_filename.rsplit("/", 1)[-1].rsplit("\\", 1)[-1]
+        dotted: str = f".{extension}"
+        if base.lower().endswith(dotted):
+            stem = safe_filename_stem(base[: -len(dotted)])
+        else:
+            stem = safe_filename_stem(base)
+    if not stem:
+        supplier: str = safe_filename_stem(invoice.seller.name if invoice.seller else None) or "supplier"
+        number: str = safe_filename_stem(invoice.invoice_number) or "invoice"
+        stem = f"{supplier}_{number}"
+    return f"{ORIGINAL_DIR}/{stem}.{extension}"
 
 
 def _validation_engine_line(invoice: InvoiceParseResponse) -> str:
@@ -390,12 +561,25 @@ def _mismatch_summary_line(invoice: InvoiceParseResponse) -> str:
     return "übereinstimmend"
 
 
-def _slug(value: Optional[str]) -> str:
-    if not value:
-        return ""
-    cleaned: str = re.sub(r"[^\w\-]+", "_", value.strip(), flags=re.UNICODE)
-    cleaned = re.sub(r"_+", "_", cleaned).strip("_")
-    return cleaned[:40]
+def _localize_csv_row(row: Dict[str, Any]) -> Dict[str, Any]:
+    localized: Dict[str, Any] = dict(row)
+    for date_field in ("issue_date", "due_date"):
+        localized[date_field] = _de_date(str(row.get(date_field) or "")) or row.get(date_field, "")
+    for amount_field in (
+        "net",
+        "tax",
+        "gross",
+        "line_quantity",
+        "line_unit_price",
+        "line_tax_rate",
+        "line_net_amount",
+    ):
+        raw: Any = row.get(amount_field, "")
+        if raw == "" or raw is None:
+            localized[amount_field] = ""
+        else:
+            localized[amount_field] = str(raw).replace(".", ",")
+    return localized
 
 
 def _num_str(value: Optional[Decimal]) -> str:
@@ -410,11 +594,16 @@ def _de_amount(value: Optional[Decimal]) -> str:
     return f"{value:.2f}".replace(".", ",")
 
 
+def _de_date(iso_date: Optional[str]) -> str:
+    if not iso_date or len(iso_date) < 10:
+        return iso_date or ""
+    return f"{iso_date[8:10]}.{iso_date[5:7]}.{iso_date[0:4]}"
+
+
 def _datev_date(iso_date: Optional[str]) -> str:
-    """DATEV Belegdatum often DDMM (current year implied) or DDMMYYYY — use DDMMYYYY."""
+    """DATEV Belegdatum: DDMMYYYY."""
     if not iso_date or len(iso_date) < 10:
         return ""
-    # YYYY-MM-DD -> DDMMYYYY
     year: str = iso_date[0:4]
     month: str = iso_date[5:7]
     day: str = iso_date[8:10]

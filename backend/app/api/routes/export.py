@@ -13,7 +13,12 @@ from app.schemas.export import (
     ValidationReportRequest,
 )
 from app.schemas.invoice import InvoiceParseResponse, ParseStatus
-from app.services.export_service import ExportService, decode_pdf_base64
+from app.services.export_service import (
+    ExportService,
+    assert_xml_bytes,
+    decode_base64_payload,
+    decode_pdf_base64,
+)
 from app.services.validation_report import (
     build_validation_report,
     build_validation_report_filename,
@@ -82,27 +87,20 @@ def export_validation_report(body: ValidationReportRequest) -> Response:
 @router.post("/export/accountant-package")
 def export_accountant_package(body: AccountantPackageRequest, request: Request) -> Response:
     """
-    ZIP for Steuerberater: summary + Excel + DATEV + optional visual PDF.
+    ZIP for Steuerberater: original XML/PDF + summary + Prüfbericht + Excel + DATEV.
     """
     _assert_exportable(body.invoice)
 
-    pdf_bytes: Optional[bytes] = None
-    if body.pdf_base64:
-        try:
-            pdf_bytes = decode_pdf_base64(body.pdf_base64)
-        except ValueError as exc:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
-        if not pdf_bytes.startswith(b"%PDF"):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Die angehängte Datei ist keine gültige PDF.",
-            )
+    pdf_bytes: Optional[bytes] = _optional_pdf_bytes(body.pdf_base64)
+    xml_bytes: Optional[bytes] = _optional_xml_bytes(body.xml_base64)
 
     try:
         content, media_type, filename = export_service.build_accountant_package(
             invoice=body.invoice,
             pdf_bytes=pdf_bytes,
             pdf_filename=body.pdf_filename,
+            xml_bytes=xml_bytes,
+            xml_filename=body.xml_filename,
         )
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
@@ -126,6 +124,32 @@ def export_accountant_package(body: AccountantPackageRequest, request: Request) 
         "Content-Disposition": f'attachment; filename="{filename}"',
     }
     return Response(content=content, media_type=media_type, headers=headers)
+
+
+def _optional_pdf_bytes(pdf_base64: Optional[str]) -> Optional[bytes]:
+    if not pdf_base64:
+        return None
+    try:
+        pdf_bytes: bytes = decode_pdf_base64(pdf_base64)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    if not pdf_bytes.startswith(b"%PDF"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Die angehängte Datei ist keine gültige PDF.",
+        )
+    return pdf_bytes
+
+
+def _optional_xml_bytes(xml_base64: Optional[str]) -> Optional[bytes]:
+    if not xml_base64:
+        return None
+    try:
+        xml_bytes: bytes = decode_base64_payload(xml_base64)
+        assert_xml_bytes(xml_bytes)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    return xml_bytes
 
 
 def _assert_exportable(invoice: InvoiceParseResponse) -> None:

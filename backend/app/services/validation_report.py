@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import re
 from decimal import Decimal
 from typing import List, Optional
 
@@ -13,6 +12,7 @@ from app.schemas.invoice import (
     ValidationMeta,
     ValidationStatus,
 )
+from app.helper_functions.filenames import safe_filename_stem
 from app.services.invoice_mapper import has_pdf_xml_mismatch
 
 
@@ -111,8 +111,8 @@ def build_validation_report(invoice: InvoiceParseResponse) -> str:
 
 def build_validation_report_filename(invoice: InvoiceParseResponse) -> str:
     """Filename: pruefbericht_supplier_invoiceNo_date.txt"""
-    supplier: str = _slug(invoice.seller.name if invoice.seller else None) or "supplier"
-    number: str = _slug(invoice.invoice_number) or "invoice"
+    supplier: str = safe_filename_stem(invoice.seller.name if invoice.seller else None) or "supplier"
+    number: str = safe_filename_stem(invoice.invoice_number) or "invoice"
     date_part: str = (invoice.issue_date or "nodate").replace("-", "")
     return f"pruefbericht_{supplier}_{number}_{date_part}.txt"
 
@@ -198,11 +198,3 @@ def _de_date(iso_date: Optional[str]) -> str:
     if not iso_date or len(iso_date) < 10:
         return iso_date or "—"
     return f"{iso_date[8:10]}.{iso_date[5:7]}.{iso_date[0:4]}"
-
-
-def _slug(value: Optional[str]) -> str:
-    if not value:
-        return ""
-    cleaned: str = re.sub(r"[^\w\-]+", "_", value.strip(), flags=re.UNICODE)
-    cleaned = re.sub(r"_+", "_", cleaned).strip("_")
-    return cleaned[:40]

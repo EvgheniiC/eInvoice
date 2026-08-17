@@ -5,6 +5,17 @@ from pydantic import BaseModel, Field
 
 from app.schemas.invoice import InvoiceParseResponse
 
+# Frozen accounting export schema. Bump major when columns/semantics break Kanzlei imports.
+EXPORT_FORMAT_VERSION: str = "1.0"
+
+DATEV_LIMITATIONS: str = (
+    "Minimaler DATEV-Buchungsstapel-CSV (Semikolon, deutsche Dezimalzahlen, CP1252). "
+    "Das ist kein DATEVconnect und kein nativer Import in DATEV Unternehmen online. "
+    "Eine Soll-/Haben-Zeile über den Bruttobetrag; Konto, Gegenkonto, Beraternummer "
+    "und Mandant bleiben leer und müssen in der Kanzlei ergänzt werden. "
+    "Vor dem Live-Import in DATEV Kanzlei-Rechnungswesen prüfen."
+)
+
 
 class ExportFormat(str, Enum):
     """Supported accounting export formats."""
@@ -28,16 +39,24 @@ class ValidationReportRequest(BaseModel):
 
 
 class AccountantPackageRequest(BaseModel):
-    """ZIP package for Steuerberater: summary + Excel + DATEV + optional PDF."""
+    """ZIP package for Steuerberater: original + summary + report + Excel + DATEV."""
 
     invoice: InvoiceParseResponse
     pdf_base64: Optional[str] = Field(
         default=None,
-        description="Optional visual PDF (ZUGFeRD original) as base64.",
+        description="Original ZUGFeRD PDF (with embedded XML) as base64.",
     )
     pdf_filename: Optional[str] = Field(
         default=None,
         description="Original PDF filename when pdf_base64 is set.",
+    )
+    xml_base64: Optional[str] = Field(
+        default=None,
+        description="Original XRechnung / extracted invoice XML as base64.",
+    )
+    xml_filename: Optional[str] = Field(
+        default=None,
+        description="Original XML filename when xml_base64 is set.",
     )
 
 
@@ -88,32 +107,66 @@ class ExportMappingDoc(BaseModel):
     """Human-readable mapping description for Steuerberater."""
 
     format: ExportFormat
+    version: str
     description: str
     columns: List[str]
+    encoding: str
+    delimiter: str
+    decimal_separator: str
+    date_format: str
     notes: Optional[str] = None
+    limitations: Optional[str] = None
 
 
 EXPORT_DOCS: List[ExportMappingDoc] = [
     ExportMappingDoc(
         format=ExportFormat.CSV,
-        description="Stable UTF-8 CSV (comma) with one row per line item.",
+        version=EXPORT_FORMAT_VERSION,
+        description=(
+            "Stable UTF-8 CSV for Kanzlei import: one row per line item, "
+            "German locale (semicolon, decimal comma, DD.MM.YYYY)."
+        ),
         columns=EXPORT_COLUMNS,
-        notes="Missing optional fields are empty. Decimals use dot (en-US).",
+        encoding="utf-8-sig",
+        delimiter=";",
+        decimal_separator=",",
+        date_format="DD.MM.YYYY",
+        notes="Missing optional fields are empty. Header names stay stable within this version.",
     ),
     ExportMappingDoc(
         format=ExportFormat.EXCEL,
-        description="XLSX workbook: sheet 'Invoice' = header summary, 'Lines' = positions.",
+        version=EXPORT_FORMAT_VERSION,
+        description=(
+            "XLSX workbook: sheet 'Invoice' = header summary, 'Lines' = positions "
+            "with native numbers, 'Flat' = same columns as CSV."
+        ),
         columns=EXPORT_COLUMNS,
-        notes="Same field mapping as CSV.",
+        encoding="utf-8",
+        delimiter="",
+        decimal_separator=",",
+        date_format="DD.MM.YYYY",
+        notes=(
+            "Invoice sheet includes export_format_version. "
+            "Lines amounts are Excel numbers (displayed per Excel locale)."
+        ),
     ),
     ExportMappingDoc(
         format=ExportFormat.DATEV,
-        description="Minimal DATEV-compatible booking CSV (semicolon, DE decimals, CP1252).",
+        version=EXPORT_FORMAT_VERSION,
+        description=(
+            "DATEV-compatible Buchungsstapel CSV (semicolon, German decimals, CP1252). "
+            "Not DATEVconnect."
+        ),
         columns=DATEV_COLUMNS,
+        encoding="cp1252",
+        delimiter=";",
+        decimal_separator=",",
+        date_format="DDMMYYYY",
         notes=(
-            "One booking line for the gross amount (Soll). "
-            "Konto/Gegenkonto left empty for the accountant to fill. "
+            "One booking line for the gross amount. "
+            "Soll (S) for invoices, Haben (H) for credit notes. "
             "Belegfeld 1 = invoice number; Buchungstext = seller + invoice number."
         ),
+        limitations=DATEV_LIMITATIONS,
     ),
 ]

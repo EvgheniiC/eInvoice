@@ -71,11 +71,16 @@ export async function downloadAccountantPackage(
     invoice: InvoiceParseResponse
     pdf_base64?: string
     pdf_filename?: string
+    xml_base64?: string
+    xml_filename?: string
   } = { invoice }
 
   if (sourceFile && isPdfFile(sourceFile)) {
     body.pdf_base64 = await fileToBase64(sourceFile)
     body.pdf_filename = sourceFile.name
+  } else if (sourceFile && isXmlFile(sourceFile)) {
+    body.xml_base64 = await fileToBase64(sourceFile)
+    body.xml_filename = sourceFile.name
   }
 
   const response: Response = await fetch(`${API_BASE}/invoices/export/accountant-package`, {
@@ -134,6 +139,14 @@ function isPdfFile(file: File): boolean {
     return true
   }
   return file.name.toLowerCase().endsWith('.pdf')
+}
+
+function isXmlFile(file: File): boolean {
+  const name: string = file.name.toLowerCase()
+  if (name.endsWith('.xml')) {
+    return true
+  }
+  return file.type === 'application/xml' || file.type === 'text/xml'
 }
 
 async function fileToBase64(file: File): Promise<string> {

@@ -183,7 +183,7 @@ def build_next_steps(response: InvoiceParseResponse) -> List[str]:
     elif response.totals and response.totals.gross is not None:
         steps.append(
             "Bei Freigabe: Betrag zahlen und „Paket für Steuerberater“ "
-            "(Excel + DATEV + PDF) herunterladen."
+            "(Original + Prüfbericht + Excel + DATEV) herunterladen."
         )
     else:
         steps.append("Daten unvollständig — Export erst nach Klärung der Beträge.")

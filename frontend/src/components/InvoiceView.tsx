@@ -545,8 +545,9 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps): J
           </button>
         </div>
         <p className="export-bar__hint">
-          Paket = Kurzfassung + Prüfbericht + Excel + DATEV
-          {invoice.file_type === 'zugferd_pdf' ? ' + visuelle PDF' : ''}. Der Prüfbericht ist für
+          Paket = Originaldatei + Kurzfassung + Prüfbericht + Excel + DATEV-CSV
+          {invoice.file_type === 'zugferd_pdf' ? ' (ZUGFeRD-PDF mit eingebettetem XML)' : ''}.
+          DATEV-CSV ist ein Buchungsvorschlag, kein DATEVconnect. Der Prüfbericht ist für
           Lieferanten oder Steuerberater.
         </p>
         {exportError && <p className="status status--error">{exportError}</p>}
