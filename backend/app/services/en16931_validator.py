@@ -1,11 +1,10 @@
 import logging
-import re
 import subprocess
 import tempfile
 from dataclasses import dataclass, field
 from decimal import Decimal
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Set
 from xml.etree.ElementTree import ParseError as EtParseError
 
 from app.core.config import settings
@@ -16,6 +15,24 @@ from app.schemas.invoice import (
     ValidationIssue,
     ValidationStatus,
 )
+from app.services.kosit_report import (
+    KositReport,
+    engine_version_from_jar,
+    find_kosit_report,
+    parse_kosit_report,
+    read_scenarios_label,
+)
+from app.services.validation_messages import enrich_issue
+from app.services.validation_profile import InvoiceProfile, extract_invoice_profile
+
+_UNAVAILABLE_CODES: Set[str] = {
+    "KOSIT_NOT_CONFIGURED",
+    "KOSIT_REQUIRED_UNAVAILABLE",
+    "KOSIT_PATH_INVALID",
+    "JAVA_NOT_FOUND",
+    "KOSIT_TIMEOUT",
+    "KOSIT_ERROR",
+}
 
 
 @dataclass
@@ -25,6 +42,22 @@ class ValidationResult:
     status: ValidationStatus
     issues: List[ValidationIssue] = field(default_factory=list)
     engine: str = "business_rules"
+    engine_version: Optional[str] = None
+    scenarios_version: Optional[str] = None
+    standard_version: Optional[str] = None
+    profile: Optional[str] = None
+    profile_id: Optional[str] = None
+    full_check_completed: bool = False
+
+
+@dataclass
+class KositRunResult:
+    """Result of an optional/required KoSIT CLI invocation."""
+
+    completed: bool
+    issues: List[ValidationIssue]
+    engine_version: Optional[str] = None
+    scenarios_version: Optional[str] = None
 
 
 def validate_invoice(
@@ -34,46 +67,48 @@ def validate_invoice(
     request_id: Optional[str] = None,
 ) -> ValidationResult:
     """
-    Validate invoice XML against business rules and optionally KoSIT.
+    Validate invoice XML against business rules and KoSIT when configured.
 
-    Full Schematron/XRechnung CIUS rules require the official KoSIT validator.
-    Without it we still run structural + semantic business checks and label them clearly.
+    Production always requires the official KoSIT validator. Without a completed
+    KoSIT run the status never becomes VALID.
     """
     issues: List[ValidationIssue] = []
+    profile: InvoiceProfile = extract_invoice_profile(xml_text)
     issues.extend(_check_well_formed_xml(xml_text))
-    issues.extend(_check_profile_hint(xml_text))
-    issues.extend(_check_required_business_fields(parsed))
-    issues.extend(_check_amount_consistency(parsed))
-
-    kosit_issues: List[ValidationIssue] = _run_kosit_if_configured(
-        xml_text,
-        request_id=request_id,
-    )
-    kosit_completed: bool = any(
-        issue.code in {"KOSIT_OK", "KOSIT_FAILED"} for issue in kosit_issues
-    )
-    if kosit_issues:
-        issues.extend(kosit_issues)
-    if not settings.kosit_validator_jar or not settings.kosit_scenarios_xml:
+    if not profile.profile_id:
         issues.append(
             ValidationIssue(
-                level="info",
-                category="info",
-                code="KOSIT_NOT_CONFIGURED",
+                level="warning",
+                category="business",
+                code="PROFILE_UNKNOWN",
                 message=(
-                    "Vollständige EN 16931 / XRechnung-Schematron-Prüfung (KoSIT) ist nicht "
-                    "konfiguriert. Geprüft wurden Struktur und fachliche Pflichtfelder. "
-                    "Kein Nachweis für Vorsteuerabzug."
+                    "Kein EN-16931-/XRechnung-/ZUGFeRD-Profilkennzeichen gefunden. "
+                    "Bitte prüfen, ob die Datei dem Standard entspricht."
                 ),
             )
         )
+    issues.extend(_check_required_business_fields(parsed))
+    issues.extend(_check_amount_consistency(parsed))
 
-    engine: str = "kosit" if kosit_completed else "business_rules"
+    kosit: KositRunResult = _run_kosit(xml_text, request_id=request_id)
+    issues.extend(kosit.issues)
+
+    enriched: List[ValidationIssue] = [enrich_issue(issue) for issue in issues]
     status: ValidationStatus = _status_from_issues(
-        issues,
-        full_validation_completed=kosit_completed,
+        enriched,
+        full_validation_completed=kosit.completed,
     )
-    return ValidationResult(status=status, issues=issues, engine=engine)
+    return ValidationResult(
+        status=status,
+        issues=enriched,
+        engine="kosit" if kosit.completed else "business_rules",
+        engine_version=kosit.engine_version,
+        scenarios_version=kosit.scenarios_version,
+        standard_version=profile.standard_version,
+        profile=profile.profile,
+        profile_id=profile.profile_id,
+        full_check_completed=kosit.completed,
+    )
 
 
 def _check_well_formed_xml(xml_text: str) -> List[ValidationIssue]:
@@ -98,29 +133,6 @@ def _check_well_formed_xml(xml_text: str) -> List[ValidationIssue]:
                 message=f"XML ist nicht wohlgeformt: {exc}",
             )
         ]
-
-
-def _check_profile_hint(xml_text: str) -> List[ValidationIssue]:
-    """Detect EN 16931 / XRechnung / ZUGFeRD profile identifiers when present."""
-    issues: List[ValidationIssue] = []
-    lowered: str = xml_text.lower()
-    has_en16931: bool = "en16931" in lowered or "en 16931" in lowered
-    has_xrechnung: bool = "xrechnung" in lowered
-    has_zugferd: bool = "zugferd" in lowered or "factur-x" in lowered or "facturx" in lowered
-
-    if not (has_en16931 or has_xrechnung or has_zugferd):
-        issues.append(
-            ValidationIssue(
-                level="warning",
-                category="business",
-                code="PROFILE_UNKNOWN",
-                message=(
-                    "Kein EN-16931-/XRechnung-/ZUGFeRD-Profilkennzeichen gefunden. "
-                    "Bitte prüfen, ob die Datei dem Standard entspricht."
-                ),
-            )
-        )
-    return issues
 
 
 def _check_required_business_fields(parsed: InvoiceParseResponse) -> List[ValidationIssue]:
@@ -207,7 +219,7 @@ def _check_amount_consistency(parsed: InvoiceParseResponse) -> List[ValidationIs
         if abs(expected - gross.quantize(Decimal("0.01"))) > Decimal("0.05"):
             issues.append(
                 ValidationIssue(
-                    level="warning",
+                    level="error",
                     category="business",
                     code="AMOUNT_INCONSISTENT",
                     message=(
@@ -240,142 +252,245 @@ def _check_amount_consistency(parsed: InvoiceParseResponse) -> List[ValidationIs
                 ),
             )
         )
+
+    breakdown_amounts: List[Decimal] = [
+        item.amount for item in parsed.totals.tax_breakdown if item.amount is not None
+    ]
+    if breakdown_amounts and tax is not None:
+        breakdown_sum: Decimal = sum(breakdown_amounts, Decimal("0")).quantize(Decimal("0.01"))
+        if abs(breakdown_sum - tax.quantize(Decimal("0.01"))) > Decimal("0.05"):
+            issues.append(
+                ValidationIssue(
+                    level="warning",
+                    category="business",
+                    code="TAX_BREAKDOWN_MISMATCH",
+                    message=(
+                        f"Summe der MwSt-Zeilen ({breakdown_sum}) weicht vom "
+                        f"MwSt-Betrag ({tax}) ab."
+                    ),
+                )
+            )
     return issues
 
 
-def _run_kosit_if_configured(
+def _run_kosit(
     xml_text: str,
     *,
     request_id: Optional[str] = None,
-) -> List[ValidationIssue]:
+) -> KositRunResult:
     """
-    Optionally invoke official KoSIT validator via Java CLI.
+    Invoke official KoSIT validator via Java CLI when configured.
 
-    Requires settings.kosit_validator_jar and settings.kosit_scenarios_xml.
-    Never logs invoice XML contents.
+    Never logs invoice XML contents or report payloads.
     """
-    jar: Optional[str] = settings.kosit_validator_jar
-    scenarios: Optional[str] = settings.kosit_scenarios_xml
-    if not jar or not scenarios:
-        return []
+    scenarios_label: Optional[str] = read_scenarios_label(settings.kosit_scenarios_xml)
+    jar_version: Optional[str] = engine_version_from_jar(settings.kosit_validator_jar)
+
+    if not settings.kosit_validator_jar or not settings.kosit_scenarios_xml:
+        return KositRunResult(
+            completed=False,
+            issues=_unavailable_issues(configured=False),
+            engine_version=jar_version,
+            scenarios_version=scenarios_label,
+        )
+
+    jar: str = settings.kosit_validator_jar
+    scenarios: str = settings.kosit_scenarios_xml
     if not Path(jar).is_file() or not Path(scenarios).is_file():
         log_event(
             logging.WARNING,
             "kosit_path_invalid",
             fields={"request_id": request_id},
         )
-        return [
-            ValidationIssue(
-                level="warning",
-                category="info",
-                code="KOSIT_PATH_INVALID",
-                message="KoSIT-Pfade sind gesetzt, aber JAR/Szenarien-Datei nicht gefunden.",
-            )
-        ]
+        return KositRunResult(
+            completed=False,
+            issues=_unavailable_issues(configured=True, path_invalid=True),
+            engine_version=jar_version,
+            scenarios_version=scenarios_label,
+        )
 
-    tmp_xml: Optional[Path] = None
     try:
-        with tempfile.NamedTemporaryFile(suffix=".xml", delete=False, mode="w", encoding="utf-8") as handle:
-            handle.write(xml_text)
-            tmp_xml = Path(handle.name)
-
-        command: List[str] = [
-            settings.kosit_java_bin,
-            "-jar",
-            jar,
-            "-s",
-            scenarios,
-            "-o",
-            str(tmp_xml.parent),
-            str(tmp_xml),
-        ]
-        completed: subprocess.CompletedProcess[str] = subprocess.run(
-            command,
-            capture_output=True,
-            text=True,
-            timeout=settings.kosit_timeout_seconds,
-            check=False,
-        )
-        combined: str = f"{completed.stdout}\n{completed.stderr}"
-        if completed.returncode == 0:
-            return [
-                ValidationIssue(
-                    level="info",
-                    category="schema",
-                    code="KOSIT_OK",
-                    message="KoSIT-Validator: Rechnung akzeptiert (Schematron/Schema).",
-                )
+        with tempfile.TemporaryDirectory(prefix="kosit_") as tmp_dir:
+            xml_path: Path = Path(tmp_dir) / "invoice.xml"
+            xml_path.write_text(xml_text, encoding="utf-8")
+            command: List[str] = [
+                settings.kosit_java_bin,
+                "-jar",
+                jar,
+                "-s",
+                scenarios,
+                "-o",
+                tmp_dir,
+                str(xml_path),
             ]
-
-        detail: str = _extract_kosit_message(combined) or "KoSIT meldet Validierungsfehler."
-        log_event(
-            logging.WARNING,
-            "kosit_failed",
-            fields={"request_id": request_id, "detail": detail},
-        )
-        return [
-            ValidationIssue(
-                level="error",
-                category="schema",
-                code="KOSIT_FAILED",
-                message=f"KoSIT-Validator: {detail}",
+            completed: subprocess.CompletedProcess[str] = subprocess.run(
+                command,
+                capture_output=True,
+                text=True,
+                timeout=settings.kosit_timeout_seconds,
+                check=False,
             )
-        ]
+            report_path: Optional[Path] = find_kosit_report(Path(tmp_dir))
+            report: Optional[KositReport] = None
+            if report_path is not None:
+                report = parse_kosit_report(report_path.read_text(encoding="utf-8"))
+
+            engine_version: Optional[str] = (
+                report.engine_version if report is not None else None
+            ) or jar_version
+            scenarios_version: Optional[str] = (
+                report.scenario_name if report is not None else None
+            ) or scenarios_label
+
+            issues: List[ValidationIssue] = []
+            if report is not None:
+                issues.extend(report.issues)
+
+            if completed.returncode == 0:
+                if not any(issue.code == "KOSIT_OK" for issue in issues):
+                    issues.append(
+                        ValidationIssue(
+                            level="info",
+                            category="schema",
+                            code="KOSIT_OK",
+                            message="KoSIT-Validator: Rechnung akzeptiert (Schematron/Schema).",
+                        )
+                    )
+                return KositRunResult(
+                    completed=True,
+                    issues=issues,
+                    engine_version=engine_version,
+                    scenarios_version=scenarios_version,
+                )
+
+            log_event(
+                logging.WARNING,
+                "kosit_failed",
+                fields={
+                    "request_id": request_id,
+                    "returncode": completed.returncode,
+                    "issue_count": len(issues),
+                },
+            )
+            if not issues:
+                issues.append(
+                    ValidationIssue(
+                        level="error",
+                        category="schema",
+                        code="KOSIT_FAILED",
+                        message="KoSIT-Validator: Rechnung entspricht nicht den Prüfregeln.",
+                    )
+                )
+            return KositRunResult(
+                completed=True,
+                issues=issues,
+                engine_version=engine_version,
+                scenarios_version=scenarios_version,
+            )
     except FileNotFoundError:
         log_event(
             logging.ERROR,
             "kosit_java_missing",
-            fields={"request_id": request_id, "java_bin": settings.kosit_java_bin},
+            fields={"request_id": request_id},
         )
-        return [
-            ValidationIssue(
-                level="warning",
-                category="info",
-                code="JAVA_NOT_FOUND",
-                message=f"Java-Binary nicht gefunden ({settings.kosit_java_bin}).",
-            )
-        ]
+        return KositRunResult(
+            completed=False,
+            issues=[
+                ValidationIssue(
+                    level="warning",
+                    category="info",
+                    code="JAVA_NOT_FOUND",
+                    message="Java-Binary nicht gefunden. KoSIT-Prüfung nicht ausgeführt.",
+                ),
+                *_required_unavailable_issue(),
+            ],
+            engine_version=jar_version,
+            scenarios_version=scenarios_label,
+        )
     except subprocess.TimeoutExpired:
         log_timeout(
             component="kosit",
             request_id=request_id,
             timeout_seconds=settings.kosit_timeout_seconds,
         )
-        return [
-            ValidationIssue(
-                level="warning",
-                category="info",
-                code="KOSIT_TIMEOUT",
-                message="KoSIT-Validator-Timeout.",
-            )
-        ]
-    except Exception as exc:
+        return KositRunResult(
+            completed=False,
+            issues=[
+                ValidationIssue(
+                    level="warning",
+                    category="info",
+                    code="KOSIT_TIMEOUT",
+                    message="KoSIT-Validator-Timeout. Vollständige Prüfung nicht abgeschlossen.",
+                ),
+                *_required_unavailable_issue(),
+            ],
+            engine_version=jar_version,
+            scenarios_version=scenarios_label,
+        )
+    except Exception:
         log_event(
             logging.ERROR,
             "kosit_error",
-            fields={"request_id": request_id, "exc_type": type(exc).__name__},
+            fields={"request_id": request_id, "exc_type": "Exception"},
         )
-        return [
+        return KositRunResult(
+            completed=False,
+            issues=[
+                ValidationIssue(
+                    level="warning",
+                    category="info",
+                    code="KOSIT_ERROR",
+                    message="KoSIT konnte nicht ausgeführt werden.",
+                ),
+                *_required_unavailable_issue(),
+            ],
+            engine_version=jar_version,
+            scenarios_version=scenarios_label,
+        )
+
+
+def _unavailable_issues(*, configured: bool, path_invalid: bool = False) -> List[ValidationIssue]:
+    issues: List[ValidationIssue] = []
+    if path_invalid:
+        issues.append(
             ValidationIssue(
                 level="warning",
                 category="info",
-                code="KOSIT_ERROR",
-                message="KoSIT konnte nicht ausgeführt werden.",
+                code="KOSIT_PATH_INVALID",
+                message="KoSIT-Pfade sind gesetzt, aber JAR/Szenarien-Datei nicht gefunden.",
             )
-        ]
-    finally:
-        if tmp_xml is not None:
-            tmp_xml.unlink(missing_ok=True)
+        )
+    elif not configured:
+        issues.append(
+            ValidationIssue(
+                level="info",
+                category="info",
+                code="KOSIT_NOT_CONFIGURED",
+                message=(
+                    "Vollständige EN 16931 / XRechnung-Schematron-Prüfung (KoSIT) ist nicht "
+                    "konfiguriert. Geprüft wurden Struktur und fachliche Pflichtfelder. "
+                    "Kein Nachweis für Vorsteuerabzug."
+                ),
+            )
+        )
+    issues.extend(_required_unavailable_issue())
+    return issues
 
 
-def _extract_kosit_message(output: str) -> Optional[str]:
-    lines: List[str] = [line.strip() for line in output.splitlines() if line.strip()]
-    for line in lines:
-        if re.search(r"error|fehler|failed|invalid", line, re.IGNORECASE):
-            return line[:400]
-    if lines:
-        return lines[-1][:400]
-    return None
+def _required_unavailable_issue() -> List[ValidationIssue]:
+    if not settings.require_kosit:
+        return []
+    return [
+        ValidationIssue(
+            level="warning",
+            category="info",
+            code="KOSIT_REQUIRED_UNAVAILABLE",
+            message=(
+                "In dieser Umgebung ist die volle EN-16931-/XRechnung-Prüfung mit KoSIT "
+                "Pflicht, steht aber nicht zur Verfügung. Das Ergebnis gilt nicht als gültig."
+            ),
+        )
+    ]
 
 
 def _status_from_issues(
@@ -383,7 +498,9 @@ def _status_from_issues(
     *,
     full_validation_completed: bool,
 ) -> ValidationStatus:
-    has_error: bool = any(issue.level == "error" for issue in issues)
+    has_error: bool = any(
+        issue.level == "error" and issue.code not in _UNAVAILABLE_CODES for issue in issues
+    )
     has_warning: bool = any(issue.level == "warning" for issue in issues)
     if has_error:
         return ValidationStatus.INVALID

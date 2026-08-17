@@ -41,6 +41,19 @@ export interface ValidationIssue {
   category: string
   code: string | null
   message: string
+  explanation: string | null
+  bt_code: string | null
+  field: string | null
+}
+
+export interface ValidationMeta {
+  standard_version: string | null
+  profile: string | null
+  profile_id: string | null
+  engine: string
+  engine_version: string | null
+  scenarios_version: string | null
+  full_check_completed: boolean
 }
 
 export interface MismatchField {
@@ -66,6 +79,7 @@ export interface InvoiceParseResponse {
   line_items: LineItem[]
   payment_reference: string | null
   validation_status: ValidationStatus
+  validation_meta: ValidationMeta
   validation_issues: ValidationIssue[]
   mismatch_warnings: string[]
   mismatch_fields: MismatchField[]

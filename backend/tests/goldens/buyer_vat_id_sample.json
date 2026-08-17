@@ -73,7 +73,7 @@
     {
       "category": "business",
       "code": "AMOUNT_INCONSISTENT",
-      "level": "warning"
+      "level": "error"
     },
     {
       "category": "business",
@@ -81,5 +81,5 @@
       "level": "warning"
     }
   ],
-  "validation_status": "not_checked"
+  "validation_status": "invalid"
 }

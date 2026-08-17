@@ -21,7 +21,10 @@ uvicorn app.main:app --reload --port 8000
 - `app/helper_functions` — shared XML helpers + config JSON
 - `app/data_class` — internal domain models
 
-## Golden-file tests
+## Validation
+
+Official KoSIT EN 16931 / XRechnung checks are required in production.
+See [docs/VALIDATION.md](../docs/VALIDATION.md).
 
 Regression snapshots for `parse_upload` live in `tests/goldens/` (JSON).
 Invoice fixture bytes stay local under `tests/xml_files/` and `tests/pdf_files/`.

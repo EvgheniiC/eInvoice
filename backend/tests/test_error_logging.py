@@ -84,6 +84,10 @@ class TestApiErrorHandlers(unittest.TestCase):
         response = client.get("/api/health")
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.headers.get("X-Request-ID"))
+        payload: dict[str, object] = response.json()
+        self.assertIn(payload["status"], {"ok", "degraded"})
+        self.assertIn("kosit_ready", payload)
+        self.assertIn("kosit_required", payload)
 
     def test_unhandled_exception_returns_500_and_logs(self) -> None:
         app = create_app()

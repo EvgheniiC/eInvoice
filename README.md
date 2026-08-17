@@ -64,15 +64,18 @@ uvicorn app.main:app --reload --port 8000
 
 API docs: http://127.0.0.1:8000/docs
 
-Optional full XRechnung Schematron (KoSIT) — set in `backend/.env`:
+Optional full XRechnung Schematron (KoSIT). In **production** this is required
+(`ENVIRONMENT=production`). Set in `backend/.env`:
 
 ```
+ENVIRONMENT=production
 KOSIT_VALIDATOR_JAR=C:\path\to\validationtool.jar
 KOSIT_SCENARIOS_XML=C:\path\to\scenarios.xml
 KOSIT_JAVA_BIN=java
 ```
 
-Without KoSIT the API still runs structural/business checks and labels them clearly.
+Without KoSIT the API still runs structural/business checks. It never reports
+the invoice as valid until a KoSIT run completes. See [docs/VALIDATION.md](docs/VALIDATION.md).
 
 Logging (no invoice bodies): set `LOG_LEVEL=INFO` (default). On production, errors go to journald:
 

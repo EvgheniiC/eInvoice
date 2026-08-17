@@ -3,7 +3,7 @@ import { parseInvoice } from '../api/client'
 import { FileUpload } from '../components/FileUpload'
 import { InvoiceView } from '../components/InvoiceView'
 import { PdfPreview } from '../components/PdfPreview'
-import type { InvoiceParseResponse } from '../types/invoice'
+import type { InvoiceParseResponse, ValidationIssue } from '../types/invoice'
 
 const NETWORK_ERROR_MESSAGE: string =
   'Der Dienst ist momentan nicht erreichbar. Bitte prüfen Sie Ihre Verbindung und versuchen Sie es erneut.'
@@ -113,7 +113,7 @@ export function UploadPage({ onNavigateHome }: UploadPageProps): JSX.Element {
           <p>
             <strong>{result.message}</strong>
           </p>
-          {result.validation_issues.map((issue, index: number) => (
+          {result.validation_issues.map((issue: ValidationIssue, index: number) => (
             <p key={`${issue.code ?? 'err'}-${index}`}>{issue.message}</p>
           ))}
           {result.next_steps.length > 0 && (

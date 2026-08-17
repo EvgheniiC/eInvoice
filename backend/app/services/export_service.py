@@ -11,7 +11,7 @@ from openpyxl import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
 
 from app.schemas.export import DATEV_COLUMNS, EXPORT_COLUMNS, ExportFormat
-from app.schemas.invoice import InvoiceParseResponse, LineItem, MismatchField
+from app.schemas.invoice import InvoiceParseResponse, LineItem, MismatchField, ValidationMeta
 
 MAX_PACKAGE_PDF_BYTES: int = 12 * 1024 * 1024
 
@@ -301,6 +301,9 @@ def build_package_summary(invoice: InvoiceParseResponse) -> str:
         "",
         f"Parse-Status: {invoice.status.value}",
         f"Prüfung: {invoice.validation_status.value}",
+        f"Standard: {invoice.validation_meta.standard_version or '—'}",
+        f"Profil: {invoice.validation_meta.profile or '—'}",
+        f"Prüfengine: {_validation_engine_line(invoice)}",
         f"PDF↔XML: {mismatch_line}",
         "",
         "Inhalt dieses ZIP:",
@@ -321,7 +324,10 @@ def build_package_summary(invoice: InvoiceParseResponse) -> str:
     if invoice.validation_issues:
         lines.extend(["", "Prüfungshinweise:"])
         for issue in invoice.validation_issues[:20]:
-            lines.append(f"- [{issue.level}/{issue.category}] {issue.message}")
+            bt: str = f" {issue.bt_code}" if issue.bt_code else ""
+            lines.append(f"- [{issue.level}/{issue.category}{bt}] {issue.message}")
+            if issue.explanation:
+                lines.append(f"  {issue.explanation}")
 
     if invoice.next_steps:
         lines.extend(["", "Empfohlene nächste Schritte:"])
@@ -352,6 +358,15 @@ def _package_pdf_member_name(invoice: InvoiceParseResponse, pdf_filename: Option
     supplier: str = _slug(invoice.seller.name if invoice.seller else None) or "supplier"
     number: str = _slug(invoice.invoice_number) or "invoice"
     return f"{supplier}_{number}.pdf"
+
+
+def _validation_engine_line(invoice: InvoiceParseResponse) -> str:
+    meta: ValidationMeta = invoice.validation_meta
+    if meta.engine == "kosit":
+        version: str = f" {meta.engine_version}" if meta.engine_version else ""
+        scenarios: str = f" · {meta.scenarios_version}" if meta.scenarios_version else ""
+        return f"KoSIT Validator{version}{scenarios}"
+    return "interne Geschäftsregeln (keine volle KoSIT-Prüfung)"
 
 
 def _mismatch_summary_line(invoice: InvoiceParseResponse) -> str:

@@ -18,10 +18,12 @@ from app.schemas.invoice import (
     InvoiceParseResponse,
     ParseStatus,
     ValidationIssue,
+    ValidationMeta,
     ValidationStatus,
 )
 from app.services.en16931_validator import ValidationResult, validate_invoice
 from app.services.invoice_mapper import build_next_steps, map_to_parse_response
+from app.services.validation_messages import enrich_issue
 from app.services.logger_adapter import ServiceLogger
 from app.services.pdf_xml_extractor import extract_embedded_xml_from_pdf
 from app.services.zugferd_consistency import compare_pdf_with_xml
@@ -211,6 +213,9 @@ class InvoiceService:
                 request_id=request_id,
                 level=logging.ERROR,
             )
+            response.validation_issues = [
+                enrich_issue(issue) for issue in response.validation_issues
+            ]
             response.next_steps = build_next_steps(response)
             return response
 
@@ -220,6 +225,15 @@ class InvoiceService:
             request_id=request_id,
         )
         response.validation_status = validation.status
+        response.validation_meta = ValidationMeta(
+            standard_version=validation.standard_version,
+            profile=validation.profile,
+            profile_id=validation.profile_id,
+            engine=validation.engine,
+            engine_version=validation.engine_version,
+            scenarios_version=validation.scenarios_version,
+            full_check_completed=validation.full_check_completed,
+        )
         response.validation_issues.extend(validation.issues)
 
         if file_type == "zugferd_pdf":
@@ -234,6 +248,9 @@ class InvoiceService:
                 if response.validation_status == ValidationStatus.VALID:
                     response.validation_status = ValidationStatus.WARNING
 
+        response.validation_issues = [
+            enrich_issue(issue) for issue in response.validation_issues
+        ]
         response = self._refresh_status_message(response)
         response.next_steps = build_next_steps(response)
         return response
@@ -369,11 +386,13 @@ class InvoiceService:
             file_type=file_type,
             validation_status=ValidationStatus.INVALID,
             validation_issues=[
-                ValidationIssue(
-                    level="error",
-                    category="schema",
-                    code=code,
-                    message=issue_message,
+                enrich_issue(
+                    ValidationIssue(
+                        level="error",
+                        category="schema",
+                        code=code,
+                        message=issue_message,
+                    )
                 )
             ],
         )

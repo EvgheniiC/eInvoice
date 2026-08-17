@@ -74,6 +74,30 @@ class ValidationIssue(BaseModel):
     )
     code: Optional[str] = None
     message: str
+    explanation: Optional[str] = Field(
+        default=None,
+        description="Plain-language explanation of the issue and next action.",
+    )
+    bt_code: Optional[str] = Field(
+        default=None,
+        description="EN 16931 BT/BG identifier when known, e.g. BT-1.",
+    )
+    field: Optional[str] = Field(
+        default=None,
+        description="Parsed invoice field related to the issue, e.g. invoice_number.",
+    )
+
+
+class ValidationMeta(BaseModel):
+    """Standard, profile, and engine information for the validation pass."""
+
+    standard_version: Optional[str] = None
+    profile: Optional[str] = None
+    profile_id: Optional[str] = None
+    engine: str = "business_rules"
+    engine_version: Optional[str] = None
+    scenarios_version: Optional[str] = None
+    full_check_completed: bool = False
 
 
 class MismatchField(BaseModel):
@@ -106,6 +130,7 @@ class InvoiceParseResponse(BaseModel):
     line_items: List[LineItem] = Field(default_factory=list)
     payment_reference: Optional[str] = None
     validation_status: ValidationStatus = ValidationStatus.NOT_CHECKED
+    validation_meta: ValidationMeta = Field(default_factory=ValidationMeta)
     validation_issues: List[ValidationIssue] = Field(default_factory=list)
     mismatch_warnings: List[str] = Field(default_factory=list)
     mismatch_fields: List[MismatchField] = Field(default_factory=list)

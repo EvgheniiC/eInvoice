@@ -582,11 +582,6 @@
   max-width: 18rem;
 }
 
-.invoice__issues {
-  margin: 1.25rem 0 0;
-  padding-left: 1.1rem;
-}
-
 .issue--warning {
   color: #7a5a12;
 }
@@ -624,6 +619,11 @@
 .banner--match {
   background: #e8f0ec;
   color: #1f5a3d;
+}
+
+.banner--warn {
+  background: #f3ead4;
+  color: #6b4d0d;
 }
 
 .field--mismatch,
@@ -667,6 +667,65 @@
 .issue__cat {
   color: #5c6770;
   font-size: 0.8rem;
+}
+
+.validation-meta {
+  margin: 0 0 1rem;
+  display: grid;
+  gap: 0.35rem 1rem;
+  font-size: 0.9rem;
+}
+
+@media (min-width: 640px) {
+  .validation-meta {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.validation-meta dt {
+  color: #5c6770;
+  font-size: 0.8rem;
+}
+
+.validation-meta dd {
+  margin: 0.1rem 0 0;
+}
+
+.invoice__issues {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.issue {
+  margin: 0 0 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
+  background: #f6f8f7;
+}
+
+.issue__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.25rem;
+}
+
+.issue__bt,
+.issue__code {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.issue__message,
+.issue__explain {
+  margin: 0.2rem 0 0;
+}
+
+.issue__explain {
+  color: #5c6770;
+  font-size: 0.9rem;
 }
 
 .next-steps ol {

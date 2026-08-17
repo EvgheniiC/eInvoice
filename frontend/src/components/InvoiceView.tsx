@@ -9,6 +9,7 @@ import type {
   PartyInfo,
   TaxBreakdown,
   ValidationIssue,
+  ValidationMeta,
   ValidationStatus,
 } from '../types/invoice'
 
@@ -104,6 +105,54 @@ function outcomeDescription(outcome: UserOutcome): string {
   }
 }
 
+interface IssueGroup {
+  id: string
+  title: string
+  issues: ValidationIssue[]
+}
+
+function groupedIssues(issues: ValidationIssue[]): IssueGroup[] {
+  const visible: ValidationIssue[] = issues.filter(
+    (issue: ValidationIssue): boolean => issue.category !== 'mismatch',
+  )
+  const groups: IssueGroup[] = [
+    {
+      id: 'schema',
+      title: 'Schemafehler',
+      issues: visible.filter(
+        (issue: ValidationIssue): boolean => issue.category === 'schema' && issue.level === 'error',
+      ),
+    },
+    {
+      id: 'business',
+      title: 'Geschäftsregeln',
+      issues: visible.filter(
+        (issue: ValidationIssue): boolean => issue.category === 'business' && issue.level === 'error',
+      ),
+    },
+    {
+      id: 'warning',
+      title: 'Warnungen',
+      issues: visible.filter((issue: ValidationIssue): boolean => issue.level === 'warning'),
+    },
+    {
+      id: 'info',
+      title: 'Hinweise',
+      issues: visible.filter((issue: ValidationIssue): boolean => issue.level === 'info'),
+    },
+  ]
+  return groups.filter((group: IssueGroup): boolean => group.issues.length > 0)
+}
+
+function engineLabel(meta: ValidationMeta): string {
+  if (meta.engine === 'kosit') {
+    const version: string = meta.engine_version ? ` ${meta.engine_version}` : ''
+    const scenarios: string = meta.scenarios_version ? ` · ${meta.scenarios_version}` : ''
+    return `KoSIT Validator${version}${scenarios}`
+  }
+  return 'Interne Geschäftsregeln (keine volle KoSIT-Prüfung)'
+}
+
 function PartyBlock({ title, party }: { title: string; party: PartyInfo | null }) {
   if (!party || (!party.name && !party.address && !party.vat_id && !party.iban)) {
     return null
@@ -134,6 +183,7 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps) {
     invoice.file_type === 'zugferd_pdf' &&
     invoice.mismatch_fields.length > 0 &&
     !hasMismatch
+  const issueGroups: IssueGroup[] = groupedIssues(invoice.validation_issues)
 
   async function handleExport(format: ExportFormat): Promise<void> {
     setExportError(null)
@@ -177,6 +227,21 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps) {
           </span>
         </div>
       </div>
+
+      <dl className="validation-meta">
+        <div>
+          <dt>Standard</dt>
+          <dd>{invoice.validation_meta.standard_version ?? '—'}</dd>
+        </div>
+        <div>
+          <dt>Profil</dt>
+          <dd>{invoice.validation_meta.profile ?? '—'}</dd>
+        </div>
+        <div>
+          <dt>Prüfengine</dt>
+          <dd>{engineLabel(invoice.validation_meta)}</dd>
+        </div>
+      </dl>
 
       <p className="invoice__message">{invoice.message}</p>
 
@@ -224,6 +289,14 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps) {
         <div className="banner banner--match" role="status">
           <strong>PDF und XML stimmen überein</strong>
           <p>Geprüfte Felder: Nummer, Datum, Brutto, MwSt, IBAN.</p>
+        </div>
+      )}
+      {!invoice.validation_meta.full_check_completed && invoice.status !== 'error' && (
+        <div className="banner banner--warn" role="status">
+          <strong>Keine volle KoSIT-Prüfung</strong>
+          <p>
+            Geprüft wurden Pflichtfelder und Summen. Das ist kein EN-16931-/XRechnung-Nachweis.
+          </p>
         </div>
       )}
 
@@ -363,21 +436,29 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps) {
         </div>
       )}
 
-      {invoice.validation_issues.length > 0 && (
-        <div className="invoice__issues-wrap">
-          <h3>Prüfungshinweise</h3>
+      {issueGroups.map((group: IssueGroup) => (
+        <div key={group.id} className="invoice__issues-wrap">
+          <h3>{group.title}</h3>
           <ul className="invoice__issues">
-            {invoice.validation_issues.map((issue: ValidationIssue, index: number) => (
+            {group.issues.map((issue: ValidationIssue, index: number) => (
               <li
                 key={`${issue.code ?? 'issue'}-${index}`}
                 className={`issue issue--${issue.level}`}
               >
-                <span className="issue__cat">[{issue.category}]</span> {issue.message}
+                <div className="issue__head">
+                  <span className="issue__cat">[{issue.category}]</span>
+                  {issue.bt_code && <span className="issue__bt">{issue.bt_code}</span>}
+                  {issue.code && <span className="issue__code">{issue.code}</span>}
+                </div>
+                <p className="issue__message">{issue.message}</p>
+                {issue.explanation && issue.explanation !== issue.message && (
+                  <p className="issue__explain">{issue.explanation}</p>
+                )}
               </li>
             ))}
           </ul>
         </div>
-      )}
+      ))}
 
       {invoice.next_steps.length > 0 && (
         <div className="next-steps">

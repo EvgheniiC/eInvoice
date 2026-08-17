@@ -17,6 +17,8 @@ from app.core.middleware import RequestObservabilityMiddleware, get_request_id
 def create_app() -> FastAPI:
     """Application factory for the eInvoice FastAPI backend."""
     configure_logging(settings.log_level)
+    if settings.require_kosit and not settings.kosit_ready:
+        logging.getLogger("app").error("kosit_required_unavailable")
 
     application: FastAPI = FastAPI(
         title=settings.app_name,

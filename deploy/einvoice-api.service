@@ -10,6 +10,8 @@ Group=www-data
 WorkingDirectory=/opt/eInvoice/backend
 Environment=PATH=/opt/eInvoice/backend/.venv/bin
 Environment=LOG_LEVEL=INFO
+Environment=ENVIRONMENT=production
+EnvironmentFile=-/opt/eInvoice/backend/.env
 # stdout/stderr → journald (invoice bodies are never logged by the app)
 StandardOutput=journal
 StandardError=journal

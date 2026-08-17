@@ -45,6 +45,7 @@ class TestEdgeCaseFixtures(unittest.TestCase):
         path: Path = self._require(self.xml_dir / "Invalid_XR_inconsistent_totals.xml")
         result = self.service.parse_upload(path.name, path.read_bytes())
         self.assertEqual(result.status, ParseStatus.PARTIAL)
+        self.assertEqual(result.validation_status, ValidationStatus.INVALID)
         self.assertTrue(
             any(issue.code == "AMOUNT_INCONSISTENT" for issue in result.validation_issues)
         )

@@ -29,6 +29,8 @@ class TestValidationAndMismatch(unittest.TestCase):
         self.assertEqual(result.validation_status, ValidationStatus.NOT_CHECKED)
         self.assertTrue(any(issue.code == "KOSIT_NOT_CONFIGURED" for issue in result.validation_issues))
         self.assertGreater(len(result.next_steps), 0)
+        self.assertFalse(result.validation_meta.full_check_completed)
+        self.assertEqual(result.validation_meta.engine, "business_rules")
 
     def test_business_validator_flags_missing_invoice_number(self) -> None:
         parsed: InvoiceParseResponse = InvoiceParseResponse(
