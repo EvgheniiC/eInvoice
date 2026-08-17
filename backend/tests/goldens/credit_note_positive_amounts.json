@@ -29,7 +29,7 @@
     "name": "LEASYS S.P.A. Belgian Branch",
     "vat_id": "BE0678856478"
   },
-  "status": "success",
+  "status": "partial",
   "totals": {
     "currency": "EUR",
     "gross": 226.29,
@@ -37,5 +37,5 @@
     "tax": 39.27
   },
   "validation_issues": [],
-  "validation_status": "valid"
+  "validation_status": "not_checked"
 }

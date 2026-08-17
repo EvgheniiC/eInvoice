@@ -49,6 +49,12 @@
   color: var(--color-muted);
 }
 
+.page__limits {
+  margin: 0.6rem 0 0;
+  color: #5c6770;
+  font-size: 0.85rem;
+}
+
 /* —— Landing —— */
 
 .landing {
@@ -93,6 +99,13 @@
   max-width: 30rem;
   color: var(--color-muted);
   font-size: 1.05rem;
+}
+
+.landing-hero__note {
+  margin: -0.9rem 0 1.75rem;
+  color: #3f594b;
+  font-size: 0.9rem;
+  font-weight: 600;
 }
 
 .landing-hero__cta {
@@ -162,6 +175,21 @@
 .landing-section__lead {
   margin: 0 0 2rem;
   color: var(--color-muted);
+}
+
+.landing-benefits {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.landing-limitations {
+  margin: -0.75rem 0 0;
+  padding: 0.9rem 1rem;
+  border-left: 3px solid #b58432;
+  background: #f7f0df;
+  color: #664d20;
 }
 
 .landing-steps {
@@ -395,6 +423,38 @@
 .invoice__message {
   margin: 0.75rem 0 1rem;
   color: #4a5560;
+}
+
+.outcome {
+  margin: 0 0 1.25rem;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.outcome p {
+  margin: 0.35rem 0 0;
+}
+
+.outcome__label {
+  color: currentColor;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.outcome--process {
+  background: #d9ebe1;
+  color: #1f5a3d;
+}
+
+.outcome--review {
+  background: #f3ead4;
+  color: #6b4d0d;
+}
+
+.outcome--request_correction {
+  background: #f3d9d6;
+  color: #7b2822;
 }
 
 .badge {

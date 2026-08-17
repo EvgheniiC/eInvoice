@@ -261,6 +261,11 @@ class InvoiceService:
         elif has_mismatch:
             response.status = ParseStatus.PARTIAL
             response.message = "Rechnung gelesen — PDF und XML weichen ab."
+        elif response.validation_status == ValidationStatus.NOT_CHECKED:
+            response.status = ParseStatus.PARTIAL
+            response.message = (
+                "Rechnung gelesen — vollständige KoSIT-Prüfung wurde nicht durchgeführt."
+            )
         elif response.validation_status == ValidationStatus.WARNING:
             response.status = ParseStatus.PARTIAL
             response.message = "Rechnung gelesen — bitte Warnungen prüfen."

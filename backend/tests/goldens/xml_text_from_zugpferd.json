@@ -39,7 +39,7 @@
     "name": "KMLZ Rechtsanwaltsges. mbH",
     "vat_id": "DE814742004"
   },
-  "status": "success",
+  "status": "partial",
   "totals": {
     "currency": "EUR",
     "gross": 270.73,
@@ -47,5 +47,5 @@
     "tax": 43.23
   },
   "validation_issues": [],
-  "validation_status": "valid"
+  "validation_status": "not_checked"
 }

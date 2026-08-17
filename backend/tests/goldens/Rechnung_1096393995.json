@@ -60,7 +60,7 @@
     "name": "Albert Berner Deutschland GmbH",
     "vat_id": "DE146279846"
   },
-  "status": "success",
+  "status": "partial",
   "totals": {
     "currency": "EUR",
     "gross": 52.96,
@@ -74,5 +74,5 @@
       "level": "info"
     }
   ],
-  "validation_status": "valid"
+  "validation_status": "not_checked"
 }

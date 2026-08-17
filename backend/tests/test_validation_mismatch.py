@@ -26,7 +26,7 @@ class TestValidationAndMismatch(unittest.TestCase):
     def test_parse_includes_validation_status(self) -> None:
         xml_path: Path = self.fixtures / "xml_text_from_zugpferd.xml"
         result = self.service.parse_upload(filename=xml_path.name, content=xml_path.read_bytes())
-        self.assertNotEqual(result.validation_status, ValidationStatus.NOT_CHECKED)
+        self.assertEqual(result.validation_status, ValidationStatus.NOT_CHECKED)
         self.assertTrue(any(issue.code == "KOSIT_NOT_CONFIGURED" for issue in result.validation_issues))
         self.assertGreater(len(result.next_steps), 0)
 

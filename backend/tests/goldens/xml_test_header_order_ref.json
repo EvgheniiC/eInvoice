@@ -119,7 +119,7 @@
     "name": "R-Tech Autoglas",
     "vat_id": "DE264625443"
   },
-  "status": "success",
+  "status": "partial",
   "totals": {
     "currency": "EUR",
     "gross": 484.96,
@@ -127,5 +127,5 @@
     "tax": 77.43
   },
   "validation_issues": [],
-  "validation_status": "valid"
+  "validation_status": "not_checked"
 }

@@ -5,6 +5,9 @@ import { InvoiceView } from '../components/InvoiceView'
 import { PdfPreview } from '../components/PdfPreview'
 import type { InvoiceParseResponse } from '../types/invoice'
 
+const NETWORK_ERROR_MESSAGE: string =
+  'Der Dienst ist momentan nicht erreichbar. Bitte prüfen Sie Ihre Verbindung und versuchen Sie es erneut.'
+
 type UploadPageProps = {
   onNavigateHome: () => void
 }
@@ -28,7 +31,12 @@ export function UploadPage({ onNavigateHome }: UploadPageProps): JSX.Element {
       const response: InvoiceParseResponse = await parseInvoice(file)
       setResult(response)
     } catch (err: unknown) {
-      const message: string = err instanceof Error ? err.message : 'Unbekannter Fehler'
+      const message: string =
+        err instanceof TypeError
+          ? NETWORK_ERROR_MESSAGE
+          : err instanceof Error
+            ? err.message
+            : 'Die Datei konnte nicht verarbeitet werden. Bitte versuchen Sie es erneut.'
       setError(message)
     } finally {
       setLoading(false)
@@ -54,6 +62,9 @@ export function UploadPage({ onNavigateHome }: UploadPageProps): JSX.Element {
         <p className="page__lead">
           XRechnung-XML oder ZUGFeRD-PDF hochladen — lesbare Ansicht der Rechnungsdaten.
         </p>
+        <p className="page__limits">
+          Eine Datei bis 10 MB · UBL Invoice/CreditNote, UN/CEFACT CII oder ZUGFeRD/Factur-X
+        </p>
       </header>
 
       <FileUpload onFileSelected={handleFile} disabled={loading} />
@@ -63,6 +74,10 @@ export function UploadPage({ onNavigateHome }: UploadPageProps): JSX.Element {
         <section className="status status--error" aria-live="polite">
           {selectedFilename && <p className="status__file">Datei: {selectedFilename}</p>}
           <p>{error}</p>
+          <p>
+            <strong>Nächster Schritt:</strong> Datei prüfen oder erneut hochladen. Bleibt das
+            Problem bestehen, versuchen Sie es später erneut.
+          </p>
         </section>
       )}
 
@@ -101,12 +116,22 @@ export function UploadPage({ onNavigateHome }: UploadPageProps): JSX.Element {
           {result.validation_issues.map((issue, index: number) => (
             <p key={`${issue.code ?? 'err'}-${index}`}>{issue.message}</p>
           ))}
+          {result.next_steps.length > 0 && (
+            <div>
+              <strong>Was tun als Nächstes?</strong>
+              <ol>
+                {result.next_steps.map((step: string, index: number) => (
+                  <li key={`error-step-${index}`}>{step}</li>
+                ))}
+              </ol>
+            </div>
+          )}
         </section>
       )}
 
       <footer className="disclaimer">
-        Die Prüfung betrifft Schema-/Standardkonformität. Die Entscheidung über den
-        Vorsteuerabzug liegt bei Ihnen bzw. Ihrem Steuerberater.
+        eInvoice unterstützt bei der technischen und inhaltlichen Prüfung, ersetzt aber keine
+        Rechts- oder Steuerberatung und gibt keine Garantie für den Vorsteuerabzug.
       </footer>
     </main>
   )

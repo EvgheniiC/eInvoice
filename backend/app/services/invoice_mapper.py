@@ -120,6 +120,11 @@ def build_next_steps(response: InvoiceParseResponse) -> List[str]:
         steps.append("Lieferanten um korrigierte Rechnung bitten (Validierungsfehler).")
     elif response.validation_status == ValidationStatus.WARNING:
         steps.append("Warnungen prüfen; bei Unsicherheit Steuerberater fragen.")
+    elif response.validation_status == ValidationStatus.NOT_CHECKED:
+        steps.append(
+            "Die vollständige KoSIT-Prüfung ist nicht verfügbar. "
+            "Rechnung vor Zahlung oder Buchung anderweitig vollständig prüfen."
+        )
 
     if response.mismatch_fields and any(not item.matched for item in response.mismatch_fields):
         steps.append(

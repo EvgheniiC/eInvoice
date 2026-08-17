@@ -48,11 +48,12 @@ def validate_invoice(
         xml_text,
         request_id=request_id,
     )
+    kosit_completed: bool = any(
+        issue.code in {"KOSIT_OK", "KOSIT_FAILED"} for issue in kosit_issues
+    )
     if kosit_issues:
         issues.extend(kosit_issues)
-        engine: str = "kosit"
-    else:
-        engine = "business_rules"
+    if not settings.kosit_validator_jar or not settings.kosit_scenarios_xml:
         issues.append(
             ValidationIssue(
                 level="info",
@@ -66,7 +67,11 @@ def validate_invoice(
             )
         )
 
-    status: ValidationStatus = _status_from_issues(issues)
+    engine: str = "kosit" if kosit_completed else "business_rules"
+    status: ValidationStatus = _status_from_issues(
+        issues,
+        full_validation_completed=kosit_completed,
+    )
     return ValidationResult(status=status, issues=issues, engine=engine)
 
 
@@ -367,11 +372,17 @@ def _extract_kosit_message(output: str) -> Optional[str]:
     return None
 
 
-def _status_from_issues(issues: List[ValidationIssue]) -> ValidationStatus:
+def _status_from_issues(
+    issues: List[ValidationIssue],
+    *,
+    full_validation_completed: bool,
+) -> ValidationStatus:
     has_error: bool = any(issue.level == "error" for issue in issues)
     has_warning: bool = any(issue.level == "warning" for issue in issues)
     if has_error:
         return ValidationStatus.INVALID
+    if not full_validation_completed:
+        return ValidationStatus.NOT_CHECKED
     if has_warning:
         return ValidationStatus.WARNING
     return ValidationStatus.VALID

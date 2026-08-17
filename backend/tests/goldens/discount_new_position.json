@@ -69,7 +69,7 @@
     "name": "CULLIGAN BELGIUM NV",
     "vat_id": "BE0457040640"
   },
-  "status": "success",
+  "status": "partial",
   "totals": {
     "currency": "EUR",
     "gross": 143.89,
@@ -77,5 +77,5 @@
     "tax": 9.59
   },
   "validation_issues": [],
-  "validation_status": "valid"
+  "validation_status": "not_checked"
 }

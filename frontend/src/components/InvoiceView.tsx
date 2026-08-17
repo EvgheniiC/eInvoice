@@ -11,6 +11,7 @@ import type {
 } from '../types/invoice'
 
 type ExportAction = ExportFormat | 'package'
+type UserOutcome = 'process' | 'review' | 'request_correction'
 
 interface InvoiceViewProps {
   invoice: InvoiceParseResponse
@@ -54,6 +55,49 @@ function validationLabel(status: ValidationStatus): string {
   }
 }
 
+function userOutcome(invoice: InvoiceParseResponse): UserOutcome {
+  const hasValidationError: boolean = invoice.validation_issues.some(
+    (issue: ValidationIssue): boolean => issue.level === 'error',
+  )
+  const hasMismatch: boolean = invoice.mismatch_fields.some(
+    (item: MismatchField): boolean => Boolean(item.xml_value) && !item.matched,
+  )
+
+  if (invoice.validation_status === 'invalid' || hasValidationError || hasMismatch) {
+    return 'request_correction'
+  }
+  if (
+    invoice.status === 'partial' ||
+    invoice.validation_status === 'warning' ||
+    invoice.validation_status === 'not_checked'
+  ) {
+    return 'review'
+  }
+  return 'process'
+}
+
+function outcomeLabel(outcome: UserOutcome): string {
+  switch (outcome) {
+    case 'process':
+      return 'Kann verarbeitet werden'
+    case 'review':
+      return 'Bitte prüfen'
+    case 'request_correction':
+      return 'Korrektur anfordern'
+  }
+}
+
+function outcomeDescription(outcome: UserOutcome): string {
+  switch (outcome) {
+    case 'process':
+      return 'Die Rechnung wurde gelesen und ohne erkennbare Fehler geprüft.'
+    case 'review':
+      return 'Vor der Buchung bitte die Hinweise und fehlenden Angaben kontrollieren.'
+    case 'request_correction':
+      return 'Nicht zahlen oder buchen, bevor die Fehler beziehungsweise Abweichungen geklärt sind.'
+  }
+}
+
 function PartyBlock({ title, party }: { title: string; party: PartyInfo | null }) {
   if (!party || (!party.name && !party.address && !party.vat_id && !party.iban)) {
     return null
@@ -73,13 +117,9 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps) {
   const currency: string | null = invoice.totals?.currency ?? null
   const [exportError, setExportError] = useState<string | null>(null)
   const [exporting, setExporting] = useState<ExportAction | null>(null)
+  const outcome: UserOutcome = userOutcome(invoice)
 
-  const statusClass: string =
-    invoice.status === 'success'
-      ? 'badge badge--ok'
-      : invoice.status === 'partial'
-        ? 'badge badge--warn'
-        : 'badge badge--error'
+  const outcomeClass: string = `outcome outcome--${outcome}`
 
   const hasMismatch: boolean = invoice.mismatch_fields.some(
     (item: MismatchField) => Boolean(item.xml_value) && !item.matched,
@@ -124,7 +164,6 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps) {
           <h2>{invoice.invoice_number ?? 'Ohne Nummer'}</h2>
         </div>
         <div className="invoice__badges">
-          <span className={statusClass}>{invoice.status}</span>
           <span className={validationBadgeClass(invoice.validation_status)}>
             {validationLabel(invoice.validation_status)}
           </span>
@@ -132,6 +171,12 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps) {
       </div>
 
       <p className="invoice__message">{invoice.message}</p>
+
+      <div className={outcomeClass} role="status">
+        <p className="outcome__label">Ergebnis</p>
+        <strong>{outcomeLabel(outcome)}</strong>
+        <p>{outcomeDescription(outcome)}</p>
+      </div>
 
       <div className="export-bar">
         <p className="export-bar__label">Für Buchhaltung exportieren</p>
