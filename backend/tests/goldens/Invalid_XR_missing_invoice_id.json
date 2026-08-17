@@ -5,19 +5,20 @@
     "name": "Demo Buyer SE",
     "vat_id": null
   },
-  "due_date": "2025-01-31",
+  "document_type": "invoice",
+  "due_date": "2025-02-20",
   "file_type": "xrechnung_xml",
   "invoice_number": null,
   "issue_date": "2025-01-31",
   "line_items": [
     {
       "description": "Umsatzsteuerrechtliche Beratung gemass Zeitaufstellung\n\nPartner:",
-      "gross_amount": 116.02,
+      "gross_amount": 116.03,
       "net_amount": 97.5,
       "position": 1,
       "quantity": 0.25,
       "tax_rate": 19.0,
-      "unit": null,
+      "unit": "HUR",
       "unit_price": 390.0
     },
     {
@@ -27,7 +28,7 @@
       "position": 2,
       "quantity": 0.5,
       "tax_rate": 19.0,
-      "unit": null,
+      "unit": "HUR",
       "unit_price": 260.0
     }
   ],
@@ -41,10 +42,18 @@
   },
   "status": "error",
   "totals": {
+    "allowance": 0.0,
+    "charge": 0.0,
     "currency": "EUR",
     "gross": 270.73,
     "net": 227.5,
-    "tax": 43.23
+    "tax": 43.23,
+    "tax_breakdown": [
+      {
+        "amount": 43.23,
+        "rate": 19.0
+      }
+    ]
   },
   "validation_issues": [
     {

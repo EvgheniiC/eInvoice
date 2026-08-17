@@ -5,7 +5,8 @@
     "name": "SimplerInvoicing",
     "vat_id": "0465341266"
   },
-  "due_date": "2026-01-23",
+  "document_type": "invoice",
+  "due_date": "2026-03-02",
   "file_type": "xrechnung_xml",
   "invoice_number": "1986851",
   "issue_date": "2026-01-31",
@@ -17,7 +18,7 @@
       "position": 1,
       "quantity": 8.0,
       "tax_rate": 6.0,
-      "unit": null,
+      "unit": "C62",
       "unit_price": 13.13
     },
     {
@@ -27,7 +28,7 @@
       "position": 2,
       "quantity": 2.0,
       "tax_rate": 6.0,
-      "unit": null,
+      "unit": "C62",
       "unit_price": 25.6
     },
     {
@@ -37,7 +38,7 @@
       "position": 3,
       "quantity": 8.0,
       "tax_rate": 6.0,
-      "unit": null,
+      "unit": "C62",
       "unit_price": 0.27
     },
     {
@@ -47,7 +48,7 @@
       "position": 4,
       "quantity": 1.0,
       "tax_rate": 6.0,
-      "unit": null,
+      "unit": "C62",
       "unit_price": 1.5
     },
     {
@@ -55,9 +56,9 @@
       "gross_amount": -25.6,
       "net_amount": -25.6,
       "position": 5,
-      "quantity": 2.0,
+      "quantity": -2.0,
       "tax_rate": 0.0,
-      "unit": null,
+      "unit": "C62",
       "unit_price": 12.8
     }
   ],
@@ -71,10 +72,22 @@
   },
   "status": "partial",
   "totals": {
+    "allowance": null,
+    "charge": null,
     "currency": "EUR",
     "gross": 143.89,
     "net": 134.3,
-    "tax": 9.59
+    "tax": 9.59,
+    "tax_breakdown": [
+      {
+        "amount": 9.59,
+        "rate": 6.0
+      },
+      {
+        "amount": 0.0,
+        "rate": 0.0
+      }
+    ]
   },
   "validation_issues": [],
   "validation_status": "not_checked"

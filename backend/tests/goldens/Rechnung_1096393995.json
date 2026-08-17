@@ -2,22 +2,23 @@
   "buyer": {
     "address": "Zugspitzstr. 1, 82049 Pullach Höllriegelskreuth, DE",
     "iban": null,
-    "name": "Sixt GmbH & Co. Autovermietung KG  23338",
+    "name": "DemoBuyer GmbH & Co. Autovermietung KG  23338",
     "vat_id": "DE223999470"
   },
-  "due_date": "2026-08-04",
+  "document_type": "invoice",
+  "due_date": "2026-09-03",
   "file_type": "zugferd_pdf",
   "invoice_number": "1096393995",
   "issue_date": "2026-08-04",
   "line_items": [
     {
       "description": "FREIE SICHT GEBRAUCHSFERTIG25L",
-      "gross_amount": 52.95,
+      "gross_amount": 52.96,
       "net_amount": 44.5,
       "position": 1,
       "quantity": 2.0,
       "tax_rate": 19.0,
-      "unit": null,
+      "unit": "H87",
       "unit_price": 22.25
     }
   ],
@@ -62,10 +63,18 @@
   },
   "status": "partial",
   "totals": {
+    "allowance": null,
+    "charge": null,
     "currency": "EUR",
     "gross": 52.96,
     "net": 44.5,
-    "tax": 8.46
+    "tax": 8.46,
+    "tax_breakdown": [
+      {
+        "amount": 8.46,
+        "rate": 19.0
+      }
+    ]
   },
   "validation_issues": [
     {

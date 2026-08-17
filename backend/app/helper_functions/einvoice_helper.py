@@ -8,10 +8,14 @@ so existing `from app.helper_functions.einvoice_helper import ...` keeps working
 
 from .amounts import (
     create_viable_float_or_int_string,
+    decimal_non_negative,
     format_header_amount_string,
     make_amount_non_negative,
     normalize_header_amount,
+    optional_string_to_decimal,
     optional_string_to_float,
+    parse_decimal,
+    quantize_money,
     string_to_float,
     string_to_float_negative,
 )
@@ -48,10 +52,14 @@ from .xml_query import (
 
 __all__ = [
     "create_viable_float_or_int_string",
+    "decimal_non_negative",
     "format_header_amount_string",
     "make_amount_non_negative",
     "normalize_header_amount",
+    "optional_string_to_decimal",
     "optional_string_to_float",
+    "parse_decimal",
+    "quantize_money",
     "string_to_float",
     "string_to_float_negative",
     "_is_gu_document",

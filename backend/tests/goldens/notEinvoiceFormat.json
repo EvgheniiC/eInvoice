@@ -1,5 +1,6 @@
 {
   "buyer": null,
+  "document_type": null,
   "due_date": null,
   "file_type": "pdf_unknown",
   "invoice_number": null,

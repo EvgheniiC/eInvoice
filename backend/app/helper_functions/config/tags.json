@@ -118,6 +118,11 @@
     "./IssueDate",
     "./Invoice/IssueDate"
   ],
+  "tags_to_search_due_date": [
+    "./SpecifiedTradePaymentTerms/DueDateDateTime/DateTimeString",
+    "./DueDate",
+    "./Invoice/DueDate"
+  ],
   "tags_to_search_delivery_date": [
     "./BillingSpecifiedPeriod/StartDateTime/DateTimeString",
     "./InvoicePeriod/StartDate",
@@ -220,18 +225,25 @@
     "./AccountingCustomerParty/Party/Country/IdentificationCode"
   ],
   "tags_to_search_line_extension_amount": [
+    "./LineTotalAmount",
+    "./SupplyChainTradeTransaction/ApplicableHeaderTradeSettlement/SpecifiedTradeSettlementHeaderMonetarySummation/LineTotalAmount",
     "./LegalMonetaryTotal/LineExtensionAmount",
     "./Invoice/LegalMonetaryTotal/LineExtensionAmount"
   ],
   "tags_to_search_tax_exclusive_amount": [
+    "./TaxBasisTotalAmount",
+    "./SupplyChainTradeTransaction/ApplicableHeaderTradeSettlement/SpecifiedTradeSettlementHeaderMonetarySummation/TaxBasisTotalAmount",
     "./LegalMonetaryTotal/TaxExclusiveAmount",
     "./Invoice/LegalMonetaryTotal/TaxExclusiveAmount"
   ],
   "tags_to_search_charge_total_amount": [
+    "./ChargeTotalAmount",
+    "./SupplyChainTradeTransaction/ApplicableHeaderTradeSettlement/SpecifiedTradeSettlementHeaderMonetarySummation/ChargeTotalAmount",
     "./LegalMonetaryTotal/ChargeTotalAmount",
     "./Invoice/LegalMonetaryTotal/ChargeTotalAmount"
   ],
   "tags_to_search_discount": [
+    "./AllowanceTotalAmount",
     "./LegalMonetaryTotal/AllowanceTotalAmount",
     "./SupplyChainTradeTransaction/ApplicableHeaderTradeSettlement/SpecifiedTradeSettlementHeaderMonetarySummation/AllowanceTotalAmount"
   ],

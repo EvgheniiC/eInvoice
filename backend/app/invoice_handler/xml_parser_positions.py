@@ -1,4 +1,5 @@
 import re
+from decimal import Decimal
 from typing import Optional, Tuple
 from xml.etree.ElementTree import Element
 
@@ -7,13 +8,12 @@ from ..helper_functions import (
     get_xml_tree,
     find_data_within_element,
     get_tags_from_json,
-    string_to_float_negative,
-    string_to_float,
+    decimal_non_negative,
+    parse_decimal,
     build_description_from_item,
     is_ubl_placeholder_text,
     document_charge_description,
     get_header_trade_allowance_discount,
-    make_amount_non_negative,
     _is_gu_document,
 )
 from ..services.logger_adapter import InvoiceLogger
@@ -54,8 +54,8 @@ def get_xml_positions(
     if not xml_positions_data:
         xml_positions_data = xml_tree.findall("./Invoice/InvoiceLine")
 
-    reference_tax_rate: Optional[float] = None
-    last_line_tax_rate: Optional[float] = None
+    reference_tax_rate: Optional[Decimal] = None
+    last_line_tax_rate: Optional[Decimal] = None
 
     for position in (
         xml_positions_data_zugpferd.iter("IncludedSupplyChainTradeLineItem")
@@ -91,21 +91,23 @@ def get_xml_positions(
         ):
             description_text = description_text + "\n" + additional_description_sellers_item_identification
 
-        tax_rate: float = string_to_float(find_data_within_element(position, tags_to_search_tax_rate))
+        tax_rate: Decimal = parse_decimal(
+            find_data_within_element(position, tags_to_search_tax_rate)
+        ) or Decimal("0")
         last_line_tax_rate = tax_rate
         if reference_tax_rate is None:
             reference_tax_rate = tax_rate
 
-        quantity_raw: Optional[str] = find_data_within_element(position, tags_to_search_quantity)
-        quantity: float = string_to_float(quantity_raw) if quantity_raw else 1.0
+        quantity_raw, quantity_unit = _find_quantity(position, tags_to_search_quantity)
+        quantity: Decimal = parse_decimal(quantity_raw) or Decimal("1")
         single_raw: Optional[str] = find_data_within_element(position, tags_to_search_single_net_price)
         total_raw: Optional[str] = find_data_within_element(position, tags_to_search_total_net_price)
         if is_gu_document:
-            single_net_price = make_amount_non_negative(single_raw)
-            total_net_price = make_amount_non_negative(total_raw)
+            single_net_price = decimal_non_negative(single_raw)
+            total_net_price = decimal_non_negative(total_raw)
         else:
-            single_net_price = string_to_float_negative(single_raw)
-            total_net_price = string_to_float_negative(total_raw)
+            single_net_price = parse_decimal(single_raw)
+            total_net_price = parse_decimal(total_raw)
         order_pos_id = find_data_within_element(position, tags_to_search_order_line_reference)
 
         article_number: str = ""
@@ -121,6 +123,7 @@ def get_xml_positions(
                 item_pos=item_position,
                 position_text=description_text,
                 quantity=quantity,
+                quantity_unit=quantity_unit,
                 single_net_price=single_net_price,
                 tax_rate=tax_rate,
                 total_net_price=total_net_price,
@@ -134,7 +137,7 @@ def get_xml_positions(
     charge_total_str: Optional[str] = find_data_within_element(
         xml_invoice_head_money, tags_to_search_charge_total_amount
     )
-    charge_total_value: Optional[float] = string_to_float(charge_total_str) if charge_total_str else None
+    charge_total_value: Optional[Decimal] = parse_decimal(charge_total_str)
     if charge_total_value is not None and charge_total_value <= 0:
         charge_total_value = None
 
@@ -144,8 +147,8 @@ def get_xml_positions(
     tax_exc_str: Optional[str] = find_data_within_element(
         xml_invoice_head_money, tags_to_search_tax_exclusive_amount
     )
-    line_ext_val: Optional[float] = string_to_float(line_ext_str) if line_ext_str else None
-    tax_exc_val: Optional[float] = string_to_float(tax_exc_str) if tax_exc_str else None
+    line_ext_val: Optional[Decimal] = parse_decimal(line_ext_str)
+    tax_exc_val: Optional[Decimal] = parse_decimal(tax_exc_str)
     add_document_charge_line: bool = bool(
         charge_total_value
         and line_ext_val is not None
@@ -155,12 +158,14 @@ def get_xml_positions(
 
     if add_document_charge_line:
         charge_position_text: str = document_charge_description(xml_tree)
-        charge_tax_rate: float = reference_tax_rate if reference_tax_rate is not None else 0.0
+        charge_tax_rate: Decimal = (
+            reference_tax_rate if reference_tax_rate is not None else Decimal("0")
+        )
         xml_invoice_data.add_position(
             XmlInvoicePosition(
                 item_pos=item_position,
                 position_text=charge_position_text,
-                quantity=1.0,
+                quantity=Decimal("1"),
                 single_net_price=charge_total_value,
                 tax_rate=charge_tax_rate,
                 total_net_price=charge_total_value,
@@ -171,16 +176,18 @@ def get_xml_positions(
         )
         item_position += 1
 
-    header_allowance: Optional[Tuple[float, str, Optional[float]]] = get_header_trade_allowance_discount(xml_tree)
+    header_allowance: Optional[Tuple[Decimal, str, Optional[Decimal]]] = (
+        get_header_trade_allowance_discount(xml_tree)
+    )
     discount_amount_str: Optional[str] = find_data_within_element(xml_invoice_head_money, tags_to_search_discount)
-    discount_amount: Optional[float] = None
+    discount_amount: Optional[Decimal] = None
     discount_position_text: str = "description_text"
-    discount_tax_rate: float = 0.0
+    discount_tax_rate: Decimal = Decimal("0")
 
     if header_allowance is not None:
         discount_amount = header_allowance[0]
         discount_position_text = header_allowance[1][:1000]
-        header_vat: Optional[float] = header_allowance[2]
+        header_vat: Optional[Decimal] = header_allowance[2]
         if header_vat is not None:
             discount_tax_rate = header_vat
         elif reference_tax_rate is not None:
@@ -188,7 +195,7 @@ def get_xml_positions(
         elif last_line_tax_rate is not None:
             discount_tax_rate = last_line_tax_rate
     elif discount_amount_str:
-        parsed_from_tags: float = string_to_float(discount_amount_str)
+        parsed_from_tags: Decimal = parse_decimal(discount_amount_str) or Decimal("0")
         if parsed_from_tags > 0:
             discount_amount = parsed_from_tags
             if reference_tax_rate is not None:
@@ -197,16 +204,12 @@ def get_xml_positions(
                 discount_tax_rate = last_line_tax_rate
 
     if discount_amount is not None and discount_amount > 0:
-        if is_gu_document:
-            net_price_val = make_amount_non_negative(str(discount_amount))
-        else:
-            net_discount: float = -discount_amount
-            net_price_val = string_to_float_negative(str(net_discount))
+        net_price_val: Decimal = -discount_amount
         xml_invoice_data.add_position(
             XmlInvoicePosition(
                 item_pos=item_position,
                 position_text=discount_position_text,
-                quantity=1,
+                quantity=Decimal("1"),
                 single_net_price=net_price_val,
                 tax_rate=discount_tax_rate,
                 total_net_price=net_price_val,
@@ -214,19 +217,16 @@ def get_xml_positions(
             )
         )
 
-    if xml_positions_data_zugpferd is None and not xml_positions_data:
-        xml_invoice_data.add_position(
-            XmlInvoicePosition(
-                item_pos=item_position,
-                position_text=discount_position_text,
-                quantity=1,
-                single_net_price=0,
-                tax_rate=0,
-                total_net_price=0,
-                invoice_id=xml_invoice_data.invoice_id,
-                article_number=None,
-            )
-        )
-        logger.info_log(f"Finish get_xml_positions invoice_id={xml_invoice_data.invoice_id}")
-
     return xml_invoice_data
+
+
+def _find_quantity(position: Element, tags: list[str]) -> Tuple[Optional[str], Optional[str]]:
+    """Return quantity text and its UN/ECE unit code from a UBL or CII line."""
+    for tag in tags:
+        element: Optional[Element] = position.find(tag)
+        if element is None:
+            continue
+        value: Optional[str] = element.text.strip() if element.text else None
+        unit: Optional[str] = element.get("unitCode")
+        return value, unit.strip() if unit else None
+    return None, None

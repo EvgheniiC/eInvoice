@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from decimal import Decimal
 from typing import FrozenSet, List, Optional, Tuple
 from xml.etree.ElementTree import Element
 
-from .amounts import string_to_float
+from .amounts import parse_decimal
 from .xml_query import _xml_root_local_name, find_data_within_element
 
 _UBL_ITEM_NAME_PLACEHOLDERS: FrozenSet[str] = frozenset({"-", ".", "/", "—", "–"})
@@ -110,7 +111,8 @@ def document_charge_description(xml_tree: Element) -> str:
             amount_el: Optional[Element] = ac.find("Amount")
             if amount_el is None or not amount_el.text:
                 continue
-            if string_to_float(amount_el.text) <= 0:
+            amount: Optional[Decimal] = parse_decimal(amount_el.text)
+            if amount is None or amount <= 0:
                 continue
             reason_el: Optional[Element] = ac.find("AllowanceChargeReason")
             if reason_el is not None and reason_el.text:
@@ -120,7 +122,7 @@ def document_charge_description(xml_tree: Element) -> str:
 
 def get_header_trade_allowance_discount(
     xml_tree: Element,
-) -> Optional[Tuple[float, str, Optional[float]]]:
+) -> Optional[Tuple[Decimal, str, Optional[Decimal]]]:
     """
     ZUGFeRD / Factur-X: sum document-level allowances (ChargeIndicator false).
     Returns (net amount, combined reason text, VAT percent) or None.
@@ -130,9 +132,9 @@ def get_header_trade_allowance_discount(
     )
     if settlement is None:
         return None
-    total_amount: float = 0.0
+    total_amount: Decimal = Decimal("0")
     reasons: List[str] = []
-    tax_rate: Optional[float] = None
+    tax_rate: Optional[Decimal] = None
     for ac in settlement.findall("SpecifiedTradeAllowanceCharge"):
         charge_ind: Optional[Element] = ac.find("ChargeIndicator")
         if charge_ind is None:
@@ -148,7 +150,7 @@ def get_header_trade_allowance_discount(
         amt_el: Optional[Element] = ac.find("ActualAmount")
         if amt_el is None or not amt_el.text:
             continue
-        amt: float = float(string_to_float(amt_el.text.strip()) or 0)
+        amt: Decimal = parse_decimal(amt_el.text.strip()) or Decimal("0")
         if amt <= 0:
             continue
         total_amount += amt
@@ -157,7 +159,7 @@ def get_header_trade_allowance_discount(
             reasons.append(reason_el.text.strip())
         rt_el: Optional[Element] = ac.find("CategoryTradeTax/RateApplicablePercent")
         if rt_el is not None and rt_el.text:
-            tax_rate = float(string_to_float(rt_el.text.strip()) or 0)
+            tax_rate = parse_decimal(rt_el.text.strip()) or Decimal("0")
     if total_amount <= 0:
         return None
     description: str = " / ".join(reasons) if reasons else "Discount"

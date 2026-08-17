@@ -3,6 +3,7 @@ import re
 import subprocess
 import tempfile
 from dataclasses import dataclass, field
+from decimal import Decimal
 from pathlib import Path
 from typing import List, Optional
 from xml.etree.ElementTree import ParseError as EtParseError
@@ -197,13 +198,13 @@ def _check_amount_consistency(parsed: InvoiceParseResponse) -> List[ValidationIs
     if not parsed.totals:
         return issues
 
-    net: Optional[float] = parsed.totals.net
-    tax: Optional[float] = parsed.totals.tax
-    gross: Optional[float] = parsed.totals.gross
+    net: Optional[Decimal] = parsed.totals.net
+    tax: Optional[Decimal] = parsed.totals.tax
+    gross: Optional[Decimal] = parsed.totals.gross
 
     if net is not None and tax is not None and gross is not None:
-        expected: float = round(net + tax, 2)
-        if abs(expected - round(gross, 2)) > 0.05:
+        expected: Decimal = (net + tax).quantize(Decimal("0.01"))
+        if abs(expected - gross.quantize(Decimal("0.01"))) > Decimal("0.05"):
             issues.append(
                 ValidationIssue(
                     level="warning",
@@ -216,20 +217,25 @@ def _check_amount_consistency(parsed: InvoiceParseResponse) -> List[ValidationIs
                 )
             )
 
-    line_sum: float = 0.0
+    line_sum: Decimal = Decimal("0")
     has_line_nets: bool = False
     for item in parsed.line_items:
         if item.net_amount is not None:
             line_sum += item.net_amount
             has_line_nets = True
-    if has_line_nets and net is not None and abs(round(line_sum, 2) - round(net, 2)) > 0.10:
+    rounded_line_sum: Decimal = line_sum.quantize(Decimal("0.01"))
+    if (
+        has_line_nets
+        and net is not None
+        and abs(rounded_line_sum - net.quantize(Decimal("0.01"))) > Decimal("0.10")
+    ):
         issues.append(
             ValidationIssue(
                 level="warning",
                 category="business",
                 code="LINE_SUM_MISMATCH",
                 message=(
-                    f"Summe der Positionen ({round(line_sum, 2)}) weicht vom Nettobetrag "
+                    f"Summe der Positionen ({rounded_line_sum}) weicht vom Nettobetrag "
                     f"({net}) ab. Kann durch Zu-/Abschläge bedingt sein."
                 ),
             )

@@ -1,4 +1,5 @@
 import re
+from decimal import Decimal
 from io import BytesIO
 from typing import List, Optional, Tuple
 
@@ -177,7 +178,7 @@ def _compare_date(
 def _compare_amount(
     *,
     pdf_text: str,
-    xml_value: Optional[float],
+    xml_value: Optional[Decimal],
     field_name: str,
     label: str,
 ) -> MismatchField:
@@ -248,7 +249,7 @@ def _date_variants(iso_date: str) -> List[str]:
     ]
 
 
-def _format_de_thousands(value: float) -> str:
+def _format_de_thousands(value: Decimal) -> str:
     formatted: str = f"{value:,.2f}"
     # 1,234.56 -> 1.234,56
     return formatted.replace(",", "X").replace(".", ",").replace("X", ".")

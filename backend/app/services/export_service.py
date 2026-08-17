@@ -4,6 +4,7 @@ import csv
 import io
 import re
 import zipfile
+from decimal import Decimal
 from typing import Any, Dict, List, Optional, Tuple
 
 from openpyxl import Workbook
@@ -217,7 +218,7 @@ def build_flat_rows(invoice: InvoiceParseResponse) -> List[Dict[str, Any]]:
 
 
 def build_datev_row(invoice: InvoiceParseResponse) -> Dict[str, str]:
-    amount: Optional[float] = invoice.totals.gross if invoice.totals else None
+    amount: Optional[Decimal] = invoice.totals.gross if invoice.totals else None
     seller_name: str = invoice.seller.name if invoice.seller and invoice.seller.name else "Lieferant"
     invoice_no: str = invoice.invoice_number or ""
     booking_text: str = f"{seller_name} {invoice_no}".strip()[:60]
@@ -285,7 +286,7 @@ def build_package_summary(invoice: InvoiceParseResponse) -> str:
         "",
         f"Rechnung: {invoice.invoice_number or '—'}",
         f"Datum: {invoice.issue_date or '—'}",
-        f"Fällig / Lieferende: {invoice.due_date or '—'}",
+        f"Fälligkeitsdatum: {invoice.due_date or '—'}",
         f"Zahlungsreferenz: {invoice.payment_reference or '—'}",
         f"Quelldatei: {invoice.filename}",
         f"Typ: {invoice.file_type or '—'}",
@@ -373,13 +374,13 @@ def _slug(value: Optional[str]) -> str:
     return cleaned[:40]
 
 
-def _num_str(value: Optional[float]) -> str:
+def _num_str(value: Optional[Decimal]) -> str:
     if value is None:
         return ""
     return f"{value:.2f}"
 
 
-def _de_amount(value: Optional[float]) -> str:
+def _de_amount(value: Optional[Decimal]) -> str:
     if value is None:
         return ""
     return f"{value:.2f}".replace(".", ",")

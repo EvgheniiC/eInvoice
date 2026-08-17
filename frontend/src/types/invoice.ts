@@ -1,6 +1,7 @@
 export type ParseStatus = 'success' | 'partial' | 'error' | 'not_implemented'
 export type ValidationStatus = 'valid' | 'invalid' | 'warning' | 'not_checked'
 export type ExportFormat = 'csv' | 'excel' | 'datev'
+export type DecimalValue = string | number
 
 export interface PartyInfo {
   name: string | null
@@ -12,19 +13,27 @@ export interface PartyInfo {
 export interface LineItem {
   position: number | null
   description: string | null
-  quantity: number | null
+  quantity: DecimalValue | null
   unit: string | null
-  unit_price: number | null
-  tax_rate: number | null
-  net_amount: number | null
-  gross_amount: number | null
+  unit_price: DecimalValue | null
+  tax_rate: DecimalValue | null
+  net_amount: DecimalValue | null
+  gross_amount: DecimalValue | null
+}
+
+export interface TaxBreakdown {
+  rate: DecimalValue
+  amount: DecimalValue | null
 }
 
 export interface InvoiceTotals {
-  net: number | null
-  tax: number | null
-  gross: number | null
+  net: DecimalValue | null
+  tax: DecimalValue | null
+  gross: DecimalValue | null
   currency: string | null
+  allowance: DecimalValue | null
+  charge: DecimalValue | null
+  tax_breakdown: TaxBreakdown[]
 }
 
 export interface ValidationIssue {
@@ -47,6 +56,7 @@ export interface InvoiceParseResponse {
   message: string
   filename: string
   file_type: string | null
+  document_type: 'invoice' | 'credit_note' | null
   invoice_number: string | null
   issue_date: string | null
   due_date: string | null

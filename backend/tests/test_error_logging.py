@@ -45,7 +45,11 @@ class TestParseFailureLogging(unittest.TestCase):
 
     def test_parse_exception_does_not_leak_exception_payload(self) -> None:
         service: InvoiceService = InvoiceService()
-        xml_body: bytes = b'<?xml version="1.0"?><Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"><cbc:ID>1</cbc:ID></Invoice>'
+        xml_body: bytes = (
+            b'<?xml version="1.0"?>'
+            b'<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2">'
+            b"<ID>1</ID></Invoice>"
+        )
 
         with patch(
             "app.services.invoice_service.get_xml_header",

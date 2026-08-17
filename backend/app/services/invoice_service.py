@@ -4,11 +4,13 @@ import tempfile
 import uuid
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
+from xml.etree.ElementTree import ParseError as EtParseError
 
 from app.core.error_events import log_parse_failure
 from app.data_class.XmlInvoiceHeader import XmlInvoiceHeader
 from app.helper_functions.einvoice_helper import is_zugpferd_pdf
-from app.helper_functions.safe_xml import UnsafeXmlError, assert_xml_safe
+from app.helper_functions.pdf_security import UnsafePdfError, assert_pdf_safe
+from app.helper_functions.safe_xml import UnsafeXmlError, parse_xml
 from app.invoice_handler.xml_parser_header import get_xml_header
 from app.invoice_handler.xml_parser_positions import get_xml_positions
 from app.invoice_handler.xml_vendor_parser import get_einvoice_vendor_data
@@ -42,9 +44,11 @@ class InvoiceService:
         """Detect whether the upload is XML, ZUGFeRD PDF, plain PDF, or unsupported."""
         suffix: str = Path(filename).suffix.lower()
         if suffix == ".xml":
+            if content.startswith(b"%PDF-"):
+                return "type_mismatch"
             return "xrechnung_xml"
         if suffix == ".pdf":
-            if content[:4] != b"%PDF":
+            if not content.startswith(b"%PDF-"):
                 return "pdf_unknown"
             if self._is_zugferd_content(content):
                 return "zugferd_pdf"
@@ -60,6 +64,32 @@ class InvoiceService:
     ) -> InvoiceParseResponse:
         """Parse an uploaded invoice file into the public DTO."""
         size_bytes: int = len(content)
+        suffix: str = Path(filename).suffix.lower()
+        if suffix == ".pdf" and self._decode_xml(content) is not None:
+            return self._error_response(
+                filename=filename,
+                file_type="type_mismatch",
+                message="Dateiendung und tatsächlicher Dateityp stimmen nicht überein.",
+                code="FILE_TYPE_MISMATCH",
+                detail="Die Datei ist XML, wurde aber mit der Endung .pdf hochgeladen.",
+                size_bytes=size_bytes,
+                request_id=request_id,
+            )
+        if suffix == ".pdf":
+            try:
+                assert_pdf_safe(content)
+            except UnsafePdfError as exc:
+                return self._error_response(
+                    filename=filename,
+                    file_type="unsafe_pdf",
+                    message="PDF aus Sicherheitsgründen abgelehnt.",
+                    code="UNSAFE_PDF",
+                    detail=str(exc),
+                    size_bytes=size_bytes,
+                    request_id=request_id,
+                    exc_type=type(exc).__name__,
+                )
+
         file_type: str = self.detect_file_type(filename=filename, content=content)
 
         if file_type == "unsupported":
@@ -69,6 +99,17 @@ class InvoiceService:
                 message="Nicht unterstützter Dateityp. Erlaubt: .xml / .pdf",
                 code="UNSUPPORTED_TYPE",
                 detail="Nur XRechnung-XML oder ZUGFeRD-PDF werden unterstützt.",
+                size_bytes=size_bytes,
+                request_id=request_id,
+            )
+
+        if file_type == "type_mismatch":
+            return self._error_response(
+                filename=filename,
+                file_type=file_type,
+                message="Dateiendung und tatsächlicher Dateityp stimmen nicht überein.",
+                code="FILE_TYPE_MISMATCH",
+                detail="Die Datei ist eine PDF, wurde aber mit der Endung .xml hochgeladen.",
                 size_bytes=size_bytes,
                 request_id=request_id,
             )
@@ -100,48 +141,6 @@ class InvoiceService:
                     size_bytes=size_bytes,
                     request_id=request_id,
                 )
-            try:
-                assert_xml_safe(xml_text)
-            except UnsafeXmlError as exc:
-                return self._error_response(
-                    filename=filename,
-                    file_type=file_type,
-                    message="XML aus Sicherheitsgründen abgelehnt.",
-                    code="UNSAFE_XML",
-                    detail=str(exc),
-                    size_bytes=size_bytes,
-                    request_id=request_id,
-                    exc_type=type(exc).__name__,
-                )
-            dialect: str = self._classify_invoice_xml(xml_text)
-            if dialect == "opentrans":
-                return self._error_response(
-                    filename=filename,
-                    file_type="opentrans_xml",
-                    message="openTRANS-XML erkannt — Format wird derzeit nicht unterstützt.",
-                    code="UNSUPPORTED_OPENTRANS",
-                    detail=(
-                        "Die Datei ist openTRANS 2.1, kein XRechnung-/EN-16931-XML. "
-                        "Bitte eine XRechnung (UBL/CII) oder ein ZUGFeRD-PDF hochladen. "
-                        "openTRANS-Unterstützung ist für später vorgesehen."
-                    ),
-                    size_bytes=size_bytes,
-                    request_id=request_id,
-                )
-            if dialect == "unknown":
-                return self._error_response(
-                    filename=filename,
-                    file_type="unsupported_xml",
-                    message="XML ist kein erkennbares XRechnung-/EN-16931-Format.",
-                    code="UNSUPPORTED_XML_FORMAT",
-                    detail=(
-                        "Erwartet wird XRechnung (UBL Invoice/CreditNote) oder "
-                        "UN/CEFACT CII (CrossIndustryInvoice), z. B. aus ZUGFeRD/Factur-X. "
-                        "Andere XML-Formate werden nicht gelesen."
-                    ),
-                    size_bytes=size_bytes,
-                    request_id=request_id,
-                )
         elif file_type == "zugferd_pdf":
             xml_text = extract_embedded_xml_from_pdf(content)
             if xml_text is None:
@@ -154,21 +153,18 @@ class InvoiceService:
                     size_bytes=size_bytes,
                     request_id=request_id,
                 )
-            try:
-                assert_xml_safe(xml_text)
-            except UnsafeXmlError as exc:
-                return self._error_response(
-                    filename=filename,
-                    file_type=file_type,
-                    message="XML aus Sicherheitsgründen abgelehnt.",
-                    code="UNSAFE_XML",
-                    detail=str(exc),
-                    size_bytes=size_bytes,
-                    request_id=request_id,
-                    exc_type=type(exc).__name__,
-                )
 
         assert xml_text is not None
+        xml_error: Optional[InvoiceParseResponse] = self._validate_xml_input(
+            filename=filename,
+            file_type=file_type,
+            xml_text=xml_text,
+            size_bytes=size_bytes,
+            request_id=request_id,
+        )
+        if xml_error is not None:
+            return xml_error
+
         try:
             header, vendor_data = self._run_parsers(xml_text=xml_text)
         except UnsafeXmlError as exc:
@@ -241,6 +237,69 @@ class InvoiceService:
         response = self._refresh_status_message(response)
         response.next_steps = build_next_steps(response)
         return response
+
+    def _validate_xml_input(
+        self,
+        *,
+        filename: str,
+        file_type: str,
+        xml_text: str,
+        size_bytes: int,
+        request_id: Optional[str],
+    ) -> Optional[InvoiceParseResponse]:
+        """Validate XML safety, syntax, and supported invoice dialect before parsing."""
+        try:
+            parse_xml(xml_text)
+        except UnsafeXmlError as exc:
+            return self._error_response(
+                filename=filename,
+                file_type=file_type,
+                message="XML aus Sicherheitsgründen abgelehnt.",
+                code="UNSAFE_XML",
+                detail=str(exc),
+                size_bytes=size_bytes,
+                request_id=request_id,
+                exc_type=type(exc).__name__,
+            )
+        except EtParseError:
+            return self._error_response(
+                filename=filename,
+                file_type=file_type,
+                message="XML-Datei ist beschädigt oder nicht wohlgeformt.",
+                code="XML_NOT_WELL_FORMED",
+                detail="Bitte eine vollständige, wohlgeformte Rechnungsdatei hochladen.",
+                size_bytes=size_bytes,
+                request_id=request_id,
+            )
+
+        dialect: str = self._classify_invoice_xml(xml_text)
+        if dialect == "opentrans":
+            return self._error_response(
+                filename=filename,
+                file_type="opentrans_xml",
+                message="openTRANS-XML erkannt — Format wird derzeit nicht unterstützt.",
+                code="UNSUPPORTED_OPENTRANS",
+                detail=(
+                    "Die Datei ist openTRANS 2.1, kein XRechnung-/EN-16931-XML. "
+                    "Bitte eine XRechnung (UBL/CII) oder ein ZUGFeRD-PDF hochladen."
+                ),
+                size_bytes=size_bytes,
+                request_id=request_id,
+            )
+        if dialect == "unknown":
+            return self._error_response(
+                filename=filename,
+                file_type="unsupported_xml",
+                message="XML ist kein erkennbares XRechnung-/EN-16931-Format.",
+                code="UNSUPPORTED_XML_FORMAT",
+                detail=(
+                    "Erwartet wird XRechnung (UBL Invoice/CreditNote) oder "
+                    "UN/CEFACT CII (CrossIndustryInvoice), z. B. aus ZUGFeRD/Factur-X."
+                ),
+                size_bytes=size_bytes,
+                request_id=request_id,
+            )
+        return None
 
     def _refresh_status_message(self, response: InvoiceParseResponse) -> InvoiceParseResponse:
         has_schema_error: bool = any(

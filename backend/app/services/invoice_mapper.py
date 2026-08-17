@@ -1,14 +1,16 @@
 from datetime import datetime
+from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
 from app.data_class.XmlInvoiceHeader import XmlInvoiceHeader
-from app.helper_functions.einvoice_helper import string_to_float
+from app.helper_functions.einvoice_helper import parse_decimal, quantize_money
 from app.schemas.invoice import (
     InvoiceParseResponse,
     InvoiceTotals,
     LineItem,
     PartyInfo,
     ParseStatus,
+    TaxBreakdown,
     ValidationIssue,
     ValidationStatus,
 )
@@ -72,9 +74,10 @@ def map_to_parse_response(
         message=message,
         filename=filename,
         file_type=file_type,
+        document_type="credit_note" if header.kind_of_invoice == "GU" else "invoice",
         invoice_number=header.invoice_number,
         issue_date=_format_date(header.invoice_date),
-        due_date=_format_date(header.delivery_date_till),
+        due_date=_format_date(header.due_date),
         seller=seller,
         buyer=buyer,
         totals=totals,
@@ -152,11 +155,13 @@ def build_next_steps(response: InvoiceParseResponse) -> List[str]:
 def _map_line_items(header: XmlInvoiceHeader) -> List[LineItem]:
     items: List[LineItem] = []
     for position_dict in header.get_positions_map():
-        net_amount: Optional[float] = _as_float(position_dict.get("total_net_price"))
-        tax_rate: Optional[float] = _as_float(position_dict.get("tax_rate"))
-        gross_amount: Optional[float] = None
+        net_amount: Optional[Decimal] = _as_decimal(position_dict.get("total_net_price"))
+        tax_rate: Optional[Decimal] = _as_decimal(position_dict.get("tax_rate"))
+        gross_amount: Optional[Decimal] = None
         if net_amount is not None and tax_rate is not None:
-            gross_amount = round(net_amount * (1.0 + tax_rate / 100.0), 2)
+            gross_amount = quantize_money(
+                net_amount * (Decimal("1") + tax_rate / Decimal("100"))
+            )
 
         unit_value: object = position_dict.get("quantity_unit")
         unit: Optional[str] = str(unit_value) if unit_value not in (None, "") else None
@@ -165,9 +170,9 @@ def _map_line_items(header: XmlInvoiceHeader) -> List[LineItem]:
             LineItem(
                 position=_as_int(position_dict.get("item_pos")),
                 description=position_dict.get("position_text"),
-                quantity=_as_float(position_dict.get("quantity")),
+                quantity=_as_decimal(position_dict.get("quantity")),
                 unit=unit,
-                unit_price=_as_float(position_dict.get("single_net_price")),
+                unit_price=_as_decimal(position_dict.get("single_net_price")),
                 tax_rate=tax_rate,
                 net_amount=net_amount,
                 gross_amount=gross_amount,
@@ -207,11 +212,25 @@ def _map_buyer(vendor_data: Dict[str, Any]) -> PartyInfo:
 
 def _map_totals(header: XmlInvoiceHeader) -> InvoiceTotals:
     return InvoiceTotals(
-        net=_as_float(header.invoice_amount),
-        tax=_as_float(header.total_tax_amount),
-        gross=_as_float(header.total_amount),
+        net=_as_decimal(header.invoice_amount),
+        tax=_as_decimal(header.total_tax_amount),
+        gross=_as_decimal(header.total_amount),
         currency=header.currency,
+        allowance=_as_decimal(header.discount),
+        charge=_as_decimal(header.charge_total),
+        tax_breakdown=_map_tax_breakdown(header),
     )
+
+
+def _map_tax_breakdown(header: XmlInvoiceHeader) -> List[TaxBreakdown]:
+    breakdown: List[TaxBreakdown] = []
+    for index in range(1, 6):
+        rate: Optional[Decimal] = _as_decimal(getattr(header, f"tax_rate{index}"))
+        amount: Optional[Decimal] = _as_decimal(getattr(header, f"tax_amount{index}"))
+        if rate is None:
+            continue
+        breakdown.append(TaxBreakdown(rate=rate, amount=amount))
+    return breakdown
 
 
 def _join_address(
@@ -250,18 +269,12 @@ def _format_date(value: object) -> Optional[str]:
     return str(value)
 
 
-def _as_float(value: object) -> Optional[float]:
+def _as_decimal(value: object) -> Optional[Decimal]:
     if value is None or value == "":
         return None
-    if isinstance(value, (int, float)):
-        return float(value)
-    parsed: object = string_to_float(str(value))
-    if parsed is None or parsed == "":
-        return None
-    try:
-        return float(parsed)
-    except (TypeError, ValueError):
-        return None
+    if isinstance(value, Decimal):
+        return value
+    return parse_decimal(str(value))
 
 
 def _as_int(value: object) -> Optional[int]:

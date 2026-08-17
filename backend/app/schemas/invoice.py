@@ -1,4 +1,5 @@
 from enum import Enum
+from decimal import Decimal
 from typing import List, Optional
 
 from pydantic import BaseModel, Field
@@ -36,21 +37,31 @@ class LineItem(BaseModel):
 
     position: Optional[int] = None
     description: Optional[str] = None
-    quantity: Optional[float] = None
+    quantity: Optional[Decimal] = None
     unit: Optional[str] = None
-    unit_price: Optional[float] = None
-    tax_rate: Optional[float] = None
-    net_amount: Optional[float] = None
-    gross_amount: Optional[float] = None
+    unit_price: Optional[Decimal] = None
+    tax_rate: Optional[Decimal] = None
+    net_amount: Optional[Decimal] = None
+    gross_amount: Optional[Decimal] = None
+
+
+class TaxBreakdown(BaseModel):
+    """Tax amount grouped by VAT rate."""
+
+    rate: Decimal
+    amount: Optional[Decimal] = None
 
 
 class InvoiceTotals(BaseModel):
     """Invoice monetary totals."""
 
-    net: Optional[float] = None
-    tax: Optional[float] = None
-    gross: Optional[float] = None
+    net: Optional[Decimal] = None
+    tax: Optional[Decimal] = None
+    gross: Optional[Decimal] = None
     currency: Optional[str] = None
+    allowance: Optional[Decimal] = None
+    charge: Optional[Decimal] = None
+    tax_breakdown: List[TaxBreakdown] = Field(default_factory=list)
 
 
 class ValidationIssue(BaseModel):
@@ -82,6 +93,10 @@ class InvoiceParseResponse(BaseModel):
     message: str
     filename: str
     file_type: Optional[str] = None
+    document_type: Optional[str] = Field(
+        default=None,
+        description="invoice | credit_note",
+    )
     invoice_number: Optional[str] = None
     issue_date: Optional[str] = None
     due_date: Optional[str] = None

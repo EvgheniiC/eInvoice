@@ -2,10 +2,11 @@
   "buyer": {
     "address": "Zugspitzstr. 1, 82049 Pullach Höllriegelskreuth, DE",
     "iban": null,
-    "name": "Sixt GmbH & Co. Autovermietung KG  23338",
+    "name": "DemoBuyer GmbH & Co. Autovermietung KG  23338",
     "vat_id": "DE223999470"
   },
-  "due_date": "2026-08-04",
+  "document_type": "invoice",
+  "due_date": "2026-09-03",
   "file_type": "zugferd_pdf",
   "invoice_number": "MISMATCH-99999",
   "issue_date": "2026-08-04",
@@ -17,7 +18,7 @@
       "position": 1,
       "quantity": 2.0,
       "tax_rate": 19.0,
-      "unit": null,
+      "unit": "H87",
       "unit_price": 22.25
     }
   ],
@@ -37,7 +38,7 @@
     {
       "field": "invoice_number",
       "matched": false,
-      "pdf_value": "Sixt",
+      "pdf_value": "DemoBuyer",
       "xml_value": "MISMATCH-99999"
     },
     {
@@ -62,10 +63,18 @@
   },
   "status": "partial",
   "totals": {
+    "allowance": null,
+    "charge": null,
     "currency": "EUR",
     "gross": 9999.99,
     "net": 8404.2,
-    "tax": 1595.79
+    "tax": 1595.79,
+    "tax_breakdown": [
+      {
+        "amount": 1595.79,
+        "rate": 19.0
+      }
+    ]
   },
   "validation_issues": [
     {

@@ -1,7 +1,9 @@
 from io import BytesIO
-from typing import Optional
+from typing import Final, Optional
 
 import PyPDF2
+
+MAX_EMBEDDED_XML_BYTES: Final[int] = 10 * 1024 * 1024
 
 
 def extract_embedded_xml_from_pdf(content: bytes) -> Optional[str]:
@@ -21,7 +23,7 @@ def extract_embedded_xml_from_pdf(content: bytes) -> Optional[str]:
     return _xml_from_name_tree(reader)
 
 
-def _xml_from_attachments(attachments: dict) -> Optional[str]:
+def _xml_from_attachments(attachments: dict[object, object]) -> Optional[str]:
     """Try PyPDF2/pypdf attachments mapping (name -> bytes or list of bytes)."""
     preferred: Optional[str] = None
     fallback: Optional[str] = None
@@ -92,15 +94,17 @@ def _xml_from_name_tree(reader: PyPDF2.PdfReader) -> Optional[str]:
 
 def _normalize_attachment_payload(payload: object) -> Optional[bytes]:
     if isinstance(payload, bytes):
-        return payload
+        return payload if len(payload) <= MAX_EMBEDDED_XML_BYTES else None
     if isinstance(payload, list) and payload:
         first: object = payload[0]
         if isinstance(first, bytes):
-            return first
+            return first if len(first) <= MAX_EMBEDDED_XML_BYTES else None
     return None
 
 
 def _decode_xml_bytes(raw: bytes) -> Optional[str]:
+    if len(raw) > MAX_EMBEDDED_XML_BYTES:
+        return None
     for encoding in ("utf-8", "utf-16", "latin-1"):
         try:
             text: str = raw.decode(encoding)

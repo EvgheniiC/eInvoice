@@ -1,4 +1,5 @@
 import unittest
+from decimal import Decimal
 from pathlib import Path
 
 from app.schemas.invoice import ParseStatus
@@ -20,7 +21,7 @@ class TestInvoiceService(unittest.TestCase):
         self.assertEqual(result.invoice_number, "2025/10294")
         self.assertIsNotNone(result.totals)
         self.assertEqual(result.totals.currency, "EUR")
-        self.assertAlmostEqual(result.totals.gross or 0.0, 270.73, places=2)
+        self.assertEqual(result.totals.gross, Decimal("270.73"))
         self.assertGreater(len(result.line_items), 0)
 
     def test_parse_unsupported_extension(self) -> None:

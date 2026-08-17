@@ -1,5 +1,6 @@
 {
   "buyer": null,
+  "document_type": null,
   "due_date": null,
   "file_type": "zugferd_pdf",
   "invoice_number": null,
@@ -13,7 +14,7 @@
   "validation_issues": [
     {
       "category": "schema",
-      "code": "PARSE_EXCEPTION",
+      "code": "XML_NOT_WELL_FORMED",
       "level": "error"
     }
   ],

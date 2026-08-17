@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
+from decimal import Decimal
 from typing import Dict, List, Optional
 from xml.etree.ElementTree import Element
 
@@ -13,10 +14,11 @@ from ..helper_functions import (
     get_tags_from_json,
     find_tax_data,
     get_field_value,
-    string_to_float,
     find_attribute_within_element,
     normalize_header_amount,
-    optional_string_to_float,
+    optional_string_to_decimal,
+    parse_decimal,
+    quantize_money,
     parse_xml_date,
 )
 from ..services.logger_adapter import InvoiceLogger
@@ -41,6 +43,7 @@ class HeaderTagSet:
     order_id: List[str]
     contract_id: List[str]
     invoice_date: List[str]
+    due_date: List[str]
     delivery_date: List[str]
     delivery_date_till: List[str]
     currency: List[str]
@@ -57,6 +60,7 @@ class HeaderTagSet:
     cost_center: List[str]
     client_vat_id: List[str]
     discount: List[str]
+    charge_total: List[str]
     client_with_attribute: List[str]
 
     @classmethod
@@ -66,6 +70,7 @@ class HeaderTagSet:
             order_id=get_tags_from_json("tags_to_search_order_id"),
             contract_id=get_tags_from_json("tags_to_search_contract_id"),
             invoice_date=get_tags_from_json("tags_to_search_invoice_date"),
+            due_date=get_tags_from_json("tags_to_search_due_date"),
             delivery_date=get_tags_from_json("tags_to_search_delivery_date"),
             delivery_date_till=get_tags_from_json("tags_to_search_delivery_date_till"),
             currency=get_tags_from_json("tags_to_search_currency"),
@@ -82,6 +87,7 @@ class HeaderTagSet:
             cost_center=get_tags_from_json("tags_to_search_cost_center"),
             client_vat_id=get_tags_from_json("tags_to_search_client_vat_id"),
             discount=get_tags_from_json("tags_to_search_discount"),
+            charge_total=get_tags_from_json("tags_to_search_charge_total_amount"),
             client_with_attribute=get_tags_from_json("tags_to_search_client_with_attribute"),
         )
 
@@ -158,6 +164,10 @@ def _parse_dates(
         logger.error_log("Invoice date was not found")
     header.invoice_date = invoice_date
 
+    header.due_date = parse_xml_date(
+        find_data_within_element(roots.invoice_head, tags.due_date)
+    )
+
     delivery_date: Optional[datetime] = parse_xml_date(
         find_data_within_element(roots.invoice_head, tags.delivery_date)
     )
@@ -203,7 +213,7 @@ def _parse_amounts(
     use_tax_exclusive_for_net: bool = bool(
         line_extension_amount
         and tax_exclusive_amount
-        and string_to_float(line_extension_amount) != string_to_float(tax_exclusive_amount)
+        and parse_decimal(line_extension_amount) != parse_decimal(tax_exclusive_amount)
     )
     raw_invoice_amount: Optional[str]
     if use_tax_exclusive_for_net:
@@ -216,11 +226,14 @@ def _parse_amounts(
     discount_raw: Optional[str] = find_data_within_element(
         roots.invoice_head_money, tags.discount
     )
-    header.discount = optional_string_to_float(discount_raw)
+    header.discount = optional_string_to_decimal(discount_raw)
+    header.charge_total = optional_string_to_decimal(
+        find_data_within_element(roots.invoice_head_money, tags.charge_total)
+    )
 
-    net_amount: Optional[float] = optional_string_to_float(raw_invoice_amount)
+    net_amount: Optional[Decimal] = optional_string_to_decimal(raw_invoice_amount)
     if header.discount and not use_tax_exclusive_for_net and net_amount is not None:
-        net_amount = round(net_amount - header.discount, 2)
+        net_amount = quantize_money(net_amount - header.discount)
 
     header.invoice_amount = normalize_header_amount(net_amount)
     header.total_amount = normalize_header_amount(
@@ -242,11 +255,11 @@ def _parse_taxes(header: XmlInvoiceHeader, xml_tree: Element, tags: HeaderTagSet
     header.tax_amount5 = normalize_header_amount(tax_amount["tax_amount5"])
 
     tax_rate: Dict[str, Optional[str]] = find_tax_data(xml_tree, tags.tax_rate1, "tax_rate")
-    header.tax_rate1 = optional_string_to_float(tax_rate["tax_rate1"])
-    header.tax_rate2 = optional_string_to_float(tax_rate["tax_rate2"])
-    header.tax_rate3 = optional_string_to_float(tax_rate["tax_rate3"])
-    header.tax_rate4 = optional_string_to_float(tax_rate["tax_rate4"])
-    header.tax_rate5 = optional_string_to_float(tax_rate["tax_rate5"])
+    header.tax_rate1 = optional_string_to_decimal(tax_rate["tax_rate1"])
+    header.tax_rate2 = optional_string_to_decimal(tax_rate["tax_rate2"])
+    header.tax_rate3 = optional_string_to_decimal(tax_rate["tax_rate3"])
+    header.tax_rate4 = optional_string_to_decimal(tax_rate["tax_rate4"])
+    header.tax_rate5 = optional_string_to_decimal(tax_rate["tax_rate5"])
 
 
 def _parse_parties(
@@ -292,11 +305,12 @@ def _parse_iban(
 def _parse_document_meta(
     header: XmlInvoiceHeader, roots: HeaderXmlRoots, tags: HeaderTagSet
 ) -> None:
-    # 380 → RE (invoice), 381 → GU (credit note), 384 → RE (corrected invoice)
+    # UBL CreditNote is identified by its root; CII code 381 is a credit note.
     type_code: Optional[str] = find_data_within_element(
         roots.exchanged_document, tags.kind_of_invoice
     )
-    header.kind_of_invoice = "RE" if type_code == "380" else "GU"
+    root_name: str = roots.tree.tag.split("}")[-1]
+    header.kind_of_invoice = "GU" if root_name == "CreditNote" or type_code == "381" else "RE"
 
     header.cost_center = find_data_within_element(roots.exchanged_document, tags.cost_center)
     if not header.cost_center:

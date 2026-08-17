@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { downloadAccountantPackage, exportInvoice } from '../api/client'
 import type {
+  DecimalValue,
   ExportFormat,
   InvoiceParseResponse,
   LineItem,
   MismatchField,
   PartyInfo,
+  TaxBreakdown,
   ValidationIssue,
   ValidationStatus,
 } from '../types/invoice'
@@ -18,11 +20,15 @@ interface InvoiceViewProps {
   sourceFile?: File | null
 }
 
-function formatAmount(value: number | null | undefined, currency: string | null): string {
+function formatAmount(value: DecimalValue | null | undefined, currency: string | null): string {
   if (value === null || value === undefined) {
     return '—'
   }
-  const formatted: string = value.toLocaleString('de-DE', {
+  const numericValue: number = Number(value)
+  if (!Number.isFinite(numericValue)) {
+    return '—'
+  }
+  const formatted: string = numericValue.toLocaleString('de-DE', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })
@@ -160,7 +166,9 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps) {
     <section className="invoice" aria-live="polite">
       <div className="invoice__meta">
         <div>
-          <p className="invoice__label">Rechnung</p>
+          <p className="invoice__label">
+            {invoice.document_type === 'credit_note' ? 'Gutschrift' : 'Rechnung'}
+          </p>
           <h2>{invoice.invoice_number ?? 'Ohne Nummer'}</h2>
         </div>
         <div className="invoice__badges">
@@ -226,14 +234,17 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps) {
         </div>
         <div>
           <dt>Typ</dt>
-          <dd>{invoice.file_type ?? '—'}</dd>
+          <dd>
+            {invoice.document_type === 'credit_note' ? 'Gutschrift · ' : ''}
+            {invoice.file_type ?? '—'}
+          </dd>
         </div>
         <div>
           <dt>Datum</dt>
           <dd className={fieldClass(invoice, 'issue_date')}>{invoice.issue_date ?? '—'}</dd>
         </div>
         <div>
-          <dt>Fällig / Lieferende</dt>
+          <dt>Fälligkeitsdatum</dt>
           <dd>{invoice.due_date ?? '—'}</dd>
         </div>
         {invoice.payment_reference && (
@@ -263,6 +274,31 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps) {
             <span>Brutto</span>
             <strong>{formatAmount(invoice.totals.gross, currency)}</strong>
           </div>
+          {invoice.totals.allowance !== null && (
+            <div>
+              <span>Nachlässe</span>
+              <strong>{formatAmount(invoice.totals.allowance, currency)}</strong>
+            </div>
+          )}
+          {invoice.totals.charge !== null && (
+            <div>
+              <span>Zuschläge</span>
+              <strong>{formatAmount(invoice.totals.charge, currency)}</strong>
+            </div>
+          )}
+        </div>
+      )}
+
+      {invoice.totals && invoice.totals.tax_breakdown.length > 0 && (
+        <div className="invoice__tax-breakdown">
+          <h3>MwSt-Aufschlüsselung</h3>
+          <ul>
+            {invoice.totals.tax_breakdown.map((tax: TaxBreakdown, index: number) => (
+              <li key={`${String(tax.rate)}-${index}`}>
+                {String(tax.rate)} %: {formatAmount(tax.amount, currency)}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 
@@ -304,6 +340,7 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps) {
                 <th>Preis</th>
                 <th>MwSt %</th>
                 <th>Netto</th>
+                <th>Brutto</th>
               </tr>
             </thead>
             <tbody>
@@ -316,8 +353,9 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps) {
                     {item.unit ? ` ${item.unit}` : ''}
                   </td>
                   <td>{formatAmount(item.unit_price, currency)}</td>
-                  <td>{item.tax_rate ?? '—'}</td>
+                  <td>{item.tax_rate !== null ? `${String(item.tax_rate)} %` : '—'}</td>
                   <td>{formatAmount(item.net_amount, currency)}</td>
+                  <td>{formatAmount(item.gross_amount, currency)}</td>
                 </tr>
               ))}
             </tbody>

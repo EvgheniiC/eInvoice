@@ -1,5 +1,6 @@
 import unittest
 from datetime import datetime
+from decimal import Decimal
 from unittest.mock import Mock
 
 from app.data_class.XmlInvoiceHeader import XmlInvoiceHeader
@@ -19,9 +20,9 @@ class TestXmlParserHeader(unittest.TestCase):
         self.assertEqual(data.iban, "DE95700400410228840500")
         self.assertEqual(data.kind_of_invoice, "RE")
         self.assertEqual(data.currency, "EUR")
-        self.assertEqual(data.invoice_amount, 227.50)
-        self.assertEqual(data.total_amount, 270.73)
-        self.assertEqual(data.total_tax_amount, 43.23)
+        self.assertEqual(data.invoice_amount, Decimal("227.50"))
+        self.assertEqual(data.total_amount, Decimal("270.73"))
+        self.assertEqual(data.total_tax_amount, Decimal("43.23"))
         self.assertEqual(data.invoice_date, datetime(2025, 1, 31, 0, 0))
         self.assertIsNone(data.contract_id)
 

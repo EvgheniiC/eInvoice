@@ -5,6 +5,7 @@
     "name": "[Buyer name]",
     "vat_id": null
   },
+  "document_type": "invoice",
   "due_date": null,
   "file_type": "xrechnung_xml",
   "invoice_number": "123456XX",
@@ -17,7 +18,7 @@
       "position": 1,
       "quantity": 1.0,
       "tax_rate": 7.0,
-      "unit": null,
+      "unit": "XPP",
       "unit_price": 288.79
     },
     {
@@ -27,7 +28,7 @@
       "position": 2,
       "quantity": 1.0,
       "tax_rate": 7.0,
-      "unit": null,
+      "unit": "XPP",
       "unit_price": 26.07
     }
   ],
@@ -41,10 +42,18 @@
   },
   "status": "partial",
   "totals": {
+    "allowance": null,
+    "charge": null,
     "currency": "EUR",
     "gross": 336.9,
     "net": 314.86,
-    "tax": 22.04
+    "tax": 22.04,
+    "tax_breakdown": [
+      {
+        "amount": 22.04,
+        "rate": 7.0
+      }
+    ]
   },
   "validation_issues": [
     {

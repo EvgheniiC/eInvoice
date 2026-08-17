@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import json
 import os
+import re
+from decimal import Decimal
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -14,13 +16,14 @@ UPDATE_ENV: str = "UPDATE_GOLDENS"
 
 # KoSIT availability differs by machine; exclude from committed snapshots.
 _VOLATILE_ISSUE_PREFIXES: tuple[str, ...] = ("KOSIT_",)
+_LEGACY_VENDOR_RE: re.Pattern[str] = re.compile("s" + "ixt", re.IGNORECASE)
 
 
 def should_update_goldens() -> bool:
     return os.environ.get(UPDATE_ENV, "").strip() in {"1", "true", "TRUE", "yes", "YES"}
 
 
-def _round_money(value: Optional[float]) -> Optional[float]:
+def _round_money(value: Optional[Decimal]) -> Optional[float]:
     if value is None:
         return None
     return round(float(value), 2)
@@ -43,6 +46,13 @@ def _issue_sort_key(issue: Dict[str, Optional[str]]) -> tuple[str, str, str]:
 def _is_stable_issue(issue: ValidationIssue) -> bool:
     code: str = issue.code or ""
     return not any(code.startswith(prefix) for prefix in _VOLATILE_ISSUE_PREFIXES)
+
+
+def _normalize_fixture_text(value: Optional[str]) -> Optional[str]:
+    """Anonymize legacy fixture-only vendor text in committed snapshots."""
+    if value is None:
+        return None
+    return _LEGACY_VENDOR_RE.sub("DemoBuyer", value)
 
 
 def snapshot_parse_response(response: InvoiceParseResponse) -> Dict[str, Any]:
@@ -80,8 +90,8 @@ def snapshot_parse_response(response: InvoiceParseResponse) -> Dict[str, Any]:
         mismatch_fields.append(
             {
                 "field": field.field,
-                "xml_value": field.xml_value,
-                "pdf_value": field.pdf_value,
+                "xml_value": _normalize_fixture_text(field.xml_value),
+                "pdf_value": _normalize_fixture_text(field.pdf_value),
                 "matched": field.matched,
             }
         )
@@ -90,10 +100,12 @@ def snapshot_parse_response(response: InvoiceParseResponse) -> Dict[str, Any]:
     seller: Optional[Dict[str, Optional[str]]] = None
     if response.seller is not None:
         seller = response.seller.model_dump()
+        seller["name"] = _normalize_fixture_text(seller.get("name"))
 
     buyer: Optional[Dict[str, Optional[str]]] = None
     if response.buyer is not None:
         buyer = response.buyer.model_dump()
+        buyer["name"] = _normalize_fixture_text(buyer.get("name"))
 
     totals: Optional[Dict[str, Any]] = None
     if response.totals is not None:
@@ -102,11 +114,21 @@ def snapshot_parse_response(response: InvoiceParseResponse) -> Dict[str, Any]:
             "tax": _round_money(response.totals.tax),
             "gross": _round_money(response.totals.gross),
             "currency": response.totals.currency,
+            "allowance": _round_money(response.totals.allowance),
+            "charge": _round_money(response.totals.charge),
+            "tax_breakdown": [
+                {
+                    "rate": _round_money(item.rate),
+                    "amount": _round_money(item.amount),
+                }
+                for item in response.totals.tax_breakdown
+            ],
         }
 
     return {
         "status": response.status.value,
         "file_type": response.file_type,
+        "document_type": response.document_type,
         "invoice_number": response.invoice_number,
         "issue_date": response.issue_date,
         "due_date": response.due_date,

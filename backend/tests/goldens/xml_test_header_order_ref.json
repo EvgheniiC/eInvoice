@@ -5,7 +5,8 @@
     "name": "Demo Buyer GmbH & Co. Autovermietung KG Reparaturen",
     "vat_id": "DE000000000"
   },
-  "due_date": "2025-02-19",
+  "document_type": "invoice",
+  "due_date": null,
   "file_type": "xrechnung_xml",
   "invoice_number": "22247",
   "issue_date": "2025-02-19",
@@ -17,7 +18,7 @@
       "position": 1,
       "quantity": 1.0,
       "tax_rate": 19.0,
-      "unit": null,
+      "unit": "C62",
       "unit_price": 595.36
     },
     {
@@ -27,7 +28,7 @@
       "position": 2,
       "quantity": 1.0,
       "tax_rate": 19.0,
-      "unit": null,
+      "unit": "C62",
       "unit_price": 33.61
     },
     {
@@ -37,7 +38,7 @@
       "position": 3,
       "quantity": 1.0,
       "tax_rate": 19.0,
-      "unit": null,
+      "unit": "C62",
       "unit_price": 15.0
     },
     {
@@ -47,7 +48,7 @@
       "position": 4,
       "quantity": 23.5,
       "tax_rate": 19.0,
-      "unit": null,
+      "unit": "C62",
       "unit_price": 8.33
     },
     {
@@ -57,7 +58,7 @@
       "position": 5,
       "quantity": 1.0,
       "tax_rate": 19.0,
-      "unit": null,
+      "unit": "C62",
       "unit_price": 4.31
     },
     {
@@ -67,7 +68,7 @@
       "position": 6,
       "quantity": 1.0,
       "tax_rate": 19.0,
-      "unit": null,
+      "unit": "C62",
       "unit_price": 5.0
     },
     {
@@ -77,7 +78,7 @@
       "position": 7,
       "quantity": 1.0,
       "tax_rate": 19.0,
-      "unit": null,
+      "unit": "C62",
       "unit_price": 0.0
     },
     {
@@ -87,7 +88,7 @@
       "position": 8,
       "quantity": 1.0,
       "tax_rate": 19.0,
-      "unit": null,
+      "unit": "C62",
       "unit_price": 0.0
     },
     {
@@ -97,12 +98,12 @@
       "position": 9,
       "quantity": 1.0,
       "tax_rate": 19.0,
-      "unit": null,
+      "unit": "C62",
       "unit_price": 0.0
     },
     {
       "description": "Rabatt",
-      "gross_amount": -525.38,
+      "gross_amount": -525.39,
       "net_amount": -441.5,
       "position": 10,
       "quantity": 1.0,
@@ -121,10 +122,18 @@
   },
   "status": "partial",
   "totals": {
+    "allowance": 441.5,
+    "charge": 0.0,
     "currency": "EUR",
     "gross": 484.96,
     "net": 407.53,
-    "tax": 77.43
+    "tax": 77.43,
+    "tax_breakdown": [
+      {
+        "amount": 77.43,
+        "rate": 19.0
+      }
+    ]
   },
   "validation_issues": [],
   "validation_status": "not_checked"

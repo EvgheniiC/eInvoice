@@ -1,5 +1,6 @@
 {
   "buyer": null,
+  "document_type": null,
   "due_date": null,
   "file_type": "opentrans_xml",
   "invoice_number": null,

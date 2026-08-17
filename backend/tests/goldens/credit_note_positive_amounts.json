@@ -5,7 +5,8 @@
     "name": "DemoBuyer Belgium BV",
     "vat_id": "0465341266"
   },
-  "due_date": "2026-04-15",
+  "document_type": "credit_note",
+  "due_date": null,
   "file_type": "xrechnung_xml",
   "invoice_number": "202690006807",
   "issue_date": "2026-04-06",
@@ -31,11 +32,25 @@
   },
   "status": "partial",
   "totals": {
+    "allowance": null,
+    "charge": null,
     "currency": "EUR",
-    "gross": 226.29,
-    "net": 187.02,
-    "tax": 39.27
+    "gross": -226.29,
+    "net": -187.02,
+    "tax": -39.27,
+    "tax_breakdown": [
+      {
+        "amount": -39.27,
+        "rate": 21.0
+      }
+    ]
   },
-  "validation_issues": [],
+  "validation_issues": [
+    {
+      "category": "business",
+      "code": "LINE_SUM_MISMATCH",
+      "level": "warning"
+    }
+  ],
   "validation_status": "not_checked"
 }

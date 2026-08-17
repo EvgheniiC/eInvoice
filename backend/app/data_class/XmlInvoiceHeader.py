@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field, fields
 from datetime import datetime
+from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
 from .XmlInvoicePosition import XmlInvoicePosition
@@ -21,28 +22,30 @@ class XmlInvoiceHeader:
     kind_of_invoice: Optional[str] = None
     invoice_number: Optional[str] = None
     invoice_date: Optional[datetime] = None
+    due_date: Optional[datetime] = None
     delivery_date: Optional[datetime] = None
     cost_center: Optional[str] = None
     delivery_date_till: Optional[datetime] = None
-    invoice_amount: Optional[float] = None
-    total_amount: Optional[float] = None
-    total_tax_amount: Optional[float] = None
-    tax_rate1: Optional[float] = None
-    tax_amount1: Optional[float] = None
-    tax_rate2: Optional[float] = None
-    tax_amount2: Optional[float] = None
-    tax_rate3: Optional[float] = None
-    tax_amount3: Optional[float] = None
-    tax_rate4: Optional[float] = None
-    tax_amount4: Optional[float] = None
-    tax_rate5: Optional[float] = None
-    tax_amount5: Optional[float] = None
+    invoice_amount: Optional[Decimal] = None
+    total_amount: Optional[Decimal] = None
+    total_tax_amount: Optional[Decimal] = None
+    tax_rate1: Optional[Decimal] = None
+    tax_amount1: Optional[Decimal] = None
+    tax_rate2: Optional[Decimal] = None
+    tax_amount2: Optional[Decimal] = None
+    tax_rate3: Optional[Decimal] = None
+    tax_amount3: Optional[Decimal] = None
+    tax_rate4: Optional[Decimal] = None
+    tax_amount4: Optional[Decimal] = None
+    tax_rate5: Optional[Decimal] = None
+    tax_amount5: Optional[Decimal] = None
     currency: Optional[str] = None
     receiver: Optional[str] = None
     contract_start: Optional[datetime] = None
     contract_end: Optional[datetime] = None
     buyer_vat_id: Optional[str] = None
-    discount: Optional[float] = None
+    discount: Optional[Decimal] = None
+    charge_total: Optional[Decimal] = None
     _positions: List[XmlInvoicePosition] = field(
         default_factory=list, init=False, repr=False, compare=False
     )
