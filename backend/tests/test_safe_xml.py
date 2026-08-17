@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import unittest
+from unittest.mock import patch
 from xml.etree.ElementTree import ParseError
 
 from app.helper_functions.safe_xml import UnsafeXmlError, parse_xml
@@ -60,6 +61,17 @@ class SafeXmlTests(unittest.TestCase):
     def test_malformed_still_parse_error(self) -> None:
         with self.assertRaises(ParseError):
             parse_xml("<Invoice><broken>")
+
+    def test_rejects_excessive_nesting(self) -> None:
+        payload: str = "<a>" * 90 + "x" + "</a>" * 90
+        with self.assertRaises(UnsafeXmlError):
+            parse_xml(payload)
+
+    def test_rejects_too_many_elements(self) -> None:
+        payload: str = "<r>" + "<a/>" * 8 + "</r>"
+        with patch("app.helper_functions.safe_xml.MAX_XML_ELEMENTS", 5):
+            with self.assertRaises(UnsafeXmlError):
+                parse_xml(payload)
 
 
 if __name__ == "__main__":

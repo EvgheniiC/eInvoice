@@ -1,4 +1,4 @@
-from typing import List, Protocol, runtime_checkable
+from typing import Protocol, runtime_checkable
 
 
 @runtime_checkable
@@ -13,13 +13,10 @@ class InvoiceLogger(Protocol):
 
 
 class ServiceLogger:
-    """Minimal logger adapter matching the InvoiceLogger interface."""
-
-    def __init__(self) -> None:
-        self.messages: List[str] = []
+    """Parser logger that never writes invoice content to application logs."""
 
     def info_log(self, message: str) -> None:
-        self.messages.append(f"INFO: {message}")
+        return
 
     def error_log(self, message: str) -> None:
-        self.messages.append(f"ERROR: {message}")
+        return

@@ -1,9 +1,9 @@
-"""Safe XML parsing helpers (XXE / DTD / entity expansion)."""
+"""Safe XML parsing helpers (XXE / DTD / entity expansion / complexity)."""
 
 from __future__ import annotations
 
 import re
-from typing import Final
+from typing import Final, List, Tuple
 from xml.etree.ElementTree import Element
 from xml.etree.ElementTree import ParseError as EtParseError
 
@@ -15,6 +15,9 @@ _FORBIDDEN_MARKUP_RE: Final[re.Pattern[str]] = re.compile(
     r"<!DOCTYPE|<!ENTITY",
     re.IGNORECASE,
 )
+
+MAX_XML_DEPTH: Final[int] = 80
+MAX_XML_ELEMENTS: Final[int] = 100_000
 
 
 class UnsafeXmlError(ValueError):
@@ -38,12 +41,31 @@ def assert_xml_safe(xml_text: str) -> None:
         )
 
 
+def assert_xml_complexity(root: Element) -> None:
+    """Reject XML trees that are too deep or too large for invoice processing."""
+    count: int = 0
+    stack: List[Tuple[Element, int]] = [(root, 1)]
+    while stack:
+        node, depth = stack.pop()
+        count += 1
+        if depth > MAX_XML_DEPTH:
+            raise UnsafeXmlError(
+                "XML ist zu tief verschachtelt und wurde aus Sicherheitsgründen abgelehnt."
+            )
+        if count > MAX_XML_ELEMENTS:
+            raise UnsafeXmlError(
+                "XML enthält zu viele Elemente und wurde aus Sicherheitsgründen abgelehnt."
+            )
+        for child in list(node):
+            stack.append((child, depth + 1))
+
+
 def parse_xml(xml_text: str) -> Element:
     """
     Parse XML with defusedxml (no external entities, no DTD, limited entities).
 
     Raises:
-        UnsafeXmlError: forbidden constructs
+        UnsafeXmlError: forbidden constructs or excessive complexity
         EtParseError: not well-formed XML
     """
     assert_xml_safe(xml_text)
@@ -55,4 +77,5 @@ def parse_xml(xml_text: str) -> Element:
         ) from exc
     except EtParseError:
         raise
+    assert_xml_complexity(root)
     return root

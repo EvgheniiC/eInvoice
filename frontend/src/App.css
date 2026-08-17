@@ -192,6 +192,10 @@
   color: #664d20;
 }
 
+.landing-benefits + .landing-limitations {
+  margin-top: 1.25rem;
+}
+
 .landing-steps {
   margin: 0;
   padding: 0;
@@ -244,6 +248,63 @@
 
 .landing-footer p {
   margin: 0;
+}
+
+.site-footer {
+  max-width: 42rem;
+  margin: 2.5rem auto 0;
+  padding: 2rem 1.25rem 3.5rem;
+  border-top: 1px solid #d5dcd7;
+  font-size: 0.85rem;
+  color: #5c6770;
+}
+
+.page .site-footer {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.site-footer p {
+  margin: 0 0 0.85rem;
+}
+
+.site-footer__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+}
+
+.site-footer__link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-brand);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.site-footer__link:hover {
+  color: var(--color-brand-dark);
+}
+
+.legal-section {
+  margin: 0 0 1.75rem;
+}
+
+.legal-section h2 {
+  margin: 0 0 0.6rem;
+  font-size: 1.05rem;
+}
+
+.legal-section p,
+.legal-section li {
+  color: var(--color-muted);
+}
+
+.legal-section ul {
+  margin: 0.4rem 0 0;
+  padding-left: 1.2rem;
 }
 
 @keyframes landing-rise {

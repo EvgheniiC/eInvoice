@@ -1,5 +1,7 @@
 import { useEffect, useState, type JSX } from 'react'
+import { DATENSCHUTZ, IMPRESSUM } from './content/legal'
 import { LandingPage } from './pages/LandingPage'
+import { LegalPage } from './pages/LegalPage'
 import { UploadPage } from './pages/UploadPage'
 import { pathToRoute, routeToPath, type AppRoute } from './routing'
 import './App.css'
@@ -27,10 +29,20 @@ function App(): JSX.Element {
   }
 
   if (route === 'upload') {
-    return <UploadPage onNavigateHome={() => navigate('landing')} />
+    return (
+      <UploadPage onNavigateHome={() => navigate('landing')} onNavigate={navigate} />
+    )
   }
 
-  return <LandingPage onStart={() => navigate('upload')} />
+  if (route === 'impressum') {
+    return <LegalPage document={IMPRESSUM} onNavigate={navigate} />
+  }
+
+  if (route === 'datenschutz') {
+    return <LegalPage document={DATENSCHUTZ} onNavigate={navigate} />
+  }
+
+  return <LandingPage onStart={() => navigate('upload')} onNavigate={navigate} />
 }
 
 export default App

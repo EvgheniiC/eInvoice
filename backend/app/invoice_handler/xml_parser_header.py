@@ -291,7 +291,7 @@ def _parse_iban(
     header.iban = iban_22.replace(" ", "") if iban_22 else None
 
     if header.iban:
-        logger.info_log(f"IBAN was found = {header.iban}")
+        logger.info_log("IBAN was found")
         if len(header.iban) < 22:
             header.iban = find_data_within_element(roots.supplier_data, tags.iban)
 

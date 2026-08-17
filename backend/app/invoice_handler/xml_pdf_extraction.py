@@ -47,8 +47,7 @@ def extract_pdf_attachments(invoice_id: str, data: dict, key: str) -> list:
             if file_entry["attachment"]:
                 attachments.append(file_entry)
 
-        except Exception as e:
-            print(f"Error processing attachment in document {doc.get('ID', 'unknown')}: {e}")
+        except Exception:
             continue
 
     return attachments
@@ -66,8 +65,7 @@ def get_pdf_file(invoice_id: str, xml_text: str) -> Optional[list]:
         if "Invoice" in data_dict:
             invoice_data: dict = data_dict["Invoice"]
             return extract_pdf_attachments(invoice_id, invoice_data, "AdditionalDocumentReference")
-    except Exception as e:
-        print(f"Error in get_pdf_file {e}")
+    except Exception:
         return None
 
     return None

@@ -20,9 +20,22 @@ Restart=always
 RestartSec=3
 TimeoutStopSec=15
 
-# Mild hardening
+# Process isolation for the API and the KoSIT Java child
 NoNewPrivileges=true
 PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+RestrictRealtime=true
+RestrictNamespaces=true
+MemoryMax=1G
+TasksMax=64
+LimitCORE=0
 
 [Install]
 WantedBy=multi-user.target

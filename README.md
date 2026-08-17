@@ -114,3 +114,28 @@ cd tests && python -m unittest discover -s . -v
 - `GET /api/invoices/export/mapping` — versioned column mapping for Steuerberater
 
 See [docs/EXPORT_MAPPING.md](docs/EXPORT_MAPPING.md). DATEV export is a Buchungsstapel CSV, not DATEVconnect.
+
+## Privacy and legal pages
+
+The SPA serves `/impressum` and `/datenschutz`. Operator identity is intentionally
+left blank until the public launch. Files are processed in memory and short-lived
+temp directories, then deleted; application logs never contain invoice XML/PDF.
+
+See [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md) and [docs/AVV_DPA.md](docs/AVV_DPA.md).
+
+## Nginx (production)
+
+On the HTTPS vhost, include:
+
+```nginx
+# inside http { }
+include /opt/eInvoice/deploy/nginx-rate-limit-zone.conf;
+
+# inside server { }
+include /opt/eInvoice/deploy/nginx-security-snippet.conf;
+include /opt/eInvoice/deploy/nginx-api-snippet.conf;
+include /opt/eInvoice/deploy/nginx-spa-snippet.conf;
+```
+
+Terminate TLS on nginx. The API listens on `127.0.0.1:8000` only.
+Set `CORS_ORIGINS` in `backend/.env` only if the SPA is on a different origin.

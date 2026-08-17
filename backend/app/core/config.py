@@ -21,8 +21,13 @@ class Settings(BaseSettings):
         "http://localhost:5173",
         "http://127.0.0.1:5173",
     ]
+    cors_allow_credentials: bool = False
     max_upload_size_mb: int = 10
     allowed_extensions: List[str] = [".xml", ".pdf"]
+    # 0 disables the in-app limiter (nginx limit_req remains the edge control).
+    rate_limit_per_minute: int = 30
+    request_timeout_seconds: int = 90
+    kosit_java_max_heap_mb: int = 512
 
     # Official KoSIT EN 16931 / XRechnung validator (Java CLI).
     # Required when environment is production, or when kosit_required is true.
@@ -31,6 +36,19 @@ class Settings(BaseSettings):
     kosit_scenarios_xml: Optional[str] = None
     kosit_timeout_seconds: int = 60
     kosit_required: bool = False
+
+    @property
+    def effective_cors_origins(self) -> List[str]:
+        """Production must not keep the local Vite origins unless explicitly set."""
+        origins: List[str] = list(self.cors_origins)
+        if not self.is_production:
+            return origins
+        local_only: set[str] = {
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+        }
+        public_origins: List[str] = [item for item in origins if item not in local_only]
+        return public_origins if public_origins else origins
 
     @property
     def is_production(self) -> bool:

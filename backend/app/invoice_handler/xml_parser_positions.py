@@ -115,8 +115,8 @@ def get_xml_positions(
             oe_matches = re.findall(r"OE\s*\w{9,}", description_text)
             if oe_matches:
                 article_number = oe_matches[0].replace("OE", "").replace(" ", "")
-        except Exception as e:
-            logger.error_log(f"Mistake with article number {e}")
+        except Exception:
+            logger.error_log("Article number could not be parsed")
 
         xml_invoice_data.add_position(
             XmlInvoicePosition(

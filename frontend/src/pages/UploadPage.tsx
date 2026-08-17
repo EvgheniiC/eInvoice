@@ -3,16 +3,19 @@ import { parseInvoice } from '../api/client'
 import { FileUpload } from '../components/FileUpload'
 import { InvoiceView } from '../components/InvoiceView'
 import { PdfPreview } from '../components/PdfPreview'
+import { SiteFooter } from '../components/SiteFooter'
 import type { InvoiceParseResponse, ValidationIssue } from '../types/invoice'
+import type { AppRoute } from '../routing'
 
 const NETWORK_ERROR_MESSAGE: string =
   'Der Dienst ist momentan nicht erreichbar. Bitte prüfen Sie Ihre Verbindung und versuchen Sie es erneut.'
 
 type UploadPageProps = {
   onNavigateHome: () => void
+  onNavigate: (route: AppRoute) => void
 }
 
-export function UploadPage({ onNavigateHome }: UploadPageProps): JSX.Element {
+export function UploadPage({ onNavigateHome, onNavigate }: UploadPageProps): JSX.Element {
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedFilename, setSelectedFilename] = useState<string | null>(null)
@@ -129,10 +132,7 @@ export function UploadPage({ onNavigateHome }: UploadPageProps): JSX.Element {
         </section>
       )}
 
-      <footer className="disclaimer">
-        eInvoice unterstützt bei der technischen und inhaltlichen Prüfung, ersetzt aber keine
-        Rechts- oder Steuerberatung und gibt keine Garantie für den Vorsteuerabzug.
-      </footer>
+      <SiteFooter onNavigate={onNavigate} />
     </main>
   )
 }

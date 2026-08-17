@@ -459,14 +459,10 @@ class InvoiceService:
         return "unknown"
 
     def _is_zugferd_content(self, content: bytes) -> bool:
-        tmp_path: Optional[str] = None
         try:
-            with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
-                tmp.write(content)
-                tmp_path = tmp.name
-            return bool(is_zugpferd_pdf(tmp_path))
+            with tempfile.TemporaryDirectory(prefix="einvoice_pdf_") as tmp_dir:
+                tmp_path: Path = Path(tmp_dir) / "upload.pdf"
+                tmp_path.write_bytes(content)
+                return bool(is_zugpferd_pdf(str(tmp_path)))
         except Exception:
             return False
-        finally:
-            if tmp_path is not None:
-                Path(tmp_path).unlink(missing_ok=True)

@@ -10,6 +10,11 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from app.api.routes import api_router
 from app.core.config import settings
 from app.core.error_events import format_safe_stack, log_api_error
+from app.core.http_security import (
+    RateLimitMiddleware,
+    RequestTimeoutMiddleware,
+    SecurityHeadersMiddleware,
+)
 from app.core.logging_config import configure_logging
 from app.core.middleware import RequestObservabilityMiddleware, get_request_id
 
@@ -27,12 +32,16 @@ def create_app() -> FastAPI:
     )
     application.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.cors_origins,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+        allow_origins=settings.effective_cors_origins,
+        allow_credentials=settings.cors_allow_credentials,
+        allow_methods=["GET", "POST", "OPTIONS"],
+        allow_headers=["Content-Type", "X-Request-ID"],
+        expose_headers=["X-Request-ID", "Content-Disposition"],
     )
-    # Outer-most for request handling after CORS: observability wraps the app.
+    application.add_middleware(RateLimitMiddleware)
+    application.add_middleware(RequestTimeoutMiddleware)
+    application.add_middleware(SecurityHeadersMiddleware)
+    # Outer-most: request id + slow-request warning wrap the other middleware.
     application.add_middleware(RequestObservabilityMiddleware)
     _register_exception_handlers(application)
     application.include_router(api_router, prefix="/api")

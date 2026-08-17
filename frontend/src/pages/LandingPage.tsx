@@ -1,11 +1,14 @@
 import type { JSX } from 'react'
 import { InvoiceHeroVisual } from '../components/InvoiceHeroVisual'
+import { SiteFooter } from '../components/SiteFooter'
+import type { AppRoute } from '../routing'
 
 type LandingPageProps = {
   onStart: () => void
+  onNavigate: (route: AppRoute) => void
 }
 
-export function LandingPage({ onStart }: LandingPageProps): JSX.Element {
+export function LandingPage({ onStart, onNavigate }: LandingPageProps): JSX.Element {
   return (
     <div className="landing">
       <section className="landing-hero">
@@ -19,7 +22,8 @@ export function LandingPage({ onStart }: LandingPageProps): JSX.Element {
             exportieren.
           </p>
           <p className="landing-hero__note">
-            Ohne Registrierung. Ihre Datei wird direkt verarbeitet.
+            Ohne Registrierung. Die Datei wird nur für diese Anfrage verarbeitet und danach
+            gelöscht.
           </p>
           <div className="landing-hero__cta">
             <button type="button" className="btn btn--primary" onClick={onStart}>
@@ -97,13 +101,26 @@ export function LandingPage({ onStart }: LandingPageProps): JSX.Element {
         </p>
       </section>
 
-      <footer className="landing-footer">
-        <p>
-          eInvoice unterstützt bei der technischen und inhaltlichen Prüfung, ersetzt aber
-          keine Rechts- oder Steuerberatung und gibt keine Garantie für den Vorsteuerabzug.
-          Die Entscheidung liegt bei Ihnen bzw. Ihrem Steuerberater.
+      <section className="landing-section" aria-labelledby="privacy-heading">
+        <h2 id="privacy-heading" className="landing-section__title">
+          Was mit Ihrer Datei passiert
+        </h2>
+        <p className="landing-section__lead">
+          Die Rechnung wird auf dem Server gelesen und geprüft. Es gibt kein Benutzerkonto und
+          kein Rechnungsarchiv.
         </p>
-      </footer>
+        <ul className="landing-benefits">
+          <li>Verarbeitung nur während der Anfrage, im Arbeitsspeicher und in temporären Dateien</li>
+          <li>XML/PDF und Validator-Ergebnisse werden danach gelöscht</li>
+          <li>Protokolle enthalten keinen Rechnungsinhalt (kein IBAN, kein XML)</li>
+        </ul>
+        <p className="landing-limitations">
+          Betreiberangaben (Impressum) folgen vor dem öffentlichen Betrieb. Details stehen in der
+          Datenschutzerklärung.
+        </p>
+      </section>
+
+      <SiteFooter onNavigate={onNavigate} />
     </div>
   )
 }

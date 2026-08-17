@@ -1,10 +1,11 @@
 import logging
+import os
 import subprocess
 import tempfile
 from dataclasses import dataclass, field
 from decimal import Decimal
 from pathlib import Path
-from typing import List, Optional, Set
+from typing import Any, Callable, Dict, List, Optional, Set
 from xml.etree.ElementTree import ParseError as EtParseError
 
 from app.core.config import settings
@@ -313,22 +314,29 @@ def _run_kosit(
         with tempfile.TemporaryDirectory(prefix="kosit_") as tmp_dir:
             xml_path: Path = Path(tmp_dir) / "invoice.xml"
             xml_path.write_text(xml_text, encoding="utf-8")
-            command: List[str] = [
-                settings.kosit_java_bin,
-                "-jar",
-                jar,
-                "-s",
-                scenarios,
-                "-o",
-                tmp_dir,
-                str(xml_path),
-            ]
+            command: List[str] = build_kosit_command(
+                java_bin=settings.kosit_java_bin,
+                jar=jar,
+                scenarios=scenarios,
+                output_dir=tmp_dir,
+                xml_path=str(xml_path),
+                max_heap_mb=settings.kosit_java_max_heap_mb,
+            )
+            run_kwargs: Dict[str, Any] = {
+                "capture_output": True,
+                "text": True,
+                "timeout": settings.kosit_timeout_seconds,
+                "check": False,
+            }
+            preexec: Optional[Callable[[], None]] = kosit_preexec_fn(
+                timeout_seconds=settings.kosit_timeout_seconds,
+                max_heap_mb=settings.kosit_java_max_heap_mb,
+            )
+            if preexec is not None:
+                run_kwargs["preexec_fn"] = preexec
             completed: subprocess.CompletedProcess[str] = subprocess.run(
                 command,
-                capture_output=True,
-                text=True,
-                timeout=settings.kosit_timeout_seconds,
-                check=False,
+                **run_kwargs,
             )
             report_path: Optional[Path] = find_kosit_report(Path(tmp_dir))
             report: Optional[KositReport] = None
@@ -509,3 +517,53 @@ def _status_from_issues(
     if has_warning:
         return ValidationStatus.WARNING
     return ValidationStatus.VALID
+
+
+def build_kosit_command(
+    *,
+    java_bin: str,
+    jar: str,
+    scenarios: str,
+    output_dir: str,
+    xml_path: str,
+    max_heap_mb: int,
+) -> List[str]:
+    """Build the KoSIT CLI with a bounded JVM heap. JVM flags must precede -jar."""
+    heap_mb: int = max(64, max_heap_mb)
+    return [
+        java_bin,
+        f"-Xmx{heap_mb}m",
+        "-Xms32m",
+        "-Djava.awt.headless=true",
+        "-jar",
+        jar,
+        "-s",
+        scenarios,
+        "-o",
+        output_dir,
+        xml_path,
+    ]
+
+
+def kosit_preexec_fn(
+    *,
+    timeout_seconds: int,
+    max_heap_mb: int,
+) -> Optional[Callable[[], None]]:
+    """Return a POSIX preexec hook that caps CPU and address space for Java."""
+    if os.name != "posix":
+        return None
+    try:
+        import resource
+    except ImportError:
+        return None
+
+    cpu_limit: int = max(5, timeout_seconds + 5)
+    as_bytes: int = max(512, max_heap_mb * 3) * 1024 * 1024
+
+    def _apply_limits() -> None:
+        resource.setrlimit(resource.RLIMIT_CPU, (cpu_limit, cpu_limit))
+        resource.setrlimit(resource.RLIMIT_AS, (as_bytes, as_bytes))
+        resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
+
+    return _apply_limits

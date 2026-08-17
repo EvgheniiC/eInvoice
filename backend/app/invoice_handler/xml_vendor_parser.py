@@ -94,5 +94,5 @@ def get_einvoice_vendor_data(
     if vendor and len(vendor) != 8:
         vendor = ""
 
-    logger.info_log(f"Finish get_einvoice_vendor_data invoice_id={invoice_id}, supplier={vendor}")
+    logger.info_log(f"Finish get_einvoice_vendor_data invoice_id={invoice_id}")
     return vendor_data, vendor
