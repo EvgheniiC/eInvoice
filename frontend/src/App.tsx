@@ -1,5 +1,5 @@
-import { useEffect, useState, type JSX } from 'react'
-import { DATENSCHUTZ, IMPRESSUM } from './content/legal'
+import { useEffect, useRef, useState, type JSX, type RefObject } from 'react'
+import { LEGAL_PAGES } from './content/legal'
 import { LandingPage } from './pages/LandingPage'
 import { LegalPage } from './pages/LegalPage'
 import { UploadPage } from './pages/UploadPage'
@@ -8,6 +8,7 @@ import './App.css'
 
 function App(): JSX.Element {
   const [route, setRoute] = useState<AppRoute>(() => pathToRoute(window.location.pathname))
+  const isFirstRoute: RefObject<boolean> = useRef<boolean>(true)
 
   useEffect(() => {
     function onPopState(): void {
@@ -19,6 +20,15 @@ function App(): JSX.Element {
     }
   }, [])
 
+  useEffect(() => {
+    if (isFirstRoute.current) {
+      isFirstRoute.current = false
+      return
+    }
+    const heading: HTMLElement | null = document.querySelector('#main-content h1')
+    heading?.focus()
+  }, [route])
+
   function navigate(next: AppRoute): void {
     const path: string = routeToPath(next)
     if (window.location.pathname !== path) {
@@ -28,21 +38,20 @@ function App(): JSX.Element {
     setRoute(next)
   }
 
-  if (route === 'upload') {
-    return (
-      <UploadPage onNavigateHome={() => navigate('landing')} onNavigate={navigate} />
-    )
-  }
-
-  if (route === 'impressum') {
-    return <LegalPage document={IMPRESSUM} onNavigate={navigate} />
-  }
-
-  if (route === 'datenschutz') {
-    return <LegalPage document={DATENSCHUTZ} onNavigate={navigate} />
-  }
-
-  return <LandingPage onStart={() => navigate('upload')} onNavigate={navigate} />
+  return (
+    <>
+      <a className="skip-link" href="#main-content">
+        Zum Inhalt springen
+      </a>
+      {route === 'upload' ? (
+        <UploadPage onNavigateHome={() => navigate('landing')} onNavigate={navigate} />
+      ) : route === 'legal' ? (
+        <LegalPage documents={LEGAL_PAGES} onNavigate={navigate} />
+      ) : (
+        <LandingPage onStart={() => navigate('upload')} onNavigate={navigate} />
+      )}
+    </>
+  )
 }
 
 export default App

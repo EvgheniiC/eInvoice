@@ -5,6 +5,7 @@ export type LegalSection = {
 }
 
 export type LegalDocument = {
+  id: string
   title: string
   updatedLabel: string
   intro: string
@@ -14,6 +15,7 @@ export type LegalDocument = {
 const PLACEHOLDER: string = 'Angaben folgen vor dem öffentlichen Betrieb.'
 
 export const IMPRESSUM: LegalDocument = {
+  id: 'impressum',
   title: 'Impressum',
   updatedLabel: 'Stand: August 2026',
   intro:
@@ -51,6 +53,7 @@ export const IMPRESSUM: LegalDocument = {
 }
 
 export const DATENSCHUTZ: LegalDocument = {
+  id: 'datenschutz',
   title: 'Datenschutzerklärung',
   updatedLabel: 'Stand: August 2026',
   intro:
@@ -154,3 +157,5 @@ export const DATENSCHUTZ: LegalDocument = {
     },
   ],
 }
+
+export const LEGAL_PAGES: LegalDocument[] = [IMPRESSUM, DATENSCHUTZ]

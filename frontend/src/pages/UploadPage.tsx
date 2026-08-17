@@ -1,7 +1,8 @@
-import { useState, type JSX } from 'react'
+import { useEffect, useRef, useState, type JSX, type RefObject } from 'react'
 import { parseInvoice } from '../api/client'
 import { FileUpload } from '../components/FileUpload'
 import { InvoiceView } from '../components/InvoiceView'
+import { LegalEntryButton } from '../components/LegalEntryButton'
 import { PdfPreview } from '../components/PdfPreview'
 import { SiteFooter } from '../components/SiteFooter'
 import type { InvoiceParseResponse, ValidationIssue } from '../types/invoice'
@@ -22,17 +23,41 @@ export function UploadPage({ onNavigateHome, onNavigate }: UploadPageProps): JSX
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [result, setResult] = useState<InvoiceParseResponse | null>(null)
   const [showPdf, setShowPdf] = useState<boolean>(true)
+  const [announcement, setAnnouncement] = useState<string>('')
+  const inFlightRef: RefObject<boolean> = useRef<boolean>(false)
+  const feedbackRef: RefObject<HTMLElement | null> = useRef<HTMLElement | null>(null)
+
+  function bindFeedback(node: HTMLElement | null): void {
+    feedbackRef.current = node
+  }
+
+  useEffect(() => {
+    if (loading || (!error && !result)) {
+      return
+    }
+    feedbackRef.current?.focus()
+  }, [loading, error, result])
 
   async function handleFile(file: File): Promise<void> {
+    if (inFlightRef.current) {
+      return
+    }
+    inFlightRef.current = true
     setLoading(true)
     setError(null)
     setResult(null)
     setUploadedFile(file)
     setSelectedFilename(file.name)
     setShowPdf(true)
+    setAnnouncement(`Datei ${file.name} wird gelesen und geprüft. Bitte warten.`)
     try {
       const response: InvoiceParseResponse = await parseInvoice(file)
       setResult(response)
+      if (response.status === 'error') {
+        setAnnouncement(response.message)
+      } else {
+        setAnnouncement(`Rechnung ${file.name} wurde gelesen.`)
+      }
     } catch (err: unknown) {
       const message: string =
         err instanceof TypeError
@@ -41,7 +66,9 @@ export function UploadPage({ onNavigateHome, onNavigate }: UploadPageProps): JSX
             ? err.message
             : 'Die Datei konnte nicht verarbeitet werden. Bitte versuchen Sie es erneut.'
       setError(message)
+      setAnnouncement(message)
     } finally {
+      inFlightRef.current = false
       setLoading(false)
     }
   }
@@ -56,25 +83,43 @@ export function UploadPage({ onNavigateHome, onNavigate }: UploadPageProps): JSX
     canShowPdfSideBySide && showPdf ? 'page page--split' : 'page'
 
   return (
-    <main className={pageClassName}>
+    <main id="main-content" className={pageClassName} tabIndex={-1} aria-busy={loading}>
+      <div className="visually-hidden" aria-live="polite" aria-atomic="true">
+        {announcement}
+      </div>
       <header className="page__header">
-        <button type="button" className="page__home" onClick={onNavigateHome}>
-          ← eInvoice
-        </button>
-        <h1>Rechnung empfangen</h1>
+        <div className="page__header-row">
+          <button type="button" className="page__home" onClick={onNavigateHome}>
+            ← eInvoice
+          </button>
+          <LegalEntryButton onClick={() => onNavigate('legal')} />
+        </div>
+        <h1 tabIndex={-1}>Rechnung empfangen</h1>
         <p className="page__lead">
           XRechnung-XML oder ZUGFeRD-PDF hochladen — lesbare Ansicht der Rechnungsdaten.
         </p>
-        <p className="page__limits">
+        <p id="upload-limits" className="page__limits">
           Eine Datei bis 10 MB · UBL Invoice/CreditNote, UN/CEFACT CII oder ZUGFeRD/Factur-X
         </p>
       </header>
 
-      <FileUpload onFileSelected={handleFile} disabled={loading} />
+      <FileUpload onFileSelected={handleFile} disabled={loading} describedBy="upload-limits" />
 
-      {loading && <p className="status status--info">Datei wird verarbeitet…</p>}
+      {loading && (
+        <div className="progress" role="status" aria-live="polite" aria-busy="true">
+          <div className="progress__track" aria-hidden="true">
+            <div className="progress__bar" />
+          </div>
+          <p className="progress__label">Datei wird gelesen und geprüft… Bitte warten.</p>
+        </div>
+      )}
       {error && (
-        <section className="status status--error" aria-live="polite">
+        <section
+          className="status status--error"
+          role="alert"
+          tabIndex={-1}
+          ref={bindFeedback}
+        >
           {selectedFilename && <p className="status__file">Datei: {selectedFilename}</p>}
           <p>{error}</p>
           <p>
@@ -86,7 +131,11 @@ export function UploadPage({ onNavigateHome, onNavigate }: UploadPageProps): JSX
 
       {canShowPdfSideBySide && (
         <div className="pdf-toggle">
-          <button type="button" onClick={() => setShowPdf((prev: boolean) => !prev)}>
+          <button
+            type="button"
+            aria-pressed={showPdf}
+            onClick={() => setShowPdf((prev: boolean) => !prev)}
+          >
             {showPdf ? 'PDF ausblenden' : 'PDF neben Daten anzeigen'}
           </button>
           <p className="pdf-toggle__hint">
@@ -96,7 +145,7 @@ export function UploadPage({ onNavigateHome, onNavigate }: UploadPageProps): JSX
       )}
 
       {result && result.status !== 'error' && canShowPdfSideBySide && showPdf && uploadedFile && (
-        <div className="invoice-split">
+        <div className="invoice-split" ref={bindFeedback} tabIndex={-1}>
           <div className="invoice-split__pdf">
             <PdfPreview file={uploadedFile} title="Visuelle PDF" />
           </div>
@@ -107,11 +156,18 @@ export function UploadPage({ onNavigateHome, onNavigate }: UploadPageProps): JSX
       )}
 
       {result && result.status !== 'error' && !(canShowPdfSideBySide && showPdf) && (
-        <InvoiceView invoice={result} sourceFile={uploadedFile} />
+        <div ref={bindFeedback} tabIndex={-1}>
+          <InvoiceView invoice={result} sourceFile={uploadedFile} />
+        </div>
       )}
 
       {result && result.status === 'error' && (
-        <section className="status status--error" aria-live="polite">
+        <section
+          className="status status--error"
+          role="alert"
+          tabIndex={-1}
+          ref={bindFeedback}
+        >
           {result.filename && <p className="status__file">Datei: {result.filename}</p>}
           <p>
             <strong>{result.message}</strong>
@@ -132,7 +188,7 @@ export function UploadPage({ onNavigateHome, onNavigate }: UploadPageProps): JSX
         </section>
       )}
 
-      <SiteFooter onNavigate={onNavigate} />
+      <SiteFooter />
     </main>
   )
 }

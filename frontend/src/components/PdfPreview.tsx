@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type JSX } from 'react'
 
 interface PdfPreviewProps {
   file: File
   title?: string
 }
 
-export function PdfPreview({ file, title = 'PDF-Ansicht' }: PdfPreviewProps) {
+export function PdfPreview({ file, title = 'PDF-Ansicht' }: PdfPreviewProps): JSX.Element {
   const [objectUrl, setObjectUrl] = useState<string | null>(null)
 
   useEffect(() => {
@@ -17,7 +17,11 @@ export function PdfPreview({ file, title = 'PDF-Ansicht' }: PdfPreviewProps) {
   }, [file])
 
   if (!objectUrl) {
-    return null
+    return (
+      <section className="pdf-preview" aria-label={title}>
+        <p className="pdf-preview__fallback">PDF-Vorschau wird vorbereitet…</p>
+      </section>
+    )
   }
 
   return (
@@ -29,6 +33,9 @@ export function PdfPreview({ file, title = 'PDF-Ansicht' }: PdfPreviewProps) {
         </a>
       </div>
       <iframe className="pdf-preview__frame" src={objectUrl} title={title} />
+      <p className="pdf-preview__fallback">
+        Wenn die Vorschau leer bleibt (häufig auf dem Smartphone), nutzen Sie bitte den Download.
+      </p>
     </section>
   )
 }

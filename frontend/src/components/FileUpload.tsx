@@ -1,29 +1,33 @@
-import { useRef, useState, type ChangeEvent, type DragEvent } from 'react'
+import { useState, type ChangeEvent, type DragEvent, type JSX } from 'react'
 
 interface FileUploadProps {
   onFileSelected: (file: File) => void
   disabled?: boolean
+  describedBy?: string
 }
 
 const ACCEPTED: string = '.xml,.pdf,application/xml,text/xml,application/pdf'
+const INPUT_ID: string = 'invoice-file-input'
+const TITLE_ID: string = 'invoice-file-title'
+const HINT_ID: string = 'invoice-file-hint'
 
-export function FileUpload({ onFileSelected, disabled = false }: FileUploadProps) {
-  const inputRef = useRef<HTMLInputElement>(null)
+export function FileUpload({
+  onFileSelected,
+  disabled = false,
+  describedBy,
+}: FileUploadProps): JSX.Element {
   const [isDragging, setIsDragging] = useState<boolean>(false)
 
   function handleFiles(files: FileList | null): void {
-    if (!files || files.length === 0) {
+    if (disabled || !files || files.length === 0) {
       return
     }
     onFileSelected(files[0])
   }
 
-  function onDrop(event: DragEvent<HTMLDivElement>): void {
+  function onDrop(event: DragEvent<HTMLLabelElement>): void {
     event.preventDefault()
     setIsDragging(false)
-    if (disabled) {
-      return
-    }
     handleFiles(event.dataTransfer.files)
   }
 
@@ -32,10 +36,20 @@ export function FileUpload({ onFileSelected, disabled = false }: FileUploadProps
     event.target.value = ''
   }
 
+  const describedByIds: string = describedBy ? `${HINT_ID} ${describedBy}` : HINT_ID
+  const className: string = [
+    'upload-zone',
+    isDragging ? 'upload-zone--active' : '',
+    disabled ? 'upload-zone--disabled' : '',
+  ]
+    .filter((item: string): boolean => item.length > 0)
+    .join(' ')
+
   return (
-    <div
-      className={`upload-zone${isDragging ? ' upload-zone--active' : ''}${disabled ? ' upload-zone--disabled' : ''}`}
-      onDragOver={(event: DragEvent<HTMLDivElement>) => {
+    <label
+      className={className}
+      aria-disabled={disabled}
+      onDragOver={(event: DragEvent<HTMLLabelElement>) => {
         event.preventDefault()
         if (!disabled) {
           setIsDragging(true)
@@ -43,29 +57,23 @@ export function FileUpload({ onFileSelected, disabled = false }: FileUploadProps
       }}
       onDragLeave={() => setIsDragging(false)}
       onDrop={onDrop}
-      onClick={() => {
-        if (!disabled) {
-          inputRef.current?.click()
-        }
-      }}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(event) => {
-        if ((event.key === 'Enter' || event.key === ' ') && !disabled) {
-          inputRef.current?.click()
-        }
-      }}
     >
-      <p className="upload-zone__title">XRechnung XML oder ZUGFeRD PDF hier ablegen</p>
-      <p className="upload-zone__hint">oder klicken zum Auswählen (.xml / .pdf)</p>
+      <span id={TITLE_ID} className="upload-zone__title">
+        XRechnung XML oder ZUGFeRD PDF hier ablegen
+      </span>
+      <span id={HINT_ID} className="upload-zone__hint">
+        oder Datei auswählen (.xml / .pdf)
+      </span>
       <input
-        ref={inputRef}
+        id={INPUT_ID}
+        className="visually-hidden"
         type="file"
         accept={ACCEPTED}
-        hidden
         disabled={disabled}
+        aria-labelledby={TITLE_ID}
+        aria-describedby={describedByIds}
         onChange={onBrowse}
       />
-    </div>
+    </label>
   )
 }

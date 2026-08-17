@@ -1,5 +1,6 @@
 import type { JSX } from 'react'
 import { InvoiceHeroVisual } from '../components/InvoiceHeroVisual'
+import { LegalEntryButton } from '../components/LegalEntryButton'
 import { SiteFooter } from '../components/SiteFooter'
 import type { AppRoute } from '../routing'
 
@@ -10,11 +11,12 @@ type LandingPageProps = {
 
 export function LandingPage({ onStart, onNavigate }: LandingPageProps): JSX.Element {
   return (
-    <div className="landing">
+    <main id="main-content" className="landing" tabIndex={-1}>
       <section className="landing-hero">
+        <LegalEntryButton overlay onClick={() => onNavigate('legal')} />
         <div className="landing-hero__copy">
           <p className="landing-brand">eInvoice</p>
-          <h1 className="landing-hero__title">
+          <h1 className="landing-hero__title" tabIndex={-1}>
             E-Rechnungen kommen als XML — und bleiben unlesbar.
           </h1>
           <p className="landing-hero__lead">
@@ -115,12 +117,12 @@ export function LandingPage({ onStart, onNavigate }: LandingPageProps): JSX.Elem
           <li>Protokolle enthalten keinen Rechnungsinhalt (kein IBAN, kein XML)</li>
         </ul>
         <p className="landing-limitations">
-          Betreiberangaben (Impressum) folgen vor dem öffentlichen Betrieb. Details stehen in der
-          Datenschutzerklärung.
+          Betreiberangaben folgen vor dem öffentlichen Betrieb. Impressum und
+          Datenschutzerklärung öffnen Sie oben rechts über die Schaltfläche Impressum.
         </p>
       </section>
 
-      <SiteFooter onNavigate={onNavigate} />
-    </div>
+      <SiteFooter />
+    </main>
   )
 }

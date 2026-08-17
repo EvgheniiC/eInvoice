@@ -1,42 +1,70 @@
-import type { JSX } from 'react'
+import { useEffect, type JSX } from 'react'
 import { SiteFooter } from '../components/SiteFooter'
 import type { LegalDocument, LegalSection } from '../content/legal'
 import type { AppRoute } from '../routing'
 
 type LegalPageProps = {
-  document: LegalDocument
+  documents: LegalDocument[]
   onNavigate: (route: AppRoute) => void
 }
 
-export function LegalPage({ document, onNavigate }: LegalPageProps): JSX.Element {
+export function LegalPage({ documents, onNavigate }: LegalPageProps): JSX.Element {
+  useEffect(() => {
+    const hash: string = window.location.hash.replace('#', '')
+    const fromPath: string = window.location.pathname.includes('datenschutz')
+      ? 'datenschutz'
+      : ''
+    const targetId: string = hash || fromPath
+    if (!targetId) {
+      return
+    }
+    document.getElementById(targetId)?.scrollIntoView({ block: 'start' })
+  }, [])
+
   return (
-    <main className="page page--legal">
+    <main id="main-content" className="page page--legal" tabIndex={-1}>
       <header className="page__header">
         <button type="button" className="page__home" onClick={() => onNavigate('landing')}>
           ← eInvoice
         </button>
-        <h1>{document.title}</h1>
-        <p className="page__lead">{document.intro}</p>
-        <p className="page__limits">{document.updatedLabel}</p>
+        <h1 tabIndex={-1}>Impressum &amp; Datenschutz</h1>
+        <p className="page__lead">
+          Angaben zum Diensteanbieter und zur Verarbeitung hochgeladener Rechnungsdateien.
+          Firmendaten werden vor dem öffentlichen Betrieb ergänzt.
+        </p>
+        <nav className="legal-toc" aria-label="Abschnitte">
+          {documents.map((document: LegalDocument) => (
+            <a key={document.id} href={`#${document.id}`}>
+              {document.title}
+            </a>
+          ))}
+        </nav>
       </header>
 
-      {document.sections.map((section: LegalSection) => (
-        <section key={section.heading} className="legal-section">
-          <h2>{section.heading}</h2>
-          {section.paragraphs.map((paragraph: string, index: number) => (
-            <p key={`${section.heading}-p-${index}`}>{paragraph}</p>
-          ))}
-          {section.listItems ? (
-            <ul>
-              {section.listItems.map((item: string, index: number) => (
-                <li key={`${section.heading}-li-${index}`}>{item}</li>
+      {documents.map((document: LegalDocument) => (
+        <article key={document.id} id={document.id} className="legal-document">
+          <h2 className="legal-document__title">{document.title}</h2>
+          <p className="page__lead">{document.intro}</p>
+          <p className="page__limits">{document.updatedLabel}</p>
+          {document.sections.map((section: LegalSection) => (
+            <section key={`${document.id}-${section.heading}`} className="legal-section">
+              <h3>{section.heading}</h3>
+              {section.paragraphs.map((paragraph: string, index: number) => (
+                <p key={`${section.heading}-p-${index}`}>{paragraph}</p>
               ))}
-            </ul>
-          ) : null}
-        </section>
+              {section.listItems ? (
+                <ul>
+                  {section.listItems.map((item: string, index: number) => (
+                    <li key={`${section.heading}-li-${index}`}>{item}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </section>
+          ))}
+        </article>
       ))}
 
-      <SiteFooter onNavigate={onNavigate} showDisclaimer={false} />
+      <SiteFooter />
     </main>
   )
 }

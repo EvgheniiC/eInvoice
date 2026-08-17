@@ -117,7 +117,8 @@ See [docs/EXPORT_MAPPING.md](docs/EXPORT_MAPPING.md). DATEV export is a Buchungs
 
 ## Privacy and legal pages
 
-The SPA serves `/impressum` and `/datenschutz`. Operator identity is intentionally
+The SPA serves `/impressum` (Impressum and Datenschutzerklärung on one page;
+`/datenschutz` opens the same view). Operator identity is intentionally
 left blank until the public launch. Files are processed in memory and short-lived
 temp directories, then deleted; application logs never contain invoice XML/PDF.
 

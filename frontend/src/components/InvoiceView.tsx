@@ -1,4 +1,4 @@
-import { useEffect, useState, type ChangeEvent, type JSX } from 'react'
+import { useEffect, useRef, useState, type ChangeEvent, type JSX, type RefObject } from 'react'
 import {
   downloadAccountantPackage,
   downloadValidationReport,
@@ -236,6 +236,31 @@ function fieldHint(state: FieldState): string | null {
   }
 }
 
+function DisplayValue({ value }: { value: string }): JSX.Element {
+  if (value === '—') {
+    return (
+      <>
+        <span aria-hidden="true">—</span>
+        <span className="visually-hidden">nicht angegeben</span>
+      </>
+    )
+  }
+  return <>{value}</>
+}
+
+function issueLevelLabel(level: string): string {
+  if (level === 'error') {
+    return 'Fehler'
+  }
+  if (level === 'warning') {
+    return 'Warnung'
+  }
+  if (level === 'info') {
+    return 'Hinweis'
+  }
+  return level
+}
+
 function SnapshotField({
   label,
   value,
@@ -250,8 +275,13 @@ function SnapshotField({
     <div className={`snapshot__item ${fieldClassName(state)}`}>
       <dt>{label}</dt>
       <dd>
-        {value}
-        {hint && <span className="snapshot__mark"> · {hint}</span>}
+        <DisplayValue value={value} />
+        {hint && (
+          <span className="snapshot__mark">
+            {' '}
+            · {hint}
+          </span>
+        )}
       </dd>
     </div>
   )
@@ -267,7 +297,7 @@ function MarkedValue({
   const hint: string | null = fieldHint(state)
   return (
     <>
-      {value}
+      <DisplayValue value={value} />
       {hint && <span className="snapshot__mark"> · {hint}</span>}
     </>
   )
@@ -320,6 +350,7 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps): J
   const [exportError, setExportError] = useState<string | null>(null)
   const [exporting, setExporting] = useState<ExportAction | null>(null)
   const [exportConfirmed, setExportConfirmed] = useState<boolean>(false)
+  const exportingRef: RefObject<boolean> = useRef<boolean>(false)
   const outcome: UserOutcome = userOutcome(invoice)
   const outcomeClass: string = `outcome outcome--${outcome}`
   const hasMismatch: boolean = hasPdfXmlMismatch(invoice)
@@ -350,29 +381,38 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps): J
   }, [invoice.filename, invoice.invoice_number, invoice.validation_status])
 
   async function handleExport(format: ExportFormat): Promise<void> {
+    if (exportingRef.current) {
+      return
+    }
     if (exportLocked) {
       setExportError('Bitte zuerst die Fehler bestätigen.')
       return
     }
     setExportError(null)
     setExporting(format)
+    exportingRef.current = true
     try {
       await exportInvoice(invoice, format)
     } catch (err: unknown) {
       const message: string = err instanceof Error ? err.message : 'Export fehlgeschlagen.'
       setExportError(message)
     } finally {
+      exportingRef.current = false
       setExporting(null)
     }
   }
 
   async function handleAccountantPackage(): Promise<void> {
+    if (exportingRef.current) {
+      return
+    }
     if (exportLocked) {
       setExportError('Bitte zuerst die Fehler bestätigen.')
       return
     }
     setExportError(null)
     setExporting('package')
+    exportingRef.current = true
     try {
       await downloadAccountantPackage(invoice, sourceFile)
     } catch (err: unknown) {
@@ -380,13 +420,18 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps): J
         err instanceof Error ? err.message : 'Paket-Download fehlgeschlagen.'
       setExportError(message)
     } finally {
+      exportingRef.current = false
       setExporting(null)
     }
   }
 
   async function handleValidationReport(): Promise<void> {
+    if (exportingRef.current) {
+      return
+    }
     setExportError(null)
     setExporting('report')
+    exportingRef.current = true
     try {
       await downloadValidationReport(invoice)
     } catch (err: unknown) {
@@ -394,6 +439,7 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps): J
         err instanceof Error ? err.message : 'Prüfbericht-Download fehlgeschlagen.'
       setExportError(message)
     } finally {
+      exportingRef.current = false
       setExporting(null)
     }
   }
@@ -403,7 +449,7 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps): J
   const exportBusy: boolean = exporting !== null
 
   return (
-    <section className="invoice" aria-live="polite">
+    <section className="invoice">
       <div className="invoice__meta">
         <div>
           <p className="invoice__label">
@@ -414,7 +460,7 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps): J
           </h2>
         </div>
         <div className="invoice__badges">
-          <span className={validationBadgeClass(invoice.validation_status)}>
+          <span className={validationBadgeClass(invoice.validation_status)} role="status">
             {validationLabel(invoice.validation_status)}
           </span>
         </div>
@@ -484,8 +530,27 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps): J
         </div>
       )}
 
-      <div className={riskyExport ? 'export-bar export-bar--risky' : 'export-bar'}>
-        <p className="export-bar__label">Für Buchhaltung exportieren</p>
+      <div
+        className={riskyExport ? 'export-bar export-bar--risky' : 'export-bar'}
+        aria-labelledby="export-label"
+        aria-busy={exportBusy}
+      >
+        <p className="export-bar__label" id="export-label">
+          Für Buchhaltung exportieren
+        </p>
+        <p className="visually-hidden" aria-live="polite">
+          {exporting === 'package'
+            ? 'Paket wird erstellt'
+            : exporting === 'csv'
+              ? 'CSV wird erstellt'
+              : exporting === 'excel'
+                ? 'Excel wird erstellt'
+                : exporting === 'datev'
+                  ? 'DATEV-Datei wird erstellt'
+                  : exporting === 'report'
+                    ? 'Prüfbericht wird erstellt'
+                    : ''}
+        </p>
         {riskyExport && (
           <p className="export-bar__warn" role="alert">
             Diese Rechnung enthält Fehler oder Abweichungen. Exportieren Sie sie nur, wenn Sie das
@@ -550,7 +615,11 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps): J
           DATEV-CSV ist ein Buchungsvorschlag, kein DATEVconnect. Der Prüfbericht ist für
           Lieferanten oder Steuerberater.
         </p>
-        {exportError && <p className="status status--error">{exportError}</p>}
+        {exportError && (
+          <p className="status status--error" role="alert">
+            {exportError}
+          </p>
+        )}
       </div>
 
       <p className="invoice__message">{invoice.message}</p>
@@ -573,7 +642,7 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps): J
       <dl className="invoice__facts">
         <div>
           <dt>Datei</dt>
-          <dd>{invoice.filename}</dd>
+          <dd className="break-text">{invoice.filename}</dd>
         </div>
         <div>
           <dt>Typ</dt>
@@ -597,7 +666,7 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps): J
         {invoice.payment_reference && (
           <div>
             <dt>Zahlungsreferenz</dt>
-            <dd>{invoice.payment_reference}</dd>
+            <dd className="break-text">{invoice.payment_reference}</dd>
           </div>
         )}
       </dl>
@@ -672,62 +741,76 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps): J
 
       {invoice.mismatch_fields.length > 0 && (
         <div className="mismatch-table-wrap">
-          <h3>PDF ↔ XML Abgleich</h3>
-          <table className="mismatch-table">
-            <thead>
-              <tr>
-                <th>Feld</th>
-                <th>XML</th>
-                <th>PDF</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {invoice.mismatch_fields.map((item: MismatchField) => (
-                <tr key={item.field} className={item.matched ? undefined : 'row--mismatch'}>
-                  <td>{item.label}</td>
-                  <td>{item.xml_value ?? '—'}</td>
-                  <td>{item.pdf_value ?? '—'}</td>
-                  <td>{item.matched ? 'OK' : 'Abweichung'}</td>
+          <h3 id="mismatch-heading">PDF ↔ XML Abgleich</h3>
+          <div className="table-scroll">
+            <table className="mismatch-table">
+              <caption className="visually-hidden">Vergleich der Felder zwischen PDF und XML</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Feld</th>
+                  <th scope="col">XML</th>
+                  <th scope="col">PDF</th>
+                  <th scope="col">Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {invoice.mismatch_fields.map((item: MismatchField) => (
+                  <tr key={item.field} className={item.matched ? undefined : 'row--mismatch'}>
+                    <td>{item.label}</td>
+                    <td className="break-text">
+                      <DisplayValue value={item.xml_value ?? '—'} />
+                    </td>
+                    <td className="break-text">
+                      <DisplayValue value={item.pdf_value ?? '—'} />
+                    </td>
+                    <td>
+                      {item.matched ? 'Übereinstimmung' : 'Abweichung'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
       {invoice.line_items.length > 0 && (
         <div className="invoice__lines-wrap">
-          <h3>Positionen</h3>
-          <table className="invoice__lines">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Beschreibung</th>
-                <th>Menge</th>
-                <th>Preis</th>
-                <th>MwSt %</th>
-                <th>Netto</th>
-                <th>Brutto</th>
-              </tr>
-            </thead>
-            <tbody>
-              {invoice.line_items.map((item: LineItem, index: number) => (
-                <tr key={`${item.position ?? index}-${index}`}>
-                  <td>{item.position ?? index + 1}</td>
-                  <td className="invoice__desc">{item.description ?? '—'}</td>
-                  <td>
-                    {item.quantity ?? '—'}
-                    {item.unit ? ` ${item.unit}` : ''}
-                  </td>
-                  <td>{formatAmount(item.unit_price, currency)}</td>
-                  <td>{item.tax_rate !== null ? `${String(item.tax_rate)} %` : '—'}</td>
-                  <td>{formatAmount(item.net_amount, currency)}</td>
-                  <td>{formatAmount(item.gross_amount, currency)}</td>
+          <h3 id="lines-heading">Positionen</h3>
+          <div className="table-scroll">
+            <table className="invoice__lines">
+              <caption className="visually-hidden">Rechnungspositionen</caption>
+              <thead>
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Beschreibung</th>
+                  <th scope="col">Menge</th>
+                  <th scope="col">Preis</th>
+                  <th scope="col">MwSt %</th>
+                  <th scope="col">Netto</th>
+                  <th scope="col">Brutto</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {invoice.line_items.map((item: LineItem, index: number) => (
+                  <tr key={`${item.position ?? index}-${index}`}>
+                    <td>{item.position ?? index + 1}</td>
+                    <td className="invoice__desc">
+                      <DisplayValue value={item.description ?? '—'} />
+                    </td>
+                    <td>
+                      {item.quantity ?? '—'}
+                      {item.unit ? ` ${item.unit}` : ''}
+                    </td>
+                    <td>{formatAmount(item.unit_price, currency)}</td>
+                    <td>{item.tax_rate !== null ? `${String(item.tax_rate)} %` : '—'}</td>
+                    <td>{formatAmount(item.net_amount, currency)}</td>
+                    <td>{formatAmount(item.gross_amount, currency)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
@@ -741,6 +824,7 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps): J
                 className={`issue issue--${issue.level}`}
               >
                 <div className="issue__head">
+                  <span className="issue__level">{issueLevelLabel(issue.level)}</span>
                   <span className="issue__cat">[{issue.category}]</span>
                   {issue.bt_code && <span className="issue__bt">{issue.bt_code}</span>}
                   {issue.code && <span className="issue__code">{issue.code}</span>}
