@@ -12,6 +12,10 @@ from openpyxl.worksheet.worksheet import Worksheet
 
 from app.schemas.export import DATEV_COLUMNS, EXPORT_COLUMNS, ExportFormat
 from app.schemas.invoice import InvoiceParseResponse, LineItem, MismatchField, ValidationMeta
+from app.services.validation_report import (
+    build_validation_report,
+    build_validation_report_filename,
+)
 
 MAX_PACKAGE_PDF_BYTES: int = 12 * 1024 * 1024
 
@@ -44,7 +48,7 @@ class ExportService:
         pdf_filename: Optional[str] = None,
     ) -> Tuple[bytes, str, str]:
         """
-        ZIP for Steuerberater: summary.txt + Excel + DATEV + optional visual PDF.
+        ZIP for Steuerberater: summary.txt + Prüfbericht + Excel + DATEV + optional visual PDF.
         Returns (zip_bytes, media_type, download_filename).
         """
         if pdf_bytes is not None and len(pdf_bytes) > MAX_PACKAGE_PDF_BYTES:
@@ -55,6 +59,10 @@ class ExportService:
         buffer: io.BytesIO = io.BytesIO()
         with zipfile.ZipFile(buffer, mode="w", compression=zipfile.ZIP_DEFLATED) as archive:
             archive.writestr("summary.txt", build_package_summary(invoice))
+            archive.writestr(
+                build_validation_report_filename(invoice),
+                build_validation_report(invoice),
+            )
 
             excel_bytes, _, excel_name = self.export(invoice, ExportFormat.EXCEL)
             archive.writestr(excel_name, excel_bytes)
@@ -308,6 +316,7 @@ def build_package_summary(invoice: InvoiceParseResponse) -> str:
         "",
         "Inhalt dieses ZIP:",
         "- summary.txt (diese Datei)",
+        "- Prüfbericht (für Lieferant oder Steuerberater)",
         "- Excel-Export (Übersicht + Positionen)",
         "- DATEV-Export (Buchungsvorschlag)",
         "- optionale visuelle PDF (bei ZUGFeRD)",

@@ -21,6 +21,12 @@ class ExportRequest(BaseModel):
     invoice: InvoiceParseResponse
 
 
+class ValidationReportRequest(BaseModel):
+    """Request body: parsed invoice DTO to render as a validation report."""
+
+    invoice: InvoiceParseResponse
+
+
 class AccountantPackageRequest(BaseModel):
     """ZIP package for Steuerberater: summary + Excel + DATEV + optional PDF."""
 

@@ -44,6 +44,25 @@ export async function exportInvoice(
   await downloadResponseBlob(response, defaultFilename(invoice, format))
 }
 
+export async function downloadValidationReport(
+  invoice: InvoiceParseResponse,
+): Promise<void> {
+  const response: Response = await fetch(`${API_BASE}/invoices/export/validation-report`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ invoice }),
+  })
+
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response, 'Prüfbericht-Download fehlgeschlagen.'))
+  }
+
+  await downloadResponseBlob(
+    response,
+    `pruefbericht_${invoice.invoice_number ?? 'invoice'}.txt`,
+  )
+}
+
 export async function downloadAccountantPackage(
   invoice: InvoiceParseResponse,
   sourceFile?: File | null,

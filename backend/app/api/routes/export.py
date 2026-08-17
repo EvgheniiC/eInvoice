@@ -10,9 +10,14 @@ from app.schemas.export import (
     AccountantPackageRequest,
     ExportMappingDoc,
     ExportRequest,
+    ValidationReportRequest,
 )
 from app.schemas.invoice import InvoiceParseResponse, ParseStatus
 from app.services.export_service import ExportService, decode_pdf_base64
+from app.services.validation_report import (
+    build_validation_report,
+    build_validation_report_filename,
+)
 
 router: APIRouter = APIRouter()
 export_service: ExportService = ExportService()
@@ -58,6 +63,20 @@ def export_invoice(body: ExportRequest, request: Request) -> Response:
         "Content-Disposition": f'attachment; filename="{filename}"',
     }
     return Response(content=content, media_type=media_type, headers=headers)
+
+
+@router.post("/export/validation-report")
+def export_validation_report(body: ValidationReportRequest) -> Response:
+    """
+    Download a German plain-text validation report for supplier or Steuerberater.
+    Allowed even when the invoice is invalid — that is the intended use.
+    """
+    filename: str = build_validation_report_filename(body.invoice)
+    content: bytes = ("\ufeff" + build_validation_report(body.invoice)).encode("utf-8")
+    headers: dict[str, str] = {
+        "Content-Disposition": f'attachment; filename="{filename}"',
+    }
+    return Response(content=content, media_type="text/plain; charset=utf-8", headers=headers)
 
 
 @router.post("/export/accountant-package")

@@ -457,6 +457,58 @@
   color: #7b2822;
 }
 
+.invoice__snapshot {
+  margin: 0 0 1.25rem;
+  display: grid;
+  gap: 0.65rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid #d5dcd7;
+  border-radius: 8px;
+  background: #fff;
+}
+
+@media (min-width: 640px) {
+  .invoice__snapshot {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 900px) {
+  .invoice__snapshot {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.snapshot__item {
+  margin: 0;
+  padding: 0.45rem 0.55rem;
+  border-radius: 6px;
+}
+
+.snapshot__item dt {
+  color: #5c6770;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.snapshot__item dd {
+  margin: 0.2rem 0 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  word-break: break-word;
+}
+
+.snapshot__mark {
+  display: inline-block;
+  margin-left: 0.15rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
 .badge {
   display: inline-block;
   padding: 0.25rem 0.6rem;
@@ -633,10 +685,41 @@
   font-weight: 600;
 }
 
+.field--error,
+.field--error strong,
+.field--error dd {
+  color: #8a2f28;
+  font-weight: 600;
+}
+
+.field--missing,
+.field--missing strong,
+.field--missing dd {
+  color: #6b4d0d;
+  font-weight: 600;
+}
+
+.snapshot__item.field--mismatch,
+.snapshot__item.field--error {
+  background: #fdf2f0;
+}
+
+.snapshot__item.field--missing {
+  background: #f3ead4;
+}
+
 .mismatch-table-wrap,
 .invoice__issues-wrap,
 .next-steps {
   margin-top: 1.5rem;
+}
+
+.next-steps--primary {
+  margin-top: 0;
+  margin-bottom: 1.25rem;
+  padding: 0.9rem 1rem;
+  border-radius: 8px;
+  background: #eef3f0;
 }
 
 .mismatch-table-wrap h3,
@@ -781,6 +864,41 @@
 .export-bar__actions button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.export-bar--risky {
+  padding: 0.9rem 1rem;
+  border: 1px solid #c45c54;
+  border-radius: 8px;
+  background: #fdf2f0;
+}
+
+.export-bar__warn {
+  margin: 0 0 0.75rem;
+  color: #7b2822;
+  font-weight: 600;
+}
+
+.export-confirm {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0 0 0.75rem;
+  color: #7b2822;
+  font-size: 0.9rem;
+}
+
+.export-confirm input {
+  margin-top: 0.2rem;
+}
+
+.export-bar__actions button.export-bar__report {
+  background: transparent;
+  color: #2f6b4f;
+}
+
+.export-bar__actions button.export-bar__report:hover:not(:disabled) {
+  background: #e8f0ec;
 }
 
 .export-bar__hint {

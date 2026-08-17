@@ -1,5 +1,9 @@
-import { useState } from 'react'
-import { downloadAccountantPackage, exportInvoice } from '../api/client'
+import { useEffect, useState, type ChangeEvent, type JSX } from 'react'
+import {
+  downloadAccountantPackage,
+  downloadValidationReport,
+  exportInvoice,
+} from '../api/client'
 import type {
   DecimalValue,
   ExportFormat,
@@ -13,8 +17,9 @@ import type {
   ValidationStatus,
 } from '../types/invoice'
 
-type ExportAction = ExportFormat | 'package'
+type ExportAction = ExportFormat | 'package' | 'report'
 type UserOutcome = 'process' | 'review' | 'request_correction'
+type FieldState = 'ok' | 'missing' | 'error' | 'mismatch'
 
 interface InvoiceViewProps {
   invoice: InvoiceParseResponse
@@ -34,6 +39,24 @@ function formatAmount(value: DecimalValue | null | undefined, currency: string |
     maximumFractionDigits: 2,
   })
   return currency ? `${formatted} ${currency}` : formatted
+}
+
+function formatDateDe(value: string | null | undefined): string {
+  if (!value) {
+    return '—'
+  }
+  if (value.length >= 10 && value[4] === '-' && value[7] === '-') {
+    return `${value.slice(8, 10)}.${value.slice(5, 7)}.${value.slice(0, 4)}`
+  }
+  return value
+}
+
+function formatIban(value: string | null | undefined): string {
+  if (!value) {
+    return '—'
+  }
+  const compact: string = value.replace(/\s+/g, '')
+  return compact.replace(/(.{4})/g, '$1 ').trim()
 }
 
 function validationBadgeClass(status: ValidationStatus): string {
@@ -62,15 +85,26 @@ function validationLabel(status: ValidationStatus): string {
   }
 }
 
-function userOutcome(invoice: InvoiceParseResponse): UserOutcome {
-  const hasValidationError: boolean = invoice.validation_issues.some(
-    (issue: ValidationIssue): boolean => issue.level === 'error',
-  )
-  const hasMismatch: boolean = invoice.mismatch_fields.some(
+function hasPdfXmlMismatch(invoice: InvoiceParseResponse): boolean {
+  return invoice.mismatch_fields.some(
     (item: MismatchField): boolean => Boolean(item.xml_value) && !item.matched,
   )
+}
 
-  if (invoice.validation_status === 'invalid' || hasValidationError || hasMismatch) {
+function isRiskyExport(invoice: InvoiceParseResponse): boolean {
+  if (invoice.validation_status === 'invalid') {
+    return true
+  }
+  if (hasPdfXmlMismatch(invoice)) {
+    return true
+  }
+  return invoice.validation_issues.some(
+    (issue: ValidationIssue): boolean => issue.level === 'error',
+  )
+}
+
+function userOutcome(invoice: InvoiceParseResponse): UserOutcome {
+  if (isRiskyExport(invoice)) {
     return 'request_correction'
   }
   if (
@@ -153,39 +187,173 @@ function engineLabel(meta: ValidationMeta): string {
   return 'Interne Geschäftsregeln (keine volle KoSIT-Prüfung)'
 }
 
-function PartyBlock({ title, party }: { title: string; party: PartyInfo | null }) {
-  if (!party || (!party.name && !party.address && !party.vat_id && !party.iban)) {
-    return null
+function isEmptyValue(value: unknown): boolean {
+  return value === null || value === undefined || value === ''
+}
+
+function fieldState(
+  invoice: InvoiceParseResponse,
+  fieldName: string,
+  value: unknown,
+  markMissing: boolean = false,
+): FieldState {
+  const mismatch: MismatchField | undefined = invoice.mismatch_fields.find(
+    (item: MismatchField): boolean =>
+      item.field === fieldName && !item.matched && Boolean(item.xml_value),
+  )
+  if (mismatch) {
+    return 'mismatch'
   }
+  const hasError: boolean = invoice.validation_issues.some(
+    (issue: ValidationIssue): boolean => issue.field === fieldName && issue.level === 'error',
+  )
+  if (hasError) {
+    return 'error'
+  }
+  if (markMissing && isEmptyValue(value)) {
+    return 'missing'
+  }
+  return 'ok'
+}
+
+function fieldClassName(state: FieldState): string {
+  if (state === 'ok') {
+    return ''
+  }
+  return `field field--${state}`
+}
+
+function fieldHint(state: FieldState): string | null {
+  switch (state) {
+    case 'missing':
+      return 'fehlt'
+    case 'error':
+      return 'Fehler'
+    case 'mismatch':
+      return 'Abweichung'
+    default:
+      return null
+  }
+}
+
+function SnapshotField({
+  label,
+  value,
+  state,
+}: {
+  label: string
+  value: string
+  state: FieldState
+}): JSX.Element {
+  const hint: string | null = fieldHint(state)
   return (
-    <div className="party">
-      <h3>{title}</h3>
-      {party.name && <p className="party__name">{party.name}</p>}
-      {party.address && <p>{party.address}</p>}
-      {party.vat_id && <p>USt-IdNr.: {party.vat_id}</p>}
-      {party.iban && <p>IBAN: {party.iban}</p>}
+    <div className={`snapshot__item ${fieldClassName(state)}`}>
+      <dt>{label}</dt>
+      <dd>
+        {value}
+        {hint && <span className="snapshot__mark"> · {hint}</span>}
+      </dd>
     </div>
   )
 }
 
-export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps) {
+function MarkedValue({
+  value,
+  state,
+}: {
+  value: string
+  state: FieldState
+}): JSX.Element {
+  const hint: string | null = fieldHint(state)
+  return (
+    <>
+      {value}
+      {hint && <span className="snapshot__mark"> · {hint}</span>}
+    </>
+  )
+}
+
+function PartyBlock({
+  title,
+  party,
+  nameField,
+  vatField,
+  ibanField,
+  invoice,
+}: {
+  title: string
+  party: PartyInfo | null
+  nameField: string
+  vatField: string
+  ibanField: string | null
+  invoice: InvoiceParseResponse
+}): JSX.Element {
+  const nameState: FieldState = fieldState(invoice, nameField, party?.name, true)
+  const vatState: FieldState = fieldState(invoice, vatField, party?.vat_id, false)
+  const ibanState: FieldState | null = ibanField
+    ? fieldState(invoice, ibanField, party?.iban, true)
+    : null
+
+  return (
+    <div className="party">
+      <h3>{title}</h3>
+      <p className={`party__name ${fieldClassName(nameState)}`}>
+        <MarkedValue value={party?.name || '—'} state={nameState} />
+      </p>
+      {party?.address && <p>{party.address}</p>}
+      {(party?.vat_id || vatState === 'error') && (
+        <p className={fieldClassName(vatState)}>
+          USt-IdNr.: <MarkedValue value={party?.vat_id || '—'} state={vatState} />
+        </p>
+      )}
+      {ibanState && (
+        <p className={fieldClassName(ibanState)}>
+          IBAN: <MarkedValue value={formatIban(party?.iban)} state={ibanState} />
+        </p>
+      )}
+    </div>
+  )
+}
+
+export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps): JSX.Element {
   const currency: string | null = invoice.totals?.currency ?? null
   const [exportError, setExportError] = useState<string | null>(null)
   const [exporting, setExporting] = useState<ExportAction | null>(null)
+  const [exportConfirmed, setExportConfirmed] = useState<boolean>(false)
   const outcome: UserOutcome = userOutcome(invoice)
-
   const outcomeClass: string = `outcome outcome--${outcome}`
-
-  const hasMismatch: boolean = invoice.mismatch_fields.some(
-    (item: MismatchField) => Boolean(item.xml_value) && !item.matched,
-  )
+  const hasMismatch: boolean = hasPdfXmlMismatch(invoice)
+  const riskyExport: boolean = isRiskyExport(invoice)
+  const exportLocked: boolean = riskyExport && !exportConfirmed
   const allMatched: boolean =
     invoice.file_type === 'zugferd_pdf' &&
     invoice.mismatch_fields.length > 0 &&
     !hasMismatch
   const issueGroups: IssueGroup[] = groupedIssues(invoice.validation_issues)
 
+  const sellerState: FieldState = fieldState(invoice, 'seller', invoice.seller?.name, true)
+  const amountState: FieldState = fieldState(invoice, 'gross', invoice.totals?.gross, true)
+  const dueState: FieldState = fieldState(invoice, 'due_date', invoice.due_date, true)
+  const ibanState: FieldState = fieldState(invoice, 'iban', invoice.seller?.iban, true)
+  const numberState: FieldState = fieldState(
+    invoice,
+    'invoice_number',
+    invoice.invoice_number,
+    true,
+  )
+  const issueDateState: FieldState = fieldState(invoice, 'issue_date', invoice.issue_date, true)
+  const taxState: FieldState = fieldState(invoice, 'tax', invoice.totals?.tax, false)
+
+  useEffect(() => {
+    setExportConfirmed(false)
+    setExportError(null)
+  }, [invoice.filename, invoice.invoice_number, invoice.validation_status])
+
   async function handleExport(format: ExportFormat): Promise<void> {
+    if (exportLocked) {
+      setExportError('Bitte zuerst die Fehler bestätigen.')
+      return
+    }
     setExportError(null)
     setExporting(format)
     try {
@@ -199,6 +367,10 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps) {
   }
 
   async function handleAccountantPackage(): Promise<void> {
+    if (exportLocked) {
+      setExportError('Bitte zuerst die Fehler bestätigen.')
+      return
+    }
     setExportError(null)
     setExporting('package')
     try {
@@ -212,6 +384,24 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps) {
     }
   }
 
+  async function handleValidationReport(): Promise<void> {
+    setExportError(null)
+    setExporting('report')
+    try {
+      await downloadValidationReport(invoice)
+    } catch (err: unknown) {
+      const message: string =
+        err instanceof Error ? err.message : 'Prüfbericht-Download fehlgeschlagen.'
+      setExportError(message)
+    } finally {
+      setExporting(null)
+    }
+  }
+
+  const amountLabel: string =
+    invoice.document_type === 'credit_note' ? 'Gutschrift' : 'Zu zahlen'
+  const exportBusy: boolean = exporting !== null
+
   return (
     <section className="invoice" aria-live="polite">
       <div className="invoice__meta">
@@ -219,7 +409,9 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps) {
           <p className="invoice__label">
             {invoice.document_type === 'credit_note' ? 'Gutschrift' : 'Rechnung'}
           </p>
-          <h2>{invoice.invoice_number ?? 'Ohne Nummer'}</h2>
+          <h2 className={fieldClassName(numberState)}>
+            <MarkedValue value={invoice.invoice_number ?? 'Ohne Nummer'} state={numberState} />
+          </h2>
         </div>
         <div className="invoice__badges">
           <span className={validationBadgeClass(invoice.validation_status)}>
@@ -228,61 +420,42 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps) {
         </div>
       </div>
 
-      <dl className="validation-meta">
-        <div>
-          <dt>Standard</dt>
-          <dd>{invoice.validation_meta.standard_version ?? '—'}</dd>
-        </div>
-        <div>
-          <dt>Profil</dt>
-          <dd>{invoice.validation_meta.profile ?? '—'}</dd>
-        </div>
-        <div>
-          <dt>Prüfengine</dt>
-          <dd>{engineLabel(invoice.validation_meta)}</dd>
-        </div>
-      </dl>
-
-      <p className="invoice__message">{invoice.message}</p>
-
       <div className={outcomeClass} role="status">
         <p className="outcome__label">Ergebnis</p>
         <strong>{outcomeLabel(outcome)}</strong>
         <p>{outcomeDescription(outcome)}</p>
       </div>
 
-      <div className="export-bar">
-        <p className="export-bar__label">Für Buchhaltung exportieren</p>
-        <div className="export-bar__actions">
-          <button
-            type="button"
-            className="export-bar__primary"
-            disabled={exporting !== null}
-            onClick={() => void handleAccountantPackage()}
-          >
-            {exporting === 'package' ? 'Paket…' : 'Paket für Steuerberater'}
-          </button>
-          <button type="button" disabled={exporting !== null} onClick={() => handleExport('csv')}>
-            {exporting === 'csv' ? 'CSV…' : 'CSV'}
-          </button>
-          <button type="button" disabled={exporting !== null} onClick={() => handleExport('excel')}>
-            {exporting === 'excel' ? 'Excel…' : 'Excel'}
-          </button>
-          <button type="button" disabled={exporting !== null} onClick={() => handleExport('datev')}>
-            {exporting === 'datev' ? 'DATEV…' : 'DATEV'}
-          </button>
-        </div>
-        <p className="export-bar__hint">
-          Paket = Kurzfassung + Excel + DATEV
-          {invoice.file_type === 'zugferd_pdf' ? ' + visuelle PDF' : ''}.
-        </p>
-        {exportError && <p className="status status--error">{exportError}</p>}
-      </div>
+      <dl className="invoice__snapshot">
+        <SnapshotField
+          label="Lieferant"
+          value={invoice.seller?.name || '—'}
+          state={sellerState}
+        />
+        <SnapshotField
+          label={amountLabel}
+          value={formatAmount(invoice.totals?.gross, currency)}
+          state={amountState}
+        />
+        <SnapshotField
+          label="Fällig"
+          value={formatDateDe(invoice.due_date)}
+          state={dueState}
+        />
+        <SnapshotField
+          label="IBAN"
+          value={formatIban(invoice.seller?.iban)}
+          state={ibanState}
+        />
+      </dl>
 
       {hasMismatch && (
         <div className="banner banner--mismatch" role="alert">
-          <strong>PDF und XML weichen ab</strong>
-          <p>Bitte Lieferanten kontaktieren, bevor Sie die Rechnung zahlen oder buchen.</p>
+          <strong>Nicht zahlen — PDF und XML weichen ab</strong>
+          <p>
+            Bitte den Lieferanten kontaktieren und eine korrigierte Rechnung anfordern, bevor Sie
+            überweisen oder buchen.
+          </p>
         </div>
       )}
       {allMatched && (
@@ -300,6 +473,102 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps) {
         </div>
       )}
 
+      {invoice.next_steps.length > 0 && (
+        <div className="next-steps next-steps--primary">
+          <h3>Was tun als Nächstes?</h3>
+          <ol>
+            {invoice.next_steps.map((step: string, index: number) => (
+              <li key={`step-${index}`}>{step}</li>
+            ))}
+          </ol>
+        </div>
+      )}
+
+      <div className={riskyExport ? 'export-bar export-bar--risky' : 'export-bar'}>
+        <p className="export-bar__label">Für Buchhaltung exportieren</p>
+        {riskyExport && (
+          <p className="export-bar__warn" role="alert">
+            Diese Rechnung enthält Fehler oder Abweichungen. Exportieren Sie sie nur, wenn Sie das
+            bewusst an den Steuerberater weitergeben möchten — nicht als gültigen Beleg behandeln.
+          </p>
+        )}
+        {riskyExport && (
+          <label className="export-confirm">
+            <input
+              type="checkbox"
+              checked={exportConfirmed}
+              onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                setExportConfirmed(event.target.checked)
+                setExportError(null)
+              }}
+            />
+            Ich habe die Fehler gesehen und möchte trotzdem exportieren.
+          </label>
+        )}
+        <div className="export-bar__actions">
+          <button
+            type="button"
+            className="export-bar__primary"
+            disabled={exportBusy || exportLocked}
+            onClick={() => void handleAccountantPackage()}
+          >
+            {exporting === 'package' ? 'Paket…' : 'Paket für Steuerberater'}
+          </button>
+          <button
+            type="button"
+            disabled={exportBusy || exportLocked}
+            onClick={() => void handleExport('csv')}
+          >
+            {exporting === 'csv' ? 'CSV…' : 'CSV'}
+          </button>
+          <button
+            type="button"
+            disabled={exportBusy || exportLocked}
+            onClick={() => void handleExport('excel')}
+          >
+            {exporting === 'excel' ? 'Excel…' : 'Excel'}
+          </button>
+          <button
+            type="button"
+            disabled={exportBusy || exportLocked}
+            onClick={() => void handleExport('datev')}
+          >
+            {exporting === 'datev' ? 'DATEV…' : 'DATEV'}
+          </button>
+          <button
+            type="button"
+            className="export-bar__report"
+            disabled={exportBusy}
+            onClick={() => void handleValidationReport()}
+          >
+            {exporting === 'report' ? 'Bericht…' : 'Prüfbericht herunterladen'}
+          </button>
+        </div>
+        <p className="export-bar__hint">
+          Paket = Kurzfassung + Prüfbericht + Excel + DATEV
+          {invoice.file_type === 'zugferd_pdf' ? ' + visuelle PDF' : ''}. Der Prüfbericht ist für
+          Lieferanten oder Steuerberater.
+        </p>
+        {exportError && <p className="status status--error">{exportError}</p>}
+      </div>
+
+      <p className="invoice__message">{invoice.message}</p>
+
+      <dl className="validation-meta">
+        <div>
+          <dt>Standard</dt>
+          <dd>{invoice.validation_meta.standard_version ?? '—'}</dd>
+        </div>
+        <div>
+          <dt>Profil</dt>
+          <dd>{invoice.validation_meta.profile ?? '—'}</dd>
+        </div>
+        <div>
+          <dt>Prüfengine</dt>
+          <dd>{engineLabel(invoice.validation_meta)}</dd>
+        </div>
+      </dl>
+
       <dl className="invoice__facts">
         <div>
           <dt>Datei</dt>
@@ -314,11 +583,15 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps) {
         </div>
         <div>
           <dt>Datum</dt>
-          <dd className={fieldClass(invoice, 'issue_date')}>{invoice.issue_date ?? '—'}</dd>
+          <dd className={fieldClassName(issueDateState)}>
+            <MarkedValue value={formatDateDe(invoice.issue_date)} state={issueDateState} />
+          </dd>
         </div>
         <div>
           <dt>Fälligkeitsdatum</dt>
-          <dd>{invoice.due_date ?? '—'}</dd>
+          <dd className={fieldClassName(dueState)}>
+            <MarkedValue value={formatDateDe(invoice.due_date)} state={dueState} />
+          </dd>
         </div>
         {invoice.payment_reference && (
           <div>
@@ -329,8 +602,22 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps) {
       </dl>
 
       <div className="invoice__parties">
-        <PartyBlock title="Lieferant" party={invoice.seller} />
-        <PartyBlock title="Empfänger" party={invoice.buyer} />
+        <PartyBlock
+          title="Lieferant"
+          party={invoice.seller}
+          nameField="seller"
+          vatField="seller_vat_id"
+          ibanField="iban"
+          invoice={invoice}
+        />
+        <PartyBlock
+          title="Empfänger"
+          party={invoice.buyer}
+          nameField="buyer"
+          vatField="buyer_vat_id"
+          ibanField={null}
+          invoice={invoice}
+        />
       </div>
 
       {invoice.totals && (
@@ -339,13 +626,20 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps) {
             <span>Netto</span>
             <strong>{formatAmount(invoice.totals.net, currency)}</strong>
           </div>
-          <div className={fieldClass(invoice, 'tax')}>
+          <div className={fieldClassName(taxState)}>
             <span>MwSt</span>
-            <strong>{formatAmount(invoice.totals.tax, currency)}</strong>
+            <strong>
+              <MarkedValue value={formatAmount(invoice.totals.tax, currency)} state={taxState} />
+            </strong>
           </div>
-          <div className={fieldClass(invoice, 'gross')}>
+          <div className={fieldClassName(amountState)}>
             <span>Brutto</span>
-            <strong>{formatAmount(invoice.totals.gross, currency)}</strong>
+            <strong>
+              <MarkedValue
+                value={formatAmount(invoice.totals.gross, currency)}
+                state={amountState}
+              />
+            </strong>
           </div>
           {invoice.totals.allowance !== null && (
             <div>
@@ -459,24 +753,6 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps) {
           </ul>
         </div>
       ))}
-
-      {invoice.next_steps.length > 0 && (
-        <div className="next-steps">
-          <h3>Was tun als Nächstes?</h3>
-          <ol>
-            {invoice.next_steps.map((step: string, index: number) => (
-              <li key={`step-${index}`}>{step}</li>
-            ))}
-          </ol>
-        </div>
-      )}
     </section>
   )
-}
-
-function fieldClass(invoice: InvoiceParseResponse, fieldName: string): string {
-  const mismatch: MismatchField | undefined = invoice.mismatch_fields.find(
-    (item: MismatchField) => item.field === fieldName && !item.matched && Boolean(item.xml_value),
-  )
-  return mismatch ? 'field--mismatch' : ''
 }

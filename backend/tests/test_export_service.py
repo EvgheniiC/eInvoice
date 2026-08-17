@@ -17,6 +17,7 @@ from app.schemas.invoice import (
     MismatchField,
     PartyInfo,
     ParseStatus,
+    ValidationIssue,
     ValidationStatus,
 )
 from app.services.export_service import (
@@ -25,6 +26,10 @@ from app.services.export_service import (
     build_flat_rows,
     build_package_filename,
     build_package_summary,
+)
+from app.services.validation_report import (
+    build_validation_report,
+    build_validation_report_filename,
 )
 
 
@@ -127,6 +132,7 @@ class TestExportService(unittest.TestCase):
         with zipfile.ZipFile(io.BytesIO(content)) as archive:
             names: list[str] = sorted(archive.namelist())
             self.assertIn("summary.txt", names)
+            self.assertTrue(any(name.startswith("pruefbericht_") for name in names))
             self.assertTrue(any(name.endswith(".xlsx") for name in names))
             self.assertTrue(any(name.startswith("datev_") for name in names))
             self.assertIn("Beleg_Test.pdf", names)
@@ -153,6 +159,41 @@ class TestExportService(unittest.TestCase):
             build_package_filename(invoice),
             "buchhaltung_KMLZ_Rechtsanwaltsges_mbH_2025_10294_20250131.zip",
         )
+
+    def test_validation_report_for_mismatch(self) -> None:
+        invoice: InvoiceParseResponse = _sample_invoice()
+        invoice.file_type = "zugferd_pdf"
+        invoice.validation_status = ValidationStatus.INVALID
+        invoice.validation_issues = [
+            ValidationIssue(
+                level="error",
+                category="mismatch",
+                code="MISMATCH_IBAN",
+                message="IBAN in PDF und XML weicht ab.",
+                field="iban",
+            )
+        ]
+        invoice.mismatch_fields = [
+            MismatchField(
+                field="iban",
+                label="IBAN",
+                xml_value="DE95700400410228840500",
+                pdf_value="DE00",
+                matched=False,
+            )
+        ]
+        invoice.next_steps = [
+            "Nicht zahlen. PDF und XML weichen ab — Lieferanten kontaktieren."
+        ]
+        text: str = build_validation_report(invoice)
+        self.assertIn("Prüfbericht", text)
+        self.assertIn("Nicht zahlen", text)
+        self.assertIn("KMLZ", text)
+        self.assertIn("Abweichung", text)
+        self.assertTrue(
+            build_validation_report_filename(invoice).startswith("pruefbericht_")
+        )
+        self.assertTrue(build_validation_report_filename(invoice).endswith(".txt"))
 
 
 class TestExportApi(unittest.TestCase):
@@ -205,6 +246,42 @@ class TestExportApi(unittest.TestCase):
         with zipfile.ZipFile(io.BytesIO(response.content)) as archive:
             self.assertIn("summary.txt", archive.namelist())
             self.assertIn("original.pdf", archive.namelist())
+
+    def test_validation_report_endpoint_allows_invalid_invoice(self) -> None:
+        invoice: InvoiceParseResponse = _sample_invoice()
+        invoice.status = ParseStatus.PARTIAL
+        invoice.validation_status = ValidationStatus.INVALID
+        invoice.validation_issues = [
+            ValidationIssue(
+                level="error",
+                category="business",
+                code="BT-1_MISSING",
+                message="Rechnungsnummer fehlt.",
+            )
+        ]
+        response = self.client.post(
+            "/api/invoices/export/validation-report",
+            json={"invoice": invoice.model_dump(mode="json")},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("text/plain", response.headers["content-type"])
+        self.assertIn("pruefbericht_", response.headers.get("content-disposition", ""))
+        body: str = response.content.decode("utf-8-sig")
+        self.assertIn("Prüfbericht", body)
+        self.assertIn("ungültig", body)
+
+    def test_error_invoice_cannot_be_exported_as_accounting_file(self) -> None:
+        invoice: InvoiceParseResponse = InvoiceParseResponse(
+            status=ParseStatus.ERROR,
+            message="unreadable",
+            filename="bad.xml",
+            validation_status=ValidationStatus.INVALID,
+        )
+        response = self.client.post(
+            "/api/invoices/export",
+            json={"format": "csv", "invoice": invoice.model_dump(mode="json")},
+        )
+        self.assertEqual(response.status_code, 400)
 
 
 if __name__ == "__main__":

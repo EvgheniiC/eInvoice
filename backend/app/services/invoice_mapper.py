@@ -91,6 +91,22 @@ def map_to_parse_response(
     )
 
 
+def has_pdf_xml_mismatch(response: InvoiceParseResponse) -> bool:
+    """True when a comparable PDF↔XML field pair disagrees."""
+    return any(not item.matched for item in response.mismatch_fields if item.xml_value)
+
+
+def has_blocking_errors(response: InvoiceParseResponse) -> bool:
+    """True when the invoice must not be paid or booked as-is."""
+    if response.status == ParseStatus.ERROR:
+        return True
+    if response.validation_status == ValidationStatus.INVALID:
+        return True
+    if any(issue.level == "error" for issue in response.validation_issues):
+        return True
+    return has_pdf_xml_mismatch(response)
+
+
 def build_next_steps(response: InvoiceParseResponse) -> List[str]:
     """German UX hints for what the user should do next."""
     steps: List[str] = []
@@ -119,8 +135,23 @@ def build_next_steps(response: InvoiceParseResponse) -> List[str]:
             )
         return steps
 
-    if response.validation_status == ValidationStatus.INVALID:
-        steps.append("Lieferanten um korrigierte Rechnung bitten (Validierungsfehler).")
+    mismatch: bool = has_pdf_xml_mismatch(response)
+    blocking: bool = has_blocking_errors(response)
+
+    if mismatch:
+        steps.append(
+            "Nicht zahlen. PDF und XML weichen ab — Lieferanten kontaktieren "
+            "und eine korrigierte Rechnung anfordern."
+        )
+    elif blocking:
+        steps.append(
+            "Nicht zahlen oder buchen. Lieferanten um eine korrigierte Rechnung bitten."
+        )
+
+    if blocking:
+        steps.append(
+            "Prüfbericht herunterladen und an den Lieferanten oder Steuerberater senden."
+        )
     elif response.validation_status == ValidationStatus.WARNING:
         steps.append("Warnungen prüfen; bei Unsicherheit Steuerberater fragen.")
     elif response.validation_status == ValidationStatus.NOT_CHECKED:
@@ -138,16 +169,18 @@ def build_next_steps(response: InvoiceParseResponse) -> List[str]:
                 "Rechnung vor Zahlung oder Buchung anderweitig vollständig prüfen."
             )
 
-    if response.mismatch_fields and any(not item.matched for item in response.mismatch_fields):
-        steps.append(
-            "PDF und XML weichen ab — Lieferanten kontaktieren, bevor Sie zahlen oder buchen."
-        )
-    elif response.file_type == "zugferd_pdf" and not any(
-        not item.matched for item in response.mismatch_fields
+    if (
+        response.file_type == "zugferd_pdf"
+        and response.mismatch_fields
+        and not mismatch
     ):
-        steps.append("PDF und XML stimmen überein — Betrag und IBAN vor Zahlung nochmals prüfen.")
+        steps.append(
+            "PDF und XML stimmen überein — Betrag und IBAN vor Zahlung nochmals prüfen."
+        )
 
-    if response.totals and response.totals.gross is not None:
+    if blocking:
+        steps.append("Export nur mit ausdrücklicher Bestätigung und nicht als gültigen Beleg.")
+    elif response.totals and response.totals.gross is not None:
         steps.append(
             "Bei Freigabe: Betrag zahlen und „Paket für Steuerberater“ "
             "(Excel + DATEV + PDF) herunterladen."
