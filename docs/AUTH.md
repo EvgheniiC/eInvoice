@@ -7,21 +7,39 @@ Accounts are optional. Set `DATABASE_URL` to enable them.
 
 ## Production
 
-PostgreSQL only:
+PostgreSQL only. Accounts stay off until `DATABASE_URL` is in `backend/.env`.
+`alembic upgrade head` without that variable is an error (it must not create SQLite).
+
+Create the database once:
+
+```bash
+sudo -u postgres psql -c "CREATE USER einvoice WITH PASSWORD 'choose-a-password';"
+sudo -u postgres psql -c "CREATE DATABASE einvoice OWNER einvoice;"
+```
+
+Add to `backend/.env` (do not use SQLite):
 
 ```
-DATABASE_URL=postgresql+psycopg://einvoice:secret@127.0.0.1:5432/einvoice
+ENVIRONMENT=production
+DATABASE_URL=postgresql+psycopg://einvoice:choose-a-password@127.0.0.1:5432/einvoice
 AUTH_SECRET_KEY=long-random-string
 ADMIN_API_TOKEN=long-random-string
-PUBLIC_APP_URL=https://example.invalid
+PUBLIC_APP_URL=https://your-public-host
 ```
 
-Apply schema:
+Generate secrets with `python -c "import secrets; print(secrets.token_urlsafe(48))"`.
+Then `alembic upgrade head` and `systemctl restart einvoice-api`.
+
+Install account packages into the existing venv (after pull), then apply schema:
 
 ```bash
 cd backend
+.venv/bin/pip install -r requirements.txt
+.venv/bin/pip install -e .
 alembic upgrade head
 ```
+
+`deploy/deploy.sh` does this before restarting the API.
 
 SQLite is for tests and local development. Production readiness fails if
 accounts are enabled without Postgres or without `AUTH_SECRET_KEY`.

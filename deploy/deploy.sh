@@ -114,6 +114,27 @@ else
 fi
 
 if [[ "${DO_BACKEND}" -eq 1 ]]; then
+  BACKEND_DIR="${APP_ROOT}/backend"
+  if [[ ! -x "${BACKEND_DIR}/.venv/bin/pip" ]]; then
+    echo "Missing ${BACKEND_DIR}/.venv/bin/pip" >&2
+    exit 1
+  fi
+  echo "==> pip install backend deps"
+  (
+    cd "${BACKEND_DIR}"
+    .venv/bin/pip install -r requirements.txt
+    .venv/bin/pip install -e .
+  )
+  if [[ -f "${BACKEND_DIR}/.env" ]] && grep -qE '^DATABASE_URL=.+' "${BACKEND_DIR}/.env"; then
+    echo "==> alembic upgrade head"
+    (
+      cd "${BACKEND_DIR}"
+      .venv/bin/alembic upgrade head
+    )
+  else
+    echo "    skip alembic (DATABASE_URL not set in backend/.env)"
+  fi
+
   echo "==> restart ${API_SERVICE}"
   systemctl restart "${API_SERVICE}"
   systemctl --no-pager --full status "${API_SERVICE}" | sed -n '1,12p'

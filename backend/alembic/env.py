@@ -10,8 +10,15 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-if settings.database_url:
-    config.set_main_option("sqlalchemy.url", settings.database_url)
+database_url: str = (settings.database_url or "").strip()
+if database_url == "":
+    raise RuntimeError(
+        "DATABASE_URL is not set. Refusing the sqlite fallback in alembic.ini. "
+        "Add postgresql+psycopg://... to backend/.env for production accounts."
+    )
+if settings.is_production and not settings.uses_postgres:
+    raise RuntimeError("Production accounts require PostgreSQL. SQLite is not allowed.")
+config.set_main_option("sqlalchemy.url", database_url)
 
 target_metadata = Base.metadata
 
