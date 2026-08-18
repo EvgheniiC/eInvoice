@@ -95,10 +95,23 @@ def _run(argv: list[str]) -> int:
 
 def scrape_snapshot(*, base_url: str, timeout_seconds: float, scraped_at: float) -> MetricsSnapshot:
     """Probe liveness, readiness, and /metrics on the local API process."""
-    live_ok: bool = _probe_ok(f"{base_url}/api/health/live", timeout_seconds)
+    live_status, live_body = _http_get(f"{base_url}/api/health/live", timeout_seconds)
+    live_ok: bool = live_status == 200
+    if not live_ok and live_status in {0, 404}:
+        health_status, health_body = _http_get(f"{base_url}/api/health", timeout_seconds)
+        if health_status == 200:
+            live_ok = True
+            live_status = health_status
+            live_body = health_body
+
     ready_ok: bool = False
     if live_ok:
-        ready_ok = _probe_ok(f"{base_url}/api/health/ready", timeout_seconds)
+        ready_status, ready_body = _http_get(f"{base_url}/api/health/ready", timeout_seconds)
+        if ready_status == 200:
+            ready_ok = True
+        elif ready_status == 404:
+            ready_ok = _ready_from_health_body(live_body)
+
     metrics_text: Optional[str] = None
     if live_ok:
         metrics_text = _get_text(f"{base_url}/metrics", timeout_seconds)
@@ -112,7 +125,7 @@ def scrape_snapshot(*, base_url: str, timeout_seconds: float, scraped_at: float)
         _log(
             logging.ERROR,
             "alert_live_probe_failed",
-            fields={"base_url": base_url},
+            fields={"base_url": base_url, "status_code": live_status},
         )
     return snapshot_from_probes(
         scraped_at=scraped_at,
@@ -120,6 +133,21 @@ def scrape_snapshot(*, base_url: str, timeout_seconds: float, scraped_at: float)
         ready_ok=ready_ok,
         metrics_text=metrics_text,
     )
+
+
+def _ready_from_health_body(body: Optional[str]) -> bool:
+    """Older APIs only have /api/health; treat ready=true or missing field as ready."""
+    if not body:
+        return True
+    try:
+        payload: Any = json.loads(body)
+    except json.JSONDecodeError:
+        return True
+    if not isinstance(payload, dict):
+        return True
+    if "ready" not in payload:
+        return True
+    return bool(payload.get("ready"))
 
 
 def load_state(path: Path) -> tuple[tuple[MetricsSnapshot, ...], frozenset[str]]:
@@ -213,11 +241,6 @@ def notify_webhook(events: tuple[AlertEvent, ...], *, webhook_url: Optional[str]
                 "alert_webhook_failed",
                 fields={"alert": event.name, "status": event.status},
             )
-
-
-def _probe_ok(url: str, timeout_seconds: float) -> bool:
-    status, _body = _http_get(url, timeout_seconds)
-    return status == 200
 
 
 def _get_text(url: str, timeout_seconds: float) -> Optional[str]:

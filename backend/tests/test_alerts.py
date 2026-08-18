@@ -244,6 +244,60 @@ class TestWatchdogState(unittest.TestCase):
             disk: str = path.read_text(encoding="utf-8")
             self.assertNotIn("<Invoice>", disk)
 
+    def test_scrape_falls_back_to_health_when_live_is_404(self) -> None:
+        import importlib.util
+        from types import ModuleType
+        from unittest.mock import patch
+
+        script: Path = Path(__file__).resolve().parents[1] / "scripts" / "alert_watchdog.py"
+        spec = importlib.util.spec_from_file_location("einvoice_alert_watchdog_probe", script)
+        self.assertIsNotNone(spec)
+        assert spec is not None and spec.loader is not None
+        module: ModuleType = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+        def fake_http_get(url: str, timeout_seconds: float) -> tuple[int, str | None]:
+            if url.endswith("/api/health/live"):
+                return 404, None
+            if url.endswith("/api/health/ready"):
+                return 404, None
+            if url.endswith("/api/health"):
+                return 200, '{"status":"ok","ready":true}'
+            if url.endswith("/metrics"):
+                return 200, "einvoice_http_5xx_total 0\n"
+            return 0, None
+
+        with patch.object(module, "_http_get", side_effect=fake_http_get):
+            snapshot: MetricsSnapshot = module.scrape_snapshot(
+                base_url="http://127.0.0.1:8000",
+                timeout_seconds=1.0,
+                scraped_at=1.0,
+            )
+        self.assertTrue(snapshot.live_ok)
+        self.assertTrue(snapshot.ready_ok)
+        self.assertTrue(snapshot.metrics_ok)
+
+    def test_scrape_logs_status_zero_when_api_is_down(self) -> None:
+        import importlib.util
+        from types import ModuleType
+        from unittest.mock import patch
+
+        script: Path = Path(__file__).resolve().parents[1] / "scripts" / "alert_watchdog.py"
+        spec = importlib.util.spec_from_file_location("einvoice_alert_watchdog_down", script)
+        self.assertIsNotNone(spec)
+        assert spec is not None and spec.loader is not None
+        module: ModuleType = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+        with patch.object(module, "_http_get", return_value=(0, None)):
+            snapshot: MetricsSnapshot = module.scrape_snapshot(
+                base_url="http://127.0.0.1:8000",
+                timeout_seconds=1.0,
+                scraped_at=1.0,
+            )
+        self.assertFalse(snapshot.live_ok)
+        self.assertFalse(snapshot.metrics_ok)
+
     def test_webhook_payload_is_counter_metadata_only(self) -> None:
         from app.core.alerts import AlertEvent
 
