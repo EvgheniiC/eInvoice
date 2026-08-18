@@ -1,87 +1,28 @@
-export type ParseStatus = 'success' | 'partial' | 'error' | 'not_implemented'
-export type ValidationStatus = 'valid' | 'invalid' | 'warning' | 'not_checked'
-export type ExportFormat = 'csv' | 'excel' | 'datev'
+/**
+ * Frontend DTO aliases for FastAPI OpenAPI schemas.
+ *
+ * Source of truth: backend Pydantic models.
+ * Regenerate with: python backend/scripts/export_openapi.py
+ */
+import type { components } from './openapi'
+
+type Schemas = components['schemas']
+
+export type ParseStatus = Schemas['ParseStatus']
+export type ValidationStatus = Schemas['ValidationStatus']
+export type ExportFormat = Schemas['ExportFormat']
+export type PartyInfo = Schemas['PartyInfo-Output']
+export type LineItem = Schemas['LineItem-Output']
+export type TaxBreakdown = Schemas['TaxBreakdown-Output']
+export type InvoiceTotals = Schemas['InvoiceTotals-Output']
+export type ValidationIssue = Schemas['ValidationIssue-Output']
+export type ValidationMeta = Schemas['ValidationMeta-Output']
+export type MismatchField = Schemas['MismatchField-Output']
+export type InvoiceParseResponse = Schemas['InvoiceParseResponse-Output']
+export type HealthResponse = Schemas['HealthResponse']
+export type ExportRequest = Schemas['ExportRequest']
+export type ValidationReportRequest = Schemas['ValidationReportRequest']
+export type AccountantPackageRequest = Schemas['AccountantPackageRequest']
+
+/** UI helper: FastAPI serializes decimals as strings; Number() also accepts number. */
 export type DecimalValue = string | number
-
-export interface PartyInfo {
-  name: string | null
-  address: string | null
-  vat_id: string | null
-  iban: string | null
-}
-
-export interface LineItem {
-  position: number | null
-  description: string | null
-  quantity: DecimalValue | null
-  unit: string | null
-  unit_price: DecimalValue | null
-  tax_rate: DecimalValue | null
-  net_amount: DecimalValue | null
-  gross_amount: DecimalValue | null
-}
-
-export interface TaxBreakdown {
-  rate: DecimalValue
-  amount: DecimalValue | null
-}
-
-export interface InvoiceTotals {
-  net: DecimalValue | null
-  tax: DecimalValue | null
-  gross: DecimalValue | null
-  currency: string | null
-  allowance: DecimalValue | null
-  charge: DecimalValue | null
-  tax_breakdown: TaxBreakdown[]
-}
-
-export interface ValidationIssue {
-  level: string
-  category: string
-  code: string | null
-  message: string
-  explanation: string | null
-  bt_code: string | null
-  field: string | null
-}
-
-export interface ValidationMeta {
-  standard_version: string | null
-  profile: string | null
-  profile_id: string | null
-  engine: string
-  engine_version: string | null
-  scenarios_version: string | null
-  full_check_completed: boolean
-}
-
-export interface MismatchField {
-  field: string
-  label: string
-  xml_value: string | null
-  pdf_value: string | null
-  matched: boolean
-}
-
-export interface InvoiceParseResponse {
-  status: ParseStatus
-  message: string
-  filename: string
-  file_type: string | null
-  document_type: 'invoice' | 'credit_note' | null
-  invoice_number: string | null
-  issue_date: string | null
-  due_date: string | null
-  seller: PartyInfo | null
-  buyer: PartyInfo | null
-  totals: InvoiceTotals | null
-  line_items: LineItem[]
-  payment_reference: string | null
-  validation_status: ValidationStatus
-  validation_meta: ValidationMeta
-  validation_issues: ValidationIssue[]
-  mismatch_warnings: string[]
-  mismatch_fields: MismatchField[]
-  next_steps: string[]
-}

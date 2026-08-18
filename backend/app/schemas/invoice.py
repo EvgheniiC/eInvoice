@@ -1,8 +1,18 @@
 from enum import Enum
 from decimal import Decimal
-from typing import List, Optional
+from typing import ClassVar, List, Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
+
+DocumentType = Literal["invoice", "credit_note"]
+
+
+class ApiModel(BaseModel):
+    """Public API DTO. Serialized JSON always includes every declared field."""
+
+    model_config: ClassVar[ConfigDict] = ConfigDict(
+        json_schema_serialization_defaults_required=True,
+    )
 
 
 class ParseStatus(str, Enum):
@@ -23,7 +33,7 @@ class ValidationStatus(str, Enum):
     NOT_CHECKED = "not_checked"
 
 
-class PartyInfo(BaseModel):
+class PartyInfo(ApiModel):
     """Seller or buyer party information."""
 
     name: Optional[str] = None
@@ -32,7 +42,7 @@ class PartyInfo(BaseModel):
     iban: Optional[str] = None
 
 
-class LineItem(BaseModel):
+class LineItem(ApiModel):
     """Single invoice line item for UI/export."""
 
     position: Optional[int] = None
@@ -45,14 +55,14 @@ class LineItem(BaseModel):
     gross_amount: Optional[Decimal] = None
 
 
-class TaxBreakdown(BaseModel):
+class TaxBreakdown(ApiModel):
     """Tax amount grouped by VAT rate."""
 
     rate: Decimal
     amount: Optional[Decimal] = None
 
 
-class InvoiceTotals(BaseModel):
+class InvoiceTotals(ApiModel):
     """Invoice monetary totals."""
 
     net: Optional[Decimal] = None
@@ -64,7 +74,7 @@ class InvoiceTotals(BaseModel):
     tax_breakdown: List[TaxBreakdown] = Field(default_factory=list)
 
 
-class ValidationIssue(BaseModel):
+class ValidationIssue(ApiModel):
     """Single validation warning or error for the user."""
 
     level: str = Field(description="error | warning | info")
@@ -88,7 +98,7 @@ class ValidationIssue(BaseModel):
     )
 
 
-class ValidationMeta(BaseModel):
+class ValidationMeta(ApiModel):
     """Standard, profile, and engine information for the validation pass."""
 
     standard_version: Optional[str] = None
@@ -100,7 +110,7 @@ class ValidationMeta(BaseModel):
     full_check_completed: bool = False
 
 
-class MismatchField(BaseModel):
+class MismatchField(ApiModel):
     """PDF vs XML field comparison result for ZUGFeRD."""
 
     field: str
@@ -110,14 +120,14 @@ class MismatchField(BaseModel):
     matched: bool
 
 
-class InvoiceParseResponse(BaseModel):
+class InvoiceParseResponse(ApiModel):
     """Normalized invoice DTO returned to the frontend."""
 
     status: ParseStatus
     message: str
     filename: str
     file_type: Optional[str] = None
-    document_type: Optional[str] = Field(
+    document_type: Optional[DocumentType] = Field(
         default=None,
         description="invoice | credit_note",
     )

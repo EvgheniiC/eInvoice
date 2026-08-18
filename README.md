@@ -120,11 +120,19 @@ npm run test:e2e
 
 `npm run test` is Vitest (unit/component). `npm run test:e2e` is Playwright: landing → upload → result → Steuerberater package, against a production preview with mocked API.
 
+After changing backend Pydantic DTOs, refresh the OpenAPI snapshot and generated TypeScript types:
+
+```bash
+python backend/scripts/export_openapi.py
+```
+
+CI fails if `frontend/openapi.json` or `frontend/src/types/openapi.ts` drift from the live FastAPI schema.
+
 ## CI
 
 GitHub Actions (`.github/workflows/ci.yml`) runs on every push to `main` and on pull requests:
 
-- Backend: `pytest` on Python 3.13
+- Backend: `pytest` on Python 3.13 (includes OpenAPI ↔ TypeScript contract check)
 - Frontend: `oxlint`, TypeScript `tsc -b`, Vitest, Vite production build, and the Playwright happy-path test
 
 Golden-file cases that need local `backend/tests/xml_files` or `backend/tests/pdf_files` are skipped when those fixtures are not present.

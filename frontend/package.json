@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "typecheck": "tsc -b --pretty false",
+    "sync:api": "python ../backend/scripts/export_openapi.py",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",

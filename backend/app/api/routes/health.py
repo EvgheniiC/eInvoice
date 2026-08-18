@@ -1,12 +1,12 @@
 from fastapi import APIRouter
-from pydantic import BaseModel
 
 from app.core.config import settings
+from app.schemas.invoice import ApiModel
 
 router: APIRouter = APIRouter()
 
 
-class HealthResponse(BaseModel):
+class HealthResponse(ApiModel):
     """Health check response payload."""
 
     status: str

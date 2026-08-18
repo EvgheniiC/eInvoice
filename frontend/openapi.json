@@ -1,0 +1,1865 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "eInvoice API",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/health": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Health Check",
+        "description": "Return service health, including whether KoSIT validation is ready.",
+        "operationId": "health_check_api_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/invoices/parse": {
+      "post": {
+        "tags": [
+          "invoices"
+        ],
+        "summary": "Parse Invoice",
+        "description": "Accept an XRechnung XML or ZUGFeRD PDF and return a structured parse result.",
+        "operationId": "parse_invoice_api_invoices_parse_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_parse_invoice_api_invoices_parse_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoiceParseResponse-Output"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/invoices/export/mapping": {
+      "get": {
+        "tags": [
+          "export"
+        ],
+        "summary": "Export Mapping Docs",
+        "description": "Document DTO → export column mapping for Steuerberater.",
+        "operationId": "export_mapping_docs_api_invoices_export_mapping_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ExportMappingDoc"
+                  },
+                  "type": "array",
+                  "title": "Response Export Mapping Docs Api Invoices Export Mapping Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/invoices/export": {
+      "post": {
+        "tags": [
+          "export"
+        ],
+        "summary": "Export Invoice",
+        "description": "Export a previously parsed invoice DTO as CSV, Excel, or DATEV CSV.",
+        "operationId": "export_invoice_api_invoices_export_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/invoices/export/validation-report": {
+      "post": {
+        "tags": [
+          "export"
+        ],
+        "summary": "Export Validation Report",
+        "description": "Download a German plain-text validation report for supplier or Steuerberater.\nAllowed even when the invoice is invalid — that is the intended use.",
+        "operationId": "export_validation_report_api_invoices_export_validation_report_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidationReportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/invoices/export/accountant-package": {
+      "post": {
+        "tags": [
+          "export"
+        ],
+        "summary": "Export Accountant Package",
+        "description": "ZIP for Steuerberater: original XML/PDF + summary + Prüfbericht + Excel + DATEV.",
+        "operationId": "export_accountant_package_api_invoices_export_accountant_package_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountantPackageRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AccountantPackageRequest": {
+        "properties": {
+          "invoice": {
+            "$ref": "#/components/schemas/InvoiceParseResponse-Input"
+          },
+          "pdf_base64": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pdf Base64",
+            "description": "Original ZUGFeRD PDF (with embedded XML) as base64."
+          },
+          "pdf_filename": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pdf Filename",
+            "description": "Original PDF filename when pdf_base64 is set."
+          },
+          "xml_base64": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Xml Base64",
+            "description": "Original XRechnung / extracted invoice XML as base64."
+          },
+          "xml_filename": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Xml Filename",
+            "description": "Original XML filename when xml_base64 is set."
+          }
+        },
+        "type": "object",
+        "required": [
+          "invoice"
+        ],
+        "title": "AccountantPackageRequest",
+        "description": "ZIP package for Steuerberater: original + summary + report + Excel + DATEV."
+      },
+      "Body_parse_invoice_api_invoices_parse_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_parse_invoice_api_invoices_parse_post"
+      },
+      "ExportFormat": {
+        "type": "string",
+        "enum": [
+          "csv",
+          "excel",
+          "datev"
+        ],
+        "title": "ExportFormat",
+        "description": "Supported accounting export formats."
+      },
+      "ExportMappingDoc": {
+        "properties": {
+          "format": {
+            "$ref": "#/components/schemas/ExportFormat"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "columns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Columns"
+          },
+          "encoding": {
+            "type": "string",
+            "title": "Encoding"
+          },
+          "delimiter": {
+            "type": "string",
+            "title": "Delimiter"
+          },
+          "decimal_separator": {
+            "type": "string",
+            "title": "Decimal Separator"
+          },
+          "date_format": {
+            "type": "string",
+            "title": "Date Format"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "limitations": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limitations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "format",
+          "version",
+          "description",
+          "columns",
+          "encoding",
+          "delimiter",
+          "decimal_separator",
+          "date_format",
+          "notes",
+          "limitations"
+        ],
+        "title": "ExportMappingDoc",
+        "description": "Human-readable mapping description for Steuerberater."
+      },
+      "ExportRequest": {
+        "properties": {
+          "format": {
+            "$ref": "#/components/schemas/ExportFormat",
+            "default": "csv"
+          },
+          "invoice": {
+            "$ref": "#/components/schemas/InvoiceParseResponse-Input"
+          }
+        },
+        "type": "object",
+        "required": [
+          "invoice"
+        ],
+        "title": "ExportRequest",
+        "description": "Request body: parsed invoice DTO to export."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "app_name": {
+            "type": "string",
+            "title": "App Name"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "environment": {
+            "type": "string",
+            "title": "Environment"
+          },
+          "kosit_required": {
+            "type": "boolean",
+            "title": "Kosit Required"
+          },
+          "kosit_ready": {
+            "type": "boolean",
+            "title": "Kosit Ready"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "app_name",
+          "version",
+          "environment",
+          "kosit_required",
+          "kosit_ready"
+        ],
+        "title": "HealthResponse",
+        "description": "Health check response payload."
+      },
+      "InvoiceParseResponse-Input": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/ParseStatus"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "file_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Type"
+          },
+          "document_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "invoice",
+                  "credit_note"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Type",
+            "description": "invoice | credit_note"
+          },
+          "invoice_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invoice Number"
+          },
+          "issue_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Issue Date"
+          },
+          "due_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due Date"
+          },
+          "seller": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PartyInfo-Input"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "buyer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PartyInfo-Input"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "totals": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InvoiceTotals-Input"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "line_items": {
+            "items": {
+              "$ref": "#/components/schemas/LineItem-Input"
+            },
+            "type": "array",
+            "title": "Line Items"
+          },
+          "payment_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Reference"
+          },
+          "validation_status": {
+            "$ref": "#/components/schemas/ValidationStatus",
+            "default": "not_checked"
+          },
+          "validation_meta": {
+            "$ref": "#/components/schemas/ValidationMeta-Input"
+          },
+          "validation_issues": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationIssue-Input"
+            },
+            "type": "array",
+            "title": "Validation Issues"
+          },
+          "mismatch_warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Mismatch Warnings"
+          },
+          "mismatch_fields": {
+            "items": {
+              "$ref": "#/components/schemas/MismatchField-Input"
+            },
+            "type": "array",
+            "title": "Mismatch Fields"
+          },
+          "next_steps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Next Steps"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "message",
+          "filename"
+        ],
+        "title": "InvoiceParseResponse",
+        "description": "Normalized invoice DTO returned to the frontend."
+      },
+      "InvoiceParseResponse-Output": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/ParseStatus"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "file_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Type"
+          },
+          "document_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "invoice",
+                  "credit_note"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Type",
+            "description": "invoice | credit_note"
+          },
+          "invoice_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invoice Number"
+          },
+          "issue_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Issue Date"
+          },
+          "due_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due Date"
+          },
+          "seller": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PartyInfo-Output"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "buyer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PartyInfo-Output"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "totals": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InvoiceTotals-Output"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "line_items": {
+            "items": {
+              "$ref": "#/components/schemas/LineItem-Output"
+            },
+            "type": "array",
+            "title": "Line Items"
+          },
+          "payment_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Reference"
+          },
+          "validation_status": {
+            "$ref": "#/components/schemas/ValidationStatus",
+            "default": "not_checked"
+          },
+          "validation_meta": {
+            "$ref": "#/components/schemas/ValidationMeta-Output"
+          },
+          "validation_issues": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationIssue-Output"
+            },
+            "type": "array",
+            "title": "Validation Issues"
+          },
+          "mismatch_warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Mismatch Warnings"
+          },
+          "mismatch_fields": {
+            "items": {
+              "$ref": "#/components/schemas/MismatchField-Output"
+            },
+            "type": "array",
+            "title": "Mismatch Fields"
+          },
+          "next_steps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Next Steps"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "message",
+          "filename",
+          "file_type",
+          "document_type",
+          "invoice_number",
+          "issue_date",
+          "due_date",
+          "seller",
+          "buyer",
+          "totals",
+          "line_items",
+          "payment_reference",
+          "validation_status",
+          "validation_meta",
+          "validation_issues",
+          "mismatch_warnings",
+          "mismatch_fields",
+          "next_steps"
+        ],
+        "title": "InvoiceParseResponse",
+        "description": "Normalized invoice DTO returned to the frontend."
+      },
+      "InvoiceTotals-Input": {
+        "properties": {
+          "net": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Net"
+          },
+          "tax": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tax"
+          },
+          "gross": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gross"
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          },
+          "allowance": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allowance"
+          },
+          "charge": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Charge"
+          },
+          "tax_breakdown": {
+            "items": {
+              "$ref": "#/components/schemas/TaxBreakdown-Input"
+            },
+            "type": "array",
+            "title": "Tax Breakdown"
+          }
+        },
+        "type": "object",
+        "title": "InvoiceTotals",
+        "description": "Invoice monetary totals."
+      },
+      "InvoiceTotals-Output": {
+        "properties": {
+          "net": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Net"
+          },
+          "tax": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tax"
+          },
+          "gross": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gross"
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          },
+          "allowance": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allowance"
+          },
+          "charge": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Charge"
+          },
+          "tax_breakdown": {
+            "items": {
+              "$ref": "#/components/schemas/TaxBreakdown-Output"
+            },
+            "type": "array",
+            "title": "Tax Breakdown"
+          }
+        },
+        "type": "object",
+        "required": [
+          "net",
+          "tax",
+          "gross",
+          "currency",
+          "allowance",
+          "charge",
+          "tax_breakdown"
+        ],
+        "title": "InvoiceTotals",
+        "description": "Invoice monetary totals."
+      },
+      "LineItem-Input": {
+        "properties": {
+          "position": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Position"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          },
+          "unit_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Price"
+          },
+          "tax_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tax Rate"
+          },
+          "net_amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Net Amount"
+          },
+          "gross_amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gross Amount"
+          }
+        },
+        "type": "object",
+        "title": "LineItem",
+        "description": "Single invoice line item for UI/export."
+      },
+      "LineItem-Output": {
+        "properties": {
+          "position": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Position"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          },
+          "unit_price": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Price"
+          },
+          "tax_rate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tax Rate"
+          },
+          "net_amount": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Net Amount"
+          },
+          "gross_amount": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gross Amount"
+          }
+        },
+        "type": "object",
+        "required": [
+          "position",
+          "description",
+          "quantity",
+          "unit",
+          "unit_price",
+          "tax_rate",
+          "net_amount",
+          "gross_amount"
+        ],
+        "title": "LineItem",
+        "description": "Single invoice line item for UI/export."
+      },
+      "MismatchField-Input": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "title": "Field"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "xml_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Xml Value"
+          },
+          "pdf_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pdf Value"
+          },
+          "matched": {
+            "type": "boolean",
+            "title": "Matched"
+          }
+        },
+        "type": "object",
+        "required": [
+          "field",
+          "label",
+          "matched"
+        ],
+        "title": "MismatchField",
+        "description": "PDF vs XML field comparison result for ZUGFeRD."
+      },
+      "MismatchField-Output": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "title": "Field"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "xml_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Xml Value"
+          },
+          "pdf_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pdf Value"
+          },
+          "matched": {
+            "type": "boolean",
+            "title": "Matched"
+          }
+        },
+        "type": "object",
+        "required": [
+          "field",
+          "label",
+          "xml_value",
+          "pdf_value",
+          "matched"
+        ],
+        "title": "MismatchField",
+        "description": "PDF vs XML field comparison result for ZUGFeRD."
+      },
+      "ParseStatus": {
+        "type": "string",
+        "enum": [
+          "success",
+          "partial",
+          "error",
+          "not_implemented"
+        ],
+        "title": "ParseStatus",
+        "description": "High-level parse outcome for the uploaded invoice."
+      },
+      "PartyInfo-Input": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          },
+          "vat_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vat Id"
+          },
+          "iban": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Iban"
+          }
+        },
+        "type": "object",
+        "title": "PartyInfo",
+        "description": "Seller or buyer party information."
+      },
+      "PartyInfo-Output": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          },
+          "vat_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vat Id"
+          },
+          "iban": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Iban"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "address",
+          "vat_id",
+          "iban"
+        ],
+        "title": "PartyInfo",
+        "description": "Seller or buyer party information."
+      },
+      "TaxBreakdown-Input": {
+        "properties": {
+          "rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              }
+            ],
+            "title": "Rate"
+          },
+          "amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rate"
+        ],
+        "title": "TaxBreakdown",
+        "description": "Tax amount grouped by VAT rate."
+      },
+      "TaxBreakdown-Output": {
+        "properties": {
+          "rate": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Rate"
+          },
+          "amount": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rate",
+          "amount"
+        ],
+        "title": "TaxBreakdown",
+        "description": "Tax amount grouped by VAT rate."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "ValidationIssue-Input": {
+        "properties": {
+          "level": {
+            "type": "string",
+            "title": "Level",
+            "description": "error | warning | info"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category",
+            "description": "schema | business | mismatch | info",
+            "default": "business"
+          },
+          "code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "explanation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Explanation",
+            "description": "Plain-language explanation of the issue and next action."
+          },
+          "bt_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bt Code",
+            "description": "EN 16931 BT/BG identifier when known, e.g. BT-1."
+          },
+          "field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field",
+            "description": "Parsed invoice field related to the issue, e.g. invoice_number."
+          }
+        },
+        "type": "object",
+        "required": [
+          "level",
+          "message"
+        ],
+        "title": "ValidationIssue",
+        "description": "Single validation warning or error for the user."
+      },
+      "ValidationIssue-Output": {
+        "properties": {
+          "level": {
+            "type": "string",
+            "title": "Level",
+            "description": "error | warning | info"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category",
+            "description": "schema | business | mismatch | info",
+            "default": "business"
+          },
+          "code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "explanation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Explanation",
+            "description": "Plain-language explanation of the issue and next action."
+          },
+          "bt_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bt Code",
+            "description": "EN 16931 BT/BG identifier when known, e.g. BT-1."
+          },
+          "field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field",
+            "description": "Parsed invoice field related to the issue, e.g. invoice_number."
+          }
+        },
+        "type": "object",
+        "required": [
+          "level",
+          "category",
+          "code",
+          "message",
+          "explanation",
+          "bt_code",
+          "field"
+        ],
+        "title": "ValidationIssue",
+        "description": "Single validation warning or error for the user."
+      },
+      "ValidationMeta-Input": {
+        "properties": {
+          "standard_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Standard Version"
+          },
+          "profile": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile"
+          },
+          "profile_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Id"
+          },
+          "engine": {
+            "type": "string",
+            "title": "Engine",
+            "default": "business_rules"
+          },
+          "engine_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Engine Version"
+          },
+          "scenarios_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scenarios Version"
+          },
+          "full_check_completed": {
+            "type": "boolean",
+            "title": "Full Check Completed",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "ValidationMeta",
+        "description": "Standard, profile, and engine information for the validation pass."
+      },
+      "ValidationMeta-Output": {
+        "properties": {
+          "standard_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Standard Version"
+          },
+          "profile": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile"
+          },
+          "profile_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Id"
+          },
+          "engine": {
+            "type": "string",
+            "title": "Engine",
+            "default": "business_rules"
+          },
+          "engine_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Engine Version"
+          },
+          "scenarios_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scenarios Version"
+          },
+          "full_check_completed": {
+            "type": "boolean",
+            "title": "Full Check Completed",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "standard_version",
+          "profile",
+          "profile_id",
+          "engine",
+          "engine_version",
+          "scenarios_version",
+          "full_check_completed"
+        ],
+        "title": "ValidationMeta",
+        "description": "Standard, profile, and engine information for the validation pass."
+      },
+      "ValidationReportRequest": {
+        "properties": {
+          "invoice": {
+            "$ref": "#/components/schemas/InvoiceParseResponse-Input"
+          }
+        },
+        "type": "object",
+        "required": [
+          "invoice"
+        ],
+        "title": "ValidationReportRequest",
+        "description": "Request body: parsed invoice DTO to render as a validation report."
+      },
+      "ValidationStatus": {
+        "type": "string",
+        "enum": [
+          "valid",
+          "invalid",
+          "warning",
+          "not_checked"
+        ],
+        "title": "ValidationStatus",
+        "description": "EN 16931 / business validation outcome shown in the UI."
+      }
+    }
+  }
+}

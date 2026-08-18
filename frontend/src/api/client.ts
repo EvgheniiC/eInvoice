@@ -1,4 +1,11 @@
-import type { ExportFormat, InvoiceParseResponse } from '../types/invoice'
+import type {
+  AccountantPackageRequest,
+  ExportFormat,
+  ExportRequest,
+  HealthResponse,
+  InvoiceParseResponse,
+  ValidationReportRequest,
+} from '../types/invoice'
 
 const API_BASE: string = '/api'
 
@@ -31,10 +38,11 @@ export async function exportInvoice(
   invoice: InvoiceParseResponse,
   format: ExportFormat,
 ): Promise<void> {
+  const body: ExportRequest = { format, invoice }
   const response: Response = await fetch(`${API_BASE}/invoices/export`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ format, invoice }),
+    body: JSON.stringify(body),
   })
 
   if (!response.ok) {
@@ -47,10 +55,11 @@ export async function exportInvoice(
 export async function downloadValidationReport(
   invoice: InvoiceParseResponse,
 ): Promise<void> {
+  const body: ValidationReportRequest = { invoice }
   const response: Response = await fetch(`${API_BASE}/invoices/export/validation-report`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ invoice }),
+    body: JSON.stringify(body),
   })
 
   if (!response.ok) {
@@ -67,13 +76,7 @@ export async function downloadAccountantPackage(
   invoice: InvoiceParseResponse,
   sourceFile?: File | null,
 ): Promise<void> {
-  const body: {
-    invoice: InvoiceParseResponse
-    pdf_base64?: string
-    pdf_filename?: string
-    xml_base64?: string
-    xml_filename?: string
-  } = { invoice }
+  const body: AccountantPackageRequest = { invoice }
 
   if (sourceFile && isPdfFile(sourceFile)) {
     body.pdf_base64 = await fileToBase64(sourceFile)
@@ -99,12 +102,12 @@ export async function downloadAccountantPackage(
   )
 }
 
-export async function checkHealth(): Promise<{ status: string }> {
+export async function checkHealth(): Promise<HealthResponse> {
   const response: Response = await fetch(`${API_BASE}/health`)
   if (!response.ok) {
     throw new Error('API nicht erreichbar.')
   }
-  return response.json() as Promise<{ status: string }>
+  return response.json() as Promise<HealthResponse>
 }
 
 async function downloadResponseBlob(response: Response, fallbackName: string): Promise<void> {

@@ -1,9 +1,9 @@
 from enum import Enum
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
-from app.schemas.invoice import InvoiceParseResponse
+from app.schemas.invoice import ApiModel, InvoiceParseResponse
 
 # Frozen accounting export schema. Bump major when columns/semantics break Kanzlei imports.
 EXPORT_FORMAT_VERSION: str = "1.0"
@@ -25,20 +25,20 @@ class ExportFormat(str, Enum):
     DATEV = "datev"
 
 
-class ExportRequest(BaseModel):
+class ExportRequest(ApiModel):
     """Request body: parsed invoice DTO to export."""
 
     format: ExportFormat = ExportFormat.CSV
     invoice: InvoiceParseResponse
 
 
-class ValidationReportRequest(BaseModel):
+class ValidationReportRequest(ApiModel):
     """Request body: parsed invoice DTO to render as a validation report."""
 
     invoice: InvoiceParseResponse
 
 
-class AccountantPackageRequest(BaseModel):
+class AccountantPackageRequest(ApiModel):
     """ZIP package for Steuerberater: original + summary + report + Excel + DATEV."""
 
     invoice: InvoiceParseResponse
@@ -103,7 +103,7 @@ DATEV_COLUMNS: List[str] = [
 ]
 
 
-class ExportMappingDoc(BaseModel):
+class ExportMappingDoc(ApiModel):
     """Human-readable mapping description for Steuerberater."""
 
     format: ExportFormat
