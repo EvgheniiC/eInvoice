@@ -8,6 +8,13 @@ from pathlib import Path
 from typing import Any, Mapping, Optional
 
 from app.core.logging_config import format_log_fields, sanitize_log_text
+from app.core.metrics import (
+    observe_error,
+    observe_parse_failure,
+    observe_timeout,
+    safe_event_label,
+)
+from app.core.request_context import current_request_id
 
 logger: logging.Logger = logging.getLogger("app.errors")
 
@@ -42,7 +49,10 @@ def log_event(
     payload: dict[str, Any] = {"event": event}
     if fields:
         payload.update(dict(fields))
-    logger.log(level, format_log_fields(payload))
+    request_id: Optional[str] = payload.get("request_id") or current_request_id()
+    if request_id:
+        payload["request_id"] = request_id
+    logger.log(level, format_log_fields(payload), extra={"structured": dict(payload)})
 
 
 def log_parse_failure(
@@ -66,6 +76,9 @@ def log_parse_failure(
         "exc_type": exc_type,
         "detail": sanitize_log_text(detail, max_len=180) if detail else None,
     }
+    observe_parse_failure(str(code))
+    if level >= logging.ERROR:
+        observe_error("parse_failed")
     log_event(level, "parse_failed", fields=fields)
 
 
@@ -91,6 +104,8 @@ def log_api_error(
         "detail": sanitize_log_text(detail, max_len=180) if detail else None,
         "stack": stack,
     }
+    if status_code >= 500 or level >= logging.ERROR:
+        observe_error(safe_event_label(event))
     log_event(level, event, fields=fields)
 
 
@@ -108,4 +123,6 @@ def log_timeout(
         "timeout_seconds": timeout_seconds,
         "detail": sanitize_log_text(detail, max_len=180) if detail else None,
     }
+    observe_timeout(str(component))
+    observe_error("timeout")
     log_event(logging.ERROR, "timeout", fields=fields)

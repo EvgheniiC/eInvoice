@@ -13,6 +13,8 @@ from starlette.responses import Response
 
 from app.core.error_events import log_event
 from app.core.logging_config import format_log_fields
+from app.core.metrics import observe_http_request
+from app.core.request_context import reset_request_id, set_request_id
 
 logger: logging.Logger = logging.getLogger("app.request")
 
@@ -27,39 +29,69 @@ class RequestObservabilityMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         request_id: str = request.headers.get(REQUEST_ID_HEADER) or uuid.uuid4().hex[:12]
         request.state.request_id = request_id
+        set_request_id(request_id)
 
         started: float = time.perf_counter()
-        response: Response = await call_next(request)
-        elapsed_ms: int = int((time.perf_counter() - started) * 1000)
-        response.headers[REQUEST_ID_HEADER] = request_id
-
-        if elapsed_ms >= SLOW_REQUEST_MS:
-            log_event(
-                logging.WARNING,
-                "slow_request",
-                fields={
-                    "method": request.method,
-                    "path": request.url.path,
-                    "status_code": response.status_code,
-                    "request_id": request_id,
-                    "duration_ms": elapsed_ms,
-                },
+        try:
+            response: Response = await call_next(request)
+        except Exception:
+            elapsed_ms: int = int((time.perf_counter() - started) * 1000)
+            observe_http_request(
+                method=request.method,
+                path=request.url.path,
+                status_code=500,
+                duration_seconds=elapsed_ms / 1000.0,
+            )
+            raise
+        else:
+            elapsed_ms = int((time.perf_counter() - started) * 1000)
+            response.headers[REQUEST_ID_HEADER] = request_id
+            observe_http_request(
+                method=request.method,
+                path=request.url.path,
+                status_code=response.status_code,
+                duration_seconds=elapsed_ms / 1000.0,
             )
 
-        if logger.isEnabledFor(logging.DEBUG):
-            logger.debug(
-                format_log_fields(
-                    {
-                        "event": "request_done",
+            if elapsed_ms >= SLOW_REQUEST_MS:
+                log_event(
+                    logging.WARNING,
+                    "slow_request",
+                    fields={
                         "method": request.method,
                         "path": request.url.path,
                         "status_code": response.status_code,
                         "request_id": request_id,
                         "duration_ms": elapsed_ms,
-                    }
+                    },
                 )
-            )
-        return response
+
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.debug(
+                    format_log_fields(
+                        {
+                            "event": "request_done",
+                            "method": request.method,
+                            "path": request.url.path,
+                            "status_code": response.status_code,
+                            "request_id": request_id,
+                            "duration_ms": elapsed_ms,
+                        }
+                    ),
+                    extra={
+                        "structured": {
+                            "event": "request_done",
+                            "method": request.method,
+                            "path": request.url.path,
+                            "status_code": response.status_code,
+                            "request_id": request_id,
+                            "duration_ms": elapsed_ms,
+                        }
+                    },
+                )
+            return response
+        finally:
+            reset_request_id()
 
 
 def get_request_id(request: Request) -> Optional[str]:

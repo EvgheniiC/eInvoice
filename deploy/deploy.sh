@@ -18,7 +18,7 @@ APP_ROOT="${APP_ROOT:-/opt/eInvoice}"
 FRONTEND_DIR="${FRONTEND_DIR:-${APP_ROOT}/frontend}"
 WEB_ROOT="${WEB_ROOT:-/var/www/erechnung-smart}"
 API_SERVICE="${API_SERVICE:-einvoice-api}"
-HEALTH_URL="${HEALTH_URL:-http://127.0.0.1:8000/api/health}"
+HEALTH_URL="${HEALTH_URL:-http://127.0.0.1:8000/api/health/live}"
 WEB_USER="${WEB_USER:-www-data}"
 WEB_GROUP="${WEB_GROUP:-www-data}"
 

@@ -21,6 +21,7 @@ setup(
         "defusedxml>=0.7.1",
         "PyPDF2>=3.0.0",
         "openpyxl>=3.1.0",
+        "prometheus-client>=0.21.0",
     ],
     description="eInvoice receiver API — XRechnung / ZUGFeRD parse & validate",
 )

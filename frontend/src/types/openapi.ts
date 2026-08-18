@@ -35,13 +35,20 @@ export interface components {
     HTTPValidationError: {
       detail?: components["schemas"]["ValidationError"][];
     };
+    HealthCheck: {
+      name: string;
+      status: string;
+      detail: string | null;
+    };
     HealthResponse: {
       status: string;
+      ready: boolean;
       app_name: string;
       version: string;
       environment: string;
       kosit_required: boolean;
       kosit_ready: boolean;
+      checks: components["schemas"]["HealthCheck"][];
     };
     "InvoiceParseResponse-Input": {
       status: components["schemas"]["ParseStatus"];
@@ -123,6 +130,9 @@ export interface components {
       net_amount: string | null;
       gross_amount: string | null;
     };
+    LivenessResponse: {
+      status: string;
+    };
     "MismatchField-Input": {
       field: string;
       label: string;
@@ -149,6 +159,11 @@ export interface components {
       address: string | null;
       vat_id: string | null;
       iban: string | null;
+    };
+    ReadinessResponse: {
+      status: string;
+      ready: boolean;
+      checks: components["schemas"]["HealthCheck"][];
     };
     "TaxBreakdown-Input": {
       rate: number | string;

@@ -9,14 +9,30 @@ import type {
 
 const API_BASE: string = '/api'
 
+function createRequestId(): string {
+  if (typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID().replace(/-/g, '').slice(0, 12)
+  }
+  return Math.random().toString(16).slice(2, 14)
+}
+
+function withRequestId(init: RequestInit): RequestInit {
+  const headers: Headers = new Headers(init.headers)
+  headers.set('X-Request-ID', createRequestId())
+  return { ...init, headers }
+}
+
 export async function parseInvoice(file: File): Promise<InvoiceParseResponse> {
   const formData: FormData = new FormData()
   formData.append('file', file)
 
-  const response: Response = await fetch(`${API_BASE}/invoices/parse`, {
-    method: 'POST',
-    body: formData,
-  })
+  const response: Response = await fetch(
+    `${API_BASE}/invoices/parse`,
+    withRequestId({
+      method: 'POST',
+      body: formData,
+    }),
+  )
 
   if (!response.ok) {
     let detail: string = 'Upload fehlgeschlagen.'
@@ -39,11 +55,14 @@ export async function exportInvoice(
   format: ExportFormat,
 ): Promise<void> {
   const body: ExportRequest = { format, invoice }
-  const response: Response = await fetch(`${API_BASE}/invoices/export`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  })
+  const response: Response = await fetch(
+    `${API_BASE}/invoices/export`,
+    withRequestId({
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }),
+  )
 
   if (!response.ok) {
     throw new Error(await readErrorDetail(response, 'Export fehlgeschlagen.'))
@@ -56,11 +75,14 @@ export async function downloadValidationReport(
   invoice: InvoiceParseResponse,
 ): Promise<void> {
   const body: ValidationReportRequest = { invoice }
-  const response: Response = await fetch(`${API_BASE}/invoices/export/validation-report`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  })
+  const response: Response = await fetch(
+    `${API_BASE}/invoices/export/validation-report`,
+    withRequestId({
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }),
+  )
 
   if (!response.ok) {
     throw new Error(await readErrorDetail(response, 'Prüfbericht-Download fehlgeschlagen.'))
@@ -86,11 +108,14 @@ export async function downloadAccountantPackage(
     body.xml_filename = sourceFile.name
   }
 
-  const response: Response = await fetch(`${API_BASE}/invoices/export/accountant-package`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  })
+  const response: Response = await fetch(
+    `${API_BASE}/invoices/export/accountant-package`,
+    withRequestId({
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }),
+  )
 
   if (!response.ok) {
     throw new Error(await readErrorDetail(response, 'Paket-Download fehlgeschlagen.'))
@@ -103,7 +128,7 @@ export async function downloadAccountantPackage(
 }
 
 export async function checkHealth(): Promise<HealthResponse> {
-  const response: Response = await fetch(`${API_BASE}/health`)
+  const response: Response = await fetch(`${API_BASE}/health`, withRequestId({ method: 'GET' }))
   if (!response.ok) {
     throw new Error('API nicht erreichbar.')
   }

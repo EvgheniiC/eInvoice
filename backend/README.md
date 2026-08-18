@@ -26,6 +26,15 @@ uvicorn app.main:app --reload --port 8000
 Official KoSIT EN 16931 / XRechnung checks are required in production.
 See [docs/VALIDATION.md](../docs/VALIDATION.md).
 
+## Observability
+
+- `GET /api/health` — detailed status (`ok` / `degraded`)
+- `GET /api/health/live` — liveness
+- `GET /api/health/ready` — readiness (503 when KoSIT is required but missing)
+- `GET /metrics` — Prometheus scrape (localhost; nginx does not proxy this path)
+
+JSON logs (`LOG_FORMAT=json`) include `event` and `request_id`. Parse failures, timeouts, and 5xx are counted as metrics. Invoice bodies are never logged or labeled.
+
 Regression snapshots for `parse_upload` live in `tests/goldens/` (JSON).
 Invoice fixture bytes stay local under `tests/xml_files/` and `tests/pdf_files/`.
 

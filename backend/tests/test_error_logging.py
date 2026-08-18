@@ -88,6 +88,8 @@ class TestApiErrorHandlers(unittest.TestCase):
         self.assertIn(payload["status"], {"ok", "degraded"})
         self.assertIn("kosit_ready", payload)
         self.assertIn("kosit_required", payload)
+        self.assertIn("ready", payload)
+        self.assertIsInstance(payload["checks"], list)
 
     def test_unhandled_exception_returns_500_and_logs(self) -> None:
         app = create_app()

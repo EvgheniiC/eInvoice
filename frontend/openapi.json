@@ -5,6 +5,60 @@
     "version": "0.1.0"
   },
   "paths": {
+    "/api/health/live": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Liveness Check",
+        "description": "Return 200 as long as this process can answer HTTP.",
+        "operationId": "liveness_check_api_health_live_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LivenessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/health/ready": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Readiness Check",
+        "description": "Return 503 when a required dependency (KoSIT in production) is missing.",
+        "operationId": "readiness_check_api_health_ready_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/health": {
       "get": {
         "tags": [
@@ -408,11 +462,46 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
+      "HealthCheck": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "status",
+          "detail"
+        ],
+        "title": "HealthCheck",
+        "description": "One named dependency check."
+      },
       "HealthResponse": {
         "properties": {
           "status": {
             "type": "string",
             "title": "Status"
+          },
+          "ready": {
+            "type": "boolean",
+            "title": "Ready"
           },
           "app_name": {
             "type": "string",
@@ -433,19 +522,28 @@
           "kosit_ready": {
             "type": "boolean",
             "title": "Kosit Ready"
+          },
+          "checks": {
+            "items": {
+              "$ref": "#/components/schemas/HealthCheck"
+            },
+            "type": "array",
+            "title": "Checks"
           }
         },
         "type": "object",
         "required": [
           "status",
+          "ready",
           "app_name",
           "version",
           "environment",
           "kosit_required",
-          "kosit_ready"
+          "kosit_ready",
+          "checks"
         ],
         "title": "HealthResponse",
-        "description": "Health check response payload."
+        "description": "Detailed health check response payload."
       },
       "InvoiceParseResponse-Input": {
         "properties": {
@@ -1214,6 +1312,20 @@
         "title": "LineItem",
         "description": "Single invoice line item for UI/export."
       },
+      "LivenessResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "LivenessResponse",
+        "description": "Liveness probe: process is running."
+      },
       "MismatchField-Input": {
         "properties": {
           "field": {
@@ -1426,6 +1538,33 @@
         ],
         "title": "PartyInfo",
         "description": "Seller or buyer party information."
+      },
+      "ReadinessResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "ready": {
+            "type": "boolean",
+            "title": "Ready"
+          },
+          "checks": {
+            "items": {
+              "$ref": "#/components/schemas/HealthCheck"
+            },
+            "type": "array",
+            "title": "Checks"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "ready",
+          "checks"
+        ],
+        "title": "ReadinessResponse",
+        "description": "Readiness probe: process can receive traffic."
       },
       "TaxBreakdown-Input": {
         "properties": {

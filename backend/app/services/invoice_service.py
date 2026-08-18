@@ -7,6 +7,7 @@ from typing import Any, Dict, Optional, Tuple
 from xml.etree.ElementTree import ParseError as EtParseError
 
 from app.core.error_events import log_parse_failure
+from app.core.metrics import observe_parse_result
 from app.data_class.XmlInvoiceHeader import XmlInvoiceHeader
 from app.helper_functions.einvoice_helper import is_zugpferd_pdf
 from app.helper_functions.pdf_security import UnsafePdfError, assert_pdf_safe
@@ -65,6 +66,22 @@ class InvoiceService:
         request_id: Optional[str] = None,
     ) -> InvoiceParseResponse:
         """Parse an uploaded invoice file into the public DTO."""
+        response: InvoiceParseResponse = self._parse_upload_pipeline(
+            filename=filename,
+            content=content,
+            request_id=request_id,
+        )
+        observe_parse_result(response.status.value)
+        return response
+
+    def _parse_upload_pipeline(
+        self,
+        filename: str,
+        content: bytes,
+        *,
+        request_id: Optional[str] = None,
+    ) -> InvoiceParseResponse:
+        """Run detection, parse, and validation without recording metrics."""
         size_bytes: int = len(content)
         suffix: str = Path(filename).suffix.lower()
         if suffix == ".pdf" and self._decode_xml(content) is not None:

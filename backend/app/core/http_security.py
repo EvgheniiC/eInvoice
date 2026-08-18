@@ -14,7 +14,7 @@ from starlette.responses import JSONResponse, Response
 from starlette.types import ASGIApp
 
 from app.core.config import settings
-from app.core.error_events import log_event
+from app.core.error_events import log_event, log_timeout
 from app.core.middleware import get_request_id
 
 _RATE_LIMITED_PREFIXES: tuple[str, ...] = ("/api/invoices",)
@@ -95,16 +95,11 @@ class RequestTimeoutMiddleware(BaseHTTPMiddleware):
         try:
             return await asyncio.wait_for(call_next(request), timeout=timeout_seconds)
         except asyncio.TimeoutError:
-            log_event(
-                logging.ERROR,
-                "timeout",
-                fields={
-                    "component": "http_request",
-                    "path": request.url.path,
-                    "method": request.method,
-                    "request_id": get_request_id(request),
-                    "timeout_seconds": settings.request_timeout_seconds,
-                },
+            log_timeout(
+                component="http_request",
+                request_id=get_request_id(request),
+                timeout_seconds=settings.request_timeout_seconds,
+                detail=f"{request.method} {request.url.path}",
             )
             return JSONResponse(
                 status_code=504,

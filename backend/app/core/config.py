@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     app_version: str = "0.1.0"
     debug: bool = False
     log_level: str = "INFO"
+    # json = one JSON object per line (production default). text = key=value lines.
+    log_format: str = "json"
     environment: str = "development"
     cors_origins: List[str] = [
         "http://localhost:5173",

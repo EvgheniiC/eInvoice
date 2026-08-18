@@ -27,6 +27,8 @@ describe('parseInvoice', (): void => {
     expect(url).toBe('/api/invoices/parse')
     expect(init.method).toBe('POST')
     expect(init.body).toBeInstanceOf(FormData)
+    const headers: Headers = new Headers(init.headers)
+    expect(headers.get('X-Request-ID')).toMatch(/^[a-f0-9]{12}$/i)
   })
 
   it('uses the API error detail when the request fails', async (): Promise<void> => {
