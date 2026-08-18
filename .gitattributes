@@ -1,2 +1,7 @@
 frontend/openapi.json text eol=lf
 frontend/src/types/openapi.ts text eol=lf
+deploy/*.service text eol=lf
+deploy/*.timer text eol=lf
+deploy/*.sh text eol=lf
+deploy/*.conf text eol=lf
+deploy/**/*.yml text eol=lf

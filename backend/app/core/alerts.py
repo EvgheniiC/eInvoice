@@ -6,6 +6,7 @@ They never include filenames, invoice bodies, IBANs, or request payloads.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from typing import Callable, Iterable, Mapping, Optional, Sequence
 
@@ -16,6 +17,11 @@ FIVE_XX_INCREASE: float = 3.0
 TIMEOUT_INCREASE: float = 2.0
 PARSE_FAILED_INCREASE: float = 3.0
 MAX_SAMPLES: int = 20
+
+_METRIC_LINE_RE: re.Pattern[str] = re.compile(
+    r"^([a-zA-Z_:][a-zA-Z0-9_:]*)(?:\{([^}]*)\})?\s+([0-9]+(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?)\s*$"
+)
+_LABEL_RE: re.Pattern[str] = re.compile(r'([a-zA-Z_][a-zA-Z0-9_]*)="([^"]*)"')
 
 
 @dataclass(frozen=True)
@@ -66,31 +72,43 @@ class AlertEvaluation:
 
 def parse_prometheus_counters(text: str) -> dict[str, float]:
     """Sum selected eInvoice counters from Prometheus text exposition."""
-    from prometheus_client.parser import text_string_to_metric_families
-
     http_5xx: float = 0.0
     http_requests: float = 0.0
     timeouts: float = 0.0
     parse_failed_errors: float = 0.0
-    for family in text_string_to_metric_families(text):
-        for sample in family.samples:
-            name: str = sample.name
-            labels: Mapping[str, str] = sample.labels
-            value: float = float(sample.value)
-            if name == "einvoice_http_5xx_total":
-                http_5xx += value
-            elif name == "einvoice_http_requests_total":
-                http_requests += value
-            elif name == "einvoice_timeouts_total":
-                timeouts += value
-            elif name == "einvoice_errors_total" and labels.get("event") == "parse_failed":
-                parse_failed_errors += value
+    for raw_line in text.splitlines():
+        line: str = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        matched: Optional[re.Match[str]] = _METRIC_LINE_RE.match(line)
+        if matched is None:
+            continue
+        name: str = matched.group(1)
+        labels: dict[str, str] = _parse_labels(matched.group(2))
+        value: float = float(matched.group(3))
+        if name == "einvoice_http_5xx_total":
+            http_5xx += value
+        elif name == "einvoice_http_requests_total":
+            http_requests += value
+        elif name == "einvoice_timeouts_total":
+            timeouts += value
+        elif name == "einvoice_errors_total" and labels.get("event") == "parse_failed":
+            parse_failed_errors += value
     return {
         "http_5xx": http_5xx,
         "http_requests": http_requests,
         "timeouts": timeouts,
         "parse_failed_errors": parse_failed_errors,
     }
+
+
+def _parse_labels(raw: Optional[str]) -> dict[str, str]:
+    if not raw:
+        return {}
+    labels: dict[str, str] = {}
+    for matched in _LABEL_RE.finditer(raw):
+        labels[matched.group(1)] = matched.group(2)
+    return labels
 
 
 def snapshot_from_probes(

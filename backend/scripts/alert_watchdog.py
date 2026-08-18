@@ -10,6 +10,7 @@ import json
 import logging
 import sys
 import time
+import traceback
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -31,11 +32,30 @@ from app.core.alerts import (  # noqa: E402
     snapshot_to_dict,
 )
 from app.core.config import settings  # noqa: E402
-from app.core.error_events import log_event  # noqa: E402
-from app.core.logging_config import configure_logging  # noqa: E402
+from app.core.logging_config import configure_logging, format_log_fields  # noqa: E402
+
+
+def _log(level: int, event: str, fields: Optional[dict[str, Any]] = None) -> None:
+    payload: dict[str, Any] = {"event": event}
+    if fields:
+        payload.update(fields)
+    logging.getLogger("app.alerts").log(
+        level,
+        format_log_fields(payload),
+        extra={"structured": dict(payload)},
+    )
 
 
 def main(argv: Optional[list[str]] = None) -> int:
+    try:
+        return _run(argv if argv is not None else sys.argv[1:])
+    except Exception as exc:
+        sys.stderr.write(f"alert_watchdog_crashed exc_type={type(exc).__name__}\n")
+        traceback.print_exc()
+        return 1
+
+
+def _run(argv: list[str]) -> int:
     parser: argparse.ArgumentParser = argparse.ArgumentParser(
         description="Evaluate eInvoice alerts from localhost health and /metrics.",
     )
@@ -49,7 +69,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         default="",
         help="API base URL (default: ALERT_BASE_URL).",
     )
-    args: argparse.Namespace = parser.parse_args(argv if argv is not None else sys.argv[1:])
+    args: argparse.Namespace = parser.parse_args(argv)
 
     configure_logging(settings.log_level, settings.log_format)
     base_url: str = (args.base_url or settings.alert_base_url).rstrip("/")
@@ -83,13 +103,13 @@ def scrape_snapshot(*, base_url: str, timeout_seconds: float, scraped_at: float)
     if live_ok:
         metrics_text = _get_text(f"{base_url}/metrics", timeout_seconds)
         if metrics_text is None:
-            log_event(
+            _log(
                 logging.WARNING,
                 "alert_metrics_scrape_failed",
                 fields={"base_url": base_url},
             )
     if not live_ok:
-        log_event(
+        _log(
             logging.ERROR,
             "alert_live_probe_failed",
             fields={"base_url": base_url},
@@ -108,7 +128,7 @@ def load_state(path: Path) -> tuple[tuple[MetricsSnapshot, ...], frozenset[str]]
     try:
         raw: Any = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
-        log_event(logging.WARNING, "alert_state_unreadable", fields={"path": path.name})
+        _log(logging.WARNING, "alert_state_unreadable", fields={"path": path.name})
         return tuple(), frozenset()
     if not isinstance(raw, dict):
         return tuple(), frozenset()
@@ -137,7 +157,11 @@ def save_state(
         "firing": sorted(firing),
     }
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    try:
+        path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    except OSError:
+        _log(logging.ERROR, "alert_state_unwritable", fields={"path": path.name})
+        raise
 
 
 def emit_events(events: tuple[AlertEvent, ...]) -> None:
@@ -147,7 +171,7 @@ def emit_events(events: tuple[AlertEvent, ...]) -> None:
         if event.status == "firing":
             log_name = "alert_firing"
             level = logging.ERROR if event.severity == "critical" else logging.WARNING
-        log_event(
+        _log(
             level,
             log_name,
             fields={
@@ -184,7 +208,7 @@ def notify_webhook(events: tuple[AlertEvent, ...], *, webhook_url: Optional[str]
             with urllib.request.urlopen(request, timeout=5) as response:
                 _body: bytes = response.read()
         except (urllib.error.URLError, TimeoutError, OSError):
-            log_event(
+            _log(
                 logging.WARNING,
                 "alert_webhook_failed",
                 fields={"alert": event.name, "status": event.status},
