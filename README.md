@@ -1,5 +1,7 @@
 # eInvoice
 
+[![CI](https://github.com/EvgheniiC/eInvoice/actions/workflows/ci.yml/badge.svg)](https://github.com/EvgheniiC/eInvoice/actions/workflows/ci.yml)
+
 Web utility for German B2B SMEs: upload XRechnung XML or ZUGFeRD PDF → readable invoice, validation, accounting export.
 
 ## Stack
@@ -104,6 +106,28 @@ pytest tests/test_golden_files.py
 # or, for legacy path-relative fixtures:
 cd tests && python -m unittest discover -s . -v
 ```
+
+Frontend checks (also used in CI):
+
+```bash
+cd frontend
+npm run lint
+npm run typecheck
+npm test
+npm run build
+npm run test:e2e
+```
+
+`npm run test` is Vitest (unit/component). `npm run test:e2e` is Playwright: landing → upload → result → Steuerberater package, against a production preview with mocked API.
+
+## CI
+
+GitHub Actions (`.github/workflows/ci.yml`) runs on every push to `main` and on pull requests:
+
+- Backend: `pytest` on Python 3.13
+- Frontend: `oxlint`, TypeScript `tsc -b`, Vitest, Vite production build, and the Playwright happy-path test
+
+Golden-file cases that need local `backend/tests/xml_files` or `backend/tests/pdf_files` are skipped when those fixtures are not present.
 
 ## API (MVP)
 

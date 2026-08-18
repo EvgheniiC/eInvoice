@@ -1,0 +1,28 @@
+import { describe, expect, it } from 'vitest'
+import { pathToRoute, routeToPath, type AppRoute } from './routing'
+
+describe('pathToRoute', (): void => {
+  it('maps the upload path', (): void => {
+    const route: AppRoute = pathToRoute('/upload')
+    expect(route).toBe('upload')
+  })
+
+  it('maps impressum and datenschutz to legal', (): void => {
+    expect(pathToRoute('/impressum')).toBe('legal')
+    expect(pathToRoute('/datenschutz')).toBe('legal')
+    expect(pathToRoute('/impressum/')).toBe('legal')
+  })
+
+  it('maps unknown paths to landing', (): void => {
+    expect(pathToRoute('/')).toBe('landing')
+    expect(pathToRoute('/unknown')).toBe('landing')
+  })
+})
+
+describe('routeToPath', (): void => {
+  it('returns canonical paths', (): void => {
+    expect(routeToPath('upload')).toBe('/upload')
+    expect(routeToPath('legal')).toBe('/impressum')
+    expect(routeToPath('landing')).toBe('/')
+  })
+})
