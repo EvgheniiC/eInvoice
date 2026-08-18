@@ -21,6 +21,9 @@ _RATE_LIMITED_PREFIXES: tuple[str, ...] = (
     "/api/invoices",
     "/api/feedback",
     "/api/telemetry",
+    "/api/auth",
+    "/api/org",
+    "/api/admin",
 )
 
 

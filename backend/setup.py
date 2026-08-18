@@ -22,6 +22,11 @@ setup(
         "PyPDF2>=3.0.0",
         "openpyxl>=3.1.0",
         "prometheus-client>=0.21.0",
+        "sqlalchemy>=2.0.36",
+        "alembic>=1.14.0",
+        "psycopg[binary]>=3.2.0",
+        "bcrypt>=4.2.0",
+        "email-validator>=2.2.0",
     ],
     description="eInvoice receiver API — XRechnung / ZUGFeRD parse & validate",
 )

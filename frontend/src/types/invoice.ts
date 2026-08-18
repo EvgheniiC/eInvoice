@@ -32,6 +32,11 @@ export type FeedbackRequest = Schemas['FeedbackRequest']
 export type FeedbackResponse = Schemas['FeedbackResponse']
 export type FunnelEventRequest = Schemas['FunnelEventRequest']
 export type FunnelEventResponse = Schemas['FunnelEventResponse']
+export type MeResponse = Schemas['MeResponse']
+export type PlanInfo = Schemas['PlanInfo']
+export type RegisterResponse = Schemas['RegisterResponse']
+export type MessageResponse = Schemas['MessageResponse']
+export type OrgResponse = Schemas['OrgResponse']
 
 /** UI helper: FastAPI serializes decimals as strings; Number() also accepts number. */
 export type DecimalValue = string | number

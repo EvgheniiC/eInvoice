@@ -215,13 +215,13 @@ developer-API против [rechnungsapi.de](https://www.rechnungsapi.de).
 
 Ориентир: 4–6 недель. Биллинг можно отложить: план Plus вручную для пилотных фирм.
 
-- [ ] Postgres (не SQLite в production): `users`, `organizations`, `memberships`, `plans`.
-- [ ] Регистрация: email + пароль или Magic Link, подтверждение email.
-- [ ] Session cookie / JWT, logout, смена пароля, позже 2FA.
-- [ ] Страницы: Login, Register, Verify, Org-Einstellungen.
-- [ ] Гостевой `/api/invoices/parse` без изменений по смыслу (без хранения).
-- [ ] Authenticated запросы несут org-контекст; квоты ещё могут быть заглушкой.
-- [ ] Ручной `plan=plus` в админке для 5–10 пилотных организаций.
+- [x] Postgres (не SQLite в production): `users`, `organizations`, `memberships`, `plans`.
+- [x] Регистрация: email + пароль или Magic Link, подтверждение email.
+- [x] Session cookie / JWT, logout, смена пароля, позже 2FA.
+- [x] Страницы: Login, Register, Verify, Org-Einstellungen.
+- [x] Гостевой `/api/invoices/parse` без изменений по смыслу (без хранения).
+- [x] Authenticated запросы несут org-контекст; квоты ещё могут быть заглушкой.
+- [x] Ручной `plan=plus` в админке для 5–10 пилотных организаций.
 
 ### Этап 2 — платные Empfang-фичи (минимальный Plus)
 
@@ -285,7 +285,7 @@ team   ──► Authorization: Bearer einv_live_...
 
 Новое относительно текущего репозитория (сейчас нет персистентного store счетов):
 
-- [ ] Postgres: users, orgs, memberships, plans, invoice_jobs, invoice_records (метаданные), api_keys.
+- [x] Postgres: users, orgs, memberships, plans (invoice_jobs, invoice_records, api_keys — этапы 2/4).
 - [ ] Object storage S3-compatible **в DE** только для opt-in файлов: TTL, encryption at rest.
 - [ ] Очередь для batch/KoSIT.
 - [ ] Идемпотентность batch и дедуп до запуска validator, где это безопасно.

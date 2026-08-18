@@ -6,17 +6,14 @@ security audit. An external review is still required before processing real
 client invoices in production.
 
 Scope: browser SPA + FastAPI on localhost behind nginx, one file per request,
-no user accounts, no invoice archive. Two processing models are defined; only
-**guest** is implemented.
+no invoice archive. Two processing models:
 
 | Model | Persistence | Legal basis (planned) | Status |
 |-------|-------------|----------------------|--------|
 | Guest | File lives only in the request / temp dir | Art. 6(1)(b)/(f) DSGVO for the parse/export request | Active |
-| Account | Metadata always; original file only with opt-in and TTL | Art. 6 DSGVO + AVV; separate checkbox for files | Not built; do not enable before Stage 0 blockers |
+| Account | Email, password hash, org membership, session. No invoice files. | Art. 6 DSGVO + AVV before storing originals | Account tables exist; originals still not stored |
 
-Planned account/billing surfaces (not in this codebase yet): session cookies,
-password hashes, org membership, Stripe/Mollie webhooks, object storage in DE.
-Treat them as future trust-boundary expansions in the next review.
+Billing, object storage, and invoice history remain future trust-boundary expansions.
 
 ## Assets
 
@@ -54,6 +51,7 @@ unless nginx overwrites it (the API snippet sets `X-Forwarded-For $remote_addr`)
 | D1 | Denial of service via many uploads | nginx + in-app rate limit, timeouts |
 | D2 | Feedback used to exfiltrate or inject invoice data | No file upload; reject XML/PDF/IBAN-like text; rate limit `/api/feedback` |
 | I3 | Funnel/telemetry as a tracking profile | Step name only, no cookie, no invoice id |
+| I4 | Session theft | httpOnly cookie, hashed token, password change revokes sessions |
 
 ## Residual risk (must stay open)
 

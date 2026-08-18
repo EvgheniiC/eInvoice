@@ -29,6 +29,10 @@ export interface components {
       profiles: string[];
       limitations: string[];
     };
+    ChangePasswordRequest: {
+      current_password: string;
+      new_password: string;
+    };
     ExportFormat: "csv" | "excel" | "datev";
     ExportMappingDoc: {
       format: components["schemas"]["ExportFormat"];
@@ -161,6 +165,33 @@ export interface components {
     LivenessResponse: {
       status: string;
     };
+    LoginRequest: {
+      email: string;
+      password: string;
+    };
+    MagicLinkRequest: {
+      email: string;
+    };
+    MeResponse: {
+      user_id: string;
+      email: string;
+      email_verified: boolean;
+      organization_id: string;
+      organization_name: string;
+      role: string;
+      plan: components["schemas"]["PlanInfo"];
+      memberships: components["schemas"]["MembershipInfo"][];
+    };
+    MembershipInfo: {
+      organization_id: string;
+      organization_name: string;
+      role: string;
+    };
+    MessageResponse: {
+      accepted: boolean;
+      message: string;
+      token: string | null;
+    };
     "MismatchField-Input": {
       field: string;
       label: string;
@@ -175,6 +206,16 @@ export interface components {
       pdf_value: string | null;
       matched: boolean;
     };
+    OrgResponse: {
+      organization_id: string;
+      name: string;
+      role: string;
+      plan: components["schemas"]["PlanInfo"];
+      created_at: string;
+    };
+    OrgUpdateRequest: {
+      name: string;
+    };
     ParseStatus: "success" | "partial" | "error" | "not_implemented";
     "PartyInfo-Input": {
       name?: string | null;
@@ -188,10 +229,37 @@ export interface components {
       vat_id: string | null;
       iban: string | null;
     };
+    PlanInfo: {
+      code: string;
+      name: string;
+      parse_per_day: number | null;
+      export_per_day: number | null;
+      max_upload_size_mb: number;
+      allows_batch: boolean;
+      allows_history: boolean;
+      quotas_enforced: boolean;
+    };
     ReadinessResponse: {
       status: string;
       ready: boolean;
       checks: components["schemas"]["HealthCheck"][];
+    };
+    RegisterRequest: {
+      email: string;
+      password: string;
+      organization_name: string;
+    };
+    RegisterResponse: {
+      accepted: boolean;
+      message: string;
+      verification_token: string | null;
+    };
+    SetPlanByEmailRequest: {
+      email: string;
+      plan_code: "free" | "plus" | "team";
+    };
+    SetPlanRequest: {
+      plan_code: "free" | "plus" | "team";
     };
     SupportedFormat: {
       id: string;
@@ -206,6 +274,9 @@ export interface components {
     "TaxBreakdown-Output": {
       rate: string;
       amount: string | null;
+    };
+    TokenRequest: {
+      token: string;
     };
     ValidationError: {
       loc: (string | number)[];

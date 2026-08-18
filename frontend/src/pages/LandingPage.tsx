@@ -5,14 +5,21 @@ import { PageNav } from '../components/PageNav'
 import { SiteFooter } from '../components/SiteFooter'
 import { DEFAULT_CAPABILITIES } from '../content/capabilities'
 import type { AppRoute } from '../routing'
-import type { CapabilitiesResponse, SupportedFormat } from '../types/invoice'
+import type { CapabilitiesResponse, MeResponse, SupportedFormat } from '../types/invoice'
 
 type LandingPageProps = {
   onStart: () => void
   onNavigate: (route: AppRoute) => void
+  session: MeResponse | null
+  onLogout: () => void
 }
 
-export function LandingPage({ onStart, onNavigate }: LandingPageProps): JSX.Element {
+export function LandingPage({
+  onStart,
+  onNavigate,
+  session,
+  onLogout,
+}: LandingPageProps): JSX.Element {
   const [capabilities, setCapabilities] = useState<CapabilitiesResponse>(DEFAULT_CAPABILITIES)
 
   useEffect(() => {
@@ -28,7 +35,7 @@ export function LandingPage({ onStart, onNavigate }: LandingPageProps): JSX.Elem
   return (
     <main id="main-content" className="landing" tabIndex={-1}>
       <section className="landing-hero">
-        <PageNav overlay onNavigate={onNavigate} />
+        <PageNav overlay onNavigate={onNavigate} session={session} onLogout={onLogout} />
         <div className="landing-hero__copy">
           <p className="landing-brand">eInvoice</p>
           <h1 className="landing-hero__title" tabIndex={-1}>

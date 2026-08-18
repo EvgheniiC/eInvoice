@@ -1,12 +1,14 @@
 import logging
 from typing import Optional
 
-from fastapi import APIRouter, File, HTTPException, Request, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
 
+from app.api.deps import get_optional_org_context
 from app.core.config import settings
-from app.core.error_events import log_api_error, safe_filename
+from app.core.error_events import log_api_error, log_event, safe_filename
 from app.core.middleware import get_request_id
 from app.schemas.invoice import InvoiceParseResponse
+from app.services.auth_service import OrgContext
 from app.services.invoice_service import InvoiceService
 
 router: APIRouter = APIRouter()
@@ -17,6 +19,7 @@ invoice_service: InvoiceService = InvoiceService()
 async def parse_invoice(
     request: Request,
     file: UploadFile = File(...),
+    org_context: Optional[OrgContext] = Depends(get_optional_org_context),
 ) -> InvoiceParseResponse:
     """
     Accept an XRechnung XML or ZUGFeRD PDF and return a structured parse result.
@@ -58,6 +61,17 @@ async def parse_invoice(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Datei ist leer.",
+        )
+
+    if org_context is not None:
+        log_event(
+            logging.INFO,
+            "parse_with_org",
+            fields={
+                "request_id": request_id,
+                "organization_id": str(org_context.organization_id),
+                "plan": org_context.plan_code,
+            },
         )
 
     return invoice_service.parse_upload(

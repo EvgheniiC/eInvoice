@@ -4,13 +4,15 @@ import { PageNav } from '../components/PageNav'
 import { SiteFooter } from '../components/SiteFooter'
 import { FAQ_ITEMS, type FaqItem } from '../content/faq'
 import type { AppRoute } from '../routing'
-import type { FeedbackResponse } from '../types/invoice'
+import type { FeedbackResponse, MeResponse } from '../types/invoice'
 
 type HelpPageProps = {
   onNavigate: (route: AppRoute) => void
+  session: MeResponse | null
+  onLogout: () => void
 }
 
-export function HelpPage({ onNavigate }: HelpPageProps): JSX.Element {
+export function HelpPage({ onNavigate, session, onLogout }: HelpPageProps): JSX.Element {
   const [message, setMessage] = useState<string>('')
   const [contactEmail, setContactEmail] = useState<string>('')
   const [sending, setSending] = useState<boolean>(false)
@@ -57,7 +59,7 @@ export function HelpPage({ onNavigate }: HelpPageProps): JSX.Element {
           <button type="button" className="page__home" onClick={() => onNavigate('landing')}>
             ← eInvoice
           </button>
-          <PageNav onNavigate={onNavigate} />
+          <PageNav onNavigate={onNavigate} session={session} onLogout={onLogout} />
         </div>
         <h1 tabIndex={-1}>Hilfe &amp; FAQ</h1>
         <p className="page__lead">

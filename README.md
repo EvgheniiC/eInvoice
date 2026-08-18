@@ -83,6 +83,9 @@ KOSIT_JAVA_BIN=java
 Without KoSIT the API still runs structural/business checks. It never reports
 the invoice as valid until a KoSIT run completes. See [docs/VALIDATION.md](docs/VALIDATION.md).
 
+Optional accounts (Stage 1): PostgreSQL + `AUTH_SECRET_KEY`. Guest upload still
+works without a login. See [docs/AUTH.md](docs/AUTH.md).
+
 Logging (no invoice bodies): set `LOG_LEVEL=INFO` (default). On production, errors go to journald:
 
 ```bash

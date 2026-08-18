@@ -3,13 +3,21 @@ import { PageNav } from '../components/PageNav'
 import { SiteFooter } from '../components/SiteFooter'
 import type { LegalDocument, LegalSection } from '../content/legal'
 import type { AppRoute } from '../routing'
+import type { MeResponse } from '../types/invoice'
 
 type LegalPageProps = {
   documents: LegalDocument[]
   onNavigate: (route: AppRoute) => void
+  session: MeResponse | null
+  onLogout: () => void
 }
 
-export function LegalPage({ documents, onNavigate }: LegalPageProps): JSX.Element {
+export function LegalPage({
+  documents,
+  onNavigate,
+  session,
+  onLogout,
+}: LegalPageProps): JSX.Element {
   useEffect(() => {
     const hash: string = window.location.hash.replace('#', '')
     const fromPath: string = window.location.pathname.includes('datenschutz')
@@ -29,7 +37,7 @@ export function LegalPage({ documents, onNavigate }: LegalPageProps): JSX.Elemen
           <button type="button" className="page__home" onClick={() => onNavigate('landing')}>
             ← eInvoice
           </button>
-          <PageNav onNavigate={onNavigate} />
+          <PageNav onNavigate={onNavigate} session={session} onLogout={onLogout} />
         </div>
         <h1 tabIndex={-1}>Impressum &amp; Datenschutz</h1>
         <p className="page__lead">

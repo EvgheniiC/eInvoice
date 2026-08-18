@@ -35,6 +35,21 @@ See [docs/VALIDATION.md](../docs/VALIDATION.md).
 
 JSON logs (`LOG_FORMAT=json`) include `event` and `request_id`. Parse failures, timeouts, and 5xx are counted as metrics. Invoice bodies are never logged or labeled.
 
+## Accounts
+
+Optional. Guest parse works without `DATABASE_URL`. See [docs/AUTH.md](../docs/AUTH.md).
+
+```
+DATABASE_URL=postgresql+psycopg://einvoice:secret@127.0.0.1:5432/einvoice
+AUTH_SECRET_KEY=...
+ADMIN_API_TOKEN=...
+```
+
+```bash
+alembic upgrade head
+python scripts/set_plan.py --email meister@example.com --plan plus
+```
+
 Alerts: `python scripts/alert_watchdog.py` (systemd timer in production). See [docs/ALERTS.md](../docs/ALERTS.md).
 
 Regression snapshots for `parse_upload` live in `tests/goldens/` (JSON).

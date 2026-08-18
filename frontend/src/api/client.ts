@@ -8,6 +8,10 @@ import type {
   FunnelEventRequest,
   HealthResponse,
   InvoiceParseResponse,
+  MeResponse,
+  MessageResponse,
+  OrgResponse,
+  RegisterResponse,
   ValidationReportRequest,
 } from '../types/invoice'
 import { DEFAULT_CAPABILITIES } from '../content/capabilities'
@@ -24,7 +28,7 @@ function createRequestId(): string {
 function withRequestId(init: RequestInit): RequestInit {
   const headers: Headers = new Headers(init.headers)
   headers.set('X-Request-ID', createRequestId())
-  return { ...init, headers }
+  return { ...init, headers, credentials: 'include' }
 }
 
 export async function parseInvoice(file: File): Promise<InvoiceParseResponse> {
@@ -188,6 +192,147 @@ export async function submitFeedback(
     throw new Error(await readErrorDetail(response, 'Feedback konnte nicht gesendet werden.'))
   }
   return response.json() as Promise<FeedbackResponse>
+}
+
+export async function fetchMe(): Promise<MeResponse | null> {
+  try {
+    const response: Response = await fetch(`${API_BASE}/me`, withRequestId({ method: 'GET' }))
+    if (response.status === 401 || response.status === 503) {
+      return null
+    }
+    if (!response.ok) {
+      return null
+    }
+    return (await response.json()) as MeResponse
+  } catch {
+    return null
+  }
+}
+
+export async function registerAccount(
+  email: string,
+  password: string,
+  organizationName: string,
+): Promise<RegisterResponse> {
+  const response: Response = await fetch(
+    `${API_BASE}/auth/register`,
+    withRequestId({
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        password,
+        organization_name: organizationName,
+      }),
+    }),
+  )
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response, 'Registrierung fehlgeschlagen.'))
+  }
+  return response.json() as Promise<RegisterResponse>
+}
+
+export async function loginAccount(email: string, password: string): Promise<MeResponse> {
+  const response: Response = await fetch(
+    `${API_BASE}/auth/login`,
+    withRequestId({
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    }),
+  )
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response, 'Anmeldung fehlgeschlagen.'))
+  }
+  return response.json() as Promise<MeResponse>
+}
+
+export async function logoutAccount(): Promise<void> {
+  await fetch(
+    `${API_BASE}/auth/logout`,
+    withRequestId({ method: 'POST' }),
+  )
+}
+
+export async function verifyEmail(token: string): Promise<MeResponse> {
+  const response: Response = await fetch(
+    `${API_BASE}/auth/verify-email`,
+    withRequestId({
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    }),
+  )
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response, 'Bestätigung fehlgeschlagen.'))
+  }
+  return response.json() as Promise<MeResponse>
+}
+
+export async function requestMagicLink(email: string): Promise<MessageResponse> {
+  const response: Response = await fetch(
+    `${API_BASE}/auth/magic-link`,
+    withRequestId({
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    }),
+  )
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response, 'Anmeldelink konnte nicht gesendet werden.'))
+  }
+  return response.json() as Promise<MessageResponse>
+}
+
+export async function consumeMagicLink(token: string): Promise<MeResponse> {
+  const response: Response = await fetch(
+    `${API_BASE}/auth/magic-link/consume`,
+    withRequestId({
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    }),
+  )
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response, 'Anmeldelink ungültig.'))
+  }
+  return response.json() as Promise<MeResponse>
+}
+
+export async function changeAccountPassword(
+  currentPassword: string,
+  newPassword: string,
+): Promise<MessageResponse> {
+  const response: Response = await fetch(
+    `${API_BASE}/auth/change-password`,
+    withRequestId({
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        current_password: currentPassword,
+        new_password: newPassword,
+      }),
+    }),
+  )
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response, 'Passwort konnte nicht geändert werden.'))
+  }
+  return response.json() as Promise<MessageResponse>
+}
+
+export async function updateOrganizationName(name: string): Promise<OrgResponse> {
+  const response: Response = await fetch(
+    `${API_BASE}/org`,
+    withRequestId({
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    }),
+  )
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response, 'Organisation konnte nicht gespeichert werden.'))
+  }
+  return response.json() as Promise<OrgResponse>
 }
 
 async function downloadResponseBlob(response: Response, fallbackName: string): Promise<void> {

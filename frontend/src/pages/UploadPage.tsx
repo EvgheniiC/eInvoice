@@ -11,6 +11,7 @@ import type {
   CapabilitiesResponse,
   HealthResponse,
   InvoiceParseResponse,
+  MeResponse,
   ValidationIssue,
 } from '../types/invoice'
 
@@ -20,9 +21,16 @@ const NETWORK_ERROR_MESSAGE: string =
 type UploadPageProps = {
   onNavigateHome: () => void
   onNavigate: (route: AppRoute) => void
+  session: MeResponse | null
+  onLogout: () => void
 }
 
-export function UploadPage({ onNavigateHome, onNavigate }: UploadPageProps): JSX.Element {
+export function UploadPage({
+  onNavigateHome,
+  onNavigate,
+  session,
+  onLogout,
+}: UploadPageProps): JSX.Element {
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedFilename, setSelectedFilename] = useState<string | null>(null)
@@ -114,7 +122,7 @@ export function UploadPage({ onNavigateHome, onNavigate }: UploadPageProps): JSX
           <button type="button" className="page__home" onClick={onNavigateHome}>
             ← eInvoice
           </button>
-          <PageNav onNavigate={onNavigate} />
+          <PageNav onNavigate={onNavigate} session={session} onLogout={onLogout} />
         </div>
         <h1 tabIndex={-1}>Rechnung empfangen</h1>
         <p className="page__lead">

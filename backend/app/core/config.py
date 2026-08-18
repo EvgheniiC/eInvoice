@@ -23,7 +23,7 @@ class Settings(BaseSettings):
         "http://localhost:5173",
         "http://127.0.0.1:5173",
     ]
-    cors_allow_credentials: bool = False
+    cors_allow_credentials: bool = True
     max_upload_size_mb: int = 10
     allowed_extensions: List[str] = [".xml", ".pdf"]
     # 0 disables the in-app limiter (nginx limit_req remains the edge control).
@@ -48,6 +48,17 @@ class Settings(BaseSettings):
     # Text-only feedback. Optional webhook; never accepts invoice files.
     feedback_webhook_url: Optional[str] = None
     feedback_max_chars: int = 2000
+
+    # Account foundation (Stage 1). Guest parse works without this.
+    # Production with accounts must use postgresql:// — SQLite is for tests/dev only.
+    database_url: Optional[str] = None
+    auth_secret_key: str = "dev-only-change-me"
+    auth_cookie_name: str = "einv_session"
+    auth_session_days: int = 14
+    auth_token_hours: int = 24
+    admin_api_token: Optional[str] = None
+    public_app_url: str = "http://localhost:5173"
+    email_backend: str = "log"
 
     @property
     def effective_cors_origins(self) -> List[str]:
@@ -77,6 +88,16 @@ class Settings(BaseSettings):
         if not jar or not scenarios:
             return False
         return Path(jar).is_file() and Path(scenarios).is_file()
+
+    @property
+    def auth_enabled(self) -> bool:
+        url: Optional[str] = self.database_url
+        return bool(url and url.strip())
+
+    @property
+    def uses_postgres(self) -> bool:
+        url: str = (self.database_url or "").strip().lower()
+        return url.startswith("postgresql") or url.startswith("postgres")
 
 
 settings: Settings = Settings()

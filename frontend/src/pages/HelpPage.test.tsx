@@ -19,7 +19,7 @@ describe('HelpPage', (): void => {
       message: 'Vielen Dank. Ihre Nachricht wurde aufgenommen.',
     })
 
-    render(<HelpPage onNavigate={vi.fn()} />)
+    render(<HelpPage onNavigate={vi.fn()} session={null} onLogout={vi.fn()} />)
 
     expect(screen.getByRole('heading', { name: 'Hilfe & FAQ' })).toBeInTheDocument()
     expect(screen.getByText('Was ist eine XML-Rechnung?')).toBeInTheDocument()

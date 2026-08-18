@@ -77,12 +77,10 @@ export const DATENSCHUTZ: LegalDocument = {
           'Gastmodell.',
       ],
       listItems: [
-        'Gast (aktuell): Hochgeladene Rechnungsdatei (XRechnung-XML oder ZUGFeRD-PDF) und ' +
-          'daraus gelesene Rechnungsinhalte (z. B. Namen, Adressen, Beträge, IBAN, USt-IdNr.). ' +
-          'Die Datei wird nicht gespeichert.',
-        'Konto (nicht aktiv): erst nach Registrierung, AVV und gesonderter Einwilligung. ' +
-          'Dann nur Metadaten, Originaldatei nur bei Checkbox „Dateien merken“ mit kurzer ' +
-          'Aufbewahrung. Dieses Modell wird derzeit nicht angeboten.',
+        'Gast (aktuell, ohne Konto): Hochgeladene Rechnungsdatei und daraus gelesene ' +
+          'Rechnungsinhalte. Die Datei wird nicht gespeichert.',
+        'Konto (optional): E-Mail, Passwort-Hash, Organisationsname, Rolle, Sitzungs-Cookie. ' +
+          'Kein Rechnungsarchiv. Originaldateien nur später mit gesonderter Einwilligung.',
         'Technische Verbindungsdaten beim Aufruf: IP-Adresse, Zeitpunkt, aufgerufene URL, ' +
           'User-Agent — soweit der Webserver sie für den Betrieb protokolliert.',
         'Anwendungsprotokolle: Request-ID, Dateiname (nur Basisname), Dateigröße, ' +
@@ -141,8 +139,8 @@ export const DATENSCHUTZ: LegalDocument = {
     {
       heading: '6. Cookies und Schriftarten',
       paragraphs: [
-        'eInvoice setzt keine Tracking-Cookies und kein Nutzerprofil. Funnel-Zähler sind ' +
-          'anonyme Zählereignisse ohne Cookie.',
+        'eInvoice setzt ein Sitzungs-Cookie nur nach Anmeldung (httpOnly). Funnel-Zähler sind ' +
+          'anonyme Zählereignisse ohne Nutzerprofil.',
         'Die Website kann Schriftarten von Google Fonts laden. Dabei erfährt Google Ihre ' +
           'IP-Adresse. Sobald der Dienst öffentlich ist, kann dies durch selbst gehostete ' +
           'Schriften ersetzt oder hier konkret beschrieben werden.',

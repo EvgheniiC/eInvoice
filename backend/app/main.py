@@ -25,6 +25,7 @@ from app.core.metrics import (
     set_readiness_gauges,
 )
 from app.core.middleware import RequestObservabilityMiddleware, get_request_id
+from app.db.bootstrap import init_account_store
 
 
 @asynccontextmanager
@@ -39,6 +40,7 @@ async def _lifespan(_application: FastAPI) -> AsyncIterator[None]:
     )
     snapshot: HealthSnapshot = build_health_snapshot()
     set_readiness_gauges(kosit_ready=snapshot.kosit_ready, ready=snapshot.ready)
+    init_account_store()
     if settings.require_kosit and not settings.kosit_ready:
         logging.getLogger("app").error(
             "kosit_required_unavailable",
@@ -66,8 +68,8 @@ def create_app() -> FastAPI:
         CORSMiddleware,
         allow_origins=settings.effective_cors_origins,
         allow_credentials=settings.cors_allow_credentials,
-        allow_methods=["GET", "POST", "OPTIONS"],
-        allow_headers=["Content-Type", "X-Request-ID"],
+        allow_methods=["GET", "POST", "PATCH", "OPTIONS"],
+        allow_headers=["Content-Type", "X-Request-ID", "X-Admin-Token"],
         expose_headers=["X-Request-ID", "Content-Disposition"],
     )
     application.add_middleware(RateLimitMiddleware)

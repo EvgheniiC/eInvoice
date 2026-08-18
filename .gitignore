@@ -189,6 +189,7 @@ frontend/.env.local
 backend/.venv/
 backend/.env
 backend/*.egg-info/
+backend/*.db
 
 .deploy-previous-sha
 

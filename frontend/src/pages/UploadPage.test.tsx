@@ -45,7 +45,7 @@ describe('UploadPage', (): void => {
     vi.mocked(fetchCapabilities).mockResolvedValue(DEFAULT_CAPABILITIES)
     vi.mocked(checkHealth).mockResolvedValue(healthy)
 
-    render(<UploadPage onNavigateHome={vi.fn()} onNavigate={vi.fn()} />)
+    render(<UploadPage onNavigateHome={vi.fn()} onNavigate={vi.fn()} session={null} onLogout={vi.fn()} />)
 
     const input: HTMLInputElement = document.querySelector('#invoice-file-input') as HTMLInputElement
     const file: File = new File(['<Invoice/>'], 'sample.xml', { type: 'text/xml' })
@@ -62,7 +62,7 @@ describe('UploadPage', (): void => {
     vi.mocked(fetchCapabilities).mockResolvedValue(DEFAULT_CAPABILITIES)
     vi.mocked(checkHealth).mockResolvedValue(healthy)
 
-    render(<UploadPage onNavigateHome={vi.fn()} onNavigate={vi.fn()} />)
+    render(<UploadPage onNavigateHome={vi.fn()} onNavigate={vi.fn()} session={null} onLogout={vi.fn()} />)
 
     const input: HTMLInputElement = document.querySelector('#invoice-file-input') as HTMLInputElement
     const file: File = new File(['<Invoice/>'], 'sample.xml', { type: 'text/xml' })

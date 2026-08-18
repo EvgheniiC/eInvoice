@@ -11,8 +11,10 @@ describe('pathToRoute', (): void => {
     expect(pathToRoute('/impressum')).toBe('legal')
     expect(pathToRoute('/datenschutz')).toBe('legal')
     expect(pathToRoute('/impressum/')).toBe('legal')
-    expect(pathToRoute('/hilfe')).toBe('help')
-    expect(pathToRoute('/faq')).toBe('help')
+    expect(pathToRoute('/anmelden')).toBe('login')
+    expect(pathToRoute('/registrieren')).toBe('register')
+    expect(pathToRoute('/bestaetigen')).toBe('verify')
+    expect(pathToRoute('/organisation')).toBe('org')
   })
 
   it('maps unknown paths to landing', (): void => {
@@ -26,6 +28,10 @@ describe('routeToPath', (): void => {
     expect(routeToPath('upload')).toBe('/upload')
     expect(routeToPath('legal')).toBe('/impressum')
     expect(routeToPath('help')).toBe('/hilfe')
+    expect(routeToPath('login')).toBe('/anmelden')
+    expect(routeToPath('register')).toBe('/registrieren')
+    expect(routeToPath('verify')).toBe('/bestaetigen')
+    expect(routeToPath('org')).toBe('/organisation')
     expect(routeToPath('landing')).toBe('/')
   })
 })

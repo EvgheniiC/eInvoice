@@ -1,4 +1,12 @@
-export type AppRoute = 'landing' | 'upload' | 'legal' | 'help'
+export type AppRoute =
+  | 'landing'
+  | 'upload'
+  | 'legal'
+  | 'help'
+  | 'login'
+  | 'register'
+  | 'verify'
+  | 'org'
 
 export function pathToRoute(pathname: string): AppRoute {
   if (pathname === '/upload' || pathname.startsWith('/upload/')) {
@@ -20,6 +28,18 @@ export function pathToRoute(pathname: string): AppRoute {
   ) {
     return 'help'
   }
+  if (pathname === '/anmelden' || pathname.startsWith('/anmelden/')) {
+    return 'login'
+  }
+  if (pathname === '/registrieren' || pathname.startsWith('/registrieren/')) {
+    return 'register'
+  }
+  if (pathname === '/bestaetigen' || pathname.startsWith('/bestaetigen/')) {
+    return 'verify'
+  }
+  if (pathname === '/organisation' || pathname.startsWith('/organisation/')) {
+    return 'org'
+  }
   return 'landing'
 }
 
@@ -32,6 +52,18 @@ export function routeToPath(route: AppRoute): string {
   }
   if (route === 'help') {
     return '/hilfe'
+  }
+  if (route === 'login') {
+    return '/anmelden'
+  }
+  if (route === 'register') {
+    return '/registrieren'
+  }
+  if (route === 'verify') {
+    return '/bestaetigen'
+  }
+  if (route === 'org') {
+    return '/organisation'
   }
   return '/'
 }

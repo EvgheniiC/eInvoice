@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import List, Optional
 
 from app.core.config import settings
+from app.db.session import ping_database
 
 
 @dataclass(frozen=True)
@@ -35,6 +36,8 @@ def build_health_snapshot() -> HealthSnapshot:
     kosit_required: bool = settings.require_kosit
     kosit_files_ready: bool = settings.kosit_ready
     java_ok: bool = _java_available()
+    database_check: HealthCheckResult = _database_check()
+    database_ok: bool = database_check.status in {"ok", "not_required"}
 
     if not kosit_required:
         kosit_check: HealthCheckResult = HealthCheckResult(
@@ -46,7 +49,7 @@ def build_health_snapshot() -> HealthSnapshot:
             name="java",
             status="not_required" if not java_ok else "ok",
         )
-        ready: bool = True
+        ready: bool = database_ok
     else:
         kosit_check = HealthCheckResult(
             name="kosit",
@@ -58,7 +61,7 @@ def build_health_snapshot() -> HealthSnapshot:
             status="ok" if java_ok else "unavailable",
             detail=None if java_ok else "Java binary for KoSIT was not found on PATH.",
         )
-        ready = kosit_files_ready and java_ok
+        ready = kosit_files_ready and java_ok and database_ok
 
     overall: str = "ok" if ready else "degraded"
     return HealthSnapshot(
@@ -66,7 +69,35 @@ def build_health_snapshot() -> HealthSnapshot:
         ready=ready,
         kosit_required=kosit_required,
         kosit_ready=kosit_files_ready,
-        checks=[process_check, kosit_check, java_check],
+        checks=[process_check, kosit_check, java_check, database_check],
+    )
+
+
+def _database_check() -> HealthCheckResult:
+    if not settings.auth_enabled:
+        return HealthCheckResult(
+            name="database",
+            status="not_required",
+            detail="Account store is off; guest Empfang only.",
+        )
+    if settings.is_production and not settings.uses_postgres:
+        return HealthCheckResult(
+            name="database",
+            status="unavailable",
+            detail="Production requires PostgreSQL for accounts.",
+        )
+    if settings.is_production and settings.auth_secret_key == "dev-only-change-me":
+        return HealthCheckResult(
+            name="database",
+            status="unavailable",
+            detail="AUTH_SECRET_KEY is not set.",
+        )
+    if ping_database():
+        return HealthCheckResult(name="database", status="ok")
+    return HealthCheckResult(
+        name="database",
+        status="unavailable",
+        detail="Database ping failed.",
     )
 
 

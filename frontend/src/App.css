@@ -211,6 +211,47 @@
   transform: translateY(0);
 }
 
+.btn--secondary {
+  border: 1px solid #2f6b4f;
+  background: transparent;
+  color: #2f6b4f;
+}
+
+.btn--secondary:hover:not(:disabled) {
+  background: #e8f0ec;
+}
+
+.auth-form {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0 0 1.25rem;
+  max-width: 28rem;
+}
+
+.auth-form label {
+  margin-top: 0.45rem;
+  font-weight: 600;
+}
+
+.auth-form input {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #8a9a90;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.auth-form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+}
+
+.auth-form__switch {
+  margin: 0.5rem 0 0;
+}
+
 .hero-visual {
   position: relative;
   width: 100%;
