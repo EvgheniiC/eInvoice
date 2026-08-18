@@ -7,7 +7,7 @@ from typing import Any, Dict, Optional, Tuple
 from xml.etree.ElementTree import ParseError as EtParseError
 
 from app.core.error_events import log_parse_failure
-from app.core.metrics import observe_parse_result
+from app.core.metrics import observe_funnel, observe_parse_result
 from app.data_class.XmlInvoiceHeader import XmlInvoiceHeader
 from app.helper_functions.einvoice_helper import is_zugpferd_pdf
 from app.helper_functions.pdf_security import UnsafePdfError, assert_pdf_safe
@@ -72,6 +72,8 @@ class InvoiceService:
             request_id=request_id,
         )
         observe_parse_result(response.status.value)
+        if response.status in {ParseStatus.SUCCESS, ParseStatus.PARTIAL}:
+            observe_funnel("parse_success")
         return response
 
     def _parse_upload_pipeline(

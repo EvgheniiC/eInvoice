@@ -73,15 +73,23 @@ export const DATENSCHUTZ: LegalDocument = {
       heading: '2. Welche Daten verarbeitet werden',
       paragraphs: [
         'eInvoice arbeitet ohne Benutzerkonto. Es gibt keine Registrierung und keine ' +
-          'dauerhafte Kundenakte.',
+          'dauerhafte Kundenakte. Es gelten zwei Verarbeitungsmodelle; aktiv ist nur das ' +
+          'Gastmodell.',
       ],
       listItems: [
-        'Hochgeladene Rechnungsdatei (XRechnung-XML oder ZUGFeRD-PDF) und daraus gelesene ' +
-          'Rechnungsinhalte (z. B. Namen, Adressen, Beträge, IBAN, USt-IdNr.).',
+        'Gast (aktuell): Hochgeladene Rechnungsdatei (XRechnung-XML oder ZUGFeRD-PDF) und ' +
+          'daraus gelesene Rechnungsinhalte (z. B. Namen, Adressen, Beträge, IBAN, USt-IdNr.). ' +
+          'Die Datei wird nicht gespeichert.',
+        'Konto (nicht aktiv): erst nach Registrierung, AVV und gesonderter Einwilligung. ' +
+          'Dann nur Metadaten, Originaldatei nur bei Checkbox „Dateien merken“ mit kurzer ' +
+          'Aufbewahrung. Dieses Modell wird derzeit nicht angeboten.',
         'Technische Verbindungsdaten beim Aufruf: IP-Adresse, Zeitpunkt, aufgerufene URL, ' +
           'User-Agent — soweit der Webserver sie für den Betrieb protokolliert.',
         'Anwendungsprotokolle: Request-ID, Dateiname (nur Basisname), Dateigröße, ' +
           'Statuscode. Kein Rechnungsinhalt, kein IBAN, kein XML/PDF-Rohtext.',
+        'Optionales Feedback: Freitext ohne Dateianhang. Bitte keine Rechnungsdaten einfügen. ' +
+          'Funnel-Zähler (Seite aufgerufen / Datei gewählt / Prüfung / Export) ohne ' +
+          'Rechnungsinhalt und ohne Nutzerprofil.',
       ],
     },
     {
@@ -113,6 +121,9 @@ export const DATENSCHUTZ: LegalDocument = {
         'Der Export wird an Ihren Browser zurückgegeben und serverseitig nicht vorgehalten.',
         'Anwendungsprotokolle enthalten keinen Rechnungsinhalt. Sie dienen der Fehleranalyse ' +
           'und werden nicht als Ersatzarchiv genutzt.',
+        'Gastmodell: keine Speicherung der Datei nach der Anfrage.',
+        'Kontomodell (geplant, nicht aktiv): Rechtsgrundlage Art. 6 DSGVO plus AVV; ' +
+          'Originaldatei nur mit Opt-in und begrenzter Aufbewahrung (Orientierung: 30 Tage).',
       ],
     },
     {
@@ -130,7 +141,8 @@ export const DATENSCHUTZ: LegalDocument = {
     {
       heading: '6. Cookies und Schriftarten',
       paragraphs: [
-        'eInvoice setzt keine Tracking-Cookies und kein Nutzerprofil.',
+        'eInvoice setzt keine Tracking-Cookies und kein Nutzerprofil. Funnel-Zähler sind ' +
+          'anonyme Zählereignisse ohne Cookie.',
         'Die Website kann Schriftarten von Google Fonts laden. Dabei erfährt Google Ihre ' +
           'IP-Adresse. Sobald der Dienst öffentlich ist, kann dies durch selbst gehostete ' +
           'Schriften ersetzt oder hier konkret beschrieben werden.',

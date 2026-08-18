@@ -81,6 +81,112 @@
         }
       }
     },
+    "/api/capabilities": {
+      "get": {
+        "tags": [
+          "product"
+        ],
+        "summary": "Get Capabilities",
+        "description": "Public limits, formats, and guest processing model (no invoice data).",
+        "operationId": "get_capabilities_api_capabilities_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CapabilitiesResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/telemetry/funnel": {
+      "post": {
+        "tags": [
+          "product"
+        ],
+        "summary": "Record Funnel Event",
+        "description": "Count landing/upload without cookies or invoice payloads.",
+        "operationId": "record_funnel_event_api_telemetry_funnel_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FunnelEventRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FunnelEventResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/feedback": {
+      "post": {
+        "tags": [
+          "product"
+        ],
+        "summary": "Create Feedback",
+        "description": "Accept text-only feedback. Invoice files are not accepted.",
+        "operationId": "create_feedback_api_feedback_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FeedbackRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedbackResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/invoices/parse": {
       "post": {
         "tags": [
@@ -347,6 +453,87 @@
         ],
         "title": "Body_parse_invoice_api_invoices_parse_post"
       },
+      "CapabilitiesResponse": {
+        "properties": {
+          "max_upload_size_mb": {
+            "type": "integer",
+            "title": "Max Upload Size Mb"
+          },
+          "allowed_extensions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Allowed Extensions"
+          },
+          "max_files_per_request": {
+            "type": "integer",
+            "title": "Max Files Per Request"
+          },
+          "rate_limit_per_minute": {
+            "type": "integer",
+            "title": "Rate Limit Per Minute"
+          },
+          "stores_invoice_files": {
+            "type": "boolean",
+            "title": "Stores Invoice Files"
+          },
+          "requires_account": {
+            "type": "boolean",
+            "title": "Requires Account"
+          },
+          "processing_model": {
+            "type": "string",
+            "title": "Processing Model"
+          },
+          "standard_version": {
+            "type": "string",
+            "title": "Standard Version"
+          },
+          "xrechnung_version": {
+            "type": "string",
+            "title": "Xrechnung Version"
+          },
+          "formats": {
+            "items": {
+              "$ref": "#/components/schemas/SupportedFormat"
+            },
+            "type": "array",
+            "title": "Formats"
+          },
+          "profiles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Profiles"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "max_upload_size_mb",
+          "allowed_extensions",
+          "max_files_per_request",
+          "rate_limit_per_minute",
+          "stores_invoice_files",
+          "requires_account",
+          "processing_model",
+          "standard_version",
+          "xrechnung_version",
+          "formats",
+          "profiles",
+          "limitations"
+        ],
+        "title": "CapabilitiesResponse",
+        "description": "Public product limits, formats, and guest processing model."
+      },
       "ExportFormat": {
         "type": "string",
         "enum": [
@@ -448,6 +635,82 @@
         ],
         "title": "ExportRequest",
         "description": "Request body: parsed invoice DTO to export."
+      },
+      "FeedbackRequest": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "contact_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contact Email"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "FeedbackRequest",
+        "description": "Text-only feedback. Files and invoice payloads are rejected."
+      },
+      "FeedbackResponse": {
+        "properties": {
+          "accepted": {
+            "type": "boolean",
+            "title": "Accepted"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "accepted",
+          "message"
+        ],
+        "title": "FeedbackResponse",
+        "description": "Acknowledgement for submitted feedback."
+      },
+      "FunnelEventRequest": {
+        "properties": {
+          "step": {
+            "type": "string",
+            "enum": [
+              "landing",
+              "upload"
+            ],
+            "title": "Step"
+          }
+        },
+        "type": "object",
+        "required": [
+          "step"
+        ],
+        "title": "FunnelEventRequest",
+        "description": "Privacy-safe funnel ping: step name only, no invoice payload."
+      },
+      "FunnelEventResponse": {
+        "properties": {
+          "accepted": {
+            "type": "boolean",
+            "title": "Accepted"
+          }
+        },
+        "type": "object",
+        "required": [
+          "accepted"
+        ],
+        "title": "FunnelEventResponse",
+        "description": "Acknowledgement for a funnel ping."
       },
       "HTTPValidationError": {
         "properties": {
@@ -1565,6 +1828,38 @@
         ],
         "title": "ReadinessResponse",
         "description": "Readiness probe: process can receive traffic."
+      },
+      "SupportedFormat": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "extensions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Extensions"
+          },
+          "notes": {
+            "type": "string",
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "extensions",
+          "notes"
+        ],
+        "title": "SupportedFormat",
+        "description": "One accepted invoice format shown on the landing and upload pages."
       },
       "TaxBreakdown-Input": {
         "properties": {

@@ -45,6 +45,10 @@ class Settings(BaseSettings):
     alert_state_path: str = "alert_state.json"
     alert_scrape_timeout_seconds: int = 5
 
+    # Text-only feedback. Optional webhook; never accepts invoice files.
+    feedback_webhook_url: Optional[str] = None
+    feedback_max_chars: int = 2000
+
     @property
     def effective_cors_origins(self) -> List[str]:
         """Production must not keep the local Vite origins unless explicitly set."""

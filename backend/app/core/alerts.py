@@ -26,7 +26,7 @@ _LABEL_RE: re.Pattern[str] = re.compile(r'([a-zA-Z_][a-zA-Z0-9_]*)="([^"]*)"')
 
 @dataclass(frozen=True)
 class AlertThresholds:
-    """Operational thresholds until formal SLOs are defined."""
+    """Operational thresholds aligned with docs/SLO.md."""
 
     window_seconds: int = WINDOW_SECONDS
     down_for_seconds: int = DOWN_FOR_SECONDS

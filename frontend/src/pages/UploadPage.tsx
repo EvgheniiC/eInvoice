@@ -1,12 +1,18 @@
 import { useEffect, useRef, useState, type JSX, type RefObject } from 'react'
-import { parseInvoice } from '../api/client'
+import { checkHealth, fetchCapabilities, parseInvoice, recordFunnel } from '../api/client'
 import { FileUpload } from '../components/FileUpload'
 import { InvoiceView } from '../components/InvoiceView'
-import { LegalEntryButton } from '../components/LegalEntryButton'
+import { PageNav } from '../components/PageNav'
 import { PdfPreview } from '../components/PdfPreview'
 import { SiteFooter } from '../components/SiteFooter'
-import type { InvoiceParseResponse, ValidationIssue } from '../types/invoice'
+import { DEFAULT_CAPABILITIES, formatLimitsLine } from '../content/capabilities'
 import type { AppRoute } from '../routing'
+import type {
+  CapabilitiesResponse,
+  HealthResponse,
+  InvoiceParseResponse,
+  ValidationIssue,
+} from '../types/invoice'
 
 const NETWORK_ERROR_MESSAGE: string =
   'Der Dienst ist momentan nicht erreichbar. Bitte prüfen Sie Ihre Verbindung und versuchen Sie es erneut.'
@@ -24,12 +30,28 @@ export function UploadPage({ onNavigateHome, onNavigate }: UploadPageProps): JSX
   const [result, setResult] = useState<InvoiceParseResponse | null>(null)
   const [showPdf, setShowPdf] = useState<boolean>(true)
   const [announcement, setAnnouncement] = useState<string>('')
+  const [capabilities, setCapabilities] = useState<CapabilitiesResponse>(DEFAULT_CAPABILITIES)
+  const [kositDegraded, setKositDegraded] = useState<boolean>(false)
   const inFlightRef: RefObject<boolean> = useRef<boolean>(false)
   const feedbackRef: RefObject<HTMLElement | null> = useRef<HTMLElement | null>(null)
 
   function bindFeedback(node: HTMLElement | null): void {
     feedbackRef.current = node
   }
+
+  useEffect(() => {
+    recordFunnel('upload')
+    void fetchCapabilities().then((value: CapabilitiesResponse) => {
+      setCapabilities(value)
+    })
+    void checkHealth()
+      .then((health: HealthResponse) => {
+        setKositDegraded(health.kosit_required && !health.kosit_ready)
+      })
+      .catch(() => {
+        setKositDegraded(false)
+      })
+  }, [])
 
   useEffect(() => {
     if (loading || (!error && !result)) {
@@ -92,16 +114,27 @@ export function UploadPage({ onNavigateHome, onNavigate }: UploadPageProps): JSX
           <button type="button" className="page__home" onClick={onNavigateHome}>
             ← eInvoice
           </button>
-          <LegalEntryButton onClick={() => onNavigate('legal')} />
+          <PageNav onNavigate={onNavigate} />
         </div>
         <h1 tabIndex={-1}>Rechnung empfangen</h1>
         <p className="page__lead">
           XRechnung-XML oder ZUGFeRD-PDF hochladen — lesbare Ansicht der Rechnungsdaten.
         </p>
         <p id="upload-limits" className="page__limits">
-          Eine Datei bis 10 MB · UBL Invoice/CreditNote, UN/CEFACT CII oder ZUGFeRD/Factur-X
+          {formatLimitsLine(capabilities)}
         </p>
       </header>
+
+      {kositDegraded ? (
+        <section className="banner banner--warn" role="status">
+          <p>
+            <strong>Vollprüfung gerade nicht verfügbar.</strong> Der offizielle KoSIT-Validator
+            ist nicht erreichbar. Die Datei wird trotzdem gelesen; sie wird nicht als gültig
+            gekennzeichnet. Bitte später erneut prüfen oder den Lieferanten um eine korrekte
+            XRechnung bitten.
+          </p>
+        </section>
+      ) : null}
 
       <FileUpload onFileSelected={handleFile} disabled={loading} describedBy="upload-limits" />
 
@@ -188,7 +221,7 @@ export function UploadPage({ onNavigateHome, onNavigate }: UploadPageProps): JSX
         </section>
       )}
 
-      <SiteFooter />
+      <SiteFooter onNavigate={onNavigate} />
     </main>
   )
 }

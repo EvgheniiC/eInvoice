@@ -11,6 +11,7 @@
 #   ./deploy/deploy.sh --frontend-only
 #   ./deploy/deploy.sh --backend-only
 #   ./deploy/deploy.sh --skip-pull
+#   ./deploy/deploy.sh --rollback
 #
 set -euo pipefail
 
@@ -21,10 +22,13 @@ API_SERVICE="${API_SERVICE:-einvoice-api}"
 HEALTH_URL="${HEALTH_URL:-http://127.0.0.1:8000/api/health/live}"
 WEB_USER="${WEB_USER:-www-data}"
 WEB_GROUP="${WEB_GROUP:-www-data}"
+PREVIOUS_SHA_FILE="${PREVIOUS_SHA_FILE:-${APP_ROOT}/.deploy-previous-sha}"
 
 DO_PULL=1
 DO_BACKEND=1
 DO_FRONTEND=1
+DO_ROLLBACK=0
+SAVED_SHA=""
 
 usage() {
   cat <<'EOF'
@@ -33,6 +37,7 @@ Usage: deploy.sh [options]
   --skip-pull       Do not run git pull
   --frontend-only   Build and publish frontend only
   --backend-only    Restart API only (after optional git pull)
+  --rollback        Restore the git revision saved before the last pull, then redeploy
   -h, --help        Show this help
 EOF
 }
@@ -42,6 +47,7 @@ while [[ $# -gt 0 ]]; do
     --skip-pull) DO_PULL=0 ;;
     --frontend-only) DO_BACKEND=0; DO_FRONTEND=1 ;;
     --backend-only) DO_BACKEND=1; DO_FRONTEND=0 ;;
+    --rollback) DO_ROLLBACK=1; DO_PULL=0 ;;
     -h|--help) usage; exit 0 ;;
     *)
       echo "Unknown option: $1" >&2
@@ -65,8 +71,43 @@ fi
 echo "==> App root: ${APP_ROOT}"
 cd "${APP_ROOT}"
 
-if [[ "${DO_PULL}" -eq 1 ]]; then
-  echo "==> git pull"
+wait_for_live() {
+  local ok=0
+  local _
+  for _ in $(seq 1 20); do
+    if curl -fsS "${HEALTH_URL}" >/dev/null; then
+      ok=1
+      break
+    fi
+    sleep 0.5
+  done
+  if [[ "${ok}" -ne 1 ]]; then
+    return 1
+  fi
+  return 0
+}
+
+restore_previous_sha() {
+  local sha="${1:-}"
+  if [[ -z "${sha}" ]]; then
+    echo "No previous revision available for rollback." >&2
+    return 1
+  fi
+  echo "==> rollback git to ${sha}"
+  git checkout -f "${sha}"
+}
+
+if [[ "${DO_ROLLBACK}" -eq 1 ]]; then
+  if [[ ! -f "${PREVIOUS_SHA_FILE}" ]]; then
+    echo "Missing ${PREVIOUS_SHA_FILE}. Cannot rollback." >&2
+    exit 1
+  fi
+  SAVED_SHA="$(tr -d '[:space:]' < "${PREVIOUS_SHA_FILE}")"
+  restore_previous_sha "${SAVED_SHA}"
+elif [[ "${DO_PULL}" -eq 1 ]]; then
+  SAVED_SHA="$(git rev-parse HEAD)"
+  echo "${SAVED_SHA}" > "${PREVIOUS_SHA_FILE}"
+  echo "==> git pull (previous ${SAVED_SHA})"
   git pull --ff-only
 else
   echo "==> skip git pull"
@@ -78,16 +119,13 @@ if [[ "${DO_BACKEND}" -eq 1 ]]; then
   systemctl --no-pager --full status "${API_SERVICE}" | sed -n '1,12p'
 
   echo "==> health check ${HEALTH_URL}"
-  ok=0
-  for _ in $(seq 1 20); do
-    if curl -fsS "${HEALTH_URL}" >/dev/null; then
-      ok=1
-      break
-    fi
-    sleep 0.5
-  done
-  if [[ "${ok}" -ne 1 ]]; then
+  if ! wait_for_live; then
     echo "API health check failed: ${HEALTH_URL}" >&2
+    if [[ "${DO_ROLLBACK}" -eq 0 && -n "${SAVED_SHA}" ]]; then
+      restore_previous_sha "${SAVED_SHA}"
+      systemctl restart "${API_SERVICE}"
+      wait_for_live || true
+    fi
     exit 1
   fi
   echo "    API OK"

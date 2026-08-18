@@ -1,4 +1,4 @@
-export type AppRoute = 'landing' | 'upload' | 'legal'
+export type AppRoute = 'landing' | 'upload' | 'legal' | 'help'
 
 export function pathToRoute(pathname: string): AppRoute {
   if (pathname === '/upload' || pathname.startsWith('/upload/')) {
@@ -12,6 +12,14 @@ export function pathToRoute(pathname: string): AppRoute {
   ) {
     return 'legal'
   }
+  if (
+    pathname === '/hilfe' ||
+    pathname.startsWith('/hilfe/') ||
+    pathname === '/faq' ||
+    pathname.startsWith('/faq/')
+  ) {
+    return 'help'
+  }
   return 'landing'
 }
 
@@ -21,6 +29,9 @@ export function routeToPath(route: AppRoute): string {
   }
   if (route === 'legal') {
     return '/impressum'
+  }
+  if (route === 'help') {
+    return '/hilfe'
   }
   return '/'
 }

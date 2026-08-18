@@ -4,6 +4,7 @@ from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.responses import Response
 
 from app.core.error_events import format_safe_stack, log_api_error
+from app.core.metrics import observe_funnel
 from app.core.middleware import get_request_id
 from app.schemas.export import (
     EXPORT_DOCS,
@@ -67,6 +68,7 @@ def export_invoice(body: ExportRequest, request: Request) -> Response:
     headers: dict[str, str] = {
         "Content-Disposition": f'attachment; filename="{filename}"',
     }
+    observe_funnel("export")
     return Response(content=content, media_type=media_type, headers=headers)
 
 
@@ -123,6 +125,7 @@ def export_accountant_package(body: AccountantPackageRequest, request: Request) 
     headers: dict[str, str] = {
         "Content-Disposition": f'attachment; filename="{filename}"',
     }
+    observe_funnel("export")
     return Response(content=content, media_type=media_type, headers=headers)
 
 

@@ -1,11 +1,16 @@
 import type {
   AccountantPackageRequest,
+  CapabilitiesResponse,
   ExportFormat,
   ExportRequest,
+  FeedbackRequest,
+  FeedbackResponse,
+  FunnelEventRequest,
   HealthResponse,
   InvoiceParseResponse,
   ValidationReportRequest,
 } from '../types/invoice'
+import { DEFAULT_CAPABILITIES } from '../content/capabilities'
 
 const API_BASE: string = '/api'
 
@@ -133,6 +138,56 @@ export async function checkHealth(): Promise<HealthResponse> {
     throw new Error('API nicht erreichbar.')
   }
   return response.json() as Promise<HealthResponse>
+}
+
+export async function fetchCapabilities(): Promise<CapabilitiesResponse> {
+  try {
+    const response: Response = await fetch(
+      `${API_BASE}/capabilities`,
+      withRequestId({ method: 'GET' }),
+    )
+    if (!response.ok) {
+      return DEFAULT_CAPABILITIES
+    }
+    return (await response.json()) as CapabilitiesResponse
+  } catch {
+    return DEFAULT_CAPABILITIES
+  }
+}
+
+export function recordFunnel(step: FunnelEventRequest['step']): void {
+  const body: FunnelEventRequest = { step }
+  try {
+    void fetch(
+      `${API_BASE}/telemetry/funnel`,
+      withRequestId({
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      }),
+    ).catch(() => {
+      return
+    })
+  } catch {
+    return
+  }
+}
+
+export async function submitFeedback(
+  payload: FeedbackRequest,
+): Promise<FeedbackResponse> {
+  const response: Response = await fetch(
+    `${API_BASE}/feedback`,
+    withRequestId({
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }),
+  )
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response, 'Feedback konnte nicht gesendet werden.'))
+  }
+  return response.json() as Promise<FeedbackResponse>
 }
 
 async function downloadResponseBlob(response: Response, fallbackName: string): Promise<void> {

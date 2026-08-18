@@ -47,8 +47,12 @@ cd /opt/eInvoice
 sudo ./deploy/deploy.sh
 ```
 
-Options: `--frontend-only`, `--backend-only`, `--skip-pull`.  
+Options: `--frontend-only`, `--backend-only`, `--skip-pull`, `--rollback`.  
 Override paths via env: `APP_ROOT`, `WEB_ROOT`, `API_SERVICE`.
+
+`--rollback` restores the git revision saved before the last pull and repeats
+the smoke check on `/api/health/live`. A failed live check after `git pull`
+also attempts that rollback automatically.
 
 ## Setup
 

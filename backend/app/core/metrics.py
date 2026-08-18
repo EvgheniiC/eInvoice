@@ -23,6 +23,9 @@ _KNOWN_PATHS: Final[frozenset[str]] = frozenset(
         "/api/health",
         "/api/health/live",
         "/api/health/ready",
+        "/api/capabilities",
+        "/api/feedback",
+        "/api/telemetry/funnel",
         "/api/invoices/parse",
         "/api/invoices/export",
         "/api/invoices/export/mapping",
@@ -30,6 +33,10 @@ _KNOWN_PATHS: Final[frozenset[str]] = frozenset(
         "/api/invoices/export/accountant-package",
         "/metrics",
     }
+)
+
+_FUNNEL_STEPS: Final[frozenset[str]] = frozenset(
+    {"landing", "upload", "parse_success", "export"}
 )
 
 _SKIP_PATHS: Final[frozenset[str]] = frozenset({"/metrics"})
@@ -90,6 +97,12 @@ PARSE_FAILURES_TOTAL: Counter = Counter(
     "einvoice_parse_failures_total",
     "Invoice parse failures by stable error code.",
     ["code"],
+)
+
+FUNNEL_TOTAL: Counter = Counter(
+    "einvoice_funnel_total",
+    "Product funnel steps without invoice content (landing, upload, parse_success, export).",
+    ["step"],
 )
 
 TIMEOUTS_TOTAL: Counter = Counter(
@@ -163,6 +176,17 @@ def observe_parse_failure(code: str) -> None:
     label: str = code.strip() or "unknown"
     try:
         PARSE_FAILURES_TOTAL.labels(label).inc()
+    except Exception:
+        return
+
+
+def observe_funnel(step: str) -> None:
+    """Record one privacy-safe funnel step. Unknown steps are ignored."""
+    label: str = step.strip()
+    if label not in _FUNNEL_STEPS:
+        return
+    try:
+        FUNNEL_TOTAL.labels(label).inc()
     except Exception:
         return
 

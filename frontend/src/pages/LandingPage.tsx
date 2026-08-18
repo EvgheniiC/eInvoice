@@ -1,8 +1,11 @@
-import type { JSX } from 'react'
+import { useEffect, useState, type JSX } from 'react'
+import { fetchCapabilities, recordFunnel } from '../api/client'
 import { InvoiceHeroVisual } from '../components/InvoiceHeroVisual'
-import { LegalEntryButton } from '../components/LegalEntryButton'
+import { PageNav } from '../components/PageNav'
 import { SiteFooter } from '../components/SiteFooter'
+import { DEFAULT_CAPABILITIES } from '../content/capabilities'
 import type { AppRoute } from '../routing'
+import type { CapabilitiesResponse, SupportedFormat } from '../types/invoice'
 
 type LandingPageProps = {
   onStart: () => void
@@ -10,10 +13,22 @@ type LandingPageProps = {
 }
 
 export function LandingPage({ onStart, onNavigate }: LandingPageProps): JSX.Element {
+  const [capabilities, setCapabilities] = useState<CapabilitiesResponse>(DEFAULT_CAPABILITIES)
+
+  useEffect(() => {
+    recordFunnel('landing')
+    void fetchCapabilities().then((value: CapabilitiesResponse) => {
+      setCapabilities(value)
+    })
+  }, [])
+
+  const sizeLabel: string = `${String(capabilities.max_upload_size_mb)} MB`
+  const profileLabel: string = capabilities.profiles.join(', ')
+
   return (
     <main id="main-content" className="landing" tabIndex={-1}>
       <section className="landing-hero">
-        <LegalEntryButton overlay onClick={() => onNavigate('legal')} />
+        <PageNav overlay onNavigate={onNavigate} />
         <div className="landing-hero__copy">
           <p className="landing-brand">eInvoice</p>
           <h1 className="landing-hero__title" tabIndex={-1}>
@@ -93,14 +108,20 @@ export function LandingPage({ onStart, onNavigate }: LandingPageProps): JSX.Elem
           Unterstützte Rechnungen
         </h2>
         <p className="landing-section__lead">
-          Einzeldateien bis 10 MB: XRechnung als UBL Invoice, UBL CreditNote oder UN/CEFACT
+          Einzeldateien bis {sizeLabel}: XRechnung als UBL Invoice, UBL CreditNote oder UN/CEFACT
           CII sowie ZUGFeRD/Factur-X als PDF mit eingebettetem Rechnungs-XML.
         </p>
-        <p className="landing-limitations">
-          Normale PDFs ohne eingebettetes XML, Scans, openTRANS und andere XML-Formate werden
-          derzeit nicht verarbeitet. Der DATEV-Export ist eine Buchungsstapel-CSV und kein
-          DATEVconnect.
+        <p className="landing-section__lead">
+          Geprüfte Profile: {profileLabel}.
         </p>
+        <ul className="landing-benefits">
+          {capabilities.formats.map((item: SupportedFormat) => (
+            <li key={item.id}>
+              {item.label} ({item.extensions.join(', ')})
+            </li>
+          ))}
+        </ul>
+        <p className="landing-limitations">{capabilities.limitations.join(' ')}</p>
       </section>
 
       <section className="landing-section" aria-labelledby="privacy-heading">
@@ -117,12 +138,12 @@ export function LandingPage({ onStart, onNavigate }: LandingPageProps): JSX.Elem
           <li>Protokolle enthalten keinen Rechnungsinhalt (kein IBAN, kein XML)</li>
         </ul>
         <p className="landing-limitations">
-          Betreiberangaben folgen vor dem öffentlichen Betrieb. Impressum und
-          Datenschutzerklärung öffnen Sie oben rechts über die Schaltfläche Impressum.
+          Betreiberangaben folgen vor dem öffentlichen Betrieb. Impressum, Datenschutz und Hilfe
+          öffnen Sie oben rechts.
         </p>
       </section>
 
-      <SiteFooter />
+      <SiteFooter onNavigate={onNavigate} />
     </main>
   )
 }

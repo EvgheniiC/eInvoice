@@ -17,7 +17,11 @@ from app.core.config import settings
 from app.core.error_events import log_event, log_timeout
 from app.core.middleware import get_request_id
 
-_RATE_LIMITED_PREFIXES: tuple[str, ...] = ("/api/invoices",)
+_RATE_LIMITED_PREFIXES: tuple[str, ...] = (
+    "/api/invoices",
+    "/api/feedback",
+    "/api/telemetry",
+)
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):

@@ -7,10 +7,12 @@ describe('pathToRoute', (): void => {
     expect(route).toBe('upload')
   })
 
-  it('maps impressum and datenschutz to legal', (): void => {
+  it('maps impressum, datenschutz and hilfe', (): void => {
     expect(pathToRoute('/impressum')).toBe('legal')
     expect(pathToRoute('/datenschutz')).toBe('legal')
     expect(pathToRoute('/impressum/')).toBe('legal')
+    expect(pathToRoute('/hilfe')).toBe('help')
+    expect(pathToRoute('/faq')).toBe('help')
   })
 
   it('maps unknown paths to landing', (): void => {
@@ -23,6 +25,7 @@ describe('routeToPath', (): void => {
   it('returns canonical paths', (): void => {
     expect(routeToPath('upload')).toBe('/upload')
     expect(routeToPath('legal')).toBe('/impressum')
+    expect(routeToPath('help')).toBe('/hilfe')
     expect(routeToPath('landing')).toBe('/')
   })
 })

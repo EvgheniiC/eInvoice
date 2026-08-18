@@ -1,4 +1,5 @@
 import { useEffect, type JSX } from 'react'
+import { PageNav } from '../components/PageNav'
 import { SiteFooter } from '../components/SiteFooter'
 import type { LegalDocument, LegalSection } from '../content/legal'
 import type { AppRoute } from '../routing'
@@ -24,9 +25,12 @@ export function LegalPage({ documents, onNavigate }: LegalPageProps): JSX.Elemen
   return (
     <main id="main-content" className="page page--legal" tabIndex={-1}>
       <header className="page__header">
-        <button type="button" className="page__home" onClick={() => onNavigate('landing')}>
-          ← eInvoice
-        </button>
+        <div className="page__header-row">
+          <button type="button" className="page__home" onClick={() => onNavigate('landing')}>
+            ← eInvoice
+          </button>
+          <PageNav onNavigate={onNavigate} />
+        </div>
         <h1 tabIndex={-1}>Impressum &amp; Datenschutz</h1>
         <p className="page__lead">
           Angaben zum Diensteanbieter und zur Verarbeitung hochgeladener Rechnungsdateien.
@@ -64,7 +68,7 @@ export function LegalPage({ documents, onNavigate }: LegalPageProps): JSX.Elemen
         </article>
       ))}
 
-      <SiteFooter />
+      <SiteFooter onNavigate={onNavigate} />
     </main>
   )
 }

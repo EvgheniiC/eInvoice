@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type JSX, type RefObject } from 'react'
 import { LEGAL_PAGES } from './content/legal'
+import { HelpPage } from './pages/HelpPage'
 import { LandingPage } from './pages/LandingPage'
 import { LegalPage } from './pages/LegalPage'
 import { UploadPage } from './pages/UploadPage'
@@ -47,6 +48,8 @@ function App(): JSX.Element {
         <UploadPage onNavigateHome={() => navigate('landing')} onNavigate={navigate} />
       ) : route === 'legal' ? (
         <LegalPage documents={LEGAL_PAGES} onNavigate={navigate} />
+      ) : route === 'help' ? (
+        <HelpPage onNavigate={navigate} />
       ) : (
         <LandingPage onStart={() => navigate('upload')} onNavigate={navigate} />
       )}

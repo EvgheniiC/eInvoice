@@ -176,6 +176,8 @@ cython_debug/
 # Markdown docs / notes (local only)
 *.md
 !README.md
+!docs/*.md
+!TODO_*.md
 
 # Frontend (Node / Vite)
 frontend/node_modules/
@@ -187,6 +189,8 @@ frontend/.env.local
 backend/.venv/
 backend/.env
 backend/*.egg-info/
+
+.deploy-previous-sha
 
 # Local invoice test fixtures (keep on disk; do not commit)
 backend/tests/xml_files/

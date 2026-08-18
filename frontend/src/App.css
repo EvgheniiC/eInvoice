@@ -20,7 +20,22 @@
   margin: 0;
 }
 
-.legal-entry {
+.page-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.page-nav--overlay {
+  position: absolute;
+  top: 1.1rem;
+  right: clamp(1.25rem, 5vw, 4.5rem);
+  z-index: 2;
+}
+
+.page-nav__link {
   border: 1px solid #8a9a90;
   border-radius: 999px;
   padding: 0.45rem 1rem;
@@ -33,16 +48,9 @@
   cursor: pointer;
 }
 
-.legal-entry:hover {
+.page-nav__link:hover {
   border-color: var(--color-brand);
   color: var(--color-brand);
-}
-
-.legal-entry--overlay {
-  position: absolute;
-  top: 1.1rem;
-  right: clamp(1.25rem, 5vw, 4.5rem);
-  z-index: 2;
 }
 
 .legal-toc {
@@ -330,6 +338,53 @@
 
 .site-footer p {
   margin: 0;
+}
+
+.site-footer__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  margin: 0 0 0.85rem;
+}
+
+.site-footer__link {
+  border: 0;
+  padding: 0;
+  min-height: 44px;
+  background: none;
+  color: var(--color-brand-dark);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.feedback-form {
+  display: grid;
+  gap: 0.45rem;
+  margin: 1rem 0 0;
+}
+
+.feedback-form label {
+  margin-top: 0.5rem;
+  font-weight: 600;
+}
+
+.feedback-form textarea,
+.feedback-form input {
+  width: 100%;
+  max-width: 36rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #8a9a90;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.feedback-form__hint {
+  margin: 0.25rem 0 0.5rem;
+  color: var(--color-muted);
+  font-size: 0.9rem;
 }
 
 .legal-section {
@@ -1265,7 +1320,7 @@
     min-height: 0;
   }
 
-  .legal-entry--overlay {
+  .page-nav--overlay {
     position: static;
     justify-self: end;
     margin: 0 0 0.25rem;
@@ -1314,7 +1369,7 @@
     padding-top: 2.5rem;
   }
 
-  .legal-entry--overlay {
+  .page-nav--overlay {
     position: static;
     justify-self: end;
   }

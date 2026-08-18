@@ -1,0 +1,71 @@
+# Threat model — eInvoice
+
+Lightweight STRIDE review for the public upload utility
+(XRechnung / ZUGFeRD parse → validate → export). This is **not** an independent
+security audit. An external review is still required before processing real
+client invoices in production.
+
+Scope: browser SPA + FastAPI on localhost behind nginx, one file per request,
+no user accounts, no invoice archive. Two processing models are defined; only
+**guest** is implemented.
+
+| Model | Persistence | Legal basis (planned) | Status |
+|-------|-------------|----------------------|--------|
+| Guest | File lives only in the request / temp dir | Art. 6(1)(b)/(f) DSGVO for the parse/export request | Active |
+| Account | Metadata always; original file only with opt-in and TTL | Art. 6 DSGVO + AVV; separate checkbox for files | Not built; do not enable before Stage 0 blockers |
+
+Planned account/billing surfaces (not in this codebase yet): session cookies,
+password hashes, org membership, Stripe/Mollie webhooks, object storage in DE.
+Treat them as future trust-boundary expansions in the next review.
+
+## Assets
+
+| Asset | Why it matters |
+|-------|----------------|
+| Uploaded XML/PDF | Personal and financial data (names, IBAN, amounts, VAT IDs) |
+| Parsed invoice DTO | Same data in JSON during the request |
+| Application logs | Must never become a shadow archive |
+| KoSIT Java subprocess | Untrusted XML on disk for the duration of validation |
+| Export files | Leave the server only as the HTTP response |
+
+## Trust boundaries
+
+1. Browser → nginx (TLS) → FastAPI (`127.0.0.1:8000`)
+2. FastAPI → temp files → KoSIT / OpenJDK
+3. Operators with journald / host access
+
+Untrusted: every upload, every JSON export body, every `X-Forwarded-For` header
+unless nginx overwrites it (the API snippet sets `X-Forwarded-For $remote_addr`).
+
+## Threats and mitigations
+
+| ID | Threat | Mitigation in code / deploy |
+|----|--------|-----------------------------|
+| S1 | Spoofed file type (PDF/XML mismatch) | Signature + extension checks in `InvoiceService` |
+| S2 | XXE / DTD / entity expansion | `defusedxml`, reject `DOCTYPE`/`ENTITY`, complexity limits |
+| S3 | Malicious PDF (JS, Launch, encryption, huge page count) | `assert_pdf_safe` |
+| S4 | Resource exhaustion (huge file, nested XML, slow KoSIT) | 10 MB cap, rate limit, request timeout, JVM `-Xmx`, systemd `MemoryMax`, nginx `limit_req` |
+| T1 | Invoice data in logs | Sanitized structured logs; parsers must not log IBAN/XML |
+| T2 | Temp file leftover | `TemporaryDirectory` for PDF probe and KoSIT; `PrivateTmp=true` |
+| T3 | Error detail leak | Generic 500/422 to clients; no traceback in JSON |
+| I1 | Cross-origin abuse | Explicit CORS origins, no credentialed wildcard, nginx same-origin `/api` |
+| I2 | Clickjacking / MIME sniffing | Security headers (app + nginx) |
+| E1 | KoSIT running with extra privileges | Dedicated JVM flags, POSIX rlimits, systemd hardening, Java not on a public port |
+| D1 | Denial of service via many uploads | nginx + in-app rate limit, timeouts |
+| D2 | Feedback used to exfiltrate or inject invoice data | No file upload; reject XML/PDF/IBAN-like text; rate limit `/api/feedback` |
+| I3 | Funnel/telemetry as a tracking profile | Step name only, no cookie, no invoice id |
+
+## Residual risk (must stay open)
+
+- No independent pentest / code audit yet
+- In-app rate limit is per process (one uvicorn worker); nginx is the edge control
+- Google Fonts (if enabled on the SPA) send visitor IPs to Google until self-hosted
+- Operator/hosting identity and AVV counterparties are not filled in yet
+- KoSIT is a large Java attack surface; keep the JAR and JRE patched
+
+## Review checklist before real invoices
+
+- [ ] External security review of this document and the running deployment
+- [ ] Confirm TLS, security snippets, and `ENVIRONMENT=production` on the host
+- [ ] Confirm journald does not capture request bodies (app never logs them)
+- [ ] Fill Impressum / Verantwortlicher and sign AVV with the hoster

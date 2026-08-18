@@ -15,6 +15,20 @@ export interface components {
     Body_parse_invoice_api_invoices_parse_post: {
       file: string;
     };
+    CapabilitiesResponse: {
+      max_upload_size_mb: number;
+      allowed_extensions: string[];
+      max_files_per_request: number;
+      rate_limit_per_minute: number;
+      stores_invoice_files: boolean;
+      requires_account: boolean;
+      processing_model: string;
+      standard_version: string;
+      xrechnung_version: string;
+      formats: components["schemas"]["SupportedFormat"][];
+      profiles: string[];
+      limitations: string[];
+    };
     ExportFormat: "csv" | "excel" | "datev";
     ExportMappingDoc: {
       format: components["schemas"]["ExportFormat"];
@@ -31,6 +45,20 @@ export interface components {
     ExportRequest: {
       format?: components["schemas"]["ExportFormat"];
       invoice: components["schemas"]["InvoiceParseResponse-Input"];
+    };
+    FeedbackRequest: {
+      message: string;
+      contact_email?: string | null;
+    };
+    FeedbackResponse: {
+      accepted: boolean;
+      message: string;
+    };
+    FunnelEventRequest: {
+      step: "landing" | "upload";
+    };
+    FunnelEventResponse: {
+      accepted: boolean;
     };
     HTTPValidationError: {
       detail?: components["schemas"]["ValidationError"][];
@@ -164,6 +192,12 @@ export interface components {
       status: string;
       ready: boolean;
       checks: components["schemas"]["HealthCheck"][];
+    };
+    SupportedFormat: {
+      id: string;
+      label: string;
+      extensions: string[];
+      notes: string;
     };
     "TaxBreakdown-Input": {
       rate: number | string;

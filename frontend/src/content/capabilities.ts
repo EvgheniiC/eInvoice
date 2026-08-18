@@ -1,0 +1,55 @@
+import type { CapabilitiesResponse } from '../types/invoice'
+
+export const DEFAULT_CAPABILITIES: CapabilitiesResponse = {
+  max_upload_size_mb: 10,
+  allowed_extensions: ['.xml', '.pdf'],
+  max_files_per_request: 1,
+  rate_limit_per_minute: 30,
+  stores_invoice_files: false,
+  requires_account: false,
+  processing_model: 'guest',
+  standard_version: 'EN 16931:2017',
+  xrechnung_version: '3.0.2',
+  formats: [
+    {
+      id: 'ubl_invoice',
+      label: 'XRechnung UBL Invoice',
+      extensions: ['.xml'],
+      notes: 'EN 16931 UBL Invoice.',
+    },
+    {
+      id: 'ubl_credit_note',
+      label: 'XRechnung UBL CreditNote',
+      extensions: ['.xml'],
+      notes: 'EN 16931 UBL CreditNote.',
+    },
+    {
+      id: 'cii',
+      label: 'UN/CEFACT CII',
+      extensions: ['.xml'],
+      notes: 'Cross Industry Invoice XML.',
+    },
+    {
+      id: 'zugferd_pdf',
+      label: 'ZUGFeRD / Factur-X',
+      extensions: ['.pdf'],
+      notes: 'PDF with embedded invoice XML.',
+    },
+  ],
+  profiles: ['EN 16931:2017', 'XRechnung 3.0.2', 'ZUGFeRD / Factur-X EN 16931'],
+  limitations: [
+    'Eine Datei pro Anfrage, maximal 10 MB.',
+    'Gastmodus: die Datei wird nur während der Anfrage verarbeitet und danach gelöscht.',
+    'Normale PDFs ohne eingebettetes XML, Scans, openTRANS und andere XML-Formate werden abgelehnt.',
+    'Der DATEV-Export ist eine Buchungsstapel-CSV und kein DATEVconnect.',
+    'Keine Vorsteuer- oder Rechtsgarantie.',
+  ],
+}
+
+export function formatLimitsLine(capabilities: CapabilitiesResponse): string {
+  const extensions: string = capabilities.allowed_extensions.join(' / ')
+  return (
+    `Eine Datei bis ${String(capabilities.max_upload_size_mb)} MB · ` +
+    `${extensions} · UBL Invoice/CreditNote, UN/CEFACT CII oder ZUGFeRD/Factur-X`
+  )
+}
