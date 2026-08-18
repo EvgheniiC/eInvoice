@@ -91,6 +91,13 @@ if [[ "${DO_BACKEND}" -eq 1 ]]; then
     exit 1
   fi
   echo "    API OK"
+
+  if systemctl cat einvoice-alerts.timer >/dev/null 2>&1; then
+    echo "==> enable einvoice-alerts.timer"
+    systemctl enable --now einvoice-alerts.timer
+  else
+    echo "    hint: copy deploy/einvoice-alerts.{service,timer} to systemd for 5xx/timeout/parse/API alerts"
+  fi
 fi
 
 if [[ "${DO_FRONTEND}" -eq 1 ]]; then

@@ -1,0 +1,48 @@
+# Prometheus alerting rules for eInvoice.
+#
+# Thresholds match backend/app/core/alerts.py (used by the systemd watchdog).
+# Scrape the API process on localhost; do not expose /metrics via nginx.
+#
+#   - job_name: einvoice  (see einvoice-scrape.yml)
+#   - metrics_path: /metrics
+#   - target: 127.0.0.1:8000
+
+groups:
+  - name: einvoice
+    rules:
+      - alert: EinvoiceApiDown
+        expr: up{job="einvoice"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "eInvoice API scrape failed (process down or /metrics unreachable)."
+
+      - alert: EinvoiceApiNotReady
+        expr: einvoice_ready == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "eInvoice API is not ready (required KoSIT/Java missing)."
+
+      - alert: EinvoiceHigh5xx
+        expr: sum(increase(einvoice_http_5xx_total[5m])) >= 3
+        labels:
+          severity: critical
+        annotations:
+          summary: "eInvoice HTTP 5xx responses increased."
+
+      - alert: EinvoiceTimeouts
+        expr: sum(increase(einvoice_timeouts_total[5m])) >= 2
+        labels:
+          severity: warning
+        annotations:
+          summary: "eInvoice request or KoSIT timeouts increased."
+
+      - alert: EinvoiceParseFailures
+        expr: sum(increase(einvoice_errors_total{event="parse_failed"}[5m])) >= 3
+        labels:
+          severity: warning
+        annotations:
+          summary: "eInvoice severe parse failures increased (not expected format rejects)."

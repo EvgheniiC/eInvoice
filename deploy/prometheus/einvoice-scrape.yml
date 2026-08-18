@@ -1,0 +1,11 @@
+# Example Prometheus scrape for the eInvoice API process.
+# Bind is 127.0.0.1:8000; nginx does not proxy /metrics.
+
+scrape_configs:
+  - job_name: einvoice
+    scrape_interval: 15s
+    scrape_timeout: 5s
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - 127.0.0.1:8000

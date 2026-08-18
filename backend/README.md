@@ -35,6 +35,8 @@ See [docs/VALIDATION.md](../docs/VALIDATION.md).
 
 JSON logs (`LOG_FORMAT=json`) include `event` and `request_id`. Parse failures, timeouts, and 5xx are counted as metrics. Invoice bodies are never logged or labeled.
 
+Alerts: `python scripts/alert_watchdog.py` (systemd timer in production). See [docs/ALERTS.md](../docs/ALERTS.md).
+
 Regression snapshots for `parse_upload` live in `tests/goldens/` (JSON).
 Invoice fixture bytes stay local under `tests/xml_files/` and `tests/pdf_files/`.
 

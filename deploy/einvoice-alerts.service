@@ -1,0 +1,41 @@
+[Unit]
+Description=eInvoice alert watchdog (oneshot scrape)
+After=network.target einvoice-api.service
+Wants=einvoice-api.service
+
+[Service]
+Type=oneshot
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/eInvoice/backend
+Environment=PATH=/opt/eInvoice/backend/.venv/bin
+Environment=LOG_LEVEL=INFO
+Environment=LOG_FORMAT=json
+Environment=ENVIRONMENT=production
+Environment=ALERT_STATE_PATH=/var/lib/einvoice-alerts/state.json
+Environment=ALERT_BASE_URL=http://127.0.0.1:8000
+EnvironmentFile=-/opt/eInvoice/backend/.env
+StandardOutput=journal
+StandardError=journal
+StateDirectory=einvoice-alerts
+ExecStart=/opt/eInvoice/backend/.venv/bin/python /opt/eInvoice/backend/scripts/alert_watchdog.py --state-path /var/lib/einvoice-alerts/state.json
+# Always succeed so the timer keeps running after a scrape error.
+SuccessExitStatus=0
+
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+RestrictRealtime=true
+MemoryMax=128M
+TasksMax=16
+LimitCORE=0
+
+[Install]
+WantedBy=multi-user.target

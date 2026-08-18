@@ -39,6 +39,12 @@ class Settings(BaseSettings):
     kosit_timeout_seconds: int = 60
     kosit_required: bool = False
 
+    # Alert watchdog (localhost scrape). Optional webhook receives no invoice data.
+    alert_base_url: str = "http://127.0.0.1:8000"
+    alert_webhook_url: Optional[str] = None
+    alert_state_path: str = "alert_state.json"
+    alert_scrape_timeout_seconds: int = 5
+
     @property
     def effective_cors_origins(self) -> List[str]:
         """Production must not keep the local Vite origins unless explicitly set."""

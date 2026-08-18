@@ -1,0 +1,13 @@
+[Unit]
+Description=Run eInvoice alert watchdog every minute
+Requires=einvoice-alerts.service
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=1min
+AccuracySec=10s
+Persistent=true
+Unit=einvoice-alerts.service
+
+[Install]
+WantedBy=timers.target

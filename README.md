@@ -84,7 +84,11 @@ Logging (no invoice bodies): set `LOG_LEVEL=INFO` (default). On production, erro
 ```bash
 journalctl -u einvoice-api -f
 journalctl -u einvoice-api --since "1 hour ago" | grep -E 'parse_failed|unhandled_exception|timeout|http_exception'
+journalctl -u einvoice-alerts --since "1 hour ago" | grep -E 'alert_firing|alert_resolved'
 ```
+
+Alerts (5xx, timeout, severe parse failures, API down/not ready) run via
+`einvoice-alerts.timer`. See [docs/ALERTS.md](docs/ALERTS.md).
 
 ### Frontend
 
