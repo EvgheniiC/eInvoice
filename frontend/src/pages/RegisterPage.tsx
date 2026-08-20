@@ -64,7 +64,7 @@ export function RegisterPage({ onNavigate, session, onLogout }: RegisterPageProp
 
       <form className="auth-form" onSubmit={onSubmit}>
         <label htmlFor="register-org">
-          Organisation <span className="auth-form__optional">optional</span>
+          Organisation <span className="auth-form__optional">(Optional)</span>
         </label>
         <input
           id="register-org"
