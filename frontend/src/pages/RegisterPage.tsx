@@ -1,6 +1,7 @@
 import { useState, type ChangeEvent, type FormEvent, type JSX } from 'react'
 import { registerAccount } from '../api/client'
 import { PageNav } from '../components/PageNav'
+import { PasswordField } from '../components/PasswordField'
 import { SiteFooter } from '../components/SiteFooter'
 import type { AppRoute } from '../routing'
 import type { MeResponse, RegisterResponse } from '../types/invoice'
@@ -11,9 +12,12 @@ type RegisterPageProps = {
   onLogout: () => void
 }
 
+const PASSWORD_MISMATCH: string = 'Die Passwörter stimmen nicht überein.'
+
 export function RegisterPage({ onNavigate, session, onLogout }: RegisterPageProps): JSX.Element {
   const [email, setEmail] = useState<string>('')
   const [password, setPassword] = useState<string>('')
+  const [passwordConfirm, setPasswordConfirm] = useState<string>('')
   const [organizationName, setOrganizationName] = useState<string>('')
   const [sending, setSending] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
@@ -22,6 +26,10 @@ export function RegisterPage({ onNavigate, session, onLogout }: RegisterPageProp
   async function onSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault()
     if (sending) {
+      return
+    }
+    if (password !== passwordConfirm) {
+      setError(PASSWORD_MISMATCH)
       return
     }
     setSending(true)
@@ -48,19 +56,21 @@ export function RegisterPage({ onNavigate, session, onLogout }: RegisterPageProp
         </div>
         <h1 tabIndex={-1}>Konto erstellen</h1>
         <p className="page__lead">
-          E-Mail, Passwort und Name der Organisation. Rechnungen werden weiterhin nicht gespeichert,
-          solange Sie das nicht später ausdrücklich erlauben.
+          E-Mail und Passwort genügen. Den Namen der Organisation können Sie optional angeben.
+          Rechnungen werden weiterhin nicht gespeichert, solange Sie das nicht später ausdrücklich
+          erlauben.
         </p>
       </header>
 
       <form className="auth-form" onSubmit={onSubmit}>
-        <label htmlFor="register-org">Organisation</label>
+        <label htmlFor="register-org">
+          Organisation <span className="auth-form__optional">optional</span>
+        </label>
         <input
           id="register-org"
           name="organization"
           type="text"
           autoComplete="organization"
-          required
           minLength={2}
           maxLength={120}
           value={organizationName}
@@ -78,18 +88,27 @@ export function RegisterPage({ onNavigate, session, onLogout }: RegisterPageProp
           disabled={sending}
           onChange={(event: ChangeEvent<HTMLInputElement>) => setEmail(event.target.value)}
         />
-        <label htmlFor="register-password">Passwort (mind. 10 Zeichen)</label>
-        <input
+        <PasswordField
           id="register-password"
+          label="Passwort (mind. 10 Zeichen)"
           name="password"
-          type="password"
           autoComplete="new-password"
-          required
-          minLength={10}
-          maxLength={72}
           value={password}
           disabled={sending}
+          minLength={10}
+          maxLength={72}
           onChange={(event: ChangeEvent<HTMLInputElement>) => setPassword(event.target.value)}
+        />
+        <PasswordField
+          id="register-password-confirm"
+          label="Passwort wiederholen"
+          name="password_confirm"
+          autoComplete="new-password"
+          value={passwordConfirm}
+          disabled={sending}
+          minLength={10}
+          maxLength={72}
+          onChange={(event: ChangeEvent<HTMLInputElement>) => setPasswordConfirm(event.target.value)}
         />
         <button type="submit" className="btn btn--primary" disabled={sending}>
           {sending ? 'Bitte warten…' : 'Registrieren'}

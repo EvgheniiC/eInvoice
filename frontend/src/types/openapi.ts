@@ -247,7 +247,7 @@ export interface components {
     RegisterRequest: {
       email: string;
       password: string;
-      organization_name: string;
+      organization_name?: string | null;
     };
     RegisterResponse: {
       accepted: boolean;

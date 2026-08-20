@@ -252,6 +252,77 @@
   margin: 0.5rem 0 0;
 }
 
+.auth-form__optional {
+  margin-left: 0.35rem;
+  color: var(--color-muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.password-field {
+  position: relative;
+}
+
+.password-field input {
+  padding-right: 2.85rem;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.28rem;
+  display: grid;
+  place-items: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-brand-dark);
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.password-toggle:hover:not(:disabled) {
+  background: #e8f0ec;
+}
+
+.password-toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.password-monkey {
+  display: block;
+  width: 1.7rem;
+  height: 1.7rem;
+}
+
+.password-monkey__eyes {
+  opacity: 0;
+  transition: opacity 0.16s ease;
+}
+
+.password-monkey__eyes--open {
+  opacity: 1;
+}
+
+.password-monkey__hand--left,
+.password-monkey__hand--right {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.22s ease;
+}
+
+.password-monkey__hands--open .password-monkey__hand--left {
+  transform: translate(-7px, 11px) rotate(-28deg);
+}
+
+.password-monkey__hands--open .password-monkey__hand--right {
+  transform: translate(7px, 11px) rotate(28deg);
+}
+
 .hero-visual {
   position: relative;
   width: 100%;

@@ -212,18 +212,22 @@ export async function fetchMe(): Promise<MeResponse | null> {
 export async function registerAccount(
   email: string,
   password: string,
-  organizationName: string,
+  organizationName: string = '',
 ): Promise<RegisterResponse> {
+  const trimmedOrg: string = organizationName.trim()
+  const payload: { email: string; password: string; organization_name?: string } = {
+    email,
+    password,
+  }
+  if (trimmedOrg.length >= 2) {
+    payload.organization_name = trimmedOrg
+  }
   const response: Response = await fetch(
     `${API_BASE}/auth/register`,
     withRequestId({
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email,
-        password,
-        organization_name: organizationName,
-      }),
+      body: JSON.stringify(payload),
     }),
   )
   if (!response.ok) {

@@ -113,6 +113,18 @@ class TestAuthFlow(unittest.TestCase):
         )
         self.assertEqual(login.status_code, 200)
 
+    def test_register_without_organization_uses_default_name(self) -> None:
+        register = self.client.post(
+            "/api/auth/register",
+            json={"email": "solo@example.com", "password": "sicher-passwort-1"},
+        )
+        self.assertEqual(register.status_code, 200)
+        token: str | None = register.json().get("verification_token")
+        self.assertTrue(token)
+        verified = self.client.post("/api/auth/verify-email", json={"token": token})
+        self.assertEqual(verified.status_code, 200)
+        self.assertEqual(verified.json()["organization_name"], "Meine Organisation")
+
     def test_magic_link_and_password_change(self) -> None:
         token: str = self._register_and_verify("buero@example.com")
         self.assertTrue(token)

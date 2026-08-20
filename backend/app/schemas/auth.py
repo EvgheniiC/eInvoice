@@ -14,7 +14,7 @@ EmailTokenPurpose = Literal["verify_email", "magic_link"]
 class RegisterRequest(ApiModel):
     email: EmailStr
     password: str = Field(min_length=10, max_length=72)
-    organization_name: str = Field(min_length=2, max_length=120)
+    organization_name: Optional[str] = Field(default=None, max_length=120)
 
 
 class RegisterResponse(ApiModel):

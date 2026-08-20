@@ -22,6 +22,7 @@ ROLE_BUERO: str = "buero"
 ROLE_EXPORT: str = "export_only"
 PURPOSE_VERIFY: str = "verify_email"
 PURPOSE_MAGIC: str = "magic_link"
+DEFAULT_ORGANIZATION_NAME: str = "Meine Organisation"
 
 
 class AuthError(ValueError):
@@ -47,12 +48,20 @@ class OrgContext:
     allows_history: bool
 
 
+def resolved_organization_name(name: Optional[str]) -> str:
+    """Use a typed name when provided; otherwise a German default for later editing."""
+    stripped: str = (name or "").strip()
+    if len(stripped) >= 2:
+        return stripped[:120]
+    return DEFAULT_ORGANIZATION_NAME
+
+
 def register_user(
     session: Session,
     *,
     email: str,
     password: str,
-    organization_name: str,
+    organization_name: Optional[str] = None,
 ) -> tuple[User, Optional[str]]:
     """Create user + organization + Inhaber membership. Returns (user, verify token)."""
     normalized: str = normalize_email(email)
@@ -67,7 +76,10 @@ def register_user(
         password_hash=hash_password(password),
         email_verified_at=None,
     )
-    organization: Organization = Organization(name=organization_name.strip(), plan_id=free.id)
+    organization: Organization = Organization(
+        name=resolved_organization_name(organization_name),
+        plan_id=free.id,
+    )
     session.add(user)
     session.add(organization)
     session.flush()
