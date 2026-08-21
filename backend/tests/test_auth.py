@@ -192,6 +192,78 @@ class TestAuthFlow(unittest.TestCase):
         )
         self.assertEqual(new.status_code, 200)
 
+    def test_password_reset_replaces_password_and_revokes_session(self) -> None:
+        self._register_and_verify("reset@example.com")
+        me = self.client.get("/api/me")
+        self.assertEqual(me.status_code, 200)
+
+        unknown = self.client.post(
+            "/api/auth/forgot-password",
+            json={"email": "nobody@example.com"},
+        )
+        self.assertEqual(unknown.status_code, 200)
+        self.assertIsNone(unknown.json().get("token"))
+        self.assertIn("E-Mail", unknown.json()["message"])
+
+        requested = self.client.post(
+            "/api/auth/forgot-password",
+            json={"email": "reset@example.com"},
+        )
+        self.assertEqual(requested.status_code, 200)
+        reset_token: str | None = requested.json().get("token")
+        self.assertTrue(reset_token)
+
+        again = self.client.post(
+            "/api/auth/forgot-password",
+            json={"email": "reset@example.com"},
+        )
+        second_token: str | None = again.json().get("token")
+        self.assertTrue(second_token)
+        self.assertNotEqual(reset_token, second_token)
+
+        stale = self.client.post(
+            "/api/auth/reset-password",
+            json={"token": reset_token, "new_password": "stale-passwort-1"},
+        )
+        self.assertEqual(stale.status_code, 400)
+
+        reset = self.client.post(
+            "/api/auth/reset-password",
+            json={"token": second_token, "new_password": "neues-passwort-2"},
+        )
+        self.assertEqual(reset.status_code, 200)
+        self.assertEqual(self.client.get("/api/me").status_code, 401)
+
+        reused = self.client.post(
+            "/api/auth/reset-password",
+            json={"token": second_token, "new_password": "anderes-passwort-9"},
+        )
+        self.assertEqual(reused.status_code, 400)
+
+        old = self.client.post(
+            "/api/auth/login",
+            json={"email": "reset@example.com", "password": "sicher-passwort-1"},
+        )
+        self.assertEqual(old.status_code, 401)
+        new = self.client.post(
+            "/api/auth/login",
+            json={"email": "reset@example.com", "password": "neues-passwort-2"},
+        )
+        self.assertEqual(new.status_code, 200)
+
+    def test_forgot_password_ignores_unverified_account(self) -> None:
+        register = self.client.post(
+            "/api/auth/register",
+            json={"email": "pending@example.com", "password": "sicher-passwort-1"},
+        )
+        self.assertEqual(register.status_code, 200)
+        requested = self.client.post(
+            "/api/auth/forgot-password",
+            json={"email": "pending@example.com"},
+        )
+        self.assertEqual(requested.status_code, 200)
+        self.assertIsNone(requested.json().get("token"))
+
     def test_delete_user_allows_reregister(self) -> None:
         from app.db.session import session_scope
         from app.services.auth_service import delete_user_by_email

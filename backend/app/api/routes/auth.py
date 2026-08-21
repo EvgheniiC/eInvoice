@@ -17,6 +17,7 @@ from app.schemas.auth import (
     PlanInfo,
     RegisterRequest,
     RegisterResponse,
+    ResetPasswordRequest,
     TokenRequest,
 )
 from app.services.email_service import EmailDeliveryError
@@ -31,7 +32,9 @@ from app.services.auth_service import (
     create_session,
     register_user,
     request_magic_link,
+    request_password_reset,
     resend_verification,
+    reset_password,
     revoke_session,
 )
 from app.services.quota_service import build_plan_info
@@ -192,6 +195,32 @@ def consume_magic(
     raw: str = create_session(db, context)
     _set_session_cookie(response, raw)
     return _me_payload(db, context)
+
+
+@router.post("/auth/forgot-password", response_model=MessageResponse)
+def forgot_password(body: MagicLinkRequest, db: Session = Depends(get_db)) -> MessageResponse:
+    token: Optional[str] = None
+    try:
+        token = request_password_reset(db, email=str(body.email))
+    except EmailDeliveryError:
+        token = None
+    return MessageResponse(
+        accepted=True,
+        message="Wenn ein bestätigtes Konto existiert, wurde eine E-Mail zum Zurücksetzen des Passworts gesendet.",
+        token=token,
+    )
+
+
+@router.post("/auth/reset-password", response_model=MessageResponse)
+def complete_password_reset(
+    body: ResetPasswordRequest,
+    db: Session = Depends(get_db),
+) -> MessageResponse:
+    try:
+        reset_password(db, token=body.token, new_password=body.new_password)
+    except AuthError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    return MessageResponse(accepted=True, message="Passwort geändert. Bitte erneut anmelden.")
 
 
 @router.post("/auth/change-password", response_model=MessageResponse)

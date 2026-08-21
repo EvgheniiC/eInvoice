@@ -80,6 +80,7 @@ export const DATENSCHUTZ: LegalDocument = {
         'Gast (aktuell, ohne Konto): Hochgeladene Rechnungsdatei und daraus gelesene ' +
           'Rechnungsinhalte. Die Datei wird nicht gespeichert.',
         'Konto (optional): E-Mail, Passwort-Hash, Organisationsname, Rolle, Sitzungs-Cookie. ' +
+          'Transaktionale Auth-Mails (Bestätigung, Anmeldelink, Passwort-Reset). ' +
           'Kein Rechnungsarchiv. Originaldateien nur später mit gesonderter Einwilligung.',
         'Technische Verbindungsdaten beim Aufruf: IP-Adresse, Zeitpunkt, aufgerufene URL, ' +
           'User-Agent — soweit der Webserver sie für den Betrieb protokolliert.',

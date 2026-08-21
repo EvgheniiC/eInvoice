@@ -286,6 +286,10 @@ export interface components {
       message: string;
       verification_token: string | null;
     };
+    ResetPasswordRequest: {
+      token: string;
+      new_password: string;
+    };
     SetPlanByEmailRequest: {
       email: string;
       plan_code: "free" | "plus" | "team";

@@ -16,6 +16,7 @@ from app.core.logging_config import sanitize_log_text
 
 PURPOSE_VERIFY: str = "verify_email"
 PURPOSE_MAGIC: str = "magic_link"
+PURPOSE_RESET: str = "reset_password"
 _ANGLE_EMAIL_RE: re.Pattern[str] = re.compile(r"<([^<>@\s]+@[^<>@\s]+)>")
 
 
@@ -29,6 +30,8 @@ def auth_link_url(*, purpose: str, token: str) -> str:
     encoded: str = quote(token, safe="")
     if purpose == PURPOSE_MAGIC:
         return f"{base}/bestaetigen?kind=magic&token={encoded}"
+    if purpose == PURPOSE_RESET:
+        return f"{base}/passwort-zuruecksetzen?token={encoded}"
     return f"{base}/bestaetigen?token={encoded}"
 
 
@@ -59,14 +62,27 @@ def send_auth_email(*, to_email: str, purpose: str, token: str) -> None:
 def _compose_message(*, purpose: str, token: str) -> tuple[str, str]:
     url: str = auth_link_url(purpose=purpose, token=token)
     hours: int = settings.auth_token_hours
+    subject: str
+    body: str
     if purpose == PURPOSE_MAGIC:
-        subject: str = "eInvoice: Anmeldelink"
-        body: str = (
+        subject = "eInvoice: Anmeldelink"
+        body = (
             "Guten Tag,\n\n"
             "melden Sie sich bei eInvoice über diesen Link an:\n\n"
             f"{url}\n\n"
             f"Der Link ist {hours} Stunden gültig.\n\n"
             "Wenn Sie keinen Anmeldelink angefordert haben, ignorieren Sie diese E-Mail.\n\n"
+            "eInvoice\n"
+        )
+        return subject, body
+    if purpose == PURPOSE_RESET:
+        subject = "eInvoice: Passwort zurücksetzen"
+        body = (
+            "Guten Tag,\n\n"
+            "Sie können Ihr eInvoice-Passwort über diesen Link neu setzen:\n\n"
+            f"{url}\n\n"
+            f"Der Link ist {hours} Stunden gültig.\n\n"
+            "Wenn Sie kein neues Passwort angefordert haben, ignorieren Sie diese E-Mail.\n\n"
             "eInvoice\n"
         )
         return subject, body

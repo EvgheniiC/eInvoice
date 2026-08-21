@@ -318,6 +318,36 @@ export async function requestMagicLink(email: string): Promise<MessageResponse> 
   return response.json() as Promise<MessageResponse>
 }
 
+export async function requestPasswordReset(email: string): Promise<MessageResponse> {
+  const response: Response = await fetch(
+    `${API_BASE}/auth/forgot-password`,
+    withRequestId({
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    }),
+  )
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response, 'Zurücksetzen konnte nicht gestartet werden.'))
+  }
+  return response.json() as Promise<MessageResponse>
+}
+
+export async function resetAccountPassword(token: string, newPassword: string): Promise<MessageResponse> {
+  const response: Response = await fetch(
+    `${API_BASE}/auth/reset-password`,
+    withRequestId({
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, new_password: newPassword }),
+    }),
+  )
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response, 'Passwort konnte nicht gesetzt werden.'))
+  }
+  return response.json() as Promise<MessageResponse>
+}
+
 export async function resendVerification(email: string): Promise<MessageResponse> {
   const response: Response = await fetch(
     `${API_BASE}/auth/resend-verification`,

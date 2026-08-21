@@ -103,7 +103,7 @@ class AuthSession(Base):
 
 
 class EmailToken(Base):
-    """Hashed one-time token for email verify or magic link."""
+    """Hashed one-time token for email verify, magic link, or password reset."""
 
     __tablename__: str = "email_tokens"
 

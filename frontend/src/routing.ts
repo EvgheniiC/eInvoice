@@ -5,6 +5,8 @@ export type AppRoute =
   | 'help'
   | 'login'
   | 'register'
+  | 'forgot'
+  | 'reset'
   | 'verify'
   | 'org'
 
@@ -34,6 +36,12 @@ export function pathToRoute(pathname: string): AppRoute {
   if (pathname === '/registrieren' || pathname.startsWith('/registrieren/')) {
     return 'register'
   }
+  if (pathname === '/passwort-vergessen' || pathname.startsWith('/passwort-vergessen/')) {
+    return 'forgot'
+  }
+  if (pathname === '/passwort-zuruecksetzen' || pathname.startsWith('/passwort-zuruecksetzen/')) {
+    return 'reset'
+  }
   if (pathname === '/bestaetigen' || pathname.startsWith('/bestaetigen/')) {
     return 'verify'
   }
@@ -58,6 +66,12 @@ export function routeToPath(route: AppRoute): string {
   }
   if (route === 'register') {
     return '/registrieren'
+  }
+  if (route === 'forgot') {
+    return '/passwort-vergessen'
+  }
+  if (route === 'reset') {
+    return '/passwort-zuruecksetzen'
   }
   if (route === 'verify') {
     return '/bestaetigen'

@@ -33,6 +33,8 @@ _KNOWN_PATHS: Final[frozenset[str]] = frozenset(
         "/api/auth/resend-verification",
         "/api/auth/magic-link",
         "/api/auth/magic-link/consume",
+        "/api/auth/forgot-password",
+        "/api/auth/reset-password",
         "/api/auth/change-password",
         "/api/me",
         "/api/org",

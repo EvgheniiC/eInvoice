@@ -9,6 +9,7 @@ import type { MeResponse, MessageResponse } from '../types/invoice'
 type LoginPageProps = {
   onNavigate: (route: AppRoute, query?: string) => void
   onLoggedIn: (session: MeResponse) => void
+  onForgotPassword: (email: string) => void
   session: MeResponse | null
   onLogout: () => void
   notice: string | null
@@ -22,6 +23,7 @@ const VERIFY_HINT: string =
 export function LoginPage({
   onNavigate,
   onLoggedIn,
+  onForgotPassword,
   session,
   onLogout,
   notice,
@@ -142,9 +144,15 @@ export function LoginPage({
           </button>
         </div>
       </form>
+      <p className="auth-form__switch">
+        <button type="button" className="site-footer__link" onClick={() => onForgotPassword(email)}>
+          Passwort vergessen?
+        </button>
+      </p>
       {notice ? (
         <p className="status status--info" role="status">
-          {notice} {VERIFY_HINT}
+          {notice}
+          {verificationToken ? ` ${VERIFY_HINT}` : ''}
         </p>
       ) : null}
       {verificationToken ? (
@@ -154,7 +162,7 @@ export function LoginPage({
           </button>
         </p>
       ) : null}
-      {notice || error?.includes('E-Mail-Adresse') ? (
+      {verificationToken || error?.includes('E-Mail-Adresse') ? (
         <p className="auth-form__switch">
           Keine E-Mail erhalten?{' '}
           <button

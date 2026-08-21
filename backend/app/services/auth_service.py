@@ -24,6 +24,7 @@ ROLE_BUERO: str = "buero"
 ROLE_EXPORT: str = "export_only"
 PURPOSE_VERIFY: str = "verify_email"
 PURPOSE_MAGIC: str = "magic_link"
+PURPOSE_RESET: str = "reset_password"
 DEFAULT_ORGANIZATION_NAME: str = "Meine Organisation"
 
 
@@ -127,6 +128,28 @@ def request_magic_link(session: Session, *, email: str) -> Optional[str]:
     return token if not settings.is_production else None
 
 
+def request_password_reset(session: Session, *, email: str) -> Optional[str]:
+    """Send a one-time reset link. Unknown or unverified addresses are ignored."""
+    normalized: str = normalize_email(email)
+    user: Optional[User] = session.scalar(select(User).where(User.email == normalized))
+    if user is None or user.email_verified_at is None:
+        log_event(logging.INFO, "password_reset_ignored", fields={"domain": _email_domain(normalized)})
+        return None
+    now: datetime = utc_now()
+    for item in session.scalars(
+        select(EmailToken).where(
+            EmailToken.user_id == user.id,
+            EmailToken.purpose == PURPOSE_RESET,
+            EmailToken.consumed_at.is_(None),
+        )
+    ).all():
+        item.consumed_at = now
+    token: str = _issue_email_token(session, user_id=user.id, purpose=PURPOSE_RESET)
+    session.commit()
+    send_auth_email(to_email=normalized, purpose=PURPOSE_RESET, token=token)
+    return token if not settings.is_production else None
+
+
 def consume_email_token(session: Session, *, token: str, purpose: str) -> OrgContext:
     token_hash: str = hash_token(token)
     now: datetime = utc_now()
@@ -202,13 +225,26 @@ def change_password(
     user: Optional[User] = session.get(User, user_id)
     if user is None or not user.password_hash or not verify_password(current_password, user.password_hash):
         raise AuthError("Das aktuelle Passwort ist ungültig.")
-    user.password_hash = hash_password(new_password)
-    user.password_changed_at = utc_now()
+    _replace_password(session, user=user, new_password=new_password)
+
+
+def reset_password(session: Session, *, token: str, new_password: str) -> None:
+    """Consume a reset token and set a new password. All sessions are revoked."""
+    token_hash: str = hash_token(token)
     now: datetime = utc_now()
-    for item in session.scalars(select(AuthSession).where(AuthSession.user_id == user_id)).all():
-        if item.revoked_at is None:
-            item.revoked_at = now
-    session.commit()
+    row: Optional[EmailToken] = session.scalar(
+        select(EmailToken).where(
+            EmailToken.token_hash == token_hash,
+            EmailToken.purpose == PURPOSE_RESET,
+        )
+    )
+    if row is None or row.consumed_at is not None or as_utc(row.expires_at) <= now:
+        raise AuthError("Der Link ist ungültig oder abgelaufen.")
+    user: Optional[User] = session.get(User, row.user_id)
+    if user is None or user.email_verified_at is None:
+        raise AuthError("Der Link ist ungültig oder abgelaufen.")
+    row.consumed_at = now
+    _replace_password(session, user=user, new_password=new_password)
 
 
 def rename_organization(
@@ -360,6 +396,16 @@ def _require_plan(session: Session, code: str) -> Plan:
     if plan is None:
         raise AuthError("Tarif ist nicht eingerichtet.")
     return plan
+
+
+def _replace_password(session: Session, *, user: User, new_password: str) -> None:
+    user.password_hash = hash_password(new_password)
+    user.password_changed_at = utc_now()
+    now: datetime = utc_now()
+    for item in session.scalars(select(AuthSession).where(AuthSession.user_id == user.id)).all():
+        if item.revoked_at is None:
+            item.revoked_at = now
+    session.commit()
 
 
 def _issue_email_token(session: Session, *, user_id: UUID, purpose: str) -> str:

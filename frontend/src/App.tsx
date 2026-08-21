@@ -2,11 +2,13 @@ import { useEffect, useRef, useState, type JSX, type RefObject } from 'react'
 import { fetchMe, logoutAccount } from './api/client'
 import { LEGAL_PAGES } from './content/legal'
 import { HelpPage } from './pages/HelpPage'
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage'
 import { LandingPage } from './pages/LandingPage'
 import { LegalPage } from './pages/LegalPage'
 import { LoginPage } from './pages/LoginPage'
 import { OrgSettingsPage } from './pages/OrgSettingsPage'
 import { RegisterPage, type RegisterSuccess } from './pages/RegisterPage'
+import { ResetPasswordPage } from './pages/ResetPasswordPage'
 import { UploadPage } from './pages/UploadPage'
 import { VerifyPage } from './pages/VerifyPage'
 import { pathToRoute, routeToPath, type AppRoute } from './routing'
@@ -69,6 +71,18 @@ function App(): JSX.Element {
     setSession(value)
   }
 
+  function handlePasswordReset(message: string): void {
+    setLoginNotice(message)
+    setLoginVerifyToken(null)
+    setSession(null)
+    navigate('login')
+  }
+
+  function handleForgotPassword(email: string): void {
+    setLoginEmail(email.trim())
+    navigate('forgot')
+  }
+
   async function handleLogout(): Promise<void> {
     await logoutAccount()
     setSession(null)
@@ -110,6 +124,7 @@ function App(): JSX.Element {
         <LoginPage
           onNavigate={navigate}
           onLoggedIn={handleLoggedIn}
+          onForgotPassword={handleForgotPassword}
           session={session}
           onLogout={() => {
             void handleLogout()
@@ -126,6 +141,25 @@ function App(): JSX.Element {
           onLogout={() => {
             void handleLogout()
           }}
+        />
+      ) : route === 'forgot' ? (
+        <ForgotPasswordPage
+          onNavigate={navigate}
+          session={session}
+          onLogout={() => {
+            void handleLogout()
+          }}
+          initialEmail={loginEmail}
+        />
+      ) : route === 'reset' ? (
+        <ResetPasswordPage
+          onNavigate={navigate}
+          onReset={handlePasswordReset}
+          session={session}
+          onLogout={() => {
+            void handleLogout()
+          }}
+          token={new URLSearchParams(window.location.search).get('token') ?? ''}
         />
       ) : route === 'verify' ? (
         <VerifyPage

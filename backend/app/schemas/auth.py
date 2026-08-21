@@ -8,7 +8,7 @@ from app.schemas.invoice import ApiModel
 
 MembershipRole = Literal["inhaber", "buero", "export_only"]
 PlanCode = Literal["free", "plus", "team"]
-EmailTokenPurpose = Literal["verify_email", "magic_link"]
+EmailTokenPurpose = Literal["verify_email", "magic_link", "reset_password"]
 
 
 class RegisterRequest(ApiModel):
@@ -44,6 +44,11 @@ class MessageResponse(ApiModel):
 
 class ChangePasswordRequest(ApiModel):
     current_password: str = Field(min_length=1, max_length=72)
+    new_password: str = Field(min_length=10, max_length=72)
+
+
+class ResetPasswordRequest(ApiModel):
+    token: str = Field(min_length=8, max_length=128)
     new_password: str = Field(min_length=10, max_length=72)
 
 

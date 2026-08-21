@@ -51,6 +51,7 @@ describe('LoginPage', (): void => {
       <LoginPage
         onNavigate={onNavigate}
         onLoggedIn={onLoggedIn}
+        onForgotPassword={vi.fn()}
         session={null}
         onLogout={vi.fn()}
         notice={null}
@@ -75,6 +76,7 @@ describe('LoginPage', (): void => {
       <LoginPage
         onNavigate={vi.fn()}
         onLoggedIn={vi.fn()}
+        onForgotPassword={vi.fn()}
         session={null}
         onLogout={vi.fn()}
         notice={null}
@@ -98,6 +100,7 @@ describe('LoginPage', (): void => {
       <LoginPage
         onNavigate={vi.fn()}
         onLoggedIn={vi.fn()}
+        onForgotPassword={vi.fn()}
         session={null}
         onLogout={vi.fn()}
         notice="Bitte prüfen Sie Ihre E-Mail und bestätigen Sie das Konto."
@@ -112,5 +115,27 @@ describe('LoginPage', (): void => {
     expect(screen.getByLabelText('E-Mail')).toHaveValue('lucky1.lucky@gmx.de')
     expect(screen.getByRole('button', { name: 'Bestätigungslink öffnen' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Bestätigung erneut senden' })).toBeInTheDocument()
+  })
+
+  it('opens the forgot-password page', async (): Promise<void> => {
+    const user: UserEvent = userEvent.setup()
+    const onForgotPassword: (email: string) => void = vi.fn()
+
+    render(
+      <LoginPage
+        onNavigate={vi.fn()}
+        onLoggedIn={vi.fn()}
+        onForgotPassword={onForgotPassword}
+        session={null}
+        onLogout={vi.fn()}
+        notice={null}
+        initialEmail=""
+        verificationToken={null}
+      />,
+    )
+
+    await user.type(screen.getByLabelText('E-Mail'), 'meister@example.com')
+    await user.click(screen.getByRole('button', { name: 'Passwort vergessen?' }))
+    expect(onForgotPassword).toHaveBeenCalledWith('meister@example.com')
   })
 })

@@ -71,6 +71,11 @@ journalctl -u einvoice-api -n 80 --no-pager | grep auth_email
 - Verify email: SMTP when `EMAIL_BACKEND=smtp`. After register the UI goes to `/anmelden`.
 - Verify: `POST /api/auth/verify-email` with the mailed token (dev responses include the token)
 - Login: password or magic link → httpOnly session cookie `einv_session`
+- Forgot password: `POST /api/auth/forgot-password` emails a one-time reset
+  link (the current password is hashed and is never mailed). Unknown or
+  unverified addresses get the same generic response.
+- Reset: `POST /api/auth/reset-password` with the mailed token and a new
+  password; all sessions are revoked
 - `GET /api/me` and `GET/PATCH /api/org` carry org context
 - Quotas are enforced: daily parse/export, plan upload size, parse parallelism
 - Guest parse without a session still works (no archive); it counts against the guest IP quota
@@ -122,5 +127,6 @@ Removes the user, sessions, email tokens, and the organization if nobody else re
 
 ## UI
 
-- `/anmelden` `/registrieren` `/bestaetigen?token=` `/organisation`
+- `/anmelden` `/registrieren` `/passwort-vergessen` `/bestaetigen?token=` `/organisation`
 - Magic-link consume: `/bestaetigen?kind=magic&token=`
+- Password reset consume: `/passwort-zuruecksetzen?token=`

@@ -63,6 +63,10 @@ class TestAuthLinkUrl(unittest.TestCase):
                 auth_link_url(purpose="magic_link", token="tok"),
                 "https://app.example/bestaetigen?kind=magic&token=tok",
             )
+            self.assertEqual(
+                auth_link_url(purpose="reset_password", token="rst"),
+                "https://app.example/passwort-zuruecksetzen?token=rst",
+            )
 
 
 class TestSendAuthEmail(unittest.TestCase):
