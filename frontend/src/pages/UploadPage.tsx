@@ -67,11 +67,11 @@ export function UploadPage({
   }, [])
 
   useEffect(() => {
-    if (loading || (!error && !result)) {
+    if (loading || (!error && !result) || batchJob !== null) {
       return
     }
     feedbackRef.current?.focus()
-  }, [loading, error, result])
+  }, [loading, error, result, batchJob])
 
   useEffect(() => {
     if (batchJob === null || batchJob.status === 'completed') {
@@ -95,6 +95,24 @@ export function UploadPage({
       window.clearInterval(timer)
     }
   }, [batchJob?.id, batchJob?.status])
+
+  useEffect(() => {
+    if (batchJob === null || selectedBatchItemId !== null) {
+      return
+    }
+    const firstReady: BatchItemResponse | undefined = batchJob.items.find(
+      (item: BatchItemResponse): boolean => item.invoice !== null && item.invoice !== undefined,
+    )
+    if (firstReady === undefined || firstReady.invoice === undefined || firstReady.invoice === null) {
+      return
+    }
+    const readyInvoice: InvoiceParseResponse = firstReady.invoice
+    setSelectedBatchItemId(firstReady.id)
+    setResult(readyInvoice)
+    setUploadedFile(null)
+    setShowPdf(false)
+    setAnnouncement(`Rechnung ${firstReady.filename} geöffnet.`)
+  }, [batchJob, selectedBatchItemId])
 
   async function handleFile(file: File): Promise<void> {
     if (inFlightRef.current) {
@@ -182,7 +200,7 @@ export function UploadPage({
     }
   }
 
-  function handleBatchRow(item: BatchItemResponse): void {
+  function openBatchItem(item: BatchItemResponse): void {
     if (!item.invoice) {
       return
     }
@@ -194,6 +212,7 @@ export function UploadPage({
   }
 
   const allowsBatch: boolean = Boolean(session?.plan.allows_batch)
+  const hasBatchWorkspace: boolean = batchJob !== null
 
   const canShowPdfSideBySide: boolean =
     result !== null &&
@@ -202,7 +221,62 @@ export function UploadPage({
     uploadedFile !== null
 
   const pageClassName: string =
-    canShowPdfSideBySide && showPdf ? 'page page--split' : batchJob !== null ? 'page page--batch' : 'page'
+    canShowPdfSideBySide && showPdf
+      ? 'page page--split'
+      : hasBatchWorkspace
+        ? 'page page--workspace'
+        : 'page'
+
+  function renderInvoicePanel(): JSX.Element | null {
+    if (result === null) {
+      return null
+    }
+    if (result.status === 'error') {
+      return (
+        <section
+          className="status status--error"
+          role="alert"
+          tabIndex={-1}
+          ref={bindFeedback}
+        >
+          {result.filename && <p className="status__file">Datei: {result.filename}</p>}
+          <p>
+            <strong>{result.message}</strong>
+          </p>
+          {result.validation_issues.map((issue: ValidationIssue, index: number) => (
+            <p key={`${issue.code ?? 'err'}-${index}`}>{issue.message}</p>
+          ))}
+          {result.next_steps.length > 0 && (
+            <div>
+              <strong>Was tun als Nächstes?</strong>
+              <ol>
+                {result.next_steps.map((step: string, index: number) => (
+                  <li key={`error-step-${index}`}>{step}</li>
+                ))}
+              </ol>
+            </div>
+          )}
+        </section>
+      )
+    }
+    if (canShowPdfSideBySide && showPdf && uploadedFile !== null) {
+      return (
+        <div className="invoice-split" ref={bindFeedback} tabIndex={-1}>
+          <div className="invoice-split__pdf">
+            <PdfPreview file={uploadedFile} title="Visuelle PDF" />
+          </div>
+          <div className="invoice-split__data">
+            <InvoiceView invoice={result} sourceFile={uploadedFile} />
+          </div>
+        </div>
+      )
+    }
+    return (
+      <div ref={bindFeedback} tabIndex={-1}>
+        <InvoiceView invoice={result} sourceFile={uploadedFile} />
+      </div>
+    )
+  }
 
   return (
     <main id="main-content" className={pageClassName} tabIndex={-1} aria-busy={loading}>
@@ -285,71 +359,42 @@ export function UploadPage({
         </section>
       )}
 
-      {batchJob && (
-        <BatchSummary
-          job={batchJob}
-          selectedItemId={selectedBatchItemId}
-          onSelectItem={handleBatchRow}
-        />
-      )}
-
-      {canShowPdfSideBySide && (
-        <div className="pdf-toggle">
-          <button
-            type="button"
-            aria-pressed={showPdf}
-            onClick={() => setShowPdf((prev: boolean) => !prev)}
-          >
-            {showPdf ? 'PDF ausblenden' : 'PDF neben Daten anzeigen'}
-          </button>
-          <p className="pdf-toggle__hint">
-            ZUGFeRD: visuelle PDF neben den aus dem XML gelesenen Daten — hilfreich bei Abweichungen.
-          </p>
+      {hasBatchWorkspace && batchJob !== null ? (
+        <div className="workspace-split">
+          <aside className="workspace-split__files" aria-label="Geprüfte Dateien">
+            <BatchSummary
+              job={batchJob}
+              selectedItemId={selectedBatchItemId}
+              onSelectItem={openBatchItem}
+            />
+          </aside>
+          <section className="workspace-split__detail" aria-label="Rechnungsdaten">
+            {renderInvoicePanel() ?? (
+              <p className="workspace-split__placeholder">
+                Datei in der Liste wählen, um die Rechnungsdaten zu sehen.
+              </p>
+            )}
+          </section>
         </div>
-      )}
-
-      {result && result.status !== 'error' && canShowPdfSideBySide && showPdf && uploadedFile && (
-        <div className="invoice-split" ref={bindFeedback} tabIndex={-1}>
-          <div className="invoice-split__pdf">
-            <PdfPreview file={uploadedFile} title="Visuelle PDF" />
-          </div>
-          <div className="invoice-split__data">
-            <InvoiceView invoice={result} sourceFile={uploadedFile} />
-          </div>
-        </div>
-      )}
-
-      {result && result.status !== 'error' && !(canShowPdfSideBySide && showPdf) && (
-        <div ref={bindFeedback} tabIndex={-1}>
-          <InvoiceView invoice={result} sourceFile={uploadedFile} />
-        </div>
-      )}
-
-      {result && result.status === 'error' && (
-        <section
-          className="status status--error"
-          role="alert"
-          tabIndex={-1}
-          ref={bindFeedback}
-        >
-          {result.filename && <p className="status__file">Datei: {result.filename}</p>}
-          <p>
-            <strong>{result.message}</strong>
-          </p>
-          {result.validation_issues.map((issue: ValidationIssue, index: number) => (
-            <p key={`${issue.code ?? 'err'}-${index}`}>{issue.message}</p>
-          ))}
-          {result.next_steps.length > 0 && (
-            <div>
-              <strong>Was tun als Nächstes?</strong>
-              <ol>
-                {result.next_steps.map((step: string, index: number) => (
-                  <li key={`error-step-${index}`}>{step}</li>
-                ))}
-              </ol>
+      ) : (
+        <>
+          {canShowPdfSideBySide && (
+            <div className="pdf-toggle">
+              <button
+                type="button"
+                aria-pressed={showPdf}
+                onClick={() => setShowPdf((prev: boolean) => !prev)}
+              >
+                {showPdf ? 'PDF ausblenden' : 'PDF neben Daten anzeigen'}
+              </button>
+              <p className="pdf-toggle__hint">
+                ZUGFeRD: visuelle PDF neben den aus dem XML gelesenen Daten — hilfreich bei
+                Abweichungen.
+              </p>
             </div>
           )}
-        </section>
+          {renderInvoicePanel()}
+        </>
       )}
 
       <SiteFooter onNavigate={onNavigate} />

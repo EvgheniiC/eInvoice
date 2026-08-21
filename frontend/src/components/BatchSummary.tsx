@@ -73,7 +73,7 @@ export function BatchSummary({ job, selectedItemId, onSelectItem }: BatchSummary
         </table>
       </div>
       <p className="batch-summary__hint">
-        Klick auf eine geprüfte Zeile öffnet die Rechnungssicht. Originaldateien werden nach der
+        Klick auf eine geprüfte Zeile zeigt die Rechnung rechts. Originaldateien werden nach der
         Prüfung gelöscht.
       </p>
       <button type="button" className="batch-summary__zip" disabled>

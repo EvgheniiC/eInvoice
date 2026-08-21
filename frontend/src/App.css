@@ -8,8 +8,8 @@
   max-width: 90rem;
 }
 
-.page--batch {
-  max-width: 56rem;
+.page--workspace {
+  max-width: 90rem;
 }
 
 .page__header-row {
@@ -1289,6 +1289,19 @@
     gap: 1.75rem;
   }
 
+  .workspace-split {
+    grid-template-columns: minmax(20rem, 28rem) minmax(0, 1fr);
+    gap: 1.75rem;
+  }
+
+  .workspace-split__files {
+    position: sticky;
+    top: 1rem;
+    max-height: calc(100vh - 2rem);
+    max-height: calc(100dvh - 2rem);
+    overflow: auto;
+  }
+
   .pdf-preview {
     position: sticky;
     top: 1rem;
@@ -1304,6 +1317,8 @@
 .landing-hero__copy,
 .invoice-split__data,
 .invoice-split__pdf,
+.workspace-split__files,
+.workspace-split__detail,
 .hero-visual,
 .snapshot__item,
 .party,
@@ -1474,6 +1489,14 @@
   .pdf-preview__frame {
     min-height: 14rem;
   }
+
+  .workspace-split__files {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    max-height: 40vh;
+    overflow: auto;
+  }
 }
 
 @media (min-width: 640px) and (max-width: 959px) {
@@ -1493,6 +1516,14 @@
   .invoice__totals {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .workspace-split__files {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    max-height: 40vh;
+    overflow: auto;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1504,6 +1535,43 @@
 
 .batch-summary {
   margin-top: 1.5rem;
+}
+
+.workspace-split {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+  align-items: start;
+}
+
+.workspace-split__files {
+  border: 1px solid #d5dcd7;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.82);
+  padding: 0.85rem 0.9rem 1rem;
+}
+
+.workspace-split__files .batch-summary {
+  margin-top: 0;
+}
+
+.workspace-split__files .progress {
+  margin-top: 0;
+}
+
+.workspace-split__detail .invoice {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.workspace-split__placeholder {
+  margin: 0;
+  padding: 1.25rem 1rem;
+  border: 1px dashed #c5d0c8;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.55);
+  color: var(--color-muted);
 }
 
 .batch-table {
