@@ -56,6 +56,7 @@ class PlanInfo(ApiModel):
     max_parallel: int = 1
     allows_batch: bool
     allows_history: bool
+    max_batch_files: int = 0
     quotas_enforced: bool = True
     parse_used_today: int = 0
     export_used_today: int = 0

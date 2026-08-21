@@ -85,9 +85,9 @@ developer-API против [rechnungsapi.de](https://www.rechnungsapi.de).
 
 #### A1. Batch-загрузка
 
-- [ ] Несколько XML/PDF за один раз: очередь, прогресс, сводка `gültig` / `prüfen` / `ablehnen`.
+- [x] Несколько XML/PDF за один раз: очередь, прогресс, сводка `gültig` / `prüfen` / `ablehnen`.
 - [ ] Вариант: ZIP или папка со смешанными файлами.
-- [ ] Не запускать тяжёлый KoSIT синхронно в одном uvicorn-worker на всю пачку.
+- [x] Не запускать тяжёлый KoSIT синхронно в одном uvicorn-worker на всю пачку.
 
 Связано: `TODO_VIP_PRODUCT.md` P1 «Batch upload».
 
@@ -230,7 +230,7 @@ developer-API против [rechnungsapi.de](https://www.rechnungsapi.de).
 Порядок внутри этапа:
 
 1. [x] Лимиты по плану (гость / plus / team) на parse и export (A5).
-2. [ ] Batch UI + очередь (Celery/RQ или отдельный worker) (A1).
+2. [x] Batch UI + очередь в Postgres (`batch_jobs` / `batch_items`, `einvoice-worker`) (A1, без ZIP).
 3. [ ] Мульти-accountant ZIP (A4).
 4. [ ] История метаданных + повторный экспорт, если файл ещё в retention (A2).
 5. [ ] Дубликаты до тяжёлого KoSIT, если возможно (A3).
@@ -287,7 +287,7 @@ team   ──► Authorization: Bearer einv_live_...
 
 - [x] Postgres: users, orgs, memberships, plans (invoice_jobs, invoice_records, api_keys — этапы 2/4).
 - [ ] Object storage S3-compatible **в DE** только для opt-in файлов: TTL, encryption at rest.
-- [ ] Очередь для batch/KoSIT.
+- [x] Очередь для batch/KoSIT.
 - [ ] Идемпотентность batch и дедуп до запуска validator, где это безопасно.
 - [ ] Default хранения оригинала: **выкл**.
 

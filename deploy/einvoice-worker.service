@@ -1,6 +1,6 @@
 [Unit]
-Description=eInvoice FastAPI backend (uvicorn)
-After=network.target
+Description=eInvoice batch worker (KoSIT queue)
+After=network.target postgresql.service einvoice-api.service
 Wants=network-online.target
 
 [Service]
@@ -12,16 +12,15 @@ Environment=PATH=/opt/eInvoice/backend/.venv/bin
 Environment=LOG_LEVEL=INFO
 Environment=LOG_FORMAT=json
 Environment=ENVIRONMENT=production
+Environment=BATCH_TEMP_DIR=/var/lib/einvoice/batch-tmp
 EnvironmentFile=-/opt/eInvoice/backend/.env
-# stdout/stderr → journald (invoice bodies are never logged by the app)
 StandardOutput=journal
 StandardError=journal
-ExecStart=/opt/eInvoice/backend/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 1
+ExecStart=/opt/eInvoice/backend/.venv/bin/python -m app.worker
 Restart=always
 RestartSec=3
-TimeoutStopSec=15
+TimeoutStopSec=70
 
-# Process isolation for the API and the KoSIT Java child
 NoNewPrivileges=true
 PrivateTmp=true
 PrivateDevices=true
@@ -35,11 +34,10 @@ LockPersonality=true
 RestrictRealtime=true
 RestrictNamespaces=true
 MemoryMax=1G
-TasksMax=64
+TasksMax=32
 LimitCORE=0
 StateDirectory=einvoice
 ReadWritePaths=/var/lib/einvoice
-Environment=BATCH_TEMP_DIR=/var/lib/einvoice/batch-tmp
 
 [Install]
 WantedBy=multi-user.target

@@ -12,6 +12,30 @@ export interface components {
       xml_base64?: string | null;
       xml_filename?: string | null;
     };
+    BatchItemResponse: {
+      id: string;
+      filename: string;
+      status: components["schemas"]["BatchItemStatus"];
+      invoice_number: string | null;
+      seller_name: string | null;
+      gross_amount: string | null;
+      currency: string | null;
+      message: string | null;
+      invoice: components["schemas"]["InvoiceParseResponse-Output"] | null;
+    };
+    BatchItemStatus: "queued" | "processing" | "gueltig" | "pruefen" | "ablehnen";
+    BatchJobResponse: {
+      id: string;
+      status: components["schemas"]["BatchJobStatus"];
+      item_count: number;
+      done_count: number;
+      items: components["schemas"]["BatchItemResponse"][];
+      export_package_available: boolean;
+    };
+    BatchJobStatus: "queued" | "processing" | "completed";
+    Body_create_invoice_batch_api_invoices_batch_post: {
+      files: string[];
+    };
     Body_parse_invoice_api_invoices_parse_post: {
       file: string;
     };
@@ -242,6 +266,7 @@ export interface components {
       max_parallel: number;
       allows_batch: boolean;
       allows_history: boolean;
+      max_batch_files: number;
       quotas_enforced: boolean;
       parse_used_today: number;
       export_used_today: number;

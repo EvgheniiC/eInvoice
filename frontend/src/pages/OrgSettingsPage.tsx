@@ -133,6 +133,10 @@ export function OrgSettingsPage({
           <li>Code: {session.plan.code}</li>
           <li>Batch: {session.plan.allows_batch ? 'ja' : 'nein'}</li>
           <li>Historie: {session.plan.allows_history ? 'ja' : 'nein'}</li>
+          <li>
+            Dateien pro Auftrag:{' '}
+            {session.plan.allows_batch ? String(session.plan.max_batch_files) : '1'}
+          </li>
           <li>Max. Dateigröße: {String(session.plan.max_upload_size_mb)} MB</li>
           <li>Parallele Prüfungen: {String(session.plan.max_parallel)}</li>
           <li>{quotaHint}</li>

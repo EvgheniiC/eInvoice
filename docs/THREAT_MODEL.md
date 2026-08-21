@@ -43,7 +43,7 @@ unless nginx overwrites it (the API snippet sets `X-Forwarded-For $remote_addr`)
 | S3 | Malicious PDF (JS, Launch, encryption, huge page count) | `assert_pdf_safe` |
 | S4 | Resource exhaustion (huge file, nested XML, slow KoSIT) | 10 MB cap, rate limit, request timeout, JVM `-Xmx`, systemd `MemoryMax`, nginx `limit_req` |
 | T1 | Invoice data in logs | Sanitized structured logs; parsers must not log IBAN/XML |
-| T2 | Temp file leftover | `TemporaryDirectory` for PDF probe and KoSIT; `PrivateTmp=true` |
+| T2 | Temp file leftover | `TemporaryDirectory` for PDF probe and KoSIT; `PrivateTmp=true`; batch originals in `BATCH_TEMP_DIR` deleted after parse |
 | T3 | Error detail leak | Generic 500/422 to clients; no traceback in JSON |
 | I1 | Cross-origin abuse | Explicit CORS origins, no credentialed wildcard, nginx same-origin `/api` |
 | I2 | Clickjacking / MIME sniffing | Security headers (app + nginx) |

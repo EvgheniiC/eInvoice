@@ -1,15 +1,18 @@
 import logging
-from typing import Optional
+from typing import List, Optional
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_optional_db, get_optional_org_context
+from app.api.deps import AUTH_UNAVAILABLE, get_optional_db, get_optional_org_context
 from app.core.config import settings
 from app.core.error_events import log_api_error, log_event, safe_filename
 from app.core.middleware import get_request_id
+from app.schemas.batch import BatchJobResponse
 from app.schemas.invoice import InvoiceParseResponse
 from app.services.auth_service import OrgContext
+from app.services.batch_service import enqueue_batch, get_batch, require_batch_plan
 from app.services.invoice_service import InvoiceService
 from app.services.quota_service import enforce_parse
 
@@ -81,3 +84,35 @@ async def parse_invoice(
                 level=logging.WARNING,
             )
         raise
+
+
+@router.post("/batch", response_model=BatchJobResponse, status_code=status.HTTP_202_ACCEPTED)
+async def create_invoice_batch(
+    files: List[UploadFile] = File(...),
+    org_context: Optional[OrgContext] = Depends(get_optional_org_context),
+    db: Optional[Session] = Depends(get_optional_db),
+) -> BatchJobResponse:
+    """Queue several XML/PDF files for Plus/Team. Does not run KoSIT in this request."""
+    context: OrgContext = require_batch_plan(org_context)
+    if db is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=AUTH_UNAVAILABLE,
+        )
+    return await enqueue_batch(db, context, files)
+
+
+@router.get("/batch/{job_id}", response_model=BatchJobResponse)
+def get_invoice_batch(
+    job_id: UUID,
+    org_context: Optional[OrgContext] = Depends(get_optional_org_context),
+    db: Optional[Session] = Depends(get_optional_db),
+) -> BatchJobResponse:
+    """Return batch progress and summary rows for the caller's organization."""
+    context: OrgContext = require_batch_plan(org_context)
+    if db is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=AUTH_UNAVAILABLE,
+        )
+    return get_batch(db, context, job_id)

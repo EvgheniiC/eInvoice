@@ -135,9 +135,22 @@ if [[ "${DO_BACKEND}" -eq 1 ]]; then
     echo "    skip alembic (DATABASE_URL not set in backend/.env)"
   fi
 
+  echo "==> install systemd units"
+  install -d -m 700 -o "${WEB_USER}" -g "${WEB_GROUP}" /var/lib/einvoice/batch-tmp
+  if [[ -d /etc/systemd/system ]]; then
+    cp "${APP_ROOT}/deploy/einvoice-api.service" /etc/systemd/system/einvoice-api.service
+    cp "${APP_ROOT}/deploy/einvoice-worker.service" /etc/systemd/system/einvoice-worker.service
+    systemctl daemon-reload
+  fi
+
   echo "==> restart ${API_SERVICE}"
   systemctl restart "${API_SERVICE}"
   systemctl --no-pager --full status "${API_SERVICE}" | sed -n '1,12p'
+
+  echo "==> restart einvoice-worker"
+  systemctl enable einvoice-worker
+  systemctl restart einvoice-worker
+  systemctl --no-pager --full status einvoice-worker | sed -n '1,12p'
 
   echo "==> health check ${HEALTH_URL}"
   if ! wait_for_live; then

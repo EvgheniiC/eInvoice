@@ -30,4 +30,28 @@ describe('FileUpload', (): void => {
     expect(input).toBeDisabled()
     expect(onFileSelected).not.toHaveBeenCalled()
   })
+
+  it('notifies the parent with several files in batch mode', async (): Promise<void> => {
+    const user: UserEvent = userEvent.setup()
+    const onFilesSelected: (files: File[]) => void = vi.fn()
+    render(
+      <FileUpload
+        multiple
+        onFilesSelected={onFilesSelected}
+        title="Mehrere XRechnung-XML oder ZUGFeRD-PDF hier ablegen"
+        hint="oder Dateien auswählen (.xml / .pdf). ZIP folgt in einem nächsten Schritt."
+      />,
+    )
+
+    const input: HTMLInputElement = screen.getByLabelText(
+      /Mehrere XRechnung-XML oder ZUGFeRD-PDF hier ablegen/i,
+    )
+    const first: File = new File(['<Invoice/>'], 'one.xml', { type: 'text/xml' })
+    const second: File = new File(['<Invoice/>'], 'two.xml', { type: 'text/xml' })
+    await user.upload(input, [first, second])
+
+    expect(onFilesSelected).toHaveBeenCalledTimes(1)
+    const received: File[] = vi.mocked(onFilesSelected).mock.calls[0][0]
+    expect(received.map((file: File): string => file.name)).toEqual(['one.xml', 'two.xml'])
+  })
 })

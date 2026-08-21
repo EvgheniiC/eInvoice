@@ -63,6 +63,10 @@ class Settings(BaseSettings):
     auth_session_days: int = 14
     auth_token_hours: int = 24
     admin_api_token: Optional[str] = None
+    # Shared with einvoice-worker. Must not rely on /tmp (systemd PrivateTmp).
+    batch_temp_dir: Optional[str] = None
+    batch_poll_seconds: float = 1.0
+    batch_item_stale_seconds: int = 180
     public_app_url: str = "http://localhost:5173"
     email_backend: str = "log"
     smtp_host: Optional[str] = None
@@ -102,6 +106,14 @@ class Settings(BaseSettings):
         if not jar or not scenarios:
             return False
         return Path(jar).is_file() and Path(scenarios).is_file()
+
+    @property
+    def resolved_batch_temp_dir(self) -> Path:
+        """Directory shared by API and worker for short-lived batch originals."""
+        configured: str = (self.batch_temp_dir or "").strip()
+        if configured:
+            return Path(configured)
+        return Path(__file__).resolve().parents[2] / "var" / "batch-tmp"
 
     @property
     def auth_enabled(self) -> bool:

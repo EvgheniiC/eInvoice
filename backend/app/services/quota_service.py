@@ -133,6 +133,36 @@ def enforce_export(
         raise quota_http_exception(exc) from exc
 
 
+def consume_parse_count(
+    db: Session,
+    org_context: OrgContext,
+    count: int,
+) -> None:
+    """Consume `count` daily parse slots for an organization (batch enqueue)."""
+    if count <= 0:
+        return
+    limits: PlanLimits = limits_for_context(org_context)
+    try:
+        _consume(
+            db,
+            SUBJECT_ORG,
+            str(org_context.organization_id),
+            ACTION_PARSE,
+            limits,
+            amount=count,
+        )
+    except QuotaExceededError as exc:
+        raise quota_http_exception(exc) from exc
+
+
+def refund_parse_count(db: Session, org_context: OrgContext, count: int) -> None:
+    """Undo a failed batch enqueue that already consumed parse slots."""
+    if count <= 0:
+        return
+    today: date = usage_date_today()
+    _db_add(db, SUBJECT_ORG, str(org_context.organization_id), ACTION_PARSE, today, -count)
+
+
 def quota_http_exception(exc: QuotaExceededError) -> HTTPException:
     return HTTPException(
         status_code=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -196,6 +226,7 @@ def _plan_info(limits: PlanLimits, *, used_parse: int, used_export: int) -> Plan
         max_parallel=limits.max_parallel,
         allows_batch=limits.allows_batch,
         allows_history=limits.allows_history,
+        max_batch_files=limits.max_batch_files,
         quotas_enforced=True,
         parse_used_today=used_parse,
         export_used_today=used_export,
@@ -208,21 +239,24 @@ def _consume(
     subject_key: str,
     action: str,
     limits: PlanLimits,
+    amount: int = 1,
 ) -> None:
+    if amount <= 0:
+        return
     limit: int = limits.parse_per_day if action == ACTION_PARSE else limits.export_per_day
     if limit <= 0:
         return
     today: date = usage_date_today()
     if db is not None:
-        count: int = _db_increment(db, subject_type, subject_key, action, today)
+        count: int = _db_add(db, subject_type, subject_key, action, today, amount)
     else:
-        count = _memory_increment(subject_type, subject_key, action, today)
+        count = _memory_add(subject_type, subject_key, action, today, amount)
     if count <= limit:
         return
     if db is not None:
-        _db_decrement(db, subject_type, subject_key, action, today)
+        _db_add(db, subject_type, subject_key, action, today, -amount)
     else:
-        _memory_decrement(subject_type, subject_key, action, today)
+        _memory_add(subject_type, subject_key, action, today, -amount)
     noun: str = "Prüfungen" if action == ACTION_PARSE else "Exporte"
     detail: str = (
         f"Tageslimit für {noun} erreicht ({limit} pro Tag)." + upgrade_cta(limits.code)
@@ -279,23 +313,22 @@ def _guest_subject_key(request: Request) -> str:
     return hashlib.sha256(material.encode("utf-8")).hexdigest()[:32]
 
 
-def _memory_increment(subject_type: str, subject_key: str, action: str, today: date) -> int:
+def _memory_add(
+    subject_type: str,
+    subject_key: str,
+    action: str,
+    today: date,
+    amount: int,
+) -> int:
     key: tuple[str, str, date, str] = (subject_type, subject_key, today, action)
     with _memory_lock:
         _purge_memory(today)
-        next_count: int = _memory_counts.get(key, 0) + 1
+        next_count: int = max(0, _memory_counts.get(key, 0) + amount)
+        if next_count <= 0:
+            _memory_counts.pop(key, None)
+            return 0
         _memory_counts[key] = next_count
         return next_count
-
-
-def _memory_decrement(subject_type: str, subject_key: str, action: str, today: date) -> None:
-    key: tuple[str, str, date, str] = (subject_type, subject_key, today, action)
-    with _memory_lock:
-        current: int = _memory_counts.get(key, 0) - 1
-        if current <= 0:
-            _memory_counts.pop(key, None)
-        else:
-            _memory_counts[key] = current
 
 
 def _purge_memory(today: date) -> None:
@@ -306,12 +339,13 @@ def _purge_memory(today: date) -> None:
         _memory_counts.pop(key, None)
 
 
-def _db_increment(
+def _db_add(
     session: Session,
     subject_type: str,
     subject_key: str,
     action: str,
     today: date,
+    amount: int,
 ) -> int:
     session.execute(
         delete(UsageCounter).where(
@@ -322,39 +356,26 @@ def _db_increment(
     )
     row: Optional[UsageCounter] = _load_counter(session, subject_type, subject_key, action, today)
     if row is None:
+        initial: int = max(0, amount)
         row = UsageCounter(
             subject_type=subject_type,
             subject_key=subject_key,
             usage_date=today,
             action=action,
-            count=1,
+            count=initial,
         )
         session.add(row)
         try:
             session.commit()
-            return 1
+            return initial
         except IntegrityError:
             session.rollback()
             row = _load_counter(session, subject_type, subject_key, action, today)
             if row is None:
-                return 1
-    row.count += 1
+                return initial
+    row.count = max(0, row.count + amount)
     session.commit()
     return row.count
-
-
-def _db_decrement(
-    session: Session,
-    subject_type: str,
-    subject_key: str,
-    action: str,
-    today: date,
-) -> None:
-    row: Optional[UsageCounter] = _load_counter(session, subject_type, subject_key, action, today)
-    if row is None:
-        return
-    row.count = max(0, row.count - 1)
-    session.commit()
 
 
 def _load_counter(

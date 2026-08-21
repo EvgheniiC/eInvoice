@@ -6,7 +6,7 @@ import uuid
 from datetime import date, datetime
 from typing import Optional
 
-from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, String, UniqueConstraint
+from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, JSON, String, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from app.core.clock import utc_now
@@ -64,6 +64,10 @@ class Organization(Base):
 
     plan: Mapped[Plan] = relationship(back_populates="organizations")
     memberships: Mapped[list["Membership"]] = relationship(back_populates="organization")
+    batch_jobs: Mapped[list["BatchJob"]] = relationship(
+        back_populates="organization",
+        cascade="all, delete-orphan",
+    )
 
 
 class Membership(Base):
@@ -131,3 +135,58 @@ class UsageCounter(Base):
     usage_date: Mapped[date] = mapped_column(Date, index=True)
     action: Mapped[str] = mapped_column(String(16))
     count: Mapped[int] = mapped_column(Integer, default=0)
+
+
+class BatchJob(Base):
+    """Queued Plus/Team upload. Original files live only in short-lived temp paths."""
+
+    __tablename__: str = "batch_jobs"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    organization_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("organizations.id", ondelete="CASCADE"),
+        index=True,
+    )
+    created_by_user_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    status: Mapped[str] = mapped_column(String(16), index=True, default="queued")
+    item_count: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    organization: Mapped["Organization"] = relationship(back_populates="batch_jobs")
+    items: Mapped[list["BatchItem"]] = relationship(
+        back_populates="job",
+        cascade="all, delete-orphan",
+        order_by="BatchItem.position",
+    )
+
+
+class BatchItem(Base):
+    """One file in a batch. Stores parse metadata/result, never the original bytes."""
+
+    __tablename__: str = "batch_items"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    job_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("batch_jobs.id", ondelete="CASCADE"),
+        index=True,
+    )
+    position: Mapped[int] = mapped_column(Integer, default=0)
+    filename: Mapped[str] = mapped_column(String(255))
+    storage_path: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
+    status: Mapped[str] = mapped_column(String(16), index=True, default="queued")
+    invoice_number: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+    seller_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    gross_amount: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
+    currency: Mapped[Optional[str]] = mapped_column(String(8), nullable=True)
+    message: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    result_json: Mapped[Optional[dict[str, object]]] = mapped_column(JSON, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    claimed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    finished_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    job: Mapped["BatchJob"] = relationship(back_populates="items")

@@ -2,7 +2,9 @@ import type {
   InvoiceParseResponse,
   InvoiceTotals,
   LineItem,
+  MeResponse,
   PartyInfo,
+  PlanInfo,
   ValidationIssue,
   ValidationMeta,
 } from '../types/invoice'
@@ -83,6 +85,39 @@ export function buildInvoice(
     line_items: overrides.line_items ?? [...DEFAULT_LINE_ITEMS],
     validation_issues: overrides.validation_issues ?? [],
     next_steps: overrides.next_steps ?? [...DEFAULT_NEXT_STEPS],
+  }
+}
+
+const DEFAULT_PLAN: PlanInfo = {
+  code: 'free',
+  name: 'Free',
+  parse_per_day: 10,
+  export_per_day: 10,
+  max_upload_size_mb: 10,
+  max_parallel: 1,
+  allows_batch: false,
+  allows_history: false,
+  max_batch_files: 0,
+  quotas_enforced: true,
+  parse_used_today: 0,
+  export_used_today: 0,
+}
+
+export function buildSession(overrides: Partial<MeResponse> = {}): MeResponse {
+  const plan: PlanInfo = {
+    ...DEFAULT_PLAN,
+    ...(overrides.plan ?? {}),
+  }
+  return {
+    user_id: '00000000-0000-0000-0000-000000000001',
+    email: 'meister@example.com',
+    email_verified: true,
+    organization_id: '00000000-0000-0000-0000-000000000002',
+    organization_name: 'Muster Handwerk',
+    role: 'inhaber',
+    memberships: [],
+    ...overrides,
+    plan,
   }
 }
 

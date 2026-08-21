@@ -37,6 +37,10 @@ export type PlanInfo = Schemas['PlanInfo']
 export type RegisterResponse = Schemas['RegisterResponse']
 export type MessageResponse = Schemas['MessageResponse']
 export type OrgResponse = Schemas['OrgResponse']
+export type BatchJobStatus = Schemas['BatchJobStatus']
+export type BatchItemStatus = Schemas['BatchItemStatus']
+export type BatchItemResponse = Schemas['BatchItemResponse']
+export type BatchJobResponse = Schemas['BatchJobResponse']
 
 /** UI helper: FastAPI serializes decimals as strings; Number() also accepts number. */
 export type DecimalValue = string | number

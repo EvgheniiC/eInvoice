@@ -19,6 +19,7 @@ class PlanLimits:
     max_parallel: int
     allows_batch: bool
     allows_history: bool
+    max_batch_files: int
 
 
 PLAN_CATALOG: dict[str, PlanLimits] = {
@@ -31,6 +32,7 @@ PLAN_CATALOG: dict[str, PlanLimits] = {
         max_parallel=1,
         allows_batch=False,
         allows_history=False,
+        max_batch_files=0,
     ),
     "plus": PlanLimits(
         code="plus",
@@ -41,6 +43,7 @@ PLAN_CATALOG: dict[str, PlanLimits] = {
         max_parallel=2,
         allows_batch=True,
         allows_history=True,
+        max_batch_files=20,
     ),
     "team": PlanLimits(
         code="team",
@@ -51,6 +54,7 @@ PLAN_CATALOG: dict[str, PlanLimits] = {
         max_parallel=4,
         allows_batch=True,
         allows_history=True,
+        max_batch_files=50,
     ),
 }
 
@@ -71,6 +75,7 @@ def guest_limits() -> PlanLimits:
         max_parallel=settings.guest_max_parallel,
         allows_batch=False,
         allows_history=False,
+        max_batch_files=0,
     )
 
 
@@ -98,6 +103,7 @@ def merge_plan_row(
         max_parallel=max_parallel if max_parallel is not None else catalog.max_parallel,
         allows_batch=allows_batch,
         allows_history=allows_history,
+        max_batch_files=catalog.max_batch_files,
     )
 
 

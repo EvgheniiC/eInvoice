@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type JSX, type RefObject } from 'react'
-import { checkHealth, fetchCapabilities, parseInvoice, recordFunnel } from '../api/client'
+import { checkHealth, createInvoiceBatch, fetchBatchJob, fetchCapabilities, parseInvoice, recordFunnel } from '../api/client'
+import { BatchSummary } from '../components/BatchSummary'
 import { FileUpload } from '../components/FileUpload'
 import { InvoiceView } from '../components/InvoiceView'
 import { PageNav } from '../components/PageNav'
@@ -8,6 +9,8 @@ import { SiteFooter } from '../components/SiteFooter'
 import { DEFAULT_CAPABILITIES, formatLimitsLine } from '../content/capabilities'
 import type { AppRoute } from '../routing'
 import type {
+  BatchItemResponse,
+  BatchJobResponse,
   CapabilitiesResponse,
   HealthResponse,
   InvoiceParseResponse,
@@ -36,6 +39,8 @@ export function UploadPage({
   const [selectedFilename, setSelectedFilename] = useState<string | null>(null)
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [result, setResult] = useState<InvoiceParseResponse | null>(null)
+  const [batchJob, setBatchJob] = useState<BatchJobResponse | null>(null)
+  const [selectedBatchItemId, setSelectedBatchItemId] = useState<string | null>(null)
   const [showPdf, setShowPdf] = useState<boolean>(true)
   const [announcement, setAnnouncement] = useState<string>('')
   const [capabilities, setCapabilities] = useState<CapabilitiesResponse>(DEFAULT_CAPABILITIES)
@@ -68,6 +73,29 @@ export function UploadPage({
     feedbackRef.current?.focus()
   }, [loading, error, result])
 
+  useEffect(() => {
+    if (batchJob === null || batchJob.status === 'completed') {
+      return
+    }
+    const jobId: string = batchJob.id
+    let cancelled: boolean = false
+    const timer: number = window.setInterval((): void => {
+      void fetchBatchJob(jobId)
+        .then((next: BatchJobResponse) => {
+          if (!cancelled) {
+            setBatchJob(next)
+          }
+        })
+        .catch(() => {
+          return
+        })
+    }, 2000)
+    return (): void => {
+      cancelled = true
+      window.clearInterval(timer)
+    }
+  }, [batchJob?.id, batchJob?.status])
+
   async function handleFile(file: File): Promise<void> {
     if (inFlightRef.current) {
       return
@@ -76,6 +104,8 @@ export function UploadPage({
     setLoading(true)
     setError(null)
     setResult(null)
+    setBatchJob(null)
+    setSelectedBatchItemId(null)
     setUploadedFile(file)
     setSelectedFilename(file.name)
     setShowPdf(true)
@@ -103,6 +133,68 @@ export function UploadPage({
     }
   }
 
+  async function handleFiles(files: File[]): Promise<void> {
+    if (files.length === 1) {
+      await handleFile(files[0])
+      return
+    }
+    await handleBatch(files)
+  }
+
+  async function handleBatch(files: File[]): Promise<void> {
+    if (inFlightRef.current) {
+      return
+    }
+    const zipFile: File | undefined = files.find((file: File): boolean =>
+      file.name.toLowerCase().endsWith('.zip'),
+    )
+    if (zipFile !== undefined) {
+      const zipMessage: string =
+        'ZIP-Upload folgt in einem nächsten Schritt. Bitte einzelne XML- oder PDF-Dateien wählen.'
+      setError(zipMessage)
+      setAnnouncement(zipMessage)
+      return
+    }
+    inFlightRef.current = true
+    setLoading(true)
+    setError(null)
+    setResult(null)
+    setUploadedFile(null)
+    setSelectedFilename(`${String(files.length)} Dateien`)
+    setSelectedBatchItemId(null)
+    setAnnouncement(`${String(files.length)} Dateien werden in die Prüfungswarteschlange gelegt.`)
+    try {
+      const created: BatchJobResponse = await createInvoiceBatch(files)
+      setBatchJob(created)
+      setAnnouncement(`${String(created.item_count)} Dateien in der Warteschlange.`)
+    } catch (err: unknown) {
+      const message: string =
+        err instanceof TypeError
+          ? NETWORK_ERROR_MESSAGE
+          : err instanceof Error
+            ? err.message
+            : 'Die Dateien konnten nicht verarbeitet werden. Bitte versuchen Sie es erneut.'
+      setError(message)
+      setAnnouncement(message)
+    } finally {
+      inFlightRef.current = false
+      setLoading(false)
+    }
+  }
+
+  function handleBatchRow(item: BatchItemResponse): void {
+    if (!item.invoice) {
+      return
+    }
+    setSelectedBatchItemId(item.id)
+    setResult(item.invoice)
+    setUploadedFile(null)
+    setShowPdf(false)
+    setAnnouncement(`Rechnung ${item.filename} geöffnet.`)
+  }
+
+  const allowsBatch: boolean = Boolean(session?.plan.allows_batch)
+
   const canShowPdfSideBySide: boolean =
     result !== null &&
     result.status !== 'error' &&
@@ -110,7 +202,7 @@ export function UploadPage({
     uploadedFile !== null
 
   const pageClassName: string =
-    canShowPdfSideBySide && showPdf ? 'page page--split' : 'page'
+    canShowPdfSideBySide && showPdf ? 'page page--split' : batchJob !== null ? 'page page--batch' : 'page'
 
   return (
     <main id="main-content" className={pageClassName} tabIndex={-1} aria-busy={loading}>
@@ -129,7 +221,9 @@ export function UploadPage({
           XRechnung-XML oder ZUGFeRD-PDF hochladen — lesbare Ansicht der Rechnungsdaten.
         </p>
         <p id="upload-limits" className="page__limits">
-          {formatLimitsLine(capabilities)}
+          {allowsBatch
+            ? `Plus: bis zu ${String(session?.plan.max_batch_files ?? 20)} Dateien · ${formatLimitsLine(capabilities)}`
+            : formatLimitsLine(capabilities)}
         </p>
       </header>
 
@@ -144,7 +238,23 @@ export function UploadPage({
         </section>
       ) : null}
 
-      <FileUpload onFileSelected={handleFile} disabled={loading} describedBy="upload-limits" />
+      <FileUpload
+        onFileSelected={allowsBatch ? undefined : handleFile}
+        onFilesSelected={allowsBatch ? handleFiles : undefined}
+        multiple={allowsBatch}
+        disabled={loading}
+        describedBy="upload-limits"
+        title={
+          allowsBatch
+            ? 'Mehrere XRechnung-XML oder ZUGFeRD-PDF hier ablegen'
+            : 'XRechnung XML oder ZUGFeRD PDF hier ablegen'
+        }
+        hint={
+          allowsBatch
+            ? 'oder Dateien auswählen (.xml / .pdf). ZIP folgt in einem nächsten Schritt.'
+            : 'oder Datei auswählen (.xml / .pdf)'
+        }
+      />
 
       {loading && (
         <div className="progress" role="status" aria-live="polite" aria-busy="true">
@@ -168,6 +278,14 @@ export function UploadPage({
             Problem bestehen, versuchen Sie es später erneut.
           </p>
         </section>
+      )}
+
+      {batchJob && (
+        <BatchSummary
+          job={batchJob}
+          selectedItemId={selectedBatchItemId}
+          onSelectItem={handleBatchRow}
+        />
       )}
 
       {canShowPdfSideBySide && (

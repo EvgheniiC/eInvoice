@@ -38,6 +38,7 @@ describe('LoginPage', (): void => {
         max_parallel: 1,
         allows_batch: false,
         allows_history: false,
+        max_batch_files: 0,
         quotas_enforced: true,
         parse_used_today: 0,
         export_used_today: 0,

@@ -1,20 +1,30 @@
 import { useState, type ChangeEvent, type DragEvent, type JSX } from 'react'
 
 interface FileUploadProps {
-  onFileSelected: (file: File) => void
+  onFileSelected?: (file: File) => void
+  onFilesSelected?: (files: File[]) => void
+  multiple?: boolean
   disabled?: boolean
   describedBy?: string
+  title?: string
+  hint?: string
 }
 
 const ACCEPTED: string = '.xml,.pdf,application/xml,text/xml,application/pdf'
 const INPUT_ID: string = 'invoice-file-input'
 const TITLE_ID: string = 'invoice-file-title'
 const HINT_ID: string = 'invoice-file-hint'
+const DEFAULT_TITLE: string = 'XRechnung XML oder ZUGFeRD PDF hier ablegen'
+const DEFAULT_HINT: string = 'oder Datei auswählen (.xml / .pdf)'
 
 export function FileUpload({
   onFileSelected,
+  onFilesSelected,
+  multiple = false,
   disabled = false,
   describedBy,
+  title = DEFAULT_TITLE,
+  hint = DEFAULT_HINT,
 }: FileUploadProps): JSX.Element {
   const [isDragging, setIsDragging] = useState<boolean>(false)
 
@@ -22,7 +32,14 @@ export function FileUpload({
     if (disabled || !files || files.length === 0) {
       return
     }
-    onFileSelected(files[0])
+    const list: File[] = Array.from(files)
+    if (multiple && onFilesSelected) {
+      onFilesSelected(list)
+      return
+    }
+    if (onFileSelected) {
+      onFileSelected(list[0])
+    }
   }
 
   function onDrop(event: DragEvent<HTMLLabelElement>): void {
@@ -59,16 +76,17 @@ export function FileUpload({
       onDrop={onDrop}
     >
       <span id={TITLE_ID} className="upload-zone__title">
-        XRechnung XML oder ZUGFeRD PDF hier ablegen
+        {title}
       </span>
       <span id={HINT_ID} className="upload-zone__hint">
-        oder Datei auswählen (.xml / .pdf)
+        {hint}
       </span>
       <input
         id={INPUT_ID}
         className="visually-hidden"
         type="file"
         accept={ACCEPTED}
+        multiple={multiple}
         disabled={disabled}
         aria-labelledby={TITLE_ID}
         aria-describedby={describedByIds}

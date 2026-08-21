@@ -1,5 +1,6 @@
 import type {
   AccountantPackageRequest,
+  BatchJobResponse,
   CapabilitiesResponse,
   ExportFormat,
   ExportRequest,
@@ -57,6 +58,35 @@ export async function parseInvoice(file: File): Promise<InvoiceParseResponse> {
   }
 
   return response.json() as Promise<InvoiceParseResponse>
+}
+
+export async function createInvoiceBatch(files: File[]): Promise<BatchJobResponse> {
+  const formData: FormData = new FormData()
+  for (const file of files) {
+    formData.append('files', file)
+  }
+  const response: Response = await fetch(
+    `${API_BASE}/invoices/batch`,
+    withRequestId({
+      method: 'POST',
+      body: formData,
+    }),
+  )
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response, 'Batch-Upload fehlgeschlagen.'))
+  }
+  return response.json() as Promise<BatchJobResponse>
+}
+
+export async function fetchBatchJob(jobId: string): Promise<BatchJobResponse> {
+  const response: Response = await fetch(
+    `${API_BASE}/invoices/batch/${jobId}`,
+    withRequestId({ method: 'GET' }),
+  )
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response, 'Batch-Status nicht verfügbar.'))
+  }
+  return response.json() as Promise<BatchJobResponse>
 }
 
 export async function exportInvoice(

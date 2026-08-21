@@ -75,6 +75,13 @@ journalctl -u einvoice-api -n 80 --no-pager | grep auth_email
 - Quotas are enforced: daily parse/export, plan upload size, parse parallelism
 - Guest parse without a session still works (no archive); it counts against the guest IP quota
 - Authenticated parse/export counts against the organization
+- Plus/Team batch: `POST /api/invoices/batch` queues files; `GET /api/invoices/batch/{id}`
+  returns progress. Guest and Free receive HTTP 403 with a Plus hint.
+  `POST /api/invoices/parse` stays one file and is unchanged.
+- Worker: `python -m app.worker` (systemd `einvoice-worker`). Reads short-lived
+  originals from `BATCH_TEMP_DIR` (not `/tmp` — systemd `PrivateTmp`), calls
+  `InvoiceService.parse_upload`, stores metadata/result JSON, deletes the file.
+  Each file counts as one daily parse. ZIP upload is not in this slice.
 
 ## Quotas (Stage 2)
 
@@ -86,11 +93,14 @@ Guest Empfang stays one file per request without login. Limits are enforced:
 | Export / day | 10 | 10 | 100 | 500 |
 | Max file | 10 MB | 10 MB | 25 MB | 50 MB |
 | Parallel parse | 1 | 1 | 2 | 4 |
+| Batch files / job | — | — | 20 | 50 |
 | Requests / minute | `RATE_LIMIT_PER_MINUTE` (30) | `ACCOUNT_RATE_LIMIT_PER_MINUTE` (60) | 60 | 60 |
 
 Exhausted daily quota returns HTTP 429 with a German message and a Plus/Team hint.
 Validation report download does not count as an export. Invoice files are still not stored.
 Plan catalog numbers are reapplied on API start (`seed_plans`). After pull: `alembic upgrade head`.
+Production also needs `einvoice-worker` and `BATCH_TEMP_DIR=/var/lib/einvoice/batch-tmp`
+(shared by API and worker; `PrivateTmp` must not isolate this directory).
 
 ## Pilot Plus
 

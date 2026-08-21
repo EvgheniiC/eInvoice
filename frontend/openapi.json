@@ -712,6 +712,92 @@
         }
       }
     },
+    "/api/invoices/batch": {
+      "post": {
+        "tags": [
+          "invoices"
+        ],
+        "summary": "Create Invoice Batch",
+        "description": "Queue several XML/PDF files for Plus/Team. Does not run KoSIT in this request.",
+        "operationId": "create_invoice_batch_api_invoices_batch_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_create_invoice_batch_api_invoices_batch_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchJobResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/invoices/batch/{job_id}": {
+      "get": {
+        "tags": [
+          "invoices"
+        ],
+        "summary": "Get Invoice Batch",
+        "description": "Return batch progress and summary rows for the caller's organization.",
+        "operationId": "get_invoice_batch_api_invoices_batch__job_id__get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchJobResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/invoices/export/mapping": {
       "get": {
         "tags": [
@@ -921,6 +1007,179 @@
         ],
         "title": "AccountantPackageRequest",
         "description": "ZIP package for Steuerberater: original + summary + report + Excel + DATEV."
+      },
+      "BatchItemResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "status": {
+            "$ref": "#/components/schemas/BatchItemStatus"
+          },
+          "invoice_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invoice Number"
+          },
+          "seller_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seller Name"
+          },
+          "gross_amount": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gross Amount"
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "invoice": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InvoiceParseResponse-Output"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "filename",
+          "status",
+          "invoice_number",
+          "seller_name",
+          "gross_amount",
+          "currency",
+          "message",
+          "invoice"
+        ],
+        "title": "BatchItemResponse"
+      },
+      "BatchItemStatus": {
+        "type": "string",
+        "enum": [
+          "queued",
+          "processing",
+          "gueltig",
+          "pruefen",
+          "ablehnen"
+        ],
+        "title": "BatchItemStatus"
+      },
+      "BatchJobResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/BatchJobStatus"
+          },
+          "item_count": {
+            "type": "integer",
+            "title": "Item Count"
+          },
+          "done_count": {
+            "type": "integer",
+            "title": "Done Count"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BatchItemResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "export_package_available": {
+            "type": "boolean",
+            "title": "Export Package Available",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "item_count",
+          "done_count",
+          "items",
+          "export_package_available"
+        ],
+        "title": "BatchJobResponse"
+      },
+      "BatchJobStatus": {
+        "type": "string",
+        "enum": [
+          "queued",
+          "processing",
+          "completed"
+        ],
+        "title": "BatchJobStatus"
+      },
+      "Body_create_invoice_batch_api_invoices_batch_post": {
+        "properties": {
+          "files": {
+            "items": {
+              "type": "string",
+              "contentMediaType": "application/octet-stream"
+            },
+            "type": "array",
+            "title": "Files"
+          }
+        },
+        "type": "object",
+        "required": [
+          "files"
+        ],
+        "title": "Body_create_invoice_batch_api_invoices_batch_post"
       },
       "Body_parse_invoice_api_invoices_parse_post": {
         "properties": {
@@ -2552,6 +2811,11 @@
             "type": "boolean",
             "title": "Allows History"
           },
+          "max_batch_files": {
+            "type": "integer",
+            "title": "Max Batch Files",
+            "default": 0
+          },
           "quotas_enforced": {
             "type": "boolean",
             "title": "Quotas Enforced",
@@ -2578,6 +2842,7 @@
           "max_parallel",
           "allows_batch",
           "allows_history",
+          "max_batch_files",
           "quotas_enforced",
           "parse_used_today",
           "export_used_today"
