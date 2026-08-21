@@ -113,6 +113,35 @@ class TestAuthFlow(unittest.TestCase):
         )
         self.assertEqual(login.status_code, 200)
 
+    def test_register_again_resends_when_unverified(self) -> None:
+        payload: dict[str, str] = {
+            "email": "retry@example.com",
+            "password": "sicher-passwort-1",
+            "organization_name": "Retry GmbH",
+        }
+        first = self.client.post("/api/auth/register", json=payload)
+        second = self.client.post("/api/auth/register", json=payload)
+        self.assertEqual(first.status_code, 200)
+        self.assertEqual(second.status_code, 200)
+        first_token: str | None = first.json().get("verification_token")
+        second_token: str | None = second.json().get("verification_token")
+        self.assertTrue(first_token)
+        self.assertTrue(second_token)
+        self.assertNotEqual(first_token, second_token)
+
+    def test_register_smtp_misconfigured_returns_503(self) -> None:
+        with patch.object(settings, "email_backend", "smtp"), patch.object(
+            settings, "smtp_host", None
+        ), patch.object(settings, "smtp_from", None), patch.object(
+            settings, "smtp_username", None
+        ):
+            response = self.client.post(
+                "/api/auth/register",
+                json={"email": "smtp-fail@example.com", "password": "sicher-passwort-1"},
+            )
+        self.assertEqual(response.status_code, 503)
+        self.assertIn("E-Mail", response.json()["detail"])
+
     def test_register_without_organization_uses_default_name(self) -> None:
         register = self.client.post(
             "/api/auth/register",

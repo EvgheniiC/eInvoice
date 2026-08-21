@@ -6,7 +6,7 @@ import { LandingPage } from './pages/LandingPage'
 import { LegalPage } from './pages/LegalPage'
 import { LoginPage } from './pages/LoginPage'
 import { OrgSettingsPage } from './pages/OrgSettingsPage'
-import { RegisterPage } from './pages/RegisterPage'
+import { RegisterPage, type RegisterSuccess } from './pages/RegisterPage'
 import { UploadPage } from './pages/UploadPage'
 import { VerifyPage } from './pages/VerifyPage'
 import { pathToRoute, routeToPath, type AppRoute } from './routing'
@@ -16,6 +16,9 @@ import './App.css'
 function App(): JSX.Element {
   const [route, setRoute] = useState<AppRoute>(() => pathToRoute(window.location.pathname))
   const [session, setSession] = useState<MeResponse | null>(null)
+  const [loginNotice, setLoginNotice] = useState<string | null>(null)
+  const [loginEmail, setLoginEmail] = useState<string>('')
+  const [loginVerifyToken, setLoginVerifyToken] = useState<string | null>(null)
   const isFirstRoute: RefObject<boolean> = useRef<boolean>(true)
 
   useEffect(() => {
@@ -43,13 +46,27 @@ function App(): JSX.Element {
     heading?.focus()
   }, [route])
 
-  function navigate(next: AppRoute): void {
-    const path: string = routeToPath(next)
-    if (window.location.pathname !== path) {
+  function navigate(next: AppRoute, query: string = ''): void {
+    const path: string = `${routeToPath(next)}${query}`
+    const current: string = `${window.location.pathname}${window.location.search}`
+    if (current !== path) {
       window.history.pushState(null, '', path)
     }
     window.scrollTo(0, 0)
     setRoute(next)
+  }
+
+  function handleRegistered(result: RegisterSuccess): void {
+    setLoginNotice(result.message)
+    setLoginEmail(result.email)
+    setLoginVerifyToken(result.verificationToken)
+    navigate('login')
+  }
+
+  function handleLoggedIn(value: MeResponse): void {
+    setLoginNotice(null)
+    setLoginVerifyToken(null)
+    setSession(value)
   }
 
   async function handleLogout(): Promise<void> {
@@ -92,15 +109,19 @@ function App(): JSX.Element {
       ) : route === 'login' ? (
         <LoginPage
           onNavigate={navigate}
-          onLoggedIn={setSession}
+          onLoggedIn={handleLoggedIn}
           session={session}
           onLogout={() => {
             void handleLogout()
           }}
+          notice={loginNotice}
+          initialEmail={loginEmail}
+          verificationToken={loginVerifyToken}
         />
       ) : route === 'register' ? (
         <RegisterPage
           onNavigate={navigate}
+          onRegistered={handleRegistered}
           session={session}
           onLogout={() => {
             void handleLogout()
@@ -109,7 +130,7 @@ function App(): JSX.Element {
       ) : route === 'verify' ? (
         <VerifyPage
           onNavigate={navigate}
-          onLoggedIn={setSession}
+          onLoggedIn={handleLoggedIn}
           session={session}
           onLogout={() => {
             void handleLogout()

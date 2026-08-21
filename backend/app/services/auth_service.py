@@ -16,6 +16,7 @@ from app.core.config import settings
 from app.core.error_events import log_event
 from app.core.passwords import hash_password, hash_token, new_token, normalize_email, verify_password
 from app.db.models import AuthSession, EmailToken, Membership, Organization, Plan, User
+from app.services.email_service import send_auth_email
 
 ROLE_INHABER: str = "inhaber"
 ROLE_BUERO: str = "buero"
@@ -68,6 +69,11 @@ def register_user(
     existing: Optional[User] = session.scalar(select(User).where(User.email == normalized))
     if existing is not None:
         log_event(logging.INFO, "register_email_exists", fields={"domain": _email_domain(normalized)})
+        if existing.email_verified_at is None:
+            token: str = _issue_email_token(session, user_id=existing.id, purpose=PURPOSE_VERIFY)
+            session.commit()
+            send_auth_email(to_email=normalized, purpose=PURPOSE_VERIFY, token=token)
+            return existing, token if not settings.is_production else None
         return existing, None
 
     free: Plan = _require_plan(session, "free")
@@ -92,7 +98,7 @@ def register_user(
     )
     token: str = _issue_email_token(session, user_id=user.id, purpose=PURPOSE_VERIFY)
     session.commit()
-    _send_auth_email(to_email=normalized, purpose=PURPOSE_VERIFY, token=token)
+    send_auth_email(to_email=normalized, purpose=PURPOSE_VERIFY, token=token)
     log_event(logging.INFO, "user_registered", fields={"user_id": str(user.id)})
     return user, token if not settings.is_production else None
 
@@ -115,7 +121,7 @@ def request_magic_link(session: Session, *, email: str) -> Optional[str]:
         return None
     token: str = _issue_email_token(session, user_id=user.id, purpose=PURPOSE_MAGIC)
     session.commit()
-    _send_auth_email(to_email=normalized, purpose=PURPOSE_MAGIC, token=token)
+    send_auth_email(to_email=normalized, purpose=PURPOSE_MAGIC, token=token)
     return token if not settings.is_production else None
 
 
@@ -257,7 +263,7 @@ def resend_verification(session: Session, *, email: str) -> Optional[str]:
         return None
     token: str = _issue_email_token(session, user_id=user.id, purpose=PURPOSE_VERIFY)
     session.commit()
-    _send_auth_email(to_email=normalized, purpose=PURPOSE_VERIFY, token=token)
+    send_auth_email(to_email=normalized, purpose=PURPOSE_VERIFY, token=token)
     return token if not settings.is_production else None
 
 
@@ -319,16 +325,6 @@ def _issue_email_token(session: Session, *, user_id: UUID, purpose: str) -> str:
         )
     )
     return raw
-
-
-def _send_auth_email(*, to_email: str, purpose: str, token: str) -> None:
-    log_event(
-        logging.INFO,
-        "auth_email_queued",
-        fields={"purpose": purpose, "domain": _email_domain(to_email)},
-    )
-    if settings.email_backend == "log" and not settings.is_production:
-        log_event(logging.INFO, "auth_email_token_dev", fields={"purpose": purpose, "token": token})
 
 
 def _email_domain(email: str) -> str:

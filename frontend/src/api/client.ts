@@ -288,6 +288,21 @@ export async function requestMagicLink(email: string): Promise<MessageResponse> 
   return response.json() as Promise<MessageResponse>
 }
 
+export async function resendVerification(email: string): Promise<MessageResponse> {
+  const response: Response = await fetch(
+    `${API_BASE}/auth/resend-verification`,
+    withRequestId({
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    }),
+  )
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response, 'Bestätigungs-E-Mail konnte nicht gesendet werden.'))
+  }
+  return response.json() as Promise<MessageResponse>
+}
+
 export async function consumeMagicLink(token: string): Promise<MeResponse> {
   const response: Response = await fetch(
     `${API_BASE}/auth/magic-link/consume`,

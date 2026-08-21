@@ -59,6 +59,14 @@ class Settings(BaseSettings):
     admin_api_token: Optional[str] = None
     public_app_url: str = "http://localhost:5173"
     email_backend: str = "log"
+    smtp_host: Optional[str] = None
+    smtp_port: int = 587
+    smtp_username: Optional[str] = None
+    smtp_password: Optional[str] = None
+    smtp_from: Optional[str] = None
+    smtp_starttls: bool = True
+    smtp_ssl: bool = False
+    smtp_timeout_seconds: int = 20
 
     @property
     def effective_cors_origins(self) -> List[str]:
@@ -98,6 +106,29 @@ class Settings(BaseSettings):
     def uses_postgres(self) -> bool:
         url: str = (self.database_url or "").strip().lower()
         return url.startswith("postgresql") or url.startswith("postgres")
+
+    @property
+    def uses_smtp_email(self) -> bool:
+        return self.email_backend.strip().lower() == "smtp"
+
+    @property
+    def smtp_sender(self) -> str:
+        return (self.smtp_from or self.smtp_username or "").strip()
+
+    @property
+    def smtp_configured(self) -> bool:
+        host: str = (self.smtp_host or "").strip()
+        return bool(host and self.smtp_sender)
+
+    @property
+    def email_ready(self) -> bool:
+        """Log backend is for local/dev only; production accounts need SMTP."""
+        backend: str = self.email_backend.strip().lower()
+        if backend == "log":
+            return not self.is_production
+        if backend == "smtp":
+            return self.smtp_configured
+        return False
 
 
 settings: Settings = Settings()

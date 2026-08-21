@@ -1,24 +1,33 @@
 import { useState, type ChangeEvent, type FormEvent, type JSX } from 'react'
-import { loginAccount, requestMagicLink } from '../api/client'
+import { loginAccount, requestMagicLink, resendVerification } from '../api/client'
 import { PageNav } from '../components/PageNav'
 import { SiteFooter } from '../components/SiteFooter'
 import type { AppRoute } from '../routing'
 import type { MeResponse, MessageResponse } from '../types/invoice'
 
 type LoginPageProps = {
-  onNavigate: (route: AppRoute) => void
+  onNavigate: (route: AppRoute, query?: string) => void
   onLoggedIn: (session: MeResponse) => void
   session: MeResponse | null
   onLogout: () => void
+  notice: string | null
+  initialEmail: string
+  verificationToken: string | null
 }
+
+const VERIFY_HINT: string =
+  'Nach der Bestätigung können Sie sich hier anmelden. Der Link in der E-Mail bestätigt das Konto direkt.'
 
 export function LoginPage({
   onNavigate,
   onLoggedIn,
   session,
   onLogout,
+  notice,
+  initialEmail,
+  verificationToken,
 }: LoginPageProps): JSX.Element {
-  const [email, setEmail] = useState<string>('')
+  const [email, setEmail] = useState<string>(initialEmail)
   const [password, setPassword] = useState<string>('')
   const [sending, setSending] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
@@ -58,6 +67,30 @@ export function LoginPage({
     } finally {
       setSending(false)
     }
+  }
+
+  async function onResendVerification(): Promise<void> {
+    if (sending || email.trim() === '') {
+      setError('Bitte zuerst die E-Mail-Adresse eintragen.')
+      return
+    }
+    setSending(true)
+    setError(null)
+    try {
+      const result: MessageResponse = await resendVerification(email)
+      setMagicInfo(result.message)
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'E-Mail konnte nicht gesendet werden.')
+    } finally {
+      setSending(false)
+    }
+  }
+
+  function onOpenDevVerify(): void {
+    if (!verificationToken) {
+      return
+    }
+    onNavigate('verify', `?token=${encodeURIComponent(verificationToken)}`)
   }
 
   return (
@@ -109,6 +142,33 @@ export function LoginPage({
           </button>
         </div>
       </form>
+      {notice ? (
+        <p className="status status--info" role="status">
+          {notice} {VERIFY_HINT}
+        </p>
+      ) : null}
+      {verificationToken ? (
+        <p>
+          <button type="button" className="site-footer__link" onClick={onOpenDevVerify}>
+            Bestätigungslink öffnen
+          </button>
+        </p>
+      ) : null}
+      {notice || error?.includes('E-Mail-Adresse') ? (
+        <p className="auth-form__switch">
+          Keine E-Mail erhalten?{' '}
+          <button
+            type="button"
+            className="site-footer__link"
+            disabled={sending}
+            onClick={() => {
+              void onResendVerification()
+            }}
+          >
+            Bestätigung erneut senden
+          </button>
+        </p>
+      ) : null}
       {error ? (
         <p className="status status--error" role="alert">
           {error}

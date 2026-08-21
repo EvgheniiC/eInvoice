@@ -10,9 +10,11 @@ import type { MeResponse } from '../types/invoice'
 vi.mock('../api/client', (): {
   loginAccount: ReturnType<typeof vi.fn>
   requestMagicLink: ReturnType<typeof vi.fn>
+  resendVerification: ReturnType<typeof vi.fn>
 } => ({
   loginAccount: vi.fn(),
   requestMagicLink: vi.fn(),
+  resendVerification: vi.fn(),
 }))
 
 describe('LoginPage', (): void => {
@@ -47,6 +49,9 @@ describe('LoginPage', (): void => {
         onLoggedIn={onLoggedIn}
         session={null}
         onLogout={vi.fn()}
+        notice={null}
+        initialEmail=""
+        verificationToken={null}
       />,
     )
 
@@ -57,5 +62,26 @@ describe('LoginPage', (): void => {
     expect(loginAccount).toHaveBeenCalledWith('meister@example.com', 'sicher-passwort-1')
     expect(onLoggedIn).toHaveBeenCalledWith(session)
     expect(onNavigate).toHaveBeenCalledWith('org')
+  })
+
+  it('shows the registration notice and prefills email', (): void => {
+    render(
+      <LoginPage
+        onNavigate={vi.fn()}
+        onLoggedIn={vi.fn()}
+        session={null}
+        onLogout={vi.fn()}
+        notice="Bitte prüfen Sie Ihre E-Mail und bestätigen Sie das Konto."
+        initialEmail="lucky1.lucky@gmx.de"
+        verificationToken="dev-token"
+      />,
+    )
+
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'Bitte prüfen Sie Ihre E-Mail und bestätigen Sie das Konto.',
+    )
+    expect(screen.getByLabelText('E-Mail')).toHaveValue('lucky1.lucky@gmx.de')
+    expect(screen.getByRole('button', { name: 'Bestätigungslink öffnen' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Bestätigung erneut senden' })).toBeInTheDocument()
   })
 })

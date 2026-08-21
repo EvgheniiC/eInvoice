@@ -18,6 +18,7 @@ from app.schemas.auth import (
     RegisterResponse,
     TokenRequest,
 )
+from app.services.email_service import EmailDeliveryError
 from app.services.auth_service import (
     PURPOSE_MAGIC,
     PURPOSE_VERIFY,
@@ -99,12 +100,17 @@ def _me_payload(db: Session, context: OrgContext) -> MeResponse:
 
 @router.post("/auth/register", response_model=RegisterResponse)
 def register(body: RegisterRequest, db: Session = Depends(get_db)) -> RegisterResponse:
-    _user, token = register_user(
-        db,
-        email=str(body.email),
-        password=body.password,
-        organization_name=body.organization_name,
-    )
+    try:
+        _user, token = register_user(
+            db,
+            email=str(body.email),
+            password=body.password,
+            organization_name=body.organization_name,
+        )
+    except EmailDeliveryError as exc:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)) from exc
+    except AuthError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
     return RegisterResponse(
         accepted=True,
         message="Bitte prüfen Sie Ihre E-Mail und bestätigen Sie das Konto.",
@@ -155,7 +161,11 @@ def verify_email(
 
 @router.post("/auth/resend-verification", response_model=MessageResponse)
 def resend(body: MagicLinkRequest, db: Session = Depends(get_db)) -> MessageResponse:
-    token: Optional[str] = resend_verification(db, email=str(body.email))
+    token: Optional[str] = None
+    try:
+        token = resend_verification(db, email=str(body.email))
+    except EmailDeliveryError:
+        token = None
     return MessageResponse(
         accepted=True,
         message="Wenn ein unbestätigtes Konto existiert, wurde eine E-Mail gesendet.",
@@ -165,7 +175,11 @@ def resend(body: MagicLinkRequest, db: Session = Depends(get_db)) -> MessageResp
 
 @router.post("/auth/magic-link", response_model=MessageResponse)
 def magic_link(body: MagicLinkRequest, db: Session = Depends(get_db)) -> MessageResponse:
-    token: Optional[str] = request_magic_link(db, email=str(body.email))
+    token: Optional[str] = None
+    try:
+        token = request_magic_link(db, email=str(body.email))
+    except EmailDeliveryError:
+        token = None
     return MessageResponse(
         accepted=True,
         message="Wenn ein bestätigtes Konto existiert, wurde ein Anmeldelink gesendet.",

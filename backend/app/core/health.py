@@ -38,6 +38,8 @@ def build_health_snapshot() -> HealthSnapshot:
     java_ok: bool = _java_available()
     database_check: HealthCheckResult = _database_check()
     database_ok: bool = database_check.status in {"ok", "not_required"}
+    email_check: HealthCheckResult = _email_check()
+    email_ok: bool = email_check.status in {"ok", "not_required"}
 
     if not kosit_required:
         kosit_check: HealthCheckResult = HealthCheckResult(
@@ -49,7 +51,7 @@ def build_health_snapshot() -> HealthSnapshot:
             name="java",
             status="not_required" if not java_ok else "ok",
         )
-        ready: bool = database_ok
+        ready: bool = database_ok and email_ok
     else:
         kosit_check = HealthCheckResult(
             name="kosit",
@@ -61,7 +63,7 @@ def build_health_snapshot() -> HealthSnapshot:
             status="ok" if java_ok else "unavailable",
             detail=None if java_ok else "Java binary for KoSIT was not found on PATH.",
         )
-        ready = kosit_files_ready and java_ok and database_ok
+        ready = kosit_files_ready and java_ok and database_ok and email_ok
 
     overall: str = "ok" if ready else "degraded"
     return HealthSnapshot(
@@ -69,7 +71,29 @@ def build_health_snapshot() -> HealthSnapshot:
         ready=ready,
         kosit_required=kosit_required,
         kosit_ready=kosit_files_ready,
-        checks=[process_check, kosit_check, java_check, database_check],
+        checks=[process_check, kosit_check, java_check, database_check, email_check],
+    )
+
+
+def _email_check() -> HealthCheckResult:
+    if not settings.auth_enabled:
+        return HealthCheckResult(
+            name="email",
+            status="not_required",
+            detail="Account store is off; guest Empfang only.",
+        )
+    if settings.email_ready:
+        return HealthCheckResult(name="email", status="ok")
+    if settings.uses_smtp_email:
+        return HealthCheckResult(
+            name="email",
+            status="unavailable",
+            detail="SMTP_HOST and SMTP_FROM (or SMTP_USERNAME) are required.",
+        )
+    return HealthCheckResult(
+        name="email",
+        status="unavailable",
+        detail="Production accounts require EMAIL_BACKEND=smtp.",
     )
 
 

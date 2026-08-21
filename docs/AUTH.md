@@ -25,6 +25,13 @@ DATABASE_URL=postgresql+psycopg://einvoice:choose-a-password@127.0.0.1:5432/einv
 AUTH_SECRET_KEY=long-random-string
 ADMIN_API_TOKEN=long-random-string
 PUBLIC_APP_URL=https://your-public-host
+EMAIL_BACKEND=smtp
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USERNAME=noreply@your-public-host
+SMTP_PASSWORD=choose-a-password
+SMTP_FROM=noreply@your-public-host
+SMTP_STARTTLS=true
 ```
 
 Generate secrets with `python -c "import secrets; print(secrets.token_urlsafe(48))"`.
@@ -42,11 +49,16 @@ alembic upgrade head
 `deploy/deploy.sh` does this before restarting the API.
 
 SQLite is for tests and local development. Production readiness fails if
-accounts are enabled without Postgres or without `AUTH_SECRET_KEY`.
+accounts are enabled without Postgres, without `AUTH_SECRET_KEY`, or without
+SMTP (`EMAIL_BACKEND=smtp` plus host and from-address).
+
+`EMAIL_BACKEND=log` is for local development: the confirmation URL is written
+to API logs (`auth_email_token_dev`) and is not mailed.
 
 ## Flows
 
 - Register: email + password + organization name → Inhaber membership on a **Free** plan
+- Verify email: SMTP when `EMAIL_BACKEND=smtp`. After register the UI goes to `/anmelden`.
 - Verify: `POST /api/auth/verify-email` with the mailed token (dev responses include the token)
 - Login: password or magic link → httpOnly session cookie `einv_session`
 - `GET /api/me` and `GET/PATCH /api/org` carry org context

@@ -6,22 +6,33 @@ import { SiteFooter } from '../components/SiteFooter'
 import type { AppRoute } from '../routing'
 import type { MeResponse, RegisterResponse } from '../types/invoice'
 
+export type RegisterSuccess = {
+  email: string
+  message: string
+  verificationToken: string | null
+}
+
 type RegisterPageProps = {
   onNavigate: (route: AppRoute) => void
+  onRegistered: (result: RegisterSuccess) => void
   session: MeResponse | null
   onLogout: () => void
 }
 
 const PASSWORD_MISMATCH: string = 'Die Passwörter stimmen nicht überein.'
 
-export function RegisterPage({ onNavigate, session, onLogout }: RegisterPageProps): JSX.Element {
+export function RegisterPage({
+  onNavigate,
+  onRegistered,
+  session,
+  onLogout,
+}: RegisterPageProps): JSX.Element {
   const [email, setEmail] = useState<string>('')
   const [password, setPassword] = useState<string>('')
   const [passwordConfirm, setPasswordConfirm] = useState<string>('')
   const [organizationName, setOrganizationName] = useState<string>('')
   const [sending, setSending] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
 
   async function onSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault()
@@ -34,10 +45,13 @@ export function RegisterPage({ onNavigate, session, onLogout }: RegisterPageProp
     }
     setSending(true)
     setError(null)
-    setSuccess(null)
     try {
       const result: RegisterResponse = await registerAccount(email, password, organizationName)
-      setSuccess(result.message)
+      onRegistered({
+        email: email.trim(),
+        message: result.message,
+        verificationToken: result.verification_token,
+      })
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Registrierung fehlgeschlagen.')
     } finally {
@@ -117,11 +131,6 @@ export function RegisterPage({ onNavigate, session, onLogout }: RegisterPageProp
       {error ? (
         <p className="status status--error" role="alert">
           {error}
-        </p>
-      ) : null}
-      {success ? (
-        <p className="status status--info" role="status">
-          {success}
         </p>
       ) : null}
       <p className="auth-form__switch">

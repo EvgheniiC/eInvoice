@@ -67,6 +67,7 @@ class TestHealthProbes(unittest.TestCase):
         names: list[str] = [str(item["name"]) for item in payload["checks"]]  # type: ignore[index]
         self.assertIn("process", names)
         self.assertIn("kosit", names)
+        self.assertIn("email", names)
 
 
 class TestJsonLogs(unittest.TestCase):
