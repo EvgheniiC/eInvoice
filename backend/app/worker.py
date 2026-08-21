@@ -31,13 +31,17 @@ def main(argv: Optional[list[str]] = None) -> int:
     init_account_store()
     if not settings.auth_enabled:
         log_event(logging.ERROR, "batch_worker_no_database")
+        print("DATABASE_URL is not set. The batch worker cannot start.", file=sys.stderr)
         return 1
 
     log_event(logging.INFO, "batch_worker_started", fields={"once": bool(args.once)})
     if args.once:
         processed: int = drain_queue()
         log_event(logging.INFO, "batch_worker_once_done", fields={"processed": processed})
+        print(f"Processed {processed} queued file(s).", flush=True)
         return 0
+
+    print("eInvoice batch worker is running. Waiting for jobs. Stop with Ctrl+C.", flush=True)
 
     signal.signal(signal.SIGTERM, _request_stop)
     signal.signal(signal.SIGINT, _request_stop)
