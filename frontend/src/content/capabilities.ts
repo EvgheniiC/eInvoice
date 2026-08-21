@@ -1,4 +1,4 @@
-import type { CapabilitiesResponse } from '../types/invoice'
+import type { CapabilitiesResponse, PlanInfo } from '../types/invoice'
 
 export const DEFAULT_CAPABILITIES: CapabilitiesResponse = {
   max_upload_size_mb: 10,
@@ -57,4 +57,25 @@ export function formatLimitsLine(capabilities: CapabilitiesResponse): string {
     `${String(capabilities.parse_per_day)} Prüfungen / Tag · ` +
     `${extensions} · UBL Invoice/CreditNote, UN/CEFACT CII oder ZUGFeRD/Factur-X`
   )
+}
+
+export function formatUploadLimitsLine(
+  capabilities: CapabilitiesResponse,
+  plan: PlanInfo | null,
+): string {
+  const extensions: string = capabilities.allowed_extensions.join(' / ')
+  if (plan?.allows_batch) {
+    return (
+      `Bis zu ${String(plan.max_batch_files)} Dateien · ` +
+      `jeweils ${String(plan.max_upload_size_mb)} MB · ` +
+      `${String(plan.parse_per_day)} Prüfungen / Tag · ${extensions}`
+    )
+  }
+  if (plan) {
+    return (
+      `Eine Datei bis ${String(plan.max_upload_size_mb)} MB · ` +
+      `${String(plan.parse_per_day)} Prüfungen / Tag · ${extensions}`
+    )
+  }
+  return formatLimitsLine(capabilities)
 }

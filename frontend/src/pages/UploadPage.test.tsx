@@ -152,4 +152,24 @@ describe('UploadPage', (): void => {
     expect(parseInvoice).not.toHaveBeenCalled()
     expect(invoice.filename).toBe('one.xml')
   })
+
+  it('keeps a Free account on a single-file picker', async (): Promise<void> => {
+    vi.mocked(fetchCapabilities).mockResolvedValue(DEFAULT_CAPABILITIES)
+    vi.mocked(checkHealth).mockResolvedValue(healthy)
+
+    render(
+      <UploadPage
+        onNavigateHome={vi.fn()}
+        onNavigate={vi.fn()}
+        session={buildSession()}
+        onLogout={vi.fn()}
+      />,
+    )
+
+    const input: HTMLInputElement = document.querySelector('#invoice-file-input') as HTMLInputElement
+    expect(input.multiple).toBe(false)
+    expect(
+      await screen.findByText(/Mehrere Dateien auf einmal sind in Plus enthalten/i),
+    ).toBeInTheDocument()
+  })
 })

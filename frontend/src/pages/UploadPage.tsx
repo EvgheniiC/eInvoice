@@ -6,7 +6,7 @@ import { InvoiceView } from '../components/InvoiceView'
 import { PageNav } from '../components/PageNav'
 import { PdfPreview } from '../components/PdfPreview'
 import { SiteFooter } from '../components/SiteFooter'
-import { DEFAULT_CAPABILITIES, formatLimitsLine } from '../content/capabilities'
+import { DEFAULT_CAPABILITIES, formatUploadLimitsLine } from '../content/capabilities'
 import type { AppRoute } from '../routing'
 import type {
   BatchItemResponse,
@@ -221,9 +221,7 @@ export function UploadPage({
           XRechnung-XML oder ZUGFeRD-PDF hochladen — lesbare Ansicht der Rechnungsdaten.
         </p>
         <p id="upload-limits" className="page__limits">
-          {allowsBatch
-            ? `Plus: bis zu ${String(session?.plan.max_batch_files ?? 20)} Dateien · ${formatLimitsLine(capabilities)}`
-            : formatLimitsLine(capabilities)}
+          {formatUploadLimitsLine(capabilities, session?.plan ?? null)}
         </p>
       </header>
 
@@ -255,6 +253,13 @@ export function UploadPage({
             : 'oder Datei auswählen (.xml / .pdf)'
         }
       />
+
+      {session !== null && !allowsBatch ? (
+        <p className="page__limits">
+          Mehrere Dateien auf einmal sind in Plus enthalten. Dieser Tarif prüft eine Datei pro
+          Vorgang.
+        </p>
+      ) : null}
 
       {loading && (
         <div className="progress" role="status" aria-live="polite" aria-busy="true">
