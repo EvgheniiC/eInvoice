@@ -4,12 +4,17 @@
   padding: 3rem 1.25rem 4rem;
 }
 
-.page--split {
+.page--split,
+.page.page--split {
   max-width: 90rem;
 }
 
-.page--workspace {
-  max-width: 90rem;
+.page--workspace,
+.page.page--workspace {
+  max-width: none;
+  width: 100%;
+  padding-left: clamp(1.25rem, 3vw, 2.5rem);
+  padding-right: clamp(1.25rem, 3vw, 2.5rem);
 }
 
 .page__header-row {
@@ -1557,8 +1562,8 @@
 
 @media (min-width: 720px) {
   .workspace-split {
-    grid-template-columns: minmax(18rem, 26rem) minmax(0, 1fr);
-    gap: 1.5rem;
+    grid-template-columns: minmax(22rem, 34rem) minmax(0, 1fr);
+    gap: 2rem;
   }
 
   .workspace-split__files {
