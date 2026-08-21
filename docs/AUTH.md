@@ -72,8 +72,25 @@ journalctl -u einvoice-api -n 80 --no-pager | grep auth_email
 - Verify: `POST /api/auth/verify-email` with the mailed token (dev responses include the token)
 - Login: password or magic link → httpOnly session cookie `einv_session`
 - `GET /api/me` and `GET/PATCH /api/org` carry org context
-- Quotas are returned on the plan object with `quotas_enforced: false`
-- Guest parse with a session only logs `organization_id` + plan; still no invoice archive
+- Quotas are enforced: daily parse/export, plan upload size, parse parallelism
+- Guest parse without a session still works (no archive); it counts against the guest IP quota
+- Authenticated parse/export counts against the organization
+
+## Quotas (Stage 2)
+
+Guest Empfang stays one file per request without login. Limits are enforced:
+
+| | Guest (no login) | Free | Plus | Team |
+|--|------------------|------|------|------|
+| Parse / day | 10 | 10 | 100 | 500 |
+| Export / day | 10 | 10 | 100 | 500 |
+| Max file | 10 MB | 10 MB | 25 MB | 50 MB |
+| Parallel parse | 1 | 1 | 2 | 4 |
+| Requests / minute | `RATE_LIMIT_PER_MINUTE` (30) | `ACCOUNT_RATE_LIMIT_PER_MINUTE` (60) | 60 | 60 |
+
+Exhausted daily quota returns HTTP 429 with a German message and a Plus/Team hint.
+Validation report download does not count as an export. Invoice files are still not stored.
+Plan catalog numbers are reapplied on API start (`seed_plans`). After pull: `alembic upgrade head`.
 
 ## Pilot Plus
 

@@ -1,36 +1,45 @@
-"""Seed built-in plans. Idempotent."""
+"""Seed built-in plans. Idempotent; refreshes catalog quota columns."""
 
 from __future__ import annotations
 
-from typing import Optional, Sequence
+from typing import Optional
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db.models import Plan
-
-_PLAN_ROWS: Sequence[tuple[str, str, int, bool, bool]] = (
-    ("free", "Free", 10, False, False),
-    ("plus", "Plus", 25, True, True),
-    ("team", "Team", 50, True, True),
-)
+from app.services.plan_limits import PLAN_CATALOG, PlanLimits
 
 
 def seed_plans(session: Session) -> None:
-    """Insert free/plus/team if missing. Quota fields stay null (stub)."""
-    for code, name, max_mb, batch, history in _PLAN_ROWS:
-        existing: Optional[Plan] = session.scalar(select(Plan).where(Plan.code == code))
-        if existing is not None:
+    """Insert or update free/plus/team from the catalog."""
+    for limits in PLAN_CATALOG.values():
+        existing: Optional[Plan] = session.scalar(select(Plan).where(Plan.code == limits.code))
+        if existing is None:
+            session.add(_plan_from_limits(limits))
             continue
-        session.add(
-            Plan(
-                code=code,
-                name=name,
-                parse_per_day=None,
-                export_per_day=None,
-                max_upload_size_mb=max_mb,
-                allows_batch=batch,
-                allows_history=history,
-            )
-        )
+        _apply_limits(existing, limits)
     session.commit()
+
+
+def _plan_from_limits(limits: PlanLimits) -> Plan:
+    return Plan(
+        code=limits.code,
+        name=limits.name,
+        parse_per_day=limits.parse_per_day,
+        export_per_day=limits.export_per_day,
+        max_upload_size_mb=limits.max_upload_size_mb,
+        max_parallel=limits.max_parallel,
+        allows_batch=limits.allows_batch,
+        allows_history=limits.allows_history,
+    )
+
+
+def _apply_limits(plan: Plan, limits: PlanLimits) -> None:
+    plan.name = limits.name
+    plan.parse_per_day = limits.parse_per_day
+    plan.export_per_day = limits.export_per_day
+    plan.max_upload_size_mb = limits.max_upload_size_mb
+    plan.max_parallel = limits.max_parallel
+    plan.allows_batch = limits.allows_batch
+    plan.allows_history = limits.allows_history

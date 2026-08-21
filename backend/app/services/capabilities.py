@@ -2,6 +2,7 @@ from typing import List
 
 from app.core.config import settings
 from app.schemas.product import CapabilitiesResponse, SupportedFormat
+from app.services.plan_limits import PlanLimits, guest_limits
 from app.services.validation_profile import load_scenarios_meta
 
 
@@ -10,11 +11,16 @@ def build_capabilities() -> CapabilitiesResponse:
     meta: dict[str, object] = load_scenarios_meta()
     standard: str = _meta_str(meta, "standard", "EN 16931:2017")
     xrechnung: str = _meta_str(meta, "xrechnung_version", "3.0.2")
+    limits: PlanLimits = guest_limits()
     return CapabilitiesResponse(
-        max_upload_size_mb=settings.max_upload_size_mb,
+        max_upload_size_mb=limits.max_upload_size_mb,
         allowed_extensions=list(settings.allowed_extensions),
         max_files_per_request=1,
         rate_limit_per_minute=settings.rate_limit_per_minute,
+        account_rate_limit_per_minute=settings.account_rate_limit_per_minute,
+        parse_per_day=limits.parse_per_day,
+        export_per_day=limits.export_per_day,
+        max_parallel=limits.max_parallel,
         stores_invoice_files=False,
         requires_account=False,
         processing_model="guest",
@@ -26,7 +32,7 @@ def build_capabilities() -> CapabilitiesResponse:
             f"XRechnung {xrechnung}",
             "ZUGFeRD / Factur-X EN 16931",
         ],
-        limitations=_limitations(settings.max_upload_size_mb),
+        limitations=_limitations(limits),
     )
 
 
@@ -59,9 +65,12 @@ def _supported_formats() -> List[SupportedFormat]:
     ]
 
 
-def _limitations(max_upload_size_mb: int) -> List[str]:
+def _limitations(limits: PlanLimits) -> List[str]:
     return [
-        f"Eine Datei pro Anfrage, maximal {max_upload_size_mb} MB.",
+        (
+            f"Eine Datei pro Anfrage, maximal {limits.max_upload_size_mb} MB, "
+            f"bis zu {limits.parse_per_day} Prüfungen und {limits.export_per_day} Exporte pro Tag."
+        ),
         "Gastmodus: die Datei wird nur während der Anfrage verarbeitet und danach gelöscht.",
         "Normale PDFs ohne eingebettetes XML, Scans, openTRANS und andere XML-Formate werden abgelehnt.",
         "Der DATEV-Export ist eine Buchungsstapel-CSV und kein DATEVconnect.",

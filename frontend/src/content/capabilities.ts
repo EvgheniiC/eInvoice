@@ -5,6 +5,10 @@ export const DEFAULT_CAPABILITIES: CapabilitiesResponse = {
   allowed_extensions: ['.xml', '.pdf'],
   max_files_per_request: 1,
   rate_limit_per_minute: 30,
+  account_rate_limit_per_minute: 60,
+  parse_per_day: 10,
+  export_per_day: 10,
+  max_parallel: 1,
   stores_invoice_files: false,
   requires_account: false,
   processing_model: 'guest',
@@ -38,7 +42,7 @@ export const DEFAULT_CAPABILITIES: CapabilitiesResponse = {
   ],
   profiles: ['EN 16931:2017', 'XRechnung 3.0.2', 'ZUGFeRD / Factur-X EN 16931'],
   limitations: [
-    'Eine Datei pro Anfrage, maximal 10 MB.',
+    'Eine Datei pro Anfrage, maximal 10 MB, bis zu 10 Prüfungen und 10 Exporte pro Tag.',
     'Gastmodus: die Datei wird nur während der Anfrage verarbeitet und danach gelöscht.',
     'Normale PDFs ohne eingebettetes XML, Scans, openTRANS und andere XML-Formate werden abgelehnt.',
     'Der DATEV-Export ist eine Buchungsstapel-CSV und kein DATEVconnect.',
@@ -50,6 +54,7 @@ export function formatLimitsLine(capabilities: CapabilitiesResponse): string {
   const extensions: string = capabilities.allowed_extensions.join(' / ')
   return (
     `Eine Datei bis ${String(capabilities.max_upload_size_mb)} MB · ` +
+    `${String(capabilities.parse_per_day)} Prüfungen / Tag · ` +
     `${extensions} · UBL Invoice/CreditNote, UN/CEFACT CII oder ZUGFeRD/Factur-X`
   )
 }

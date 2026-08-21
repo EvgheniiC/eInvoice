@@ -69,11 +69,19 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
         now: float = time.monotonic()
         window_start: float = now - 60.0
-        client_key: str = _client_key(request)
-        bucket: Deque[float] = self._hits[client_key]
+        has_session: bool = bool(request.cookies.get(settings.auth_cookie_name))
+        bucket_limit: int = limit
+        bucket_kind: str = "guest"
+        if has_session:
+            if settings.account_rate_limit_per_minute <= 0:
+                return await call_next(request)
+            bucket_limit = settings.account_rate_limit_per_minute
+            bucket_kind = "account"
+        client: str = f"{bucket_kind}:{client_key(request)}"
+        bucket: Deque[float] = self._hits[client]
         while bucket and bucket[0] < window_start:
             bucket.popleft()
-        if len(bucket) >= limit:
+        if len(bucket) >= bucket_limit:
             log_event(
                 logging.WARNING,
                 "rate_limited",
@@ -118,7 +126,7 @@ def _is_rate_limited_path(path: str) -> bool:
     return any(path == prefix or path.startswith(prefix + "/") for prefix in _RATE_LIMITED_PREFIXES)
 
 
-def _client_key(request: Request) -> str:
+def client_key(request: Request) -> str:
     forwarded: Optional[str] = request.headers.get("x-forwarded-for")
     if forwarded:
         return forwarded.split(",", 1)[0].strip() or "unknown"

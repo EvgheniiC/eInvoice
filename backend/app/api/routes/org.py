@@ -5,25 +5,18 @@ from app.api.deps import get_current_org, get_db
 from app.db.models import Organization
 from app.schemas.auth import OrgResponse, OrgUpdateRequest, PlanInfo
 from app.services.auth_service import AuthError, OrgContext, rename_organization
+from app.services.quota_service import build_plan_info
 
 router: APIRouter = APIRouter()
 
 
-def _org_payload(organization: Organization, context: OrgContext) -> OrgResponse:
+def _org_payload(db: Session, organization: Organization, context: OrgContext) -> OrgResponse:
+    plan: PlanInfo = build_plan_info(db, context)
     return OrgResponse(
         organization_id=organization.id,
         name=organization.name,
         role=context.role,
-        plan=PlanInfo(
-            code=context.plan_code,
-            name=context.plan_name,
-            parse_per_day=context.parse_per_day,
-            export_per_day=context.export_per_day,
-            max_upload_size_mb=context.max_upload_size_mb,
-            allows_batch=context.allows_batch,
-            allows_history=context.allows_history,
-            quotas_enforced=False,
-        ),
+        plan=plan,
         created_at=organization.created_at,
     )
 
@@ -36,7 +29,7 @@ def get_organization(
     organization: Organization | None = db.get(Organization, context.organization_id)
     if organization is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Organisation nicht gefunden.")
-    return _org_payload(organization, context)
+    return _org_payload(db, organization, context)
 
 
 @router.patch("/org", response_model=OrgResponse)
@@ -66,7 +59,8 @@ def patch_organization(
         parse_per_day=context.parse_per_day,
         export_per_day=context.export_per_day,
         max_upload_size_mb=context.max_upload_size_mb,
+        max_parallel=context.max_parallel,
         allows_batch=context.allows_batch,
         allows_history=context.allows_history,
     )
-    return _org_payload(organization, refreshed)
+    return _org_payload(db, organization, refreshed)

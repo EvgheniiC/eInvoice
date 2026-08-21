@@ -75,7 +75,9 @@ class TestAuthFlow(unittest.TestCase):
         self.assertEqual(verified.json()["organization_name"], "Muster Handwerk")
         self.assertEqual(verified.json()["role"], "inhaber")
         self.assertEqual(verified.json()["plan"]["code"], "free")
-        self.assertFalse(verified.json()["plan"]["quotas_enforced"])
+        self.assertTrue(verified.json()["plan"]["quotas_enforced"])
+        self.assertEqual(verified.json()["plan"]["parse_per_day"], 10)
+        self.assertEqual(verified.json()["plan"]["max_parallel"], 1)
 
         me = self.client.get("/api/me")
         self.assertEqual(me.status_code, 200)
@@ -96,6 +98,8 @@ class TestAuthFlow(unittest.TestCase):
         me_plus = self.client.get("/api/me")
         self.assertEqual(me_plus.json()["plan"]["code"], "plus")
         self.assertTrue(me_plus.json()["plan"]["allows_batch"])
+        self.assertEqual(me_plus.json()["plan"]["parse_per_day"], 100)
+        self.assertEqual(me_plus.json()["plan"]["max_upload_size_mb"], 25)
 
         guest_style = self.client.post(
             "/api/invoices/parse",

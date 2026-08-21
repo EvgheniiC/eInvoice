@@ -28,6 +28,12 @@ class Settings(BaseSettings):
     allowed_extensions: List[str] = [".xml", ".pdf"]
     # 0 disables the in-app limiter (nginx limit_req remains the edge control).
     rate_limit_per_minute: int = 30
+    # Authenticated requests use this ceiling when a session cookie is present.
+    # 0 means no extra in-app limit for accounts (guest limit still applies to guests).
+    account_rate_limit_per_minute: int = 60
+    guest_parse_per_day: int = 10
+    guest_export_per_day: int = 10
+    guest_max_parallel: int = 1
     request_timeout_seconds: int = 90
     kosit_java_max_heap_mb: int = 512
 

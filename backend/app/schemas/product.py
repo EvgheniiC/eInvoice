@@ -22,6 +22,10 @@ class CapabilitiesResponse(ApiModel):
     allowed_extensions: List[str]
     max_files_per_request: int
     rate_limit_per_minute: int
+    account_rate_limit_per_minute: int
+    parse_per_day: int
+    export_per_day: int
+    max_parallel: int
     stores_invoice_files: bool
     requires_account: bool
     processing_model: str

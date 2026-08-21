@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 from typing import Optional
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, UniqueConstraint
+from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from app.core.clock import utc_now
@@ -17,7 +17,7 @@ class Base(DeclarativeBase):
 
 
 class Plan(Base):
-    """Subscription plan. Quota columns are stubs until Stage 2."""
+    """Subscription plan with daily parse/export quotas."""
 
     __tablename__: str = "plans"
 
@@ -27,6 +27,7 @@ class Plan(Base):
     parse_per_day: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     export_per_day: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     max_upload_size_mb: Mapped[int] = mapped_column(Integer, default=10)
+    max_parallel: Mapped[int] = mapped_column(Integer, default=1)
     allows_batch: Mapped[bool] = mapped_column(Boolean, default=False)
     allows_history: Mapped[bool] = mapped_column(Boolean, default=False)
 
@@ -108,3 +109,25 @@ class EmailToken(Base):
     token_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
     consumed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class UsageCounter(Base):
+    """Daily parse/export counts. Guest rows use a hashed IP, never the raw address."""
+
+    __tablename__: str = "usage_counters"
+    __table_args__ = (
+        UniqueConstraint(
+            "subject_type",
+            "subject_key",
+            "usage_date",
+            "action",
+            name="uq_usage_counter_day",
+        ),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    subject_type: Mapped[str] = mapped_column(String(16), index=True)
+    subject_key: Mapped[str] = mapped_column(String(64), index=True)
+    usage_date: Mapped[date] = mapped_column(Date, index=True)
+    action: Mapped[str] = mapped_column(String(16))
+    count: Mapped[int] = mapped_column(Integer, default=0)

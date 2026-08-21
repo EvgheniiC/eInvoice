@@ -32,12 +32,15 @@ describe('LoginPage', (): void => {
       plan: {
         code: 'free',
         name: 'Free',
-        parse_per_day: null,
-        export_per_day: null,
+        parse_per_day: 10,
+        export_per_day: 10,
         max_upload_size_mb: 10,
+        max_parallel: 1,
         allows_batch: false,
         allows_history: false,
-        quotas_enforced: false,
+        quotas_enforced: true,
+        parse_used_today: 0,
+        export_used_today: 0,
       },
       memberships: [],
     }

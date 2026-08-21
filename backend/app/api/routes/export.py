@@ -1,8 +1,10 @@
 from typing import List, Optional
 
-from fastapi import APIRouter, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import Response
+from sqlalchemy.orm import Session
 
+from app.api.deps import get_optional_db, get_optional_org_context
 from app.core.error_events import format_safe_stack, log_api_error
 from app.core.metrics import observe_funnel
 from app.core.middleware import get_request_id
@@ -14,12 +16,14 @@ from app.schemas.export import (
     ValidationReportRequest,
 )
 from app.schemas.invoice import InvoiceParseResponse, ParseStatus
+from app.services.auth_service import OrgContext
 from app.services.export_service import (
     ExportService,
     assert_xml_bytes,
     decode_base64_payload,
     decode_pdf_base64,
 )
+from app.services.quota_service import enforce_export
 from app.services.validation_report import (
     build_validation_report,
     build_validation_report_filename,
@@ -36,19 +40,27 @@ def export_mapping_docs() -> List[ExportMappingDoc]:
 
 
 @router.post("/export")
-def export_invoice(body: ExportRequest, request: Request) -> Response:
+def export_invoice(
+    body: ExportRequest,
+    request: Request,
+    org_context: Optional[OrgContext] = Depends(get_optional_org_context),
+    db: Optional[Session] = Depends(get_optional_db),
+) -> Response:
     """
     Export a previously parsed invoice DTO as CSV, Excel, or DATEV CSV.
     """
     _assert_exportable(body.invoice)
 
     try:
-        content, media_type, filename = export_service.export(
-            invoice=body.invoice,
-            export_format=body.format,
-        )
+        with enforce_export(request, db, org_context):
+            content, media_type, filename = export_service.export(
+                invoice=body.invoice,
+                export_format=body.format,
+            )
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    except HTTPException:
+        raise
     except Exception as exc:
         log_api_error(
             event="export_failed",
@@ -87,7 +99,12 @@ def export_validation_report(body: ValidationReportRequest) -> Response:
 
 
 @router.post("/export/accountant-package")
-def export_accountant_package(body: AccountantPackageRequest, request: Request) -> Response:
+def export_accountant_package(
+    body: AccountantPackageRequest,
+    request: Request,
+    org_context: Optional[OrgContext] = Depends(get_optional_org_context),
+    db: Optional[Session] = Depends(get_optional_db),
+) -> Response:
     """
     ZIP for Steuerberater: original XML/PDF + summary + Prüfbericht + Excel + DATEV.
     """
@@ -97,15 +114,18 @@ def export_accountant_package(body: AccountantPackageRequest, request: Request) 
     xml_bytes: Optional[bytes] = _optional_xml_bytes(body.xml_base64)
 
     try:
-        content, media_type, filename = export_service.build_accountant_package(
-            invoice=body.invoice,
-            pdf_bytes=pdf_bytes,
-            pdf_filename=body.pdf_filename,
-            xml_bytes=xml_bytes,
-            xml_filename=body.xml_filename,
-        )
+        with enforce_export(request, db, org_context):
+            content, media_type, filename = export_service.build_accountant_package(
+                invoice=body.invoice,
+                pdf_bytes=pdf_bytes,
+                pdf_filename=body.pdf_filename,
+                xml_bytes=xml_bytes,
+                xml_filename=body.xml_filename,
+            )
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    except HTTPException:
+        raise
     except Exception as exc:
         log_api_error(
             event="accountant_package_failed",

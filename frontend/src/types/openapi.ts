@@ -20,6 +20,10 @@ export interface components {
       allowed_extensions: string[];
       max_files_per_request: number;
       rate_limit_per_minute: number;
+      account_rate_limit_per_minute: number;
+      parse_per_day: number;
+      export_per_day: number;
+      max_parallel: number;
       stores_invoice_files: boolean;
       requires_account: boolean;
       processing_model: string;
@@ -232,12 +236,15 @@ export interface components {
     PlanInfo: {
       code: string;
       name: string;
-      parse_per_day: number | null;
-      export_per_day: number | null;
+      parse_per_day: number;
+      export_per_day: number;
       max_upload_size_mb: number;
+      max_parallel: number;
       allows_batch: boolean;
       allows_history: boolean;
       quotas_enforced: boolean;
+      parse_used_today: number;
+      export_used_today: number;
     };
     ReadinessResponse: {
       status: string;

@@ -51,6 +51,10 @@ class TestCapabilities(unittest.TestCase):
         self.assertFalse(payload["requires_account"])
         self.assertEqual(payload["max_files_per_request"], 1)
         self.assertEqual(payload["max_upload_size_mb"], settings.max_upload_size_mb)
+        self.assertEqual(payload["parse_per_day"], settings.guest_parse_per_day)
+        self.assertEqual(payload["export_per_day"], settings.guest_export_per_day)
+        self.assertEqual(payload["max_parallel"], settings.guest_max_parallel)
+        self.assertEqual(payload["account_rate_limit_per_minute"], settings.account_rate_limit_per_minute)
         self.assertIn(".xml", payload["allowed_extensions"])
         self.assertIn(".pdf", payload["allowed_extensions"])
         formats: list[dict[str, object]] = payload["formats"]  # type: ignore[assignment]

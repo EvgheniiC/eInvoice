@@ -15,8 +15,9 @@ from app.core.clock import as_utc, utc_now
 from app.core.config import settings
 from app.core.error_events import log_event
 from app.core.passwords import hash_password, hash_token, new_token, normalize_email, verify_password
-from app.db.models import AuthSession, EmailToken, Membership, Organization, Plan, User
+from app.db.models import AuthSession, EmailToken, Membership, Organization, Plan, UsageCounter, User
 from app.services.email_service import send_auth_email
+from app.services.plan_limits import PlanLimits, merge_plan_row
 
 ROLE_INHABER: str = "inhaber"
 ROLE_BUERO: str = "buero"
@@ -45,6 +46,7 @@ class OrgContext:
     parse_per_day: Optional[int]
     export_per_day: Optional[int]
     max_upload_size_mb: int
+    max_parallel: int
     allows_batch: bool
     allows_history: bool
 
@@ -276,6 +278,12 @@ def delete_user_by_email(session: Session, *, email: str) -> str:
         if leftover is not None:
             continue
         session.execute(delete(AuthSession).where(AuthSession.organization_id == organization_id))
+        session.execute(
+            delete(UsageCounter).where(
+                UsageCounter.subject_type == "org",
+                UsageCounter.subject_key == str(organization_id),
+            )
+        )
         organization: Optional[Organization] = session.get(Organization, organization_id)
         if organization is not None:
             session.delete(organization)
@@ -319,6 +327,16 @@ def _context_for_user(
                 break
     organization: Organization = chosen.organization
     plan: Plan = organization.plan
+    limits: PlanLimits = merge_plan_row(
+        code=plan.code,
+        name=plan.name,
+        parse_per_day=plan.parse_per_day,
+        export_per_day=plan.export_per_day,
+        max_upload_size_mb=plan.max_upload_size_mb,
+        max_parallel=plan.max_parallel,
+        allows_batch=plan.allows_batch,
+        allows_history=plan.allows_history,
+    )
     return OrgContext(
         user_id=user.id,
         email=user.email,
@@ -326,13 +344,14 @@ def _context_for_user(
         organization_id=organization.id,
         organization_name=organization.name,
         role=chosen.role,
-        plan_code=plan.code,
-        plan_name=plan.name,
-        parse_per_day=plan.parse_per_day,
-        export_per_day=plan.export_per_day,
-        max_upload_size_mb=plan.max_upload_size_mb,
-        allows_batch=plan.allows_batch,
-        allows_history=plan.allows_history,
+        plan_code=limits.code,
+        plan_name=limits.name,
+        parse_per_day=limits.parse_per_day,
+        export_per_day=limits.export_per_day,
+        max_upload_size_mb=limits.max_upload_size_mb,
+        max_parallel=limits.max_parallel,
+        allows_batch=limits.allows_batch,
+        allows_history=limits.allows_history,
     )
 
 

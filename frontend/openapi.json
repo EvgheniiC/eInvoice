@@ -676,7 +676,7 @@
           "invoices"
         ],
         "summary": "Parse Invoice",
-        "description": "Accept an XRechnung XML or ZUGFeRD PDF and return a structured parse result.",
+        "description": "Accept an XRechnung XML or ZUGFeRD PDF and return a structured parse result.\nGuest upload stays unauthenticated and does not persist the file.",
         "operationId": "parse_invoice_api_invoices_parse_post",
         "requestBody": {
           "content": {
@@ -957,6 +957,22 @@
             "type": "integer",
             "title": "Rate Limit Per Minute"
           },
+          "account_rate_limit_per_minute": {
+            "type": "integer",
+            "title": "Account Rate Limit Per Minute"
+          },
+          "parse_per_day": {
+            "type": "integer",
+            "title": "Parse Per Day"
+          },
+          "export_per_day": {
+            "type": "integer",
+            "title": "Export Per Day"
+          },
+          "max_parallel": {
+            "type": "integer",
+            "title": "Max Parallel"
+          },
           "stores_invoice_files": {
             "type": "boolean",
             "title": "Stores Invoice Files"
@@ -1005,6 +1021,10 @@
           "allowed_extensions",
           "max_files_per_request",
           "rate_limit_per_minute",
+          "account_rate_limit_per_minute",
+          "parse_per_day",
+          "export_per_day",
+          "max_parallel",
           "stores_invoice_files",
           "requires_account",
           "processing_model",
@@ -2508,30 +2528,21 @@
             "title": "Name"
           },
           "parse_per_day": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
+            "type": "integer",
             "title": "Parse Per Day"
           },
           "export_per_day": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
+            "type": "integer",
             "title": "Export Per Day"
           },
           "max_upload_size_mb": {
             "type": "integer",
             "title": "Max Upload Size Mb"
+          },
+          "max_parallel": {
+            "type": "integer",
+            "title": "Max Parallel",
+            "default": 1
           },
           "allows_batch": {
             "type": "boolean",
@@ -2544,7 +2555,17 @@
           "quotas_enforced": {
             "type": "boolean",
             "title": "Quotas Enforced",
-            "default": false
+            "default": true
+          },
+          "parse_used_today": {
+            "type": "integer",
+            "title": "Parse Used Today",
+            "default": 0
+          },
+          "export_used_today": {
+            "type": "integer",
+            "title": "Export Used Today",
+            "default": 0
           }
         },
         "type": "object",
@@ -2554,9 +2575,12 @@
           "parse_per_day",
           "export_per_day",
           "max_upload_size_mb",
+          "max_parallel",
           "allows_batch",
           "allows_history",
-          "quotas_enforced"
+          "quotas_enforced",
+          "parse_used_today",
+          "export_used_today"
         ],
         "title": "PlanInfo"
       },

@@ -24,6 +24,7 @@ sqlalchemy>=2.0.36
 alembic>=1.14.0
 psycopg[binary]>=3.2.0
 bcrypt>=4.2.0
+tzdata>=2024.1
 
 # Dev / tests
 pytest>=8.0.0

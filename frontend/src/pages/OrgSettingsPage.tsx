@@ -100,9 +100,17 @@ export function OrgSettingsPage({
     }
   }
 
+  const parseUsed: string = `${String(session.plan.parse_used_today)}/${String(session.plan.parse_per_day)}`
+  const exportUsed: string = `${String(session.plan.export_used_today)}/${String(session.plan.export_per_day)}`
   const quotaHint: string = session.plan.quotas_enforced
-    ? 'Kontingente gelten.'
-    : 'Kontingente sind noch nicht durchgesetzt (Pilot).'
+    ? `Heute: ${parseUsed} Prüfungen, ${exportUsed} Exporte.`
+    : 'Kontingente sind noch nicht durchgesetzt.'
+  const upgradeHint: string =
+    session.plan.code === 'free'
+      ? 'Mit Plus stehen höhere Tageslimits, Batch und Historie zur Verfügung.'
+      : session.plan.code === 'plus'
+        ? 'Mit Team stehen höhere Kontingente zur Verfügung.'
+        : 'Rechnungsdateien werden ohne Zustimmung weiterhin nicht archiviert.'
 
   return (
     <main id="main-content" className="page" tabIndex={-1}>
@@ -125,13 +133,11 @@ export function OrgSettingsPage({
           <li>Code: {session.plan.code}</li>
           <li>Batch: {session.plan.allows_batch ? 'ja' : 'nein'}</li>
           <li>Historie: {session.plan.allows_history ? 'ja' : 'nein'}</li>
-          <li>Max. Dateigröße (Plan): {String(session.plan.max_upload_size_mb)} MB</li>
+          <li>Max. Dateigröße: {String(session.plan.max_upload_size_mb)} MB</li>
+          <li>Parallele Prüfungen: {String(session.plan.max_parallel)}</li>
           <li>{quotaHint}</li>
         </ul>
-        <p className="page__limits">
-          Rechnungsdateien werden im Gastmodus weiterhin nicht gespeichert. Plus für Pilotfirmen
-          setzt ein Administrator manuell.
-        </p>
+        <p className="page__limits">{upgradeHint}</p>
       </section>
 
       <form className="auth-form" onSubmit={onSaveOrg}>

@@ -26,7 +26,8 @@ export const FAQ_ITEMS: FaqItem[] = [
         'XRechnung 3.0.',
     ],
     listItems: [
-      'Maximale Dateigröße: 10 MB (Gastmodus)',
+      'Maximale Dateigröße: 10 MB (Gastmodus); Plus und Team höher',
+      'Gastmodus: eine Datei pro Anfrage, begrenzte Prüfungen und Exporte pro Tag',
       'Nicht unterstützt: Scan-PDF, Foto, openTRANS, andere XML-Formate',
       'DATEV-Export ist eine Buchungsstapel-CSV, kein DATEVconnect',
     ],

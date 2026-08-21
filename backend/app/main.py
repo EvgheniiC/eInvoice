@@ -108,10 +108,13 @@ def _register_exception_handlers(application: FastAPI) -> None:
                 detail=str(exc.detail),
                 exc_type=type(exc).__name__,
             )
+        headers: Dict[str, str] = _request_id_headers(request)
+        if exc.headers:
+            headers.update(exc.headers)
         return JSONResponse(
             status_code=exc.status_code,
             content={"detail": exc.detail},
-            headers=_request_id_headers(request),
+            headers=headers,
         )
 
     @application.exception_handler(RequestValidationError)

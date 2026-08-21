@@ -1,6 +1,7 @@
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_org, get_db, read_session_cookie
@@ -33,7 +34,7 @@ from app.services.auth_service import (
     resend_verification,
     revoke_session,
 )
-from sqlalchemy import select
+from app.services.quota_service import build_plan_info
 
 router: APIRouter = APIRouter()
 
@@ -57,17 +58,8 @@ def _clear_session_cookie(response: Response) -> None:
     response.delete_cookie(settings.auth_cookie_name, path="/")
 
 
-def _plan_info(context: OrgContext) -> PlanInfo:
-    return PlanInfo(
-        code=context.plan_code,
-        name=context.plan_name,
-        parse_per_day=context.parse_per_day,
-        export_per_day=context.export_per_day,
-        max_upload_size_mb=context.max_upload_size_mb,
-        allows_batch=context.allows_batch,
-        allows_history=context.allows_history,
-        quotas_enforced=False,
-    )
+def _plan_info(db: Session, context: OrgContext) -> PlanInfo:
+    return build_plan_info(db, context)
 
 
 def _me_payload(db: Session, context: OrgContext) -> MeResponse:
@@ -93,7 +85,7 @@ def _me_payload(db: Session, context: OrgContext) -> MeResponse:
         organization_id=context.organization_id,
         organization_name=context.organization_name,
         role=context.role,
-        plan=_plan_info(context),
+        plan=_plan_info(db, context),
         memberships=items,
     )
 

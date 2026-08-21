@@ -50,12 +50,15 @@ class ChangePasswordRequest(ApiModel):
 class PlanInfo(ApiModel):
     code: str
     name: str
-    parse_per_day: Optional[int] = None
-    export_per_day: Optional[int] = None
+    parse_per_day: int
+    export_per_day: int
     max_upload_size_mb: int
+    max_parallel: int = 1
     allows_batch: bool
     allows_history: bool
-    quotas_enforced: bool = False
+    quotas_enforced: bool = True
+    parse_used_today: int = 0
+    export_used_today: int = 0
 
 
 class MembershipInfo(ApiModel):

@@ -2,14 +2,16 @@ import logging
 from typing import Optional
 
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
+from sqlalchemy.orm import Session
 
-from app.api.deps import get_optional_org_context
+from app.api.deps import get_optional_db, get_optional_org_context
 from app.core.config import settings
 from app.core.error_events import log_api_error, log_event, safe_filename
 from app.core.middleware import get_request_id
 from app.schemas.invoice import InvoiceParseResponse
 from app.services.auth_service import OrgContext
 from app.services.invoice_service import InvoiceService
+from app.services.quota_service import enforce_parse
 
 router: APIRouter = APIRouter()
 invoice_service: InvoiceService = InvoiceService()
@@ -20,9 +22,11 @@ async def parse_invoice(
     request: Request,
     file: UploadFile = File(...),
     org_context: Optional[OrgContext] = Depends(get_optional_org_context),
+    db: Optional[Session] = Depends(get_optional_db),
 ) -> InvoiceParseResponse:
     """
     Accept an XRechnung XML or ZUGFeRD PDF and return a structured parse result.
+    Guest upload stays unauthenticated and does not persist the file.
     """
     request_id: Optional[str] = get_request_id(request)
 
@@ -41,22 +45,6 @@ async def parse_invoice(
         )
 
     content: bytes = await file.read()
-    max_bytes: int = settings.max_upload_size_mb * 1024 * 1024
-    if len(content) > max_bytes:
-        log_api_error(
-            event="upload_too_large",
-            method=request.method,
-            path=request.url.path,
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            request_id=request_id,
-            detail=f"filename={safe_filename(file.filename)} size_bytes={len(content)}",
-            level=logging.WARNING,
-        )
-        raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail=f"Datei ist zu groß. Maximum: {settings.max_upload_size_mb} MB.",
-        )
-
     if len(content) == 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -74,8 +62,22 @@ async def parse_invoice(
             },
         )
 
-    return invoice_service.parse_upload(
-        filename=file.filename,
-        content=content,
-        request_id=request_id,
-    )
+    try:
+        with enforce_parse(request, db, org_context, len(content)):
+            return invoice_service.parse_upload(
+                filename=file.filename,
+                content=content,
+                request_id=request_id,
+            )
+    except HTTPException as exc:
+        if exc.status_code == status.HTTP_413_REQUEST_ENTITY_TOO_LARGE:
+            log_api_error(
+                event="upload_too_large",
+                method=request.method,
+                path=request.url.path,
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                request_id=request_id,
+                detail=f"filename={safe_filename(file.filename)} size_bytes={len(content)}",
+                level=logging.WARNING,
+            )
+        raise
