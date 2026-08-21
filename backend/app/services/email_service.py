@@ -3,19 +3,20 @@
 from __future__ import annotations
 
 import logging
+import re
 import smtplib
 import ssl
 from email.message import EmailMessage
-from typing import Optional
+from typing import Match, Optional
 from urllib.parse import quote
 
 from app.core.config import settings
 from app.core.error_events import log_event
+from app.core.logging_config import sanitize_log_text
 
 PURPOSE_VERIFY: str = "verify_email"
 PURPOSE_MAGIC: str = "magic_link"
-
-_FROM_NAME: str = "eInvoice"
+_ANGLE_EMAIL_RE: re.Pattern[str] = re.compile(r"<([^<>@\s]+@[^<>@\s]+)>")
 
 
 class EmailDeliveryError(ValueError):
@@ -88,9 +89,7 @@ def _log_dev_message(*, purpose: str, token: str) -> None:
             "auth_email_log_backend_in_production",
             fields={"purpose": purpose},
         )
-        raise EmailDeliveryError(
-            "Die Bestätigungs-E-Mail konnte nicht gesendet werden. Bitte später erneut versuchen."
-        )
+        raise EmailDeliveryError("E-Mail-Versand ist nicht eingerichtet.")
     log_event(
         logging.INFO,
         "auth_email_token_dev",
@@ -106,10 +105,14 @@ def _send_smtp(*, to_email: str, subject: str, body: str) -> None:
     if not settings.smtp_configured:
         raise EmailDeliveryError("E-Mail-Versand ist nicht eingerichtet.")
     host: str = (settings.smtp_host or "").strip()
-    sender: str = settings.smtp_sender
+    sender: str = _smtp_address(settings.smtp_sender)
+    username: str = _smtp_address(settings.smtp_username)
+    password: str = _clean_secret(settings.smtp_password)
+    if not username or not password or "@" not in sender:
+        raise EmailDeliveryError("E-Mail-Versand ist nicht eingerichtet.")
     message: EmailMessage = EmailMessage()
     message["Subject"] = subject
-    message["From"] = f"{_FROM_NAME} <{sender}>"
+    message["From"] = sender
     message["To"] = to_email
     message.set_content(body)
     try:
@@ -121,33 +124,100 @@ def _send_smtp(*, to_email: str, subject: str, body: str) -> None:
                 timeout=settings.smtp_timeout_seconds,
                 context=context,
             ) as client:
-                _authenticate_and_send(client, message)
+                _authenticate_and_send(
+                    client,
+                    message,
+                    username=username,
+                    password=password,
+                    sender=sender,
+                    to_email=to_email,
+                )
             return
         with smtplib.SMTP(
             host,
             settings.smtp_port,
             timeout=settings.smtp_timeout_seconds,
         ) as client:
+            client.ehlo()
             if settings.smtp_starttls:
                 client.starttls(context=ssl.create_default_context())
-            _authenticate_and_send(client, message)
+                client.ehlo()
+            _authenticate_and_send(
+                client,
+                message,
+                username=username,
+                password=password,
+                sender=sender,
+                to_email=to_email,
+            )
+    except smtplib.SMTPAuthenticationError as exc:
+        log_event(
+            logging.ERROR,
+            "auth_email_auth_failed",
+            fields={"error": type(exc).__name__, "smtp_code": exc.smtp_code},
+        )
+        raise EmailDeliveryError(
+            "Die SMTP-Anmeldung ist fehlgeschlagen. Bitte Benutzername und App-Passwort prüfen."
+        ) from exc
+    except smtplib.SMTPSenderRefused as exc:
+        log_event(
+            logging.ERROR,
+            "auth_email_sender_refused",
+            fields={
+                "error": type(exc).__name__,
+                "smtp_code": exc.smtp_code,
+                "detail": _smtp_detail(exc),
+                "from_domain": _email_domain(sender),
+            },
+        )
+        raise EmailDeliveryError(
+            "Der Absender wurde vom Mailserver abgelehnt. SMTP_FROM muss genau dem GMX-Konto entsprechen."
+        ) from exc
     except (OSError, smtplib.SMTPException) as exc:
         log_event(
             logging.ERROR,
             "auth_email_failed",
-            fields={"error": type(exc).__name__},
+            fields={
+                "error": type(exc).__name__,
+                "detail": _smtp_detail(exc),
+            },
         )
         raise EmailDeliveryError(
             "Die Bestätigungs-E-Mail konnte nicht gesendet werden. Bitte später erneut versuchen."
         ) from exc
 
 
-def _authenticate_and_send(client: smtplib.SMTP, message: EmailMessage) -> None:
-    username: Optional[str] = settings.smtp_username
-    password: Optional[str] = settings.smtp_password
-    if username and password:
-        client.login(username, password)
-    client.send_message(message)
+def _authenticate_and_send(
+    client: smtplib.SMTP,
+    message: EmailMessage,
+    *,
+    username: str,
+    password: str,
+    sender: str,
+    to_email: str,
+) -> None:
+    client.login(username, password)
+    client.sendmail(sender, [to_email], message.as_bytes())
+
+
+def _smtp_address(value: Optional[str]) -> str:
+    cleaned: str = _clean_secret(value)
+    match: Optional[Match[str]] = _ANGLE_EMAIL_RE.search(cleaned)
+    if match is not None:
+        return match.group(1)
+    return cleaned
+
+
+def _smtp_detail(exc: BaseException) -> str:
+    """Keep SMTP text loggable; angle brackets would be stripped as XML."""
+    return sanitize_log_text(str(exc).replace("<", "(").replace(">", ")"), max_len=160)
+
+
+def _clean_secret(value: Optional[str]) -> str:
+    raw: str = (value or "").strip()
+    if len(raw) >= 2 and raw[0] == raw[-1] and raw[0] in {"'", '"'}:
+        return raw[1:-1]
+    return raw
 
 
 def _email_domain(email: str) -> str:

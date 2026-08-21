@@ -1,6 +1,7 @@
 import { useState, type ChangeEvent, type FormEvent, type JSX } from 'react'
 import { loginAccount, requestMagicLink, resendVerification } from '../api/client'
 import { PageNav } from '../components/PageNav'
+import { PasswordField } from '../components/PasswordField'
 import { SiteFooter } from '../components/SiteFooter'
 import type { AppRoute } from '../routing'
 import type { MeResponse, MessageResponse } from '../types/invoice'
@@ -121,16 +122,15 @@ export function LoginPage({
           disabled={sending}
           onChange={(event: ChangeEvent<HTMLInputElement>) => setEmail(event.target.value)}
         />
-        <label htmlFor="login-password">Passwort</label>
-        <input
+        <PasswordField
           id="login-password"
+          label="Passwort"
           name="password"
-          type="password"
           autoComplete="current-password"
-          required
-          minLength={1}
           value={password}
           disabled={sending}
+          minLength={1}
+          maxLength={72}
           onChange={(event: ChangeEvent<HTMLInputElement>) => setPassword(event.target.value)}
         />
         <div className="auth-form__actions">

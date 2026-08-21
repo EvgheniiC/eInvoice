@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.core.clock import as_utc, utc_now
@@ -254,6 +254,35 @@ def set_plan(session: Session, *, organization_id: UUID, plan_code: str) -> Orga
         fields={"organization_id": str(organization_id), "plan": plan_code},
     )
     return organization
+
+
+def delete_user_by_email(session: Session, *, email: str) -> str:
+    """Remove the user, tokens, sessions, and orgs that would be left empty."""
+    normalized: str = normalize_email(email)
+    user: Optional[User] = session.scalar(select(User).where(User.email == normalized))
+    if user is None:
+        raise AuthError("Kein Konto mit dieser E-Mail.")
+    memberships: list[Membership] = list(
+        session.scalars(select(Membership).where(Membership.user_id == user.id)).all()
+    )
+    organization_ids: list[UUID] = [item.organization_id for item in memberships]
+    session.execute(delete(EmailToken).where(EmailToken.user_id == user.id))
+    session.execute(delete(AuthSession).where(AuthSession.user_id == user.id))
+    session.execute(delete(Membership).where(Membership.user_id == user.id))
+    for organization_id in organization_ids:
+        leftover: Optional[Membership] = session.scalar(
+            select(Membership).where(Membership.organization_id == organization_id)
+        )
+        if leftover is not None:
+            continue
+        session.execute(delete(AuthSession).where(AuthSession.organization_id == organization_id))
+        organization: Optional[Organization] = session.get(Organization, organization_id)
+        if organization is not None:
+            session.delete(organization)
+    session.delete(user)
+    session.commit()
+    log_event(logging.INFO, "user_deleted", fields={"domain": _email_domain(normalized)})
+    return normalized
 
 
 def resend_verification(session: Session, *, email: str) -> Optional[str]:

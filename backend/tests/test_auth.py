@@ -188,6 +188,25 @@ class TestAuthFlow(unittest.TestCase):
         )
         self.assertEqual(new.status_code, 200)
 
+    def test_delete_user_allows_reregister(self) -> None:
+        from app.db.session import session_scope
+        from app.services.auth_service import delete_user_by_email
+
+        self._register_and_verify("gone@example.com")
+        for db_session in session_scope():
+            deleted: str = delete_user_by_email(db_session, email="gone@example.com")
+            self.assertEqual(deleted, "gone@example.com")
+        again = self.client.post(
+            "/api/auth/register",
+            json={
+                "email": "gone@example.com",
+                "password": "sicher-passwort-1",
+                "organization_name": "Neu GmbH",
+            },
+        )
+        self.assertEqual(again.status_code, 200)
+        self.assertTrue(again.json().get("verification_token"))
+
     def _register_and_verify(self, email: str) -> str:
         register = self.client.post(
             "/api/auth/register",

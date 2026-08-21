@@ -55,6 +55,16 @@ SMTP (`EMAIL_BACKEND=smtp` plus host and from-address).
 `EMAIL_BACKEND=log` is for local development: the confirmation URL is written
 to API logs (`auth_email_token_dev`) and is not mailed.
 
+After changing SMTP settings: `systemctl restart einvoice-api`. Quote
+`SMTP_PASSWORD` if it contains `#`, spaces, or `$`. With GMX 2FA use the
+application-specific password, not the mailbox password. Probe with:
+
+```bash
+cd /opt/eInvoice/backend
+sudo -u www-data .venv/bin/python scripts/test_smtp.py --to you@example.com
+journalctl -u einvoice-api -n 80 --no-pager | grep auth_email
+```
+
 ## Flows
 
 - Register: email + password + organization name → Inhaber membership on a **Free** plan
@@ -73,6 +83,15 @@ python scripts/set_plan.py --email meister@example.com --plan plus
 ```
 
 Or `POST /api/admin/plans` with header `X-Admin-Token`.
+
+## Delete an account
+
+```bash
+cd backend
+python scripts/delete_user.py --email meister@example.com
+```
+
+Removes the user, sessions, email tokens, and the organization if nobody else remains.
 
 ## UI
 

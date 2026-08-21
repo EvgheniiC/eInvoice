@@ -64,6 +64,31 @@ describe('LoginPage', (): void => {
     expect(onNavigate).toHaveBeenCalledWith('org')
   })
 
+  it('lets the monkey toggle password visibility', async (): Promise<void> => {
+    const user: UserEvent = userEvent.setup()
+
+    render(
+      <LoginPage
+        onNavigate={vi.fn()}
+        onLoggedIn={vi.fn()}
+        session={null}
+        onLogout={vi.fn()}
+        notice={null}
+        initialEmail=""
+        verificationToken={null}
+      />,
+    )
+
+    const passwordInput: HTMLInputElement = screen.getByLabelText('Passwort')
+    expect(passwordInput).toHaveAttribute('type', 'password')
+
+    await user.click(screen.getByRole('button', { name: 'Passwort anzeigen' }))
+    expect(passwordInput).toHaveAttribute('type', 'text')
+
+    await user.click(screen.getByRole('button', { name: 'Passwort verbergen' }))
+    expect(passwordInput).toHaveAttribute('type', 'password')
+  })
+
   it('shows the registration notice and prefills email', (): void => {
     render(
       <LoginPage
