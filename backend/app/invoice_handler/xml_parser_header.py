@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Sequence, Tuple
 from xml.etree.ElementTree import Element
 
 from ..data_class import XmlInvoiceHeader
@@ -33,6 +33,7 @@ class HeaderXmlRoots:
     invoice_head: Element
     invoice_head_money: Element
     supplier_data: Element
+    header_trade_delivery: Optional[Element]
 
 
 @dataclass(frozen=True)
@@ -44,8 +45,9 @@ class HeaderTagSet:
     contract_id: List[str]
     invoice_date: List[str]
     due_date: List[str]
-    delivery_date: List[str]
-    delivery_date_till: List[str]
+    period_start: List[str]
+    period_end: List[str]
+    actual_delivery_date: List[str]
     currency: List[str]
     invoice_amount: List[str]
     line_extension_amount: List[str]
@@ -71,8 +73,9 @@ class HeaderTagSet:
             contract_id=get_tags_from_json("tags_to_search_contract_id"),
             invoice_date=get_tags_from_json("tags_to_search_invoice_date"),
             due_date=get_tags_from_json("tags_to_search_due_date"),
-            delivery_date=get_tags_from_json("tags_to_search_delivery_date"),
-            delivery_date_till=get_tags_from_json("tags_to_search_delivery_date_till"),
+            period_start=get_tags_from_json("tags_to_search_period_start"),
+            period_end=get_tags_from_json("tags_to_search_period_end"),
+            actual_delivery_date=get_tags_from_json("tags_to_search_actual_delivery_date"),
             currency=get_tags_from_json("tags_to_search_currency"),
             invoice_amount=get_tags_from_json("tags_to_search_invoice_amount"),
             line_extension_amount=get_tags_from_json("tags_to_search_line_extension_amount"),
@@ -132,6 +135,9 @@ def _resolve_xml_roots(xml_tree: Element) -> HeaderXmlRoots:
         "SpecifiedTradeSettlementHeaderMonetarySummation"
     )
     supplier_data: Optional[Element] = xml_tree.find("./SupplyChainTradeTransaction")
+    header_trade_delivery: Optional[Element] = xml_tree.find(
+        "./SupplyChainTradeTransaction/ApplicableHeaderTradeDelivery"
+    )
 
     if invoice_head is None:
         return HeaderXmlRoots(
@@ -140,6 +146,7 @@ def _resolve_xml_roots(xml_tree: Element) -> HeaderXmlRoots:
             invoice_head=xml_tree,
             invoice_head_money=xml_tree,
             supplier_data=xml_tree,
+            header_trade_delivery=None,
         )
 
     return HeaderXmlRoots(
@@ -148,7 +155,36 @@ def _resolve_xml_roots(xml_tree: Element) -> HeaderXmlRoots:
         invoice_head=invoice_head,
         invoice_head_money=invoice_head_money if invoice_head_money is not None else xml_tree,
         supplier_data=supplier_data if supplier_data is not None else xml_tree,
+        header_trade_delivery=header_trade_delivery,
     )
+
+
+def resolve_delivery_dates(
+    *,
+    period_start: Optional[datetime],
+    period_end: Optional[datetime],
+    actual_delivery: Optional[datetime],
+    invoice_date: Optional[datetime],
+) -> Tuple[Optional[datetime], Optional[datetime]]:
+    """Choose Leistungszeitraum / Leistungsdatum: BT-73+74, else BT-72, else BT-2."""
+    if period_start is not None and period_end is not None:
+        return period_start, period_end
+    if actual_delivery is not None:
+        return actual_delivery, actual_delivery
+    return invoice_date, invoice_date
+
+
+def _first_parsed_date(
+    elements: Sequence[Optional[Element]], tags: List[str]
+) -> Optional[datetime]:
+    """Return the first parseable date found under any of the given roots."""
+    for element in elements:
+        parsed: Optional[datetime] = parse_xml_date(
+            find_data_within_element(element, tags)
+        )
+        if parsed is not None:
+            return parsed
+    return None
 
 
 def _parse_dates(
@@ -168,19 +204,24 @@ def _parse_dates(
         find_data_within_element(roots.invoice_head, tags.due_date)
     )
 
-    delivery_date: Optional[datetime] = parse_xml_date(
-        find_data_within_element(roots.invoice_head, tags.delivery_date)
+    # BT-73/BT-74 live under settlement (CII) or invoice root (UBL).
+    period_start: Optional[datetime] = _first_parsed_date(
+        (roots.invoice_head, roots.tree), tags.period_start
     )
-    if delivery_date is None:
-        logger.error_log("Delivery date was not found")
-    header.delivery_date = delivery_date
-
-    delivery_date_till: Optional[datetime] = parse_xml_date(
-        find_data_within_element(roots.invoice_head, tags.delivery_date_till)
+    period_end: Optional[datetime] = _first_parsed_date(
+        (roots.invoice_head, roots.tree), tags.period_end
     )
-    if delivery_date_till is None:
-        logger.error_log("delivery_date_till was not found")
-    header.delivery_date_till = delivery_date_till
+    # BT-72 lives under ApplicableHeaderTradeDelivery (CII) or cac:Delivery (UBL).
+    actual_delivery: Optional[datetime] = _first_parsed_date(
+        (roots.header_trade_delivery, roots.supplier_data, roots.tree),
+        tags.actual_delivery_date,
+    )
+    header.delivery_date, header.delivery_date_till = resolve_delivery_dates(
+        period_start=period_start,
+        period_end=period_end,
+        actual_delivery=actual_delivery,
+        invoice_date=invoice_date,
+    )
 
 
 def _parse_references(

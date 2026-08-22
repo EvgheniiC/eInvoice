@@ -77,12 +77,8 @@ class XmlInvoiceHeader:
         return result
 
     def set_dates(self) -> None:
-        """Fill missing delivery dates from the opposing date or invoice date."""
-        if self.delivery_date and not self.delivery_date_till:
-            self.delivery_date_till = self.delivery_date
-        elif self.delivery_date_till and not self.delivery_date:
-            self.delivery_date = self.delivery_date_till
-        elif not self.delivery_date and not self.delivery_date_till:
+        """Apply BT-2 fallback when neither BT-73/74 nor BT-72 was resolved."""
+        if self.delivery_date is None and self.delivery_date_till is None:
             self.delivery_date = self.invoice_date
             self.delivery_date_till = self.invoice_date
 

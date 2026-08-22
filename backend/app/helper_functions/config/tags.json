@@ -123,17 +123,22 @@
     "./DueDate",
     "./Invoice/DueDate"
   ],
-  "tags_to_search_delivery_date": [
+  "tags_to_search_period_start": [
     "./BillingSpecifiedPeriod/StartDateTime/DateTimeString",
     "./InvoicePeriod/StartDate",
-    "./Invoice/InvoicePeriod/StartDate",
-    "./Delivery/ActualDeliveryDate"
+    "./Invoice/InvoicePeriod/StartDate"
   ],
-  "tags_to_search_delivery_date_till": [
+  "tags_to_search_period_end": [
     "./BillingSpecifiedPeriod/EndDateTime/DateTimeString",
     "./InvoicePeriod/EndDate",
-    "./Invoice/InvoicePeriod/EndDate",
-    "./Delivery/ActualDeliveryDate"
+    "./Invoice/InvoicePeriod/EndDate"
+  ],
+  "tags_to_search_actual_delivery_date": [
+    "./ApplicableHeaderTradeDelivery/ActualDeliverySupplyChainEvent/OccurrenceDateTime/DateTimeString",
+    "./ActualDeliverySupplyChainEvent/OccurrenceDateTime/DateTimeString",
+    "./SupplyChainTradeTransaction/ApplicableHeaderTradeDelivery/ActualDeliverySupplyChainEvent/OccurrenceDateTime/DateTimeString",
+    "./Delivery/ActualDeliveryDate",
+    "./Invoice/Delivery/ActualDeliveryDate"
   ],
   "tags_to_search_currency": [
     "./InvoiceCurrencyCode",
