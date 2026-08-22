@@ -207,28 +207,28 @@ def build_batch_view_pdf_filename(completed_at: datetime, invoice_count: int) ->
 
 def _story(invoice: InvoiceParseResponse) -> list[Flowable]:
     story: list[Flowable] = [
-        Paragraph("E I N V O I C E", _TITLE_STYLE),
+        Paragraph("E-Rechnung", _TITLE_STYLE),
         _boxed(Paragraph(DISCLAIMER, _DISCLAIMER_STYLE), fill=ROW_FILL),
         Spacer(1, 4 * mm),
         _parties_table(invoice),
         Spacer(1, 4 * mm),
         _facts_table(invoice),
     ]
-    warning: Optional[Flowable] = _status_banner(invoice)
-    if warning is not None:
-        story.append(Spacer(1, 3 * mm))
-        story.append(warning)
-    story.append(Spacer(1, 4 * mm))
-    story.append(_tax_and_reference_row(invoice))
     if invoice.line_items:
         story.append(Paragraph("Positionen", _SECTION_STYLE))
         story.append(_positions_table(invoice))
+    story.append(Spacer(1, 4 * mm))
+    story.append(_tax_table(invoice))
     story.append(Spacer(1, 3 * mm))
     story.append(
         HRFlowable(width="100%", thickness=0.6, color=LINE_COLOR, spaceBefore=1 * mm, spaceAfter=2 * mm)
     )
     story.append(Paragraph("Zahlung", _SECTION_STYLE))
     story.append(_payment_table(invoice))
+    warning: Optional[Flowable] = _mismatch_banner(invoice)
+    if warning is not None:
+        story.append(Spacer(1, 4 * mm))
+        story.append(warning)
     return [KeepTogether(story[:4]), *story[4:]]
 
 
@@ -313,7 +313,7 @@ def _facts_table(invoice: InvoiceParseResponse) -> Table:
     return table
 
 
-def _status_banner(invoice: InvoiceParseResponse) -> Optional[Flowable]:
+def _mismatch_banner(invoice: InvoiceParseResponse) -> Optional[Flowable]:
     mismatched: bool = any(
         field.xml_value is not None and not field.matched for field in invoice.mismatch_fields
     )
@@ -337,7 +337,7 @@ def _status_banner(invoice: InvoiceParseResponse) -> Optional[Flowable]:
     return None
 
 
-def _tax_and_reference_row(invoice: InvoiceParseResponse) -> Table:
+def _tax_table(invoice: InvoiceParseResponse) -> Table:
     currency: Optional[str] = invoice.totals.currency if invoice.totals else None
     tax_rows: list[list[Paragraph]] = [
         [_p("Steuersatz", _TH_STYLE), _p("Steuerbetrag", _TH_STYLE)],
@@ -359,32 +359,7 @@ def _tax_and_reference_row(invoice: InvoiceParseResponse) -> Table:
             _p(_format_amount(invoice.totals.tax if invoice.totals else None, currency), _TD_RIGHT_STYLE),
         ]
     )
-    tax_table: Table = _grid_table(tax_rows, [USABLE_WIDTH * 0.22, USABLE_WIDTH * 0.26])
-    reference: str = _pdf_text(invoice.payment_reference)
-    info_table: Table = _grid_table(
-        [
-            [_p("Buyer Reference", _TH_STYLE)],
-            [_p(reference, _TD_STYLE)],
-        ],
-        [USABLE_WIDTH * 0.44],
-    )
-    wrapper: Table = Table(
-        [[tax_table, info_table]],
-        colWidths=[USABLE_WIDTH * 0.52, USABLE_WIDTH * 0.48],
-    )
-    wrapper.setStyle(
-        TableStyle(
-            [
-                ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                ("LEFTPADDING", (0, 0), (-1, -1), 0),
-                ("RIGHTPADDING", (0, 0), (0, 0), 8),
-                ("LEFTPADDING", (1, 0), (1, 0), 8),
-                ("TOPPADDING", (0, 0), (-1, -1), 0),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
-            ]
-        )
-    )
-    return wrapper
+    return _grid_table(tax_rows, [USABLE_WIDTH * 0.22, USABLE_WIDTH * 0.26])
 
 
 def _positions_table(invoice: InvoiceParseResponse) -> Table:

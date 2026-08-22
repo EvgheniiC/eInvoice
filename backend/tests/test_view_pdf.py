@@ -16,6 +16,7 @@ from app.schemas.invoice import (
     InvoiceParseResponse,
     InvoiceTotals,
     LineItem,
+    MismatchField,
     PartyInfo,
     ParseStatus,
     TaxBreakdown,
@@ -109,13 +110,16 @@ class TestViewPdfService(unittest.TestCase):
         self.assertTrue(filename.endswith(".pdf"))
         self.assertTrue(content.startswith(b"%PDF"))
         text: str = _pdf_text(content)
-        self.assertIn("EINVOICE", text.replace(" ", ""))
+        self.assertIn("E-Rechnung", text)
+        self.assertNotIn("Buyer Reference", text)
         self.assertIn("keine Originalrechnung", text)
         self.assertIn("2025/10294", text)
         self.assertIn("KMLZ", text)
         self.assertIn("Beratung", text)
         self.assertIn("270,73", text)
         self.assertIn("DE95 7004 0041 0228 8405 00", text)
+        self.assertLess(text.find("Zahlungsreferenz"), text.find("Positionen"))
+        self.assertLess(text.find("Positionen"), text.find("Steuersatz"))
 
     def test_invalid_invoice_still_renders(self) -> None:
         invoice: InvoiceParseResponse = _sample_invoice()
@@ -133,6 +137,25 @@ class TestViewPdfService(unittest.TestCase):
         self.assertEqual(media, "application/pdf")
         text: str = _pdf_text(content)
         self.assertIn("ungültig", text)
+        self.assertGreater(text.find("ungültig"), text.find("Zahlung"))
+
+    def test_mismatch_warning_is_at_the_bottom(self) -> None:
+        invoice: InvoiceParseResponse = _sample_invoice()
+        invoice.mismatch_fields = [
+            MismatchField(
+                field="gross",
+                label="Betrag",
+                xml_value="270.73",
+                pdf_value="200.00",
+                matched=False,
+            )
+        ]
+        text: str = _pdf_text(self.service.render(invoice)[0])
+        warning: str = "PDF und XML weichen ab"
+        self.assertIn(warning, text)
+        self.assertGreater(text.find(warning), text.find("Zahlung"))
+        self.assertGreater(text.find(warning), text.find("Positionen"))
+        self.assertGreater(text.find(warning), text.find("Steuersatz"))
 
     def test_batch_zip_contains_one_pdf_per_invoice(self) -> None:
         second: InvoiceParseResponse = _sample_invoice()
