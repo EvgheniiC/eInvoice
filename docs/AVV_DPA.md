@@ -26,9 +26,9 @@ zusätzlich ein AVV zwischen Kanzlei und Betreiber nötig sein.
 ## 3. Zweck und Dauer
 
 - Zweck: Lesen, Prüfen und Exportieren der vom Nutzer übermittelten Datei
-- Speicherung der Datei: nur für die Dauer der HTTP-Anfrage; danach Löschung der
-  temporären XML/PDF und Validator-Ergebnisse
-- Kein Rechnungsarchiv, kein Benutzerkonto (Gastmodell)
+- Speicherung der Datei: Gast — nur für die Dauer der HTTP-Anfrage; Plus-Batch —
+  kurzlebiges Temp-Verzeichnis bis zum Buchhaltungspaket oder TTL (kein Archiv)
+- Kein dauerhaftes Rechnungsarchiv, kein GoBD-Archiv
 - Geplantes Kontomodell (nicht Vertragsgegenstand, solange nicht eingesetzt):
   Metadaten der Verarbeitung; Originaldatei nur bei Opt-in und begrenzter
   Aufbewahrung; Rechtsgrundlage und AVV vor Go-live separat festlegen

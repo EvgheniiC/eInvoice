@@ -800,7 +800,7 @@
           "invoices"
         ],
         "summary": "Create Invoice Batch",
-        "description": "Queue several XML/PDF files for Plus/Team. Does not run KoSIT in this request.",
+        "description": "Queue several XML/PDF files or one ZIP (invoice members only) for Plus/Team.",
         "operationId": "create_invoice_batch_api_invoices_batch_post",
         "requestBody": {
           "content": {
@@ -864,6 +864,48 @@
                 "schema": {
                   "$ref": "#/components/schemas/BatchJobResponse"
                 }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/invoices/batch/{job_id}/accountant-package": {
+      "post": {
+        "tags": [
+          "invoices"
+        ],
+        "summary": "Export Batch Accountant Package",
+        "description": "One ZIP for the completed batch: originals + summary + Prüfbericht + Excel + DATEV.\nOriginals must still be in the short-lived temp directory.",
+        "operationId": "export_batch_accountant_package_api_invoices_batch__job_id__accountant_package_post",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           },

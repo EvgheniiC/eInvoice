@@ -174,5 +174,21 @@ class TestMetricsAndErrorTracking(unittest.TestCase):
         self.assertNotIn("<Invoice>", body)
 
 
+class TestPathNormalization(unittest.TestCase):
+    def test_batch_job_paths_are_low_cardinality(self) -> None:
+        from app.core.metrics import normalize_path
+
+        job_id: str = "00000000-0000-0000-0000-000000000099"
+        self.assertEqual(normalize_path("/api/invoices/batch"), "/api/invoices/batch")
+        self.assertEqual(
+            normalize_path(f"/api/invoices/batch/{job_id}"),
+            "/api/invoices/batch/{job_id}",
+        )
+        self.assertEqual(
+            normalize_path(f"/api/invoices/batch/{job_id}/accountant-package"),
+            "/api/invoices/batch/{job_id}/accountant-package",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

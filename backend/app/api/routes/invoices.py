@@ -3,18 +3,26 @@ from typing import List, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from app.api.deps import AUTH_UNAVAILABLE, get_optional_db, get_optional_org_context
 from app.core.config import settings
-from app.core.error_events import log_api_error, log_event, safe_filename
+from app.core.error_events import format_safe_stack, log_api_error, log_event, safe_filename
+from app.core.metrics import observe_funnel
 from app.core.middleware import get_request_id
 from app.schemas.batch import BatchJobResponse
 from app.schemas.invoice import InvoiceParseResponse
 from app.services.auth_service import OrgContext
-from app.services.batch_service import enqueue_batch, get_batch, require_batch_plan
+from app.services.batch_service import (
+    assert_batch_package_ready,
+    build_batch_accountant_package,
+    enqueue_batch,
+    get_batch,
+    require_batch_plan,
+)
 from app.services.invoice_service import InvoiceService
-from app.services.quota_service import enforce_parse
+from app.services.quota_service import enforce_export, enforce_parse
 
 router: APIRouter = APIRouter()
 invoice_service: InvoiceService = InvoiceService()
@@ -92,7 +100,7 @@ async def create_invoice_batch(
     org_context: Optional[OrgContext] = Depends(get_optional_org_context),
     db: Optional[Session] = Depends(get_optional_db),
 ) -> BatchJobResponse:
-    """Queue several XML/PDF files for Plus/Team. Does not run KoSIT in this request."""
+    """Queue several XML/PDF files or one ZIP (invoice members only) for Plus/Team."""
     context: OrgContext = require_batch_plan(org_context)
     if db is None:
         raise HTTPException(
@@ -116,3 +124,51 @@ def get_invoice_batch(
             detail=AUTH_UNAVAILABLE,
         )
     return get_batch(db, context, job_id)
+
+
+@router.post("/batch/{job_id}/accountant-package")
+def export_batch_accountant_package(
+    job_id: UUID,
+    request: Request,
+    org_context: Optional[OrgContext] = Depends(get_optional_org_context),
+    db: Optional[Session] = Depends(get_optional_db),
+) -> Response:
+    """
+    One ZIP for the completed batch: originals + summary + Prüfbericht + Excel + DATEV.
+    Originals must still be in the short-lived temp directory.
+    """
+    context: OrgContext = require_batch_plan(org_context)
+    if db is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=AUTH_UNAVAILABLE,
+        )
+    assert_batch_package_ready(db, context, job_id)
+    try:
+        with enforce_export(request, db, context):
+            content, media_type, filename = build_batch_accountant_package(db, context, job_id)
+    except HTTPException:
+        raise
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    except Exception as exc:
+        log_api_error(
+            event="batch_accountant_package_failed",
+            method=request.method,
+            path=request.url.path,
+            status_code=500,
+            request_id=get_request_id(request),
+            detail=type(exc).__name__,
+            exc_type=type(exc).__name__,
+            stack=format_safe_stack(exc),
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Accountant-Paket fehlgeschlagen.",
+        ) from exc
+
+    headers: dict[str, str] = {
+        "Content-Disposition": f'attachment; filename="{filename}"',
+    }
+    observe_funnel("export")
+    return Response(content=content, media_type=media_type, headers=headers)

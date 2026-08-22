@@ -22,6 +22,7 @@ from app.services.export_service import (
     assert_xml_bytes,
     decode_base64_payload,
     decode_pdf_base64,
+    invoice_is_exportable,
 )
 from app.services.quota_service import enforce_export
 from app.services.validation_report import (
@@ -176,12 +177,12 @@ def _optional_xml_bytes(xml_base64: Optional[str]) -> Optional[bytes]:
 
 
 def _assert_exportable(invoice: InvoiceParseResponse) -> None:
-    if invoice.status == ParseStatus.ERROR:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Fehlerhafte Rechnung kann nicht exportiert werden.",
-        )
-    if not invoice.invoice_number and not (invoice.totals and invoice.totals.gross):
+    if not invoice_is_exportable(invoice):
+        if invoice.status == ParseStatus.ERROR:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Fehlerhafte Rechnung kann nicht exportiert werden.",
+            )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Zu wenige Daten für den Export (Nummer/Betrag fehlen).",

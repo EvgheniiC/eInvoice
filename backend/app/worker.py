@@ -1,4 +1,7 @@
-"""einvoice-worker: drain batch_items one file at a time via InvoiceService.parse_upload."""
+"""einvoice-worker: drain batch_items one file at a time via InvoiceService.parse_upload.
+
+Originals stay in BATCH_TEMP_DIR until the accountant ZIP is downloaded or TTL expires.
+"""
 
 from __future__ import annotations
 

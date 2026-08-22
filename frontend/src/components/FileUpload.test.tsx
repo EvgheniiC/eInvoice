@@ -39,7 +39,7 @@ describe('FileUpload', (): void => {
         multiple
         onFilesSelected={onFilesSelected}
         title="Mehrere XRechnung-XML oder ZUGFeRD-PDF hier ablegen"
-        hint="oder Dateien auswählen (.xml / .pdf). ZIP folgt in einem nächsten Schritt."
+        hint="oder Dateien auswählen (.xml / .pdf / .zip)"
       />,
     )
 

@@ -5,6 +5,8 @@ type BatchSummaryProps = {
   job: BatchJobResponse
   selectedItemId: string | null
   onSelectItem: (item: BatchItemResponse) => void
+  onDownloadPackage: () => void
+  packageDownloading: boolean
 }
 
 const STATUS_LABEL: Record<BatchItemStatus, string> = {
@@ -15,8 +17,15 @@ const STATUS_LABEL: Record<BatchItemStatus, string> = {
   ablehnen: 'ablehnen',
 }
 
-export function BatchSummary({ job, selectedItemId, onSelectItem }: BatchSummaryProps): JSX.Element {
+export function BatchSummary({
+  job,
+  selectedItemId,
+  onSelectItem,
+  onDownloadPackage,
+  packageDownloading,
+}: BatchSummaryProps): JSX.Element {
   const percent: number = job.item_count === 0 ? 0 : Math.round((job.done_count / job.item_count) * 100)
+  const zipEnabled: boolean = job.export_package_available && !packageDownloading
 
   return (
     <section className="batch-summary" aria-live="polite">
@@ -72,14 +81,34 @@ export function BatchSummary({ job, selectedItemId, onSelectItem }: BatchSummary
           </tbody>
         </table>
       </div>
-      <p className="batch-summary__hint">
-        Klick auf eine geprüfte Zeile zeigt die Rechnung rechts. Originaldateien werden nach der
-        Prüfung gelöscht.
-      </p>
-      <button type="button" className="batch-summary__zip" disabled>
-        Ein ZIP für die Buchhaltung (folgt)
+      <p className="batch-summary__hint">{packageHint(job)}</p>
+      <button
+        type="button"
+        className="batch-summary__zip"
+        disabled={!zipEnabled}
+        onClick={onDownloadPackage}
+      >
+        {packageDownloading ? 'Paket wird erstellt…' : 'Ein ZIP für die Buchhaltung'}
       </button>
     </section>
+  )
+}
+
+function packageHint(job: BatchJobResponse): string {
+  if (job.export_package_available) {
+    return (
+      'Klick auf eine geprüfte Zeile zeigt die Rechnung rechts. Ein ZIP mit Excel, DATEV und ' +
+      'den Originaldateien für die Kanzlei.'
+    )
+  }
+  if (job.status === 'completed') {
+    return (
+      'Originaldateien sind nicht mehr verfügbar. Für ein neues Paket die Dateien erneut hochladen.'
+    )
+  }
+  return (
+    'Klick auf eine geprüfte Zeile zeigt die Rechnung rechts. Originaldateien bleiben kurz ' +
+    'gespeichert, bis Sie das Buchhaltungspaket laden.'
   )
 }
 

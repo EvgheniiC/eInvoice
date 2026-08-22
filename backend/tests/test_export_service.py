@@ -193,6 +193,39 @@ class TestExportService(unittest.TestCase):
             self.assertEqual(len(xml_members), 1)
             self.assertEqual(archive.read(xml_members[0]).decode("utf-8"), xml_text)
 
+    def test_batch_accountant_package_combines_invoices(self) -> None:
+        from datetime import datetime, timezone
+
+        from app.services.export_service import BatchPackageEntry, build_batch_package_filename
+
+        first: InvoiceParseResponse = _sample_invoice()
+        second: InvoiceParseResponse = _sample_invoice()
+        second.invoice_number = "2025/10295"
+        second.filename = "two.xml"
+        content, media, filename = self.service.build_batch_accountant_package(
+            [
+                BatchPackageEntry(filename="one.xml", original_bytes=b"<Invoice>1</Invoice>", invoice=first),
+                BatchPackageEntry(filename="two.xml", original_bytes=b"<Invoice>2</Invoice>", invoice=second),
+            ],
+            datetime(2026, 8, 22, tzinfo=timezone.utc),
+        )
+        self.assertEqual(media, "application/zip")
+        self.assertEqual(filename, build_batch_package_filename(datetime(2026, 8, 22, tzinfo=timezone.utc), 2))
+        with zipfile.ZipFile(io.BytesIO(content)) as archive:
+            names: list[str] = archive.namelist()
+            self.assertIn("summary.txt", names)
+            self.assertIn("pruefbericht_paket.txt", names)
+            self.assertIn("original/01_one.xml", names)
+            self.assertIn("original/02_two.xml", names)
+            datev_members: list[str] = [name for name in names if name.startswith("datev_rechnungen_")]
+            self.assertEqual(len(datev_members), 1)
+            datev_text: str = archive.read(datev_members[0]).decode("cp1252")
+            self.assertIn("2025/10294", datev_text)
+            self.assertIn("2025/10295", datev_text)
+            summary: str = archive.read("summary.txt").decode("utf-8")
+            self.assertIn("Rechnungen im Export: 2", summary)
+            self.assertIn(EXPORT_FORMAT_VERSION, summary)
+
     def test_package_summary_mismatch_line(self) -> None:
         invoice: InvoiceParseResponse = _sample_invoice()
         invoice.file_type = "zugferd_pdf"

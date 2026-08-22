@@ -3,7 +3,10 @@ import binascii
 import csv
 import io
 import zipfile
+from dataclasses import dataclass
+from datetime import datetime
 from decimal import Decimal
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from openpyxl import Workbook
@@ -17,15 +20,30 @@ from app.schemas.export import (
     EXPORT_FORMAT_VERSION,
     ExportFormat,
 )
-from app.schemas.invoice import InvoiceParseResponse, LineItem, MismatchField, ValidationMeta
+from app.schemas.invoice import (
+    InvoiceParseResponse,
+    LineItem,
+    MismatchField,
+    ParseStatus,
+    ValidationMeta,
+)
 from app.services.pdf_xml_extractor import extract_embedded_xml_from_pdf
 from app.services.validation_report import (
     build_validation_report,
     build_validation_report_filename,
 )
 
-MAX_PACKAGE_SOURCE_BYTES: int = 12 * 1024 * 1024
+MAX_PACKAGE_SOURCE_BYTES: int = 50 * 1024 * 1024
 ORIGINAL_DIR: str = "original"
+
+
+@dataclass(frozen=True)
+class BatchPackageEntry:
+    """One batch file: original bytes (if still on disk) plus optional parse DTO."""
+
+    filename: str
+    original_bytes: Optional[bytes]
+    invoice: Optional[InvoiceParseResponse]
 
 
 class ExportService:
@@ -106,6 +124,74 @@ class ExportService:
                 )
 
         zip_name: str = build_package_filename(invoice)
+        return buffer.getvalue(), "application/zip", zip_name
+
+    def build_batch_accountant_package(
+        self,
+        entries: List[BatchPackageEntry],
+        completed_at: datetime,
+    ) -> Tuple[bytes, str, str]:
+        """
+        One ZIP for N invoices: combined Excel + DATEV + manifest + originals.
+        Returns (zip_bytes, media_type, download_filename).
+        """
+        exportable: List[InvoiceParseResponse] = [
+            entry.invoice
+            for entry in entries
+            if entry.invoice is not None and invoice_is_exportable(entry.invoice)
+        ]
+        if not exportable:
+            raise ValueError("Keine exportierbare Rechnung in diesem Auftrag.")
+
+        originals: List[tuple[str, bytes]] = []
+        for index, entry in enumerate(entries, start=1):
+            if entry.original_bytes is None:
+                continue
+            _assert_source_size(entry.original_bytes, "Originaldatei")
+            originals.append(
+                (
+                    _batch_original_member_name(index, entry.filename),
+                    entry.original_bytes,
+                )
+            )
+
+        date_part: str = completed_at.strftime("%Y%m%d")
+        excel_name: str = f"rechnungen_{date_part}_{len(exportable)}.xlsx"
+        datev_name: str = f"datev_rechnungen_{date_part}_{len(exportable)}.csv"
+        has_xml: bool = any(name.lower().endswith(".xml") for name, _ in originals)
+        has_pdf: bool = any(name.lower().endswith(".pdf") for name, _ in originals)
+
+        buffer: io.BytesIO = io.BytesIO()
+        with zipfile.ZipFile(buffer, mode="w", compression=zipfile.ZIP_DEFLATED) as archive:
+            archive.writestr(
+                "export_manifest.txt",
+                build_batch_export_manifest(
+                    exportable,
+                    original_names=[name for name, _ in originals],
+                    has_xml=has_xml,
+                    has_pdf=has_pdf,
+                ),
+            )
+            archive.writestr("datev_hinweise.txt", build_datev_notes())
+            archive.writestr(
+                "summary.txt",
+                build_batch_package_summary(
+                    exportable,
+                    entries=entries,
+                    has_xml=has_xml,
+                    has_pdf=has_pdf,
+                ),
+            )
+            archive.writestr(
+                "pruefbericht_paket.txt",
+                build_batch_validation_report(exportable),
+            )
+            archive.writestr(excel_name, self._to_excel_many(exportable))
+            archive.writestr(datev_name, self._to_datev_many(exportable))
+            for member_name, payload in originals:
+                archive.writestr(member_name, payload)
+
+        zip_name: str = build_batch_package_filename(completed_at, len(exportable))
         return buffer.getvalue(), "application/zip", zip_name
 
     def _to_csv(self, invoice: InvoiceParseResponse) -> bytes:
@@ -205,6 +291,108 @@ class ExportService:
         )
         writer.writeheader()
         writer.writerow(build_datev_row(invoice))
+        return buffer.getvalue().encode("cp1252", errors="replace")
+
+    def _to_excel_many(self, invoices: List[InvoiceParseResponse]) -> bytes:
+        workbook: Workbook = Workbook()
+        header_sheet: Worksheet = workbook.active
+        header_sheet.title = "Invoice"
+        header_sheet.append(["export_format_version", EXPORT_FORMAT_VERSION])
+        header_sheet.append(["invoice_count", len(invoices)])
+        header_sheet.append([])
+        header_sheet.append(
+            [
+                "invoice_number",
+                "issue_date",
+                "due_date",
+                "seller_name",
+                "seller_vat_id",
+                "seller_iban",
+                "buyer_name",
+                "currency",
+                "net",
+                "tax",
+                "gross",
+                "payment_reference",
+                "filename",
+                "validation_status",
+            ]
+        )
+        for invoice in invoices:
+            header_sheet.append(
+                [
+                    invoice.invoice_number or "",
+                    _de_date(invoice.issue_date) or invoice.issue_date or "",
+                    _de_date(invoice.due_date) or invoice.due_date or "",
+                    invoice.seller.name if invoice.seller and invoice.seller.name else "",
+                    invoice.seller.vat_id if invoice.seller and invoice.seller.vat_id else "",
+                    invoice.seller.iban if invoice.seller and invoice.seller.iban else "",
+                    invoice.buyer.name if invoice.buyer and invoice.buyer.name else "",
+                    invoice.totals.currency if invoice.totals and invoice.totals.currency else "",
+                    invoice.totals.net if invoice.totals else "",
+                    invoice.totals.tax if invoice.totals else "",
+                    invoice.totals.gross if invoice.totals else "",
+                    invoice.payment_reference or "",
+                    invoice.filename,
+                    invoice.validation_status.value,
+                ]
+            )
+
+        lines_sheet: Worksheet = workbook.create_sheet("Lines")
+        lines_sheet.append(
+            [
+                "invoice_number",
+                "position",
+                "description",
+                "quantity",
+                "unit",
+                "unit_price",
+                "tax_rate",
+                "net_amount",
+                "gross_amount",
+            ]
+        )
+        for invoice in invoices:
+            number: str = invoice.invoice_number or ""
+            for item in invoice.line_items:
+                lines_sheet.append(
+                    [
+                        number,
+                        item.position,
+                        item.description or "",
+                        item.quantity,
+                        item.unit or "",
+                        item.unit_price,
+                        item.tax_rate,
+                        item.net_amount,
+                        item.gross_amount,
+                    ]
+                )
+
+        flat_sheet: Worksheet = workbook.create_sheet("Flat")
+        flat_sheet.append(EXPORT_COLUMNS)
+        for invoice in invoices:
+            for row in build_flat_rows(invoice):
+                localized: Dict[str, Any] = _localize_csv_row(row)
+                flat_sheet.append([localized.get(col, "") for col in EXPORT_COLUMNS])
+
+        output: io.BytesIO = io.BytesIO()
+        workbook.save(output)
+        return output.getvalue()
+
+    def _to_datev_many(self, invoices: List[InvoiceParseResponse]) -> bytes:
+        buffer: io.StringIO = io.StringIO()
+        writer: csv.DictWriter = csv.DictWriter(
+            buffer,
+            fieldnames=DATEV_COLUMNS,
+            delimiter=";",
+            extrasaction="ignore",
+            lineterminator="\r\n",
+            quoting=csv.QUOTE_MINIMAL,
+        )
+        writer.writeheader()
+        for invoice in invoices:
+            writer.writerow(build_datev_row(invoice))
         return buffer.getvalue().encode("cp1252", errors="replace")
 
 
@@ -313,6 +501,21 @@ def build_package_filename(invoice: InvoiceParseResponse) -> str:
     return f"buchhaltung_{supplier}_{number}_{date_part}.zip"
 
 
+def build_batch_package_filename(completed_at: datetime, invoice_count: int) -> str:
+    """ZIP filename: buchhaltung_paket_YYYYMMDD_NDateien.zip"""
+    date_part: str = completed_at.strftime("%Y%m%d")
+    return f"buchhaltung_paket_{date_part}_{invoice_count}Dateien.zip"
+
+
+def invoice_is_exportable(invoice: InvoiceParseResponse) -> bool:
+    """Same gate as the single-invoice export endpoints."""
+    if invoice.status == ParseStatus.ERROR:
+        return False
+    if not invoice.invoice_number and not (invoice.totals and invoice.totals.gross):
+        return False
+    return True
+
+
 def build_package_summary(
     invoice: InvoiceParseResponse,
     has_xml: bool = False,
@@ -401,6 +604,128 @@ def build_package_summary(
 
     lines.append("")
     return "\n".join(lines)
+
+
+def build_batch_package_summary(
+    invoices: List[InvoiceParseResponse],
+    entries: List[BatchPackageEntry],
+    has_xml: bool,
+    has_pdf: bool,
+) -> str:
+    """German overview of all invoices in the batch accountant package."""
+    original_count: int = sum(1 for entry in entries if entry.original_bytes is not None)
+    skipped_count: int = len(entries) - len(invoices)
+    lines: List[str] = [
+        "Buchhaltungspaket — eInvoice (Sammelexport)",
+        "==========================================",
+        "",
+        f"Exportformat: {EXPORT_FORMAT_VERSION}",
+        f"Rechnungen im Export: {len(invoices)}",
+        f"Dateien im Auftrag: {len(entries)}",
+        f"Originaldateien im ZIP: {original_count}",
+        "",
+        "Rechnungen:",
+    ]
+    for invoice in invoices:
+        currency: str = (
+            invoice.totals.currency if invoice.totals and invoice.totals.currency else "EUR"
+        )
+        gross: str = _de_amount(invoice.totals.gross if invoice.totals else None) or "—"
+        seller_name: str = invoice.seller.name if invoice.seller and invoice.seller.name else "—"
+        lines.append(
+            f"- {invoice.invoice_number or '—'} · {_de_date(invoice.issue_date) or '—'} · "
+            f"{seller_name} · {gross} {currency} · Prüfung: {invoice.validation_status.value} · "
+            f"{invoice.filename}"
+        )
+    if skipped_count > 0:
+        lines.extend(
+            [
+                "",
+                f"{skipped_count} Datei(en) ohne exportierbare Rechnung sind nicht in Excel/DATEV.",
+            ]
+        )
+    lines.extend(
+        [
+            "",
+            "Inhalt dieses ZIP:",
+            "- export_manifest.txt (Formatversion und Dateiliste)",
+            "- datev_hinweise.txt (DATEV-Grenzen, kein DATEVconnect)",
+            "- summary.txt (diese Datei)",
+            "- pruefbericht_paket.txt (Prüfberichte aller exportierten Rechnungen)",
+            "- Excel-Export (Übersicht + Positionen, alle Rechnungen)",
+            "- DATEV-Export (eine Buchungszeile je Rechnung)",
+        ]
+    )
+    if has_xml:
+        lines.append("- original/*.xml (ursprüngliches Rechnungs-XML)")
+    if has_pdf:
+        lines.append("- original/*.pdf (ZUGFeRD-PDF mit eingebettetem XML)")
+    if not has_xml and not has_pdf:
+        lines.append("- Originaldatei fehlt in diesem Paket")
+    lines.extend(
+        [
+            "",
+            "Hinweis: Die Prüfung betrifft Schema-/Standardkonformität.",
+            "Die Entscheidung über den Vorsteuerabzug liegt beim Steuerberater.",
+            DATEV_LIMITATIONS,
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def build_batch_export_manifest(
+    invoices: List[InvoiceParseResponse],
+    original_names: List[str],
+    has_xml: bool,
+    has_pdf: bool,
+) -> str:
+    """Versioned inventory for a multi-invoice Steuerberater ZIP."""
+    lines: List[str] = [
+        "eInvoice Export-Manifest (Sammelexport)",
+        "=======================================",
+        "",
+        f"Formatversion: {EXPORT_FORMAT_VERSION}",
+        "Bei einer inkompatiblen Änderung wird die Hauptversion erhöht.",
+        "1.x darf optionale ZIP-Mitglieder ergänzen; Spalten bleiben stabil.",
+        "",
+        f"Rechnungen: {len(invoices)}",
+        "",
+        "Dateien:",
+        "- export_manifest.txt",
+        "- datev_hinweise.txt",
+        "- summary.txt",
+        "- pruefbericht_paket.txt",
+        "- Excel (.xlsx, Blätter Invoice / Lines / Flat)",
+        "- DATEV-CSV (Buchungsstapel-kompatibel, CP1252, eine Zeile je Rechnung)",
+    ]
+    if has_xml:
+        lines.append("- original/*.xml")
+    if has_pdf:
+        lines.append("- original/*.pdf")
+    if original_names:
+        lines.extend(["", "Originaldateien:"])
+        for name in original_names:
+            lines.append(f"- {name}")
+    lines.extend(
+        [
+            "",
+            "CSV/Excel-Spalten und DATEV-Felder: siehe GET /api/invoices/export/mapping",
+            "und docs/EXPORT_MAPPING.md.",
+            "",
+            DATEV_LIMITATIONS,
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def build_batch_validation_report(invoices: List[InvoiceParseResponse]) -> str:
+    """Concatenate per-invoice Prüfberichte for the batch ZIP."""
+    parts: List[str] = []
+    for invoice in invoices:
+        parts.append(build_validation_report(invoice).rstrip())
+    return ("\n\n-----\n\n".join(parts) + "\n") if parts else ""
 
 
 def build_export_manifest(invoice: InvoiceParseResponse, has_xml: bool, has_pdf: bool) -> str:
@@ -538,6 +863,16 @@ def _package_source_member_name(
         number: str = safe_filename_stem(invoice.invoice_number) or "invoice"
         stem = f"{supplier}_{number}"
     return f"{ORIGINAL_DIR}/{stem}.{extension}"
+
+
+def _batch_original_member_name(position: int, filename: str) -> str:
+    """original/01_stem.xml — position prefix avoids collisions across the batch."""
+    base: str = Path(filename).name
+    suffix: str = Path(base).suffix.lower()
+    if suffix not in {".xml", ".pdf"}:
+        suffix = Path(base).suffix or ".dat"
+    stem: str = safe_filename_stem(Path(base).stem) or "datei"
+    return f"{ORIGINAL_DIR}/{position:02d}_{stem}{suffix}"
 
 
 def _validation_engine_line(invoice: InvoiceParseResponse) -> str:

@@ -14,10 +14,11 @@ from sqlalchemy import select, update
 from sqlalchemy.engine import Result
 from sqlalchemy.orm import Session, selectinload, sessionmaker
 
-from app.core.clock import utc_now
+from app.core.clock import as_utc, utc_now
 from app.core.config import settings
 from app.core.error_events import log_event, safe_filename
 from app.db.models import BatchItem, BatchJob
+from app.helper_functions.safe_zip import ZipIngestError, extract_invoice_files_from_zip
 from app.schemas.batch import (
     BatchItemResponse,
     BatchItemStatus,
@@ -26,6 +27,11 @@ from app.schemas.batch import (
 )
 from app.schemas.invoice import InvoiceParseResponse, ParseStatus, ValidationStatus
 from app.services.auth_service import OrgContext
+from app.services.export_service import (
+    BatchPackageEntry,
+    ExportService,
+    invoice_is_exportable,
+)
 from app.services.invoice_service import InvoiceService
 from app.services.plan_limits import PlanLimits
 from app.services.quota_service import (
@@ -39,10 +45,11 @@ BATCH_FORBIDDEN_DETAIL: str = (
     "Batch-Upload ist in Plus enthalten. "
     "Mit Plus prüfen Sie mehrere Rechnungen auf einmal."
 )
-ZIP_NOT_READY_DETAIL: str = (
-    "ZIP-Upload folgt in einem nächsten Schritt. "
-    "Bitte einzelne XML- oder PDF-Dateien wählen."
+JOB_NOT_COMPLETE_DETAIL: str = "Auftrag ist noch nicht abgeschlossen."
+ORIGINALS_GONE_DETAIL: str = (
+    "Originaldateien sind nicht mehr verfügbar. Bitte den Auftrag erneut hochladen."
 )
+NO_EXPORTABLE_DETAIL: str = "Keine exportierbare Rechnung in diesem Auftrag."
 TERMINAL_ITEM_STATUSES: frozenset[str] = frozenset(
     {
         BatchItemStatus.GUELTIG.value,
@@ -52,6 +59,7 @@ TERMINAL_ITEM_STATUSES: frozenset[str] = frozenset(
 )
 
 _invoice_service: InvoiceService = InvoiceService()
+_export_service: ExportService = ExportService()
 
 
 def require_batch_plan(org_context: Optional[OrgContext]) -> OrgContext:
@@ -69,6 +77,7 @@ async def enqueue_batch(
     uploads: list[UploadFile],
 ) -> BatchJobResponse:
     limits: PlanLimits = limits_for_context(org_context)
+    purge_expired_originals(session)
     payloads: list[tuple[str, bytes]] = await _read_uploads(uploads, limits)
     consume_parse_count(session, org_context, len(payloads))
     job: BatchJob = BatchJob(
@@ -106,6 +115,7 @@ def get_batch(
     org_context: OrgContext,
     job_id: UUID,
 ) -> BatchJobResponse:
+    purge_expired_originals(session)
     job: Optional[BatchJob] = session.scalar(
         select(BatchJob)
         .where(BatchJob.id == job_id, BatchJob.organization_id == org_context.organization_id)
@@ -116,8 +126,69 @@ def get_batch(
     return to_response(job)
 
 
+def build_batch_accountant_package(
+    session: Session,
+    org_context: OrgContext,
+    job_id: UUID,
+) -> tuple[bytes, str, str]:
+    """Build one Steuerberater ZIP from a completed job while originals still exist."""
+    entries, completed_at = _package_entries_for_job(session, org_context, job_id)
+    return _export_service.build_batch_accountant_package(entries, completed_at)
+
+
+def assert_batch_package_ready(
+    session: Session,
+    org_context: OrgContext,
+    job_id: UUID,
+) -> None:
+    """Raise HTTPException if the job cannot produce an accountant ZIP yet."""
+    _package_entries_for_job(session, org_context, job_id)
+
+
+def _package_entries_for_job(
+    session: Session,
+    org_context: OrgContext,
+    job_id: UUID,
+) -> tuple[list[BatchPackageEntry], datetime]:
+    purge_expired_originals(session)
+    job: Optional[BatchJob] = session.scalar(
+        select(BatchJob)
+        .where(BatchJob.id == job_id, BatchJob.organization_id == org_context.organization_id)
+        .options(selectinload(BatchJob.items))
+    )
+    if job is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Auftrag nicht gefunden.")
+    if job.status != BatchJobStatus.COMPLETED.value:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=JOB_NOT_COMPLETE_DETAIL)
+    if not _has_live_originals(job):
+        raise HTTPException(status_code=status.HTTP_410_GONE, detail=ORIGINALS_GONE_DETAIL)
+
+    entries: list[BatchPackageEntry] = []
+    for item in job.items:
+        invoice: Optional[InvoiceParseResponse] = None
+        if item.result_json:
+            invoice = InvoiceParseResponse.model_validate(item.result_json)
+        original_bytes: Optional[bytes] = None
+        if item.storage_path:
+            path: Path = Path(item.storage_path)
+            if path.is_file():
+                original_bytes = path.read_bytes()
+        entries.append(
+            BatchPackageEntry(
+                filename=item.filename,
+                original_bytes=original_bytes,
+                invoice=invoice,
+            )
+        )
+    if not any(entry.invoice is not None and invoice_is_exportable(entry.invoice) for entry in entries):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=NO_EXPORTABLE_DETAIL)
+
+    completed_at: datetime = as_utc(job.completed_at) if job.completed_at is not None else utc_now()
+    return entries, completed_at
+
+
 def process_next_item() -> bool:
-    """Claim one queued file, parse it, store metadata, delete the original. False if idle."""
+    """Claim one queued file, parse it, store metadata. Original stays until TTL. False if idle."""
     from app.db.session import get_session_factory
 
     factory: Optional[sessionmaker[Session]] = get_session_factory()
@@ -125,6 +196,7 @@ def process_next_item() -> bool:
         return False
     session: Session = factory()
     try:
+        purge_expired_originals(session)
         _reclaim_stale_items(session)
         item_id: Optional[UUID] = _claim_item(session)
         if item_id is None:
@@ -152,8 +224,36 @@ def to_response(job: BatchJob) -> BatchJobResponse:
         item_count=job.item_count,
         done_count=done_count,
         items=items,
-        export_package_available=False,
+        export_package_available=_export_package_available(job),
     )
+
+
+def purge_expired_originals(session: Session) -> int:
+    """Delete temp originals after TTL. Metadata and result JSON stay."""
+    jobs: list[BatchJob] = list(
+        session.scalars(
+            select(BatchJob)
+            .where(BatchJob.status == BatchJobStatus.COMPLETED.value)
+            .options(selectinload(BatchJob.items))
+        ).all()
+    )
+    removed: int = 0
+    purged_jobs: int = 0
+    for job in jobs:
+        if not _originals_expired(job):
+            continue
+        cleared: int = _clear_job_originals(job)
+        if cleared:
+            purged_jobs += 1
+            removed += cleared
+    if removed:
+        session.commit()
+        log_event(
+            logging.INFO,
+            "batch_originals_purged",
+            fields={"jobs": purged_jobs, "files": removed},
+        )
+    return removed
 
 
 async def _read_uploads(
@@ -165,25 +265,10 @@ async def _read_uploads(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Keine Dateien übermittelt.",
         )
-    if any(_is_zip_name(item.filename) for item in uploads):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=ZIP_NOT_READY_DETAIL)
-    if len(uploads) > limits.max_batch_files:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=(
-                f"Maximal {limits.max_batch_files} Dateien pro Auftrag "
-                f"in Ihrem Tarif {limits.name}."
-            ),
-        )
     payloads: list[tuple[str, bytes]] = []
     for upload in uploads:
         filename: str = _safe_filename(upload.filename)
         suffix: str = Path(filename).suffix.lower()
-        if suffix not in settings.allowed_extensions:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Nicht unterstützter Dateityp. Erlaubt: {', '.join(settings.allowed_extensions)}",
-            )
         content: bytes = await upload.read()
         if len(content) == 0:
             raise HTTPException(
@@ -191,8 +276,52 @@ async def _read_uploads(
                 detail=f"Datei ist leer: {safe_filename(filename)}",
             )
         assert_upload_size(len(content), limits)
+        if suffix == ".zip":
+            payloads.extend(_expand_zip(content, limits))
+            continue
+        if suffix not in settings.allowed_extensions:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Nicht unterstützter Dateityp. Erlaubt: {', '.join(settings.allowed_extensions)} und .zip",
+            )
         payloads.append((filename, content))
+    if not payloads:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Keine XML- oder PDF-Dateien gefunden.",
+        )
+    if len(payloads) > limits.max_batch_files:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                f"Maximal {limits.max_batch_files} Dateien pro Auftrag "
+                f"in Ihrem Tarif {limits.name}."
+            ),
+        )
     return payloads
+
+
+def _expand_zip(content: bytes, limits: PlanLimits) -> list[tuple[str, bytes]]:
+    max_file_bytes: int = limits.max_upload_size_mb * 1024 * 1024
+    plan_cap: int = max_file_bytes * max(1, limits.max_batch_files)
+    settings_cap: int = settings.zip_max_uncompressed_mb * 1024 * 1024
+    try:
+        extracted: list[tuple[str, bytes]] = extract_invoice_files_from_zip(
+            content,
+            max_files=limits.max_batch_files,
+            max_file_bytes=max_file_bytes,
+            max_uncompressed_bytes=min(plan_cap, settings_cap),
+            max_ratio=settings.zip_max_ratio,
+            max_listed_entries=settings.zip_max_listed_entries,
+        )
+    except ZipIngestError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=exc.detail) from exc
+    for filename, payload in extracted:
+        member_bytes: bytes = payload
+        assert_upload_size(len(member_bytes), limits)
+        if filename.strip() == "":
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Dateiname fehlt.")
+    return extracted
 
 
 def _write_items(session: Session, job: BatchJob, payloads: list[tuple[str, bytes]]) -> None:
@@ -277,14 +406,12 @@ def _process_claimed_item(item_id: UUID) -> None:
             file_type="error",
         )
 
-    session: Session = factory()
+    session = factory()
     try:
-        item: Optional[BatchItem] = session.get(BatchItem, item_id)
+        item = session.get(BatchItem, item_id)
         if item is None:
             return
         _apply_parse_result(item, response)
-        _unlink_quietly(item.storage_path)
-        item.storage_path = None
         session.commit()
         _maybe_complete_job(session, item.job_id)
         log_event(
@@ -329,7 +456,6 @@ def _maybe_complete_job(session: Session, job_id: UUID) -> None:
     job.status = BatchJobStatus.COMPLETED.value
     job.completed_at = utc_now()
     session.commit()
-    _remove_job_dir(job.id)
     log_event(
         logging.INFO,
         "batch_completed",
@@ -400,18 +526,56 @@ def _load_job(session: Session, job_id: UUID) -> BatchJob:
     return job
 
 
+def _export_package_available(job: BatchJob) -> bool:
+    if job.status != BatchJobStatus.COMPLETED.value:
+        return False
+    if not _has_live_originals(job):
+        return False
+    for item in job.items:
+        if not item.result_json:
+            continue
+        invoice: InvoiceParseResponse = InvoiceParseResponse.model_validate(item.result_json)
+        if invoice_is_exportable(invoice):
+            return True
+    return False
+
+
+def _has_live_originals(job: BatchJob) -> bool:
+    if _originals_expired(job):
+        return False
+    for item in job.items:
+        if item.storage_path and Path(item.storage_path).is_file():
+            return True
+    return False
+
+
+def _originals_expired(job: BatchJob) -> bool:
+    if job.completed_at is None:
+        return False
+    expires_at: datetime = as_utc(job.completed_at) + timedelta(
+        seconds=max(0, settings.batch_original_ttl_seconds)
+    )
+    return utc_now() >= expires_at
+
+
+def _clear_job_originals(job: BatchJob) -> int:
+    removed: int = 0
+    for item in job.items:
+        if not item.storage_path:
+            continue
+        _unlink_quietly(item.storage_path)
+        item.storage_path = None
+        removed += 1
+    _remove_job_dir(job.id)
+    return removed
+
+
 def _safe_filename(name: Optional[str]) -> str:
     raw: str = (name or "").strip()
     base: str = Path(raw).name
     if not base or base in {".", ".."}:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Dateiname fehlt.")
     return base[:255]
-
-
-def _is_zip_name(name: Optional[str]) -> bool:
-    if not name:
-        return False
-    return Path(name).suffix.lower() == ".zip"
 
 
 def _job_dir(job_id: UUID) -> Path:

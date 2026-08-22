@@ -89,6 +89,17 @@ export async function fetchBatchJob(jobId: string): Promise<BatchJobResponse> {
   return response.json() as Promise<BatchJobResponse>
 }
 
+export async function downloadBatchAccountantPackage(jobId: string): Promise<void> {
+  const response: Response = await fetch(
+    `${API_BASE}/invoices/batch/${jobId}/accountant-package`,
+    withRequestId({ method: 'POST' }),
+  )
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response, 'Paket-Download fehlgeschlagen.'))
+  }
+  await downloadResponseBlob(response, 'buchhaltung_paket.zip')
+}
+
 export async function exportInvoice(
   invoice: InvoiceParseResponse,
   format: ExportFormat,

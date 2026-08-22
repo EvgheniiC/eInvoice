@@ -11,7 +11,7 @@ no invoice archive. Two processing models:
 | Model | Persistence | Legal basis (planned) | Status |
 |-------|-------------|----------------------|--------|
 | Guest | File lives only in the request / temp dir | Art. 6(1)(b)/(f) DSGVO for the parse/export request | Active |
-| Account | Email, password hash, org membership, session. No invoice files. | Art. 6 DSGVO + AVV before storing originals | Account tables exist; originals still not stored |
+| Account | Email, password hash, org membership, session. Plus batch originals in `BATCH_TEMP_DIR` until package TTL. | Art. 6 DSGVO + AVV; originals are operational temp, not an archive | Account tables exist; batch originals have a short TTL |
 
 Billing, object storage, and invoice history remain future trust-boundary expansions.
 
@@ -41,9 +41,10 @@ unless nginx overwrites it (the API snippet sets `X-Forwarded-For $remote_addr`)
 | S1 | Spoofed file type (PDF/XML mismatch) | Signature + extension checks in `InvoiceService` |
 | S2 | XXE / DTD / entity expansion | `defusedxml`, reject `DOCTYPE`/`ENTITY`, complexity limits |
 | S3 | Malicious PDF (JS, Launch, encryption, huge page count) | `assert_pdf_safe` |
-| S4 | Resource exhaustion (huge file, nested XML, slow KoSIT) | 10 MB cap, rate limit, request timeout, JVM `-Xmx`, systemd `MemoryMax`, nginx `limit_req` |
+| S4 | Resource exhaustion (huge file, nested XML, slow KoSIT, zip-bomb) | 10 MB cap (plan size), rate limit, request timeout, JVM `-Xmx`, systemd `MemoryMax`, nginx `limit_req`; ZIP ingest checks listed sizes, ratio, member cap, xml/pdf only |
 | T1 | Invoice data in logs | Sanitized structured logs; parsers must not log IBAN/XML |
-| T2 | Temp file leftover | `TemporaryDirectory` for PDF probe and KoSIT; `PrivateTmp=true`; batch originals in `BATCH_TEMP_DIR` deleted after parse |
+| T2 | Temp file leftover | `TemporaryDirectory` for PDF probe and KoSIT; `PrivateTmp=true`; batch originals in `BATCH_TEMP_DIR` until accountant ZIP or TTL, then deleted |
+| T4 | Zip-slip / nested ZIP | Reject `..` and absolute paths; skip nested `.zip` members |
 | T3 | Error detail leak | Generic 500/422 to clients; no traceback in JSON |
 | I1 | Cross-origin abuse | Explicit CORS origins, no credentialed wildcard, nginx same-origin `/api` |
 | I2 | Clickjacking / MIME sniffing | Security headers (app + nginx) |

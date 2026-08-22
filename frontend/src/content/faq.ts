@@ -21,14 +21,14 @@ export const FAQ_ITEMS: FaqItem[] = [
     id: 'formate',
     question: 'Welche Dateien werden unterstützt?',
     paragraphs: [
-      'Aktuell: eine Datei pro Anfrage, XRechnung (UBL Invoice, UBL CreditNote, UN/CEFACT CII) ' +
-        'und ZUGFeRD/Factur-X als PDF mit eingebettetem XML. Geprüfte Profile: EN 16931 und ' +
-        'XRechnung 3.0.',
+      'Aktuell: XRechnung (UBL Invoice, UBL CreditNote, UN/CEFACT CII) und ZUGFeRD/Factur-X ' +
+        'als PDF mit eingebettetem XML. Geprüfte Profile: EN 16931 und XRechnung 3.0. ' +
+        'Im Gastmodus eine Datei pro Anfrage. Mit Plus mehrere Dateien oder ein ZIP.',
     ],
     listItems: [
       'Maximale Dateigröße: 10 MB (Gastmodus); Plus und Team höher',
       'Gastmodus: eine Datei pro Anfrage, begrenzte Prüfungen und Exporte pro Tag',
-      'Nicht unterstützt: Scan-PDF, Foto, openTRANS, andere XML-Formate',
+      'Nicht unterstützt: Scan-PDF, Foto, openTRANS, andere XML-Formate, verschachtelte ZIP-Archive',
       'DATEV-Export ist eine Buchungsstapel-CSV, kein DATEVconnect',
     ],
   },
@@ -46,8 +46,9 @@ export const FAQ_ITEMS: FaqItem[] = [
     id: 'steuerberater',
     question: 'Was übergebe ich dem Steuerberater?',
     paragraphs: [
-      'Nutzen Sie „Paket für Steuerberater“. Darin liegen die Originaldatei, eine Kurzfassung, ' +
-        'der Prüfbericht, Excel und DATEV-CSV.',
+      'Nutzen Sie „Paket für Steuerberater“ für eine Datei. Mit Plus: mehrere Rechnungen ' +
+        'hochladen und „Ein ZIP für die Buchhaltung“ — ein Paket mit Originaldateien, ' +
+        'Kurzfassung, Prüfbericht, Excel und DATEV-CSV.',
       'Die Datei bleibt bei Ihnen: eInvoice speichert im Gastmodus kein Rechnungsarchiv. ' +
         'Sie senden das ZIP selbst an die Kanzlei.',
     ],
@@ -58,8 +59,9 @@ export const FAQ_ITEMS: FaqItem[] = [
     paragraphs: [
       'Im Gastmodus nein. Die Datei liegt nur während der Anfrage im Speicher und in ' +
         'kurzlebigen Temp-Dateien für den Validator. Danach wird sie gelöscht.',
-      'Ein späteres Benutzerkonto mit Verlauf wäre ein zweites Modell: nur mit Einwilligung, ' +
-        'eigener Rechtsgrundlage und begrenzter Aufbewahrung. Das ist derzeit nicht aktiv.',
+      'Mit Plus bleiben Originaldateien kurz im Temp-Verzeichnis, damit Sie ein ' +
+        'Buchhaltungspaket laden können. Nach wenigen Stunden werden sie gelöscht — ' +
+        'kein Rechnungsarchiv. Ein späterer Verlauf mit Einwilligung ist nicht aktiv.',
     ],
   },
   {

@@ -67,6 +67,11 @@ class Settings(BaseSettings):
     batch_temp_dir: Optional[str] = None
     batch_poll_seconds: float = 1.0
     batch_item_stale_seconds: int = 180
+    # Keep parsed originals until accountant ZIP download or this TTL (not an archive).
+    batch_original_ttl_seconds: int = 7200
+    zip_max_ratio: float = 100.0
+    zip_max_listed_entries: int = 200
+    zip_max_uncompressed_mb: int = 200
     public_app_url: str = "http://localhost:5173"
     email_backend: str = "log"
     smtp_host: Optional[str] = None

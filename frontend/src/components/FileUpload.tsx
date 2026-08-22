@@ -10,7 +10,9 @@ interface FileUploadProps {
   hint?: string
 }
 
-const ACCEPTED: string = '.xml,.pdf,application/xml,text/xml,application/pdf'
+const ACCEPTED_SINGLE: string = '.xml,.pdf,application/xml,text/xml,application/pdf'
+const ACCEPTED_BATCH: string =
+  '.xml,.pdf,.zip,application/xml,text/xml,application/pdf,application/zip'
 const INPUT_ID: string = 'invoice-file-input'
 const TITLE_ID: string = 'invoice-file-title'
 const HINT_ID: string = 'invoice-file-hint'
@@ -85,7 +87,7 @@ export function FileUpload({
         id={INPUT_ID}
         className="visually-hidden"
         type="file"
-        accept={ACCEPTED}
+        accept={multiple ? ACCEPTED_BATCH : ACCEPTED_SINGLE}
         multiple={multiple}
         disabled={disabled}
         aria-labelledby={TITLE_ID}

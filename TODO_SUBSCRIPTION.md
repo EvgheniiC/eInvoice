@@ -86,7 +86,7 @@ developer-API против [rechnungsapi.de](https://www.rechnungsapi.de).
 #### A1. Batch-загрузка
 
 - [x] Несколько XML/PDF за один раз: очередь, прогресс, сводка `gültig` / `prüfen` / `ablehnen`.
-- [ ] Вариант: ZIP или папка со смешанными файлами.
+- [x] Вариант: ZIP (только `.xml`/`.pdf`, защита от zip-bomb). Папка со смешанными файлами — нет.
 - [x] Не запускать тяжёлый KoSIT синхронно в одном uvicorn-worker на всю пачку.
 
 Связано: `TODO_VIP_PRODUCT.md` P1 «Batch upload».
@@ -109,8 +109,8 @@ developer-API против [rechnungsapi.de](https://www.rechnungsapi.de).
 
 #### A4. Мульти-экспорт для бухгалтера
 
-- [ ] N счетов → один Excel + один DATEV CSV + манифест + исходники в ZIP.
-- [ ] Версия формата экспорта совместима с `docs/EXPORT_MAPPING.md`.
+- [x] N счетов → один Excel + один DATEV CSV + манифест + исходники в ZIP.
+- [x] Версия формата экспорта совместима с `docs/EXPORT_MAPPING.md`.
 
 Связано: `TODO_VIP_PRODUCT.md` P1 «Экспорт нескольких счетов одним пакетом» и P0 1.5.
 
@@ -230,8 +230,8 @@ developer-API против [rechnungsapi.de](https://www.rechnungsapi.de).
 Порядок внутри этапа:
 
 1. [x] Лимиты по плану (гость / plus / team) на parse и export (A5).
-2. [x] Batch UI + очередь в Postgres (`batch_jobs` / `batch_items`, `einvoice-worker`) (A1, без ZIP).
-3. [ ] Мульти-accountant ZIP (A4).
+2. [x] Batch UI + очередь в Postgres (`batch_jobs` / `batch_items`, `einvoice-worker`) (A1, ZIP-upload).
+3. [x] Мульти-accountant ZIP (A4).
 4. [ ] История метаданных + повторный экспорт, если файл ещё в retention (A2).
 5. [ ] Дубликаты до тяжёлого KoSIT, если возможно (A3).
 6. [ ] Профиль организации в пакет (A6).
@@ -277,8 +277,8 @@ developer-API против [rechnungsapi.de](https://www.rechnungsapi.de).
 guest  ──► POST /api/invoices/parse          (как сейчас, без хранения)
 user   ──► same + org context + quota middleware
 plus   ──► POST /api/invoices/batch
+       ──► POST /api/invoices/batch/{id}/accountant-package
        ──► GET  /api/invoices/history
-       ──► POST /api/exports/accountant-package  (несколько id)
 team   ──► Authorization: Bearer einv_live_...
        ──► POST /v1/invoices/parse
 ```

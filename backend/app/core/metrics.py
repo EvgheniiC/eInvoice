@@ -40,6 +40,9 @@ _KNOWN_PATHS: Final[frozenset[str]] = frozenset(
         "/api/org",
         "/api/admin/plans",
         "/api/invoices/parse",
+        "/api/invoices/batch",
+        "/api/invoices/batch/{job_id}",
+        "/api/invoices/batch/{job_id}/accountant-package",
         "/api/invoices/export",
         "/api/invoices/export/mapping",
         "/api/invoices/export/validation-report",
@@ -135,10 +138,18 @@ READY: Gauge = Gauge(
 )
 
 
+_BATCH_JOB_PREFIX: Final[str] = "/api/invoices/batch/"
+_BATCH_PACKAGE_SUFFIX: Final[str] = "/accountant-package"
+
+
 def normalize_path(path: str) -> str:
     """Map request paths to a fixed label set (no user-controlled cardinality)."""
     if path in _KNOWN_PATHS:
         return path
+    if path.startswith(_BATCH_JOB_PREFIX):
+        if path.endswith(_BATCH_PACKAGE_SUFFIX):
+            return "/api/invoices/batch/{job_id}/accountant-package"
+        return "/api/invoices/batch/{job_id}"
     return "other"
 
 

@@ -2,7 +2,7 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { UserEvent } from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { checkHealth, createInvoiceBatch, fetchCapabilities, parseInvoice } from '../api/client'
+import { checkHealth, createInvoiceBatch, downloadBatchAccountantPackage, fetchCapabilities, parseInvoice } from '../api/client'
 import { DEFAULT_CAPABILITIES } from '../content/capabilities'
 import { buildInvoice, buildSession } from '../test/fixtures'
 import type { BatchJobResponse, HealthResponse, InvoiceParseResponse, MeResponse } from '../types/invoice'
@@ -14,6 +14,7 @@ vi.mock('../api/client', (): {
   fetchBatchJob: ReturnType<typeof vi.fn>
   exportInvoice: ReturnType<typeof vi.fn>
   downloadAccountantPackage: ReturnType<typeof vi.fn>
+  downloadBatchAccountantPackage: ReturnType<typeof vi.fn>
   downloadValidationReport: ReturnType<typeof vi.fn>
   fetchCapabilities: ReturnType<typeof vi.fn>
   checkHealth: ReturnType<typeof vi.fn>
@@ -24,6 +25,7 @@ vi.mock('../api/client', (): {
   fetchBatchJob: vi.fn(),
   exportInvoice: vi.fn(),
   downloadAccountantPackage: vi.fn(),
+  downloadBatchAccountantPackage: vi.fn(),
   downloadValidationReport: vi.fn(),
   fetchCapabilities: vi.fn(),
   checkHealth: vi.fn(),
@@ -155,7 +157,7 @@ describe('UploadPage', (): void => {
     expect(
       screen.getByText('Datei in der Liste wählen, um die Rechnungsdaten zu sehen.'),
     ).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Ein ZIP für die Buchhaltung (folgt)' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Ein ZIP für die Buchhaltung' })).toBeDisabled()
     expect(createInvoiceBatch).toHaveBeenCalledTimes(1)
     expect(parseInvoice).not.toHaveBeenCalled()
     expect(invoice.filename).toBe('one.xml')
@@ -232,6 +234,59 @@ describe('UploadPage', (): void => {
     expect(screen.queryByText('RE-1001')).not.toBeInTheDocument()
     expect(within(fileList).getByText('one.xml')).toBeInTheDocument()
     expect(within(fileList).getByText('two.xml')).toBeInTheDocument()
+  })
+
+  it('downloads one accountant ZIP for a completed Plus batch', async (): Promise<void> => {
+    const user: UserEvent = userEvent.setup()
+    const firstInvoice: InvoiceParseResponse = buildInvoice({
+      filename: 'one.xml',
+      invoice_number: 'RE-1001',
+    })
+    const job: BatchJobResponse = {
+      id: '00000000-0000-0000-0000-000000000099',
+      status: 'completed',
+      item_count: 1,
+      done_count: 1,
+      export_package_available: true,
+      items: [
+        {
+          id: '00000000-0000-0000-0000-000000000011',
+          filename: 'one.xml',
+          status: 'pruefen',
+          invoice_number: firstInvoice.invoice_number,
+          seller_name: firstInvoice.seller?.name ?? null,
+          gross_amount: firstInvoice.totals?.gross ?? null,
+          currency: firstInvoice.totals?.currency ?? null,
+          message: null,
+          invoice: firstInvoice,
+        },
+      ],
+    }
+    vi.mocked(createInvoiceBatch).mockResolvedValue(job)
+    vi.mocked(downloadBatchAccountantPackage).mockResolvedValue()
+    vi.mocked(fetchCapabilities).mockResolvedValue(DEFAULT_CAPABILITIES)
+    vi.mocked(checkHealth).mockResolvedValue(healthy)
+
+    render(
+      <UploadPage
+        onNavigateHome={vi.fn()}
+        onNavigate={vi.fn()}
+        session={plusSession()}
+        onLogout={vi.fn()}
+      />,
+    )
+
+    const input: HTMLInputElement = document.querySelector('#invoice-file-input') as HTMLInputElement
+    const first: File = new File(['<Invoice/>'], 'one.xml', { type: 'text/xml' })
+    const second: File = new File(['<Invoice/>'], 'two.xml', { type: 'text/xml' })
+    await user.upload(input, [first, second])
+
+    const zipButton: HTMLElement = await screen.findByRole('button', {
+      name: 'Ein ZIP für die Buchhaltung',
+    })
+    expect(zipButton).toBeEnabled()
+    await user.click(zipButton)
+    expect(downloadBatchAccountantPackage).toHaveBeenCalledWith(job.id)
   })
 
   it('keeps a Free account on a single-file picker', async (): Promise<void> => {

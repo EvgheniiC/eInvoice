@@ -101,7 +101,24 @@ The same text is shipped as `datev_hinweise.txt` inside the Steuerberater ZIP.
 | `original/*.pdf` | Original ZUGFeRD PDF with embedded XML |
 
 The UI sends the uploaded source file with the package request. The backend does not
-keep invoice files after the request.
+keep invoice files after the guest request.
+
+### Batch package (Plus / Team)
+
+`POST /api/invoices/batch/{job_id}/accountant-package` returns one ZIP for N invoices
+from a completed batch while originals still exist in `BATCH_TEMP_DIR` (short TTL):
+
+| Member | Purpose |
+|--------|---------|
+| `export_manifest.txt` | Format version and file list |
+| `datev_hinweise.txt` | DATEV limitations (not DATEVconnect) |
+| `summary.txt` | German batch overview |
+| `pruefbericht_paket.txt` | Concatenated validation reports |
+| `rechnungen_*.xlsx` | Excel: Invoice table + Lines + Flat (same columns as CSV) |
+| `datev_rechnungen_*.csv` | DATEV-compatible CSV, one booking line per invoice |
+| `original/NN_*.xml` / `original/NN_*.pdf` | Source files from the batch |
+
+This is a 1.x addition (optional ZIP members). Column names stay on version **1.0**.
 
 ## Versioning
 

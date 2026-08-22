@@ -71,8 +71,8 @@ export function RegisterPage({
         <h1 tabIndex={-1}>Konto erstellen</h1>
         <p className="page__lead">
           E-Mail und Passwort genügen. Den Namen der Organisation können Sie optional angeben.
-          Rechnungen werden weiterhin nicht gespeichert, solange Sie das nicht später ausdrücklich
-          erlauben.
+          Rechnungen werden nicht als Archiv gespeichert. Bei Plus liegen Originaldateien
+          nur kurz, damit Sie ein ZIP für die Buchhaltung laden können.
         </p>
       </header>
 

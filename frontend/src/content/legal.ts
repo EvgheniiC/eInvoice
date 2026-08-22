@@ -81,7 +81,8 @@ export const DATENSCHUTZ: LegalDocument = {
           'Rechnungsinhalte. Die Datei wird nicht gespeichert.',
         'Konto (optional): E-Mail, Passwort-Hash, Organisationsname, Rolle, Sitzungs-Cookie. ' +
           'Transaktionale Auth-Mails (Bestätigung, Anmeldelink, Passwort-Reset). ' +
-          'Kein Rechnungsarchiv. Originaldateien nur später mit gesonderter Einwilligung.',
+          'Kein Rechnungsarchiv. Bei Plus liegen Originaldateien nur kurz in einem ' +
+          'Temp-Verzeichnis, damit ein Buchhaltungspaket erzeugt werden kann; danach Löschung.',
         'Technische Verbindungsdaten beim Aufruf: IP-Adresse, Zeitpunkt, aufgerufene URL, ' +
           'User-Agent — soweit der Webserver sie für den Betrieb protokolliert.',
         'Anwendungsprotokolle: Request-ID, Dateiname (nur Basisname), Dateigröße, ' +
@@ -121,7 +122,9 @@ export const DATENSCHUTZ: LegalDocument = {
         'Anwendungsprotokolle enthalten keinen Rechnungsinhalt. Sie dienen der Fehleranalyse ' +
           'und werden nicht als Ersatzarchiv genutzt.',
         'Gastmodell: keine Speicherung der Datei nach der Anfrage.',
-        'Kontomodell (geplant, nicht aktiv): Rechtsgrundlage Art. 6 DSGVO plus AVV; ' +
+        'Plus-Batch: Originaldateien bleiben wenige Stunden in einem Temp-Verzeichnis, ' +
+          'damit Sie ein ZIP für die Buchhaltung laden können. Danach Löschung. Kein Archiv.',
+        'Kontomodell (geplant für Verlauf): Rechtsgrundlage Art. 6 DSGVO plus AVV; ' +
           'Originaldatei nur mit Opt-in und begrenzter Aufbewahrung (Orientierung: 30 Tage).',
       ],
     },
@@ -153,9 +156,9 @@ export const DATENSCHUTZ: LegalDocument = {
         'Sie haben die Rechte auf Auskunft, Berichtigung, Löschung, Einschränkung, ' +
           'Datenübertragbarkeit und Widerspruch sowie das Beschwerderecht bei einer ' +
           'Aufsichtsbehörde.',
-        'Weil Rechnungsdateien nach der Anfrage nicht gespeichert werden, können wir nach ' +
-          'Abschluss der Verarbeitung in der Regel keine Kopie Ihrer hochgeladenen Datei ' +
-          'mehr herausgeben oder löschen — sie ist dann bereits entfernt.',
+        'Weil Rechnungsdateien nach der Anfrage (Gast) bzw. nach kurzer Batch-Frist (Plus) ' +
+          'nicht dauerhaft gespeichert werden, können wir danach in der Regel keine Kopie ' +
+          'Ihrer hochgeladenen Datei mehr herausgeben oder löschen — sie ist dann bereits entfernt.',
         'Kontakt für Datenschutzanfragen: folgt mit den Betreiberangaben.',
       ],
     },

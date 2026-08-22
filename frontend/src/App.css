@@ -1606,12 +1606,23 @@
 .batch-summary__zip {
   min-height: 44px;
   padding: 0.45rem 1rem;
-  border: 1px solid #8a9a90;
+  border: 1px solid #2f6b4f;
   border-radius: 999px;
-  background: #f3f6f4;
-  color: var(--color-muted);
+  background: #2f6b4f;
+  color: #fff;
   font: inherit;
   font-weight: 600;
+  cursor: pointer;
+}
+
+.batch-summary__zip:hover:not(:disabled) {
+  background: #24553e;
+}
+
+.batch-summary__zip:disabled {
+  border-color: #8a9a90;
+  background: #f3f6f4;
+  color: var(--color-muted);
   cursor: not-allowed;
 }
 

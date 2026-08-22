@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type JSX, type RefObject } from 'react'
-import { checkHealth, createInvoiceBatch, fetchBatchJob, fetchCapabilities, parseInvoice, recordFunnel } from '../api/client'
+import { checkHealth, createInvoiceBatch, downloadBatchAccountantPackage, fetchBatchJob, fetchCapabilities, parseInvoice, recordFunnel } from '../api/client'
 import { BatchSummary } from '../components/BatchSummary'
 import { FileUpload } from '../components/FileUpload'
 import { InvoiceView } from '../components/InvoiceView'
@@ -45,6 +45,7 @@ export function UploadPage({
   const [announcement, setAnnouncement] = useState<string>('')
   const [capabilities, setCapabilities] = useState<CapabilitiesResponse>(DEFAULT_CAPABILITIES)
   const [kositDegraded, setKositDegraded] = useState<boolean>(false)
+  const [packageDownloading, setPackageDownloading] = useState<boolean>(false)
   const inFlightRef: RefObject<boolean> = useRef<boolean>(false)
   const feedbackRef: RefObject<HTMLElement | null> = useRef<HTMLElement | null>(null)
 
@@ -124,6 +125,7 @@ export function UploadPage({
     setResult(null)
     setBatchJob(null)
     setSelectedBatchItemId(null)
+    setPackageDownloading(false)
     setUploadedFile(file)
     setSelectedFilename(file.name)
     setShowPdf(true)
@@ -152,7 +154,7 @@ export function UploadPage({
   }
 
   async function handleFiles(files: File[]): Promise<void> {
-    if (files.length === 1) {
+    if (files.length === 1 && !isZipFile(files[0])) {
       await handleFile(files[0])
       return
     }
@@ -163,16 +165,6 @@ export function UploadPage({
     if (inFlightRef.current) {
       return
     }
-    const zipFile: File | undefined = files.find((file: File): boolean =>
-      file.name.toLowerCase().endsWith('.zip'),
-    )
-    if (zipFile !== undefined) {
-      const zipMessage: string =
-        'ZIP-Upload folgt in einem nächsten Schritt. Bitte einzelne XML- oder PDF-Dateien wählen.'
-      setError(zipMessage)
-      setAnnouncement(zipMessage)
-      return
-    }
     inFlightRef.current = true
     setLoading(true)
     setError(null)
@@ -180,6 +172,7 @@ export function UploadPage({
     setUploadedFile(null)
     setSelectedFilename(`${String(files.length)} Dateien`)
     setSelectedBatchItemId(null)
+    setPackageDownloading(false)
     setAnnouncement(`${String(files.length)} Dateien werden in die Prüfungswarteschlange gelegt.`)
     try {
       const created: BatchJobResponse = await createInvoiceBatch(files)
@@ -209,6 +202,30 @@ export function UploadPage({
     setUploadedFile(null)
     setShowPdf(false)
     setAnnouncement(`Rechnung ${item.filename} geöffnet.`)
+  }
+
+  async function handleDownloadPackage(): Promise<void> {
+    if (batchJob === null || packageDownloading) {
+      return
+    }
+    setPackageDownloading(true)
+    setError(null)
+    setAnnouncement('Buchhaltungspaket wird erstellt.')
+    try {
+      await downloadBatchAccountantPackage(batchJob.id)
+      setAnnouncement('Buchhaltungspaket wurde heruntergeladen.')
+    } catch (err: unknown) {
+      const message: string =
+        err instanceof TypeError
+          ? NETWORK_ERROR_MESSAGE
+          : err instanceof Error
+            ? err.message
+            : 'Das Paket konnte nicht erstellt werden. Bitte versuchen Sie es erneut.'
+      setError(message)
+      setAnnouncement(message)
+    } finally {
+      setPackageDownloading(false)
+    }
   }
 
   const allowsBatch: boolean = Boolean(session?.plan.allows_batch)
@@ -318,12 +335,12 @@ export function UploadPage({
         describedBy="upload-limits"
         title={
           allowsBatch
-            ? 'Mehrere XRechnung-XML oder ZUGFeRD-PDF hier ablegen'
+            ? 'Mehrere XRechnung-XML, ZUGFeRD-PDF oder ein ZIP hier ablegen'
             : 'XRechnung XML oder ZUGFeRD PDF hier ablegen'
         }
         hint={
           allowsBatch
-            ? 'oder Dateien auswählen (.xml / .pdf). ZIP folgt in einem nächsten Schritt.'
+            ? 'oder Dateien auswählen (.xml / .pdf / .zip)'
             : 'oder Datei auswählen (.xml / .pdf)'
         }
       />
@@ -366,6 +383,10 @@ export function UploadPage({
               job={batchJob}
               selectedItemId={selectedBatchItemId}
               onSelectItem={openBatchItem}
+              onDownloadPackage={() => {
+                void handleDownloadPackage()
+              }}
+              packageDownloading={packageDownloading}
             />
           </aside>
           <section className="workspace-split__detail" aria-label="Rechnungsdaten">
@@ -400,4 +421,11 @@ export function UploadPage({
       <SiteFooter onNavigate={onNavigate} />
     </main>
   )
+}
+
+function isZipFile(file: File): boolean {
+  if (file.type === 'application/zip' || file.type === 'application/x-zip-compressed') {
+    return true
+  }
+  return file.name.toLowerCase().endsWith('.zip')
 }

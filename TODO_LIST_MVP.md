@@ -148,7 +148,7 @@ validation checks schema/standard compliance; acceptance for Vorsteuerabzug rema
 
 ### 2.3 Accountant workflow
 - [x] "Paket für Steuerberater": summary + Excel + DATEV + optional source PDF
-- [ ] Include source XML and a separate validation report in the accountant package
+- [x] Include source XML and a separate validation report in the accountant package
 - [ ] Optional short retention of last N uploads for paid plan → see `TODO_LIST_FUTURE.md`
 - [ ] Pilot with 1–2 Steuerberater offices → deferred to `TODO_LIST_FUTURE.md`
 

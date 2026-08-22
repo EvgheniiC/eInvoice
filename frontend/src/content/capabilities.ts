@@ -68,7 +68,7 @@ export function formatUploadLimitsLine(
     return (
       `Bis zu ${String(plan.max_batch_files)} Dateien · ` +
       `jeweils ${String(plan.max_upload_size_mb)} MB · ` +
-      `${String(plan.parse_per_day)} Prüfungen / Tag · ${extensions}`
+      `${String(plan.parse_per_day)} Prüfungen / Tag · ${extensions} / .zip`
     )
   }
   if (plan) {

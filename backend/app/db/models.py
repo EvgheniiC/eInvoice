@@ -1,4 +1,4 @@
-"""SQLAlchemy ORM models for accounts. Invoice files are never stored here."""
+"""SQLAlchemy ORM models for accounts. Invoice bytes are never stored in these tables."""
 
 from __future__ import annotations
 
@@ -166,7 +166,7 @@ class BatchJob(Base):
 
 
 class BatchItem(Base):
-    """One file in a batch. Stores parse metadata/result, never the original bytes."""
+    """One file in a batch. Parse metadata/result in DB; original bytes stay on disk until TTL."""
 
     __tablename__: str = "batch_items"
 
