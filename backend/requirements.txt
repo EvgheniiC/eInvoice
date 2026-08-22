@@ -18,7 +18,7 @@ openpyxl>=3.1.0
 reportlab>=4.2.0
 
 # Observability
-prometheus-client>=0.21.0
+prometheus-client>=0.26.0
 
 # Accounts (Postgres in production; SQLite for tests/dev)
 sqlalchemy>=2.0.36
