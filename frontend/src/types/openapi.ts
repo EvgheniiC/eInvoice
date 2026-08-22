@@ -31,6 +31,7 @@ export interface components {
       done_count: number;
       items: components["schemas"]["BatchItemResponse"][];
       export_package_available: boolean;
+      view_pdf_package_available: boolean;
     };
     BatchJobStatus: "queued" | "processing" | "completed";
     Body_create_invoice_batch_api_invoices_batch_post: {
@@ -361,5 +362,8 @@ export interface components {
       invoice: components["schemas"]["InvoiceParseResponse-Input"];
     };
     ValidationStatus: "valid" | "invalid" | "warning" | "not_checked";
+    ViewPdfRequest: {
+      invoice: components["schemas"]["InvoiceParseResponse-Input"];
+    };
   };
 }

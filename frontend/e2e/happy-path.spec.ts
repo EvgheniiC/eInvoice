@@ -50,6 +50,7 @@ test('happy path: landing, upload, result, Steuerberater package', async ({
   await expect(page.getByText('270,73 EUR').first()).toBeVisible()
   await expect(page.getByText('14.02.2025').first()).toBeVisible()
   await expect(page.getByText(/DE95 7004 0041 0228 8405 00/).first()).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Lesbare PDF herunterladen' })).toBeVisible()
 
   const downloadPromise: Promise<Download> = page.waitForEvent('download')
   await page.getByRole('button', { name: 'Paket für Steuerberater' }).click()

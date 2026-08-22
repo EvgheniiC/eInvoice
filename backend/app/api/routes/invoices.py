@@ -16,7 +16,9 @@ from app.schemas.invoice import InvoiceParseResponse
 from app.services.auth_service import OrgContext
 from app.services.batch_service import (
     assert_batch_package_ready,
+    assert_batch_view_pdfs_ready,
     build_batch_accountant_package,
+    build_batch_view_pdf_package,
     enqueue_batch,
     get_batch,
     require_batch_plan,
@@ -165,6 +167,54 @@ def export_batch_accountant_package(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Accountant-Paket fehlgeschlagen.",
+        ) from exc
+
+    headers: dict[str, str] = {
+        "Content-Disposition": f'attachment; filename="{filename}"',
+    }
+    observe_funnel("export")
+    return Response(content=content, media_type=media_type, headers=headers)
+
+
+@router.post("/batch/{job_id}/view-pdfs")
+def export_batch_view_pdfs(
+    job_id: UUID,
+    request: Request,
+    org_context: Optional[OrgContext] = Depends(get_optional_org_context),
+    db: Optional[Session] = Depends(get_optional_db),
+) -> Response:
+    """
+    ZIP of working-copy PDFs for every readable invoice in the completed batch.
+    Uses stored parse results; original files are not required.
+    """
+    context: OrgContext = require_batch_plan(org_context)
+    if db is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=AUTH_UNAVAILABLE,
+        )
+    assert_batch_view_pdfs_ready(db, context, job_id)
+    try:
+        with enforce_export(request, db, context):
+            content, media_type, filename = build_batch_view_pdf_package(db, context, job_id)
+    except HTTPException:
+        raise
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    except Exception as exc:
+        log_api_error(
+            event="batch_view_pdf_failed",
+            method=request.method,
+            path=request.url.path,
+            status_code=500,
+            request_id=get_request_id(request),
+            detail=type(exc).__name__,
+            exc_type=type(exc).__name__,
+            stack=format_safe_stack(exc),
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Lesbare PDF fehlgeschlagen.",
         ) from exc
 
     headers: dict[str, str] = {

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ChangeEvent, type JSX, type RefObject
 import {
   downloadAccountantPackage,
   downloadValidationReport,
+  downloadViewPdf,
   exportInvoice,
 } from '../api/client'
 import type {
@@ -17,7 +18,7 @@ import type {
   ValidationStatus,
 } from '../types/invoice'
 
-type ExportAction = ExportFormat | 'package' | 'report'
+type ExportAction = ExportFormat | 'package' | 'report' | 'view-pdf'
 type UserOutcome = 'process' | 'review' | 'request_correction'
 type FieldState = 'ok' | 'missing' | 'error' | 'mismatch'
 
@@ -380,6 +381,24 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps): J
     setExportError(null)
   }, [invoice.filename, invoice.invoice_number, invoice.validation_status])
 
+  async function handleViewPdf(): Promise<void> {
+    if (exportingRef.current) {
+      return
+    }
+    setExportError(null)
+    setExporting('view-pdf')
+    exportingRef.current = true
+    try {
+      await downloadViewPdf(invoice)
+    } catch (err: unknown) {
+      const message: string = err instanceof Error ? err.message : 'PDF-Download fehlgeschlagen.'
+      setExportError(message)
+    } finally {
+      exportingRef.current = false
+      setExporting(null)
+    }
+  }
+
   async function handleExport(format: ExportFormat): Promise<void> {
     if (exportingRef.current) {
       return
@@ -529,6 +548,29 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps): J
           </ol>
         </div>
       )}
+
+      <div className="export-bar export-bar--view" aria-labelledby="view-pdf-label" aria-busy={exportBusy}>
+        <p className="export-bar__label" id="view-pdf-label">
+          Lesbare Ansicht
+        </p>
+        <p className="visually-hidden" aria-live="polite">
+          {exporting === 'view-pdf' ? 'Lesbare PDF wird erstellt' : ''}
+        </p>
+        <div className="export-bar__actions">
+          <button
+            type="button"
+            className="export-bar__primary"
+            disabled={exportBusy}
+            onClick={() => void handleViewPdf()}
+          >
+            {exporting === 'view-pdf' ? 'PDF…' : 'Lesbare PDF herunterladen'}
+          </button>
+        </div>
+        <p className="export-bar__hint">
+          Arbeitskopie aus den gelesenen XML-Daten. Keine Originalrechnung und kein steuerlicher
+          Beleg.
+        </p>
+      </div>
 
       <div
         className={riskyExport ? 'export-bar export-bar--risky' : 'export-bar'}

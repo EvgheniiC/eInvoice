@@ -92,6 +92,7 @@ class TestBatchQueue(unittest.TestCase):
         self.assertEqual(payload["item_count"], 2)
         self.assertEqual(payload["done_count"], 0)
         self.assertFalse(payload["export_package_available"])
+        self.assertFalse(payload["view_pdf_package_available"])
         items: list[dict[str, object]] = payload["items"]  # type: ignore[assignment]
         self.assertEqual(len(items), 2)
         self.assertEqual(items[0]["filename"], "one.xml")
@@ -217,6 +218,7 @@ class TestBatchQueue(unittest.TestCase):
         listed = self.client.get(f"/api/invoices/batch/{job_id}")
         self.assertEqual(listed.status_code, 200)
         self.assertTrue(listed.json()["export_package_available"])
+        self.assertTrue(listed.json()["view_pdf_package_available"])
 
         package = self.client.post(f"/api/invoices/batch/{job_id}/accountant-package")
         self.assertEqual(package.status_code, 200)
@@ -254,8 +256,17 @@ class TestBatchQueue(unittest.TestCase):
             listed = self.client.get(f"/api/invoices/batch/{job_id}")
             self.assertEqual(listed.status_code, 200)
             self.assertFalse(listed.json()["export_package_available"])
+            self.assertTrue(listed.json()["view_pdf_package_available"])
             gone = self.client.post(f"/api/invoices/batch/{job_id}/accountant-package")
         self.assertEqual(gone.status_code, 410)
+        still_pdfs = self.client.post(f"/api/invoices/batch/{job_id}/view-pdfs")
+        self.assertEqual(still_pdfs.status_code, 200)
+        self.assertIn("application/zip", still_pdfs.headers["content-type"])
+        self.assertIn("lesbare_ansicht_", still_pdfs.headers.get("content-disposition", ""))
+        with zipfile.ZipFile(io.BytesIO(still_pdfs.content)) as archive:
+            names: list[str] = archive.namelist()
+            self.assertEqual(len(names), 1)
+            self.assertTrue(names[0].endswith(".pdf"))
         files_left: list[Path] = [path for path in Path(self._temp.name).rglob("*") if path.is_file()]
         self.assertEqual(files_left, [])
 
@@ -275,6 +286,8 @@ class TestBatchQueue(unittest.TestCase):
         self._register_plus("other-pack@example.com")
         hidden = self.client.post(f"/api/invoices/batch/{job_id}/accountant-package")
         self.assertEqual(hidden.status_code, 404)
+        hidden_pdfs = self.client.post(f"/api/invoices/batch/{job_id}/view-pdfs")
+        self.assertEqual(hidden_pdfs.status_code, 404)
 
     def test_incomplete_job_rejects_package(self) -> None:
         self._register_plus("queued-pack@example.com")
@@ -285,6 +298,8 @@ class TestBatchQueue(unittest.TestCase):
         job_id: str = str(created.json()["id"])
         blocked = self.client.post(f"/api/invoices/batch/{job_id}/accountant-package")
         self.assertEqual(blocked.status_code, 409)
+        blocked_pdfs = self.client.post(f"/api/invoices/batch/{job_id}/view-pdfs")
+        self.assertEqual(blocked_pdfs.status_code, 409)
 
     def _register_and_verify(self, email: str) -> None:
         register = self.client.post(

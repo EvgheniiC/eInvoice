@@ -1199,6 +1199,10 @@
   font-size: 0.85rem;
 }
 
+.export-bar--view {
+  border-bottom: 1px solid #d5dcd7;
+}
+
 .pdf-toggle {
   margin-top: 1.25rem;
 }
@@ -1603,6 +1607,13 @@
   font-size: 0.9rem;
 }
 
+.batch-summary__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.batch-summary__pdf,
 .batch-summary__zip {
   min-height: 44px;
   padding: 0.45rem 1rem;
@@ -1615,10 +1626,20 @@
   cursor: pointer;
 }
 
+.batch-summary__pdf {
+  background: transparent;
+  color: #2f6b4f;
+}
+
+.batch-summary__pdf:hover:not(:disabled) {
+  background: #e8f0ec;
+}
+
 .batch-summary__zip:hover:not(:disabled) {
   background: #24553e;
 }
 
+.batch-summary__pdf:disabled,
 .batch-summary__zip:disabled {
   border-color: #8a9a90;
   background: #f3f6f4;

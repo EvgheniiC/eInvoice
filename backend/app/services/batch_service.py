@@ -40,6 +40,7 @@ from app.services.quota_service import (
     limits_for_context,
     refund_parse_count,
 )
+from app.services.view_pdf_service import ViewPdfService, invoice_is_viewable
 
 BATCH_FORBIDDEN_DETAIL: str = (
     "Batch-Upload ist in Plus enthalten. "
@@ -50,6 +51,7 @@ ORIGINALS_GONE_DETAIL: str = (
     "Originaldateien sind nicht mehr verfügbar. Bitte den Auftrag erneut hochladen."
 )
 NO_EXPORTABLE_DETAIL: str = "Keine exportierbare Rechnung in diesem Auftrag."
+NO_VIEWABLE_DETAIL: str = "Keine lesbare Rechnung in diesem Auftrag."
 TERMINAL_ITEM_STATUSES: frozenset[str] = frozenset(
     {
         BatchItemStatus.GUELTIG.value,
@@ -60,6 +62,7 @@ TERMINAL_ITEM_STATUSES: frozenset[str] = frozenset(
 
 _invoice_service: InvoiceService = InvoiceService()
 _export_service: ExportService = ExportService()
+_view_pdf_service: ViewPdfService = ViewPdfService()
 
 
 def require_batch_plan(org_context: Optional[OrgContext]) -> OrgContext:
@@ -145,6 +148,25 @@ def assert_batch_package_ready(
     _package_entries_for_job(session, org_context, job_id)
 
 
+def build_batch_view_pdf_package(
+    session: Session,
+    org_context: OrgContext,
+    job_id: UUID,
+) -> tuple[bytes, str, str]:
+    """Build a ZIP of working-copy PDFs from stored parse results."""
+    invoices, completed_at = _viewable_invoices_for_job(session, org_context, job_id)
+    return _view_pdf_service.render_batch(invoices, completed_at)
+
+
+def assert_batch_view_pdfs_ready(
+    session: Session,
+    org_context: OrgContext,
+    job_id: UUID,
+) -> None:
+    """Raise HTTPException if the job cannot produce working-copy PDFs yet."""
+    _viewable_invoices_for_job(session, org_context, job_id)
+
+
 def _package_entries_for_job(
     session: Session,
     org_context: OrgContext,
@@ -187,6 +209,36 @@ def _package_entries_for_job(
     return entries, completed_at
 
 
+def _viewable_invoices_for_job(
+    session: Session,
+    org_context: OrgContext,
+    job_id: UUID,
+) -> tuple[list[InvoiceParseResponse], datetime]:
+    purge_expired_originals(session)
+    job: Optional[BatchJob] = session.scalar(
+        select(BatchJob)
+        .where(BatchJob.id == job_id, BatchJob.organization_id == org_context.organization_id)
+        .options(selectinload(BatchJob.items))
+    )
+    if job is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Auftrag nicht gefunden.")
+    if job.status != BatchJobStatus.COMPLETED.value:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=JOB_NOT_COMPLETE_DETAIL)
+
+    invoices: list[InvoiceParseResponse] = []
+    for item in job.items:
+        if not item.result_json:
+            continue
+        invoice: InvoiceParseResponse = InvoiceParseResponse.model_validate(item.result_json)
+        if invoice_is_viewable(invoice):
+            invoices.append(invoice)
+    if not invoices:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=NO_VIEWABLE_DETAIL)
+
+    completed_at: datetime = as_utc(job.completed_at) if job.completed_at is not None else utc_now()
+    return invoices, completed_at
+
+
 def process_next_item() -> bool:
     """Claim one queued file, parse it, store metadata. Original stays until TTL. False if idle."""
     from app.db.session import get_session_factory
@@ -225,6 +277,7 @@ def to_response(job: BatchJob) -> BatchJobResponse:
         done_count=done_count,
         items=items,
         export_package_available=_export_package_available(job),
+        view_pdf_package_available=_view_pdf_package_available(job),
     )
 
 
@@ -536,6 +589,18 @@ def _export_package_available(job: BatchJob) -> bool:
             continue
         invoice: InvoiceParseResponse = InvoiceParseResponse.model_validate(item.result_json)
         if invoice_is_exportable(invoice):
+            return True
+    return False
+
+
+def _view_pdf_package_available(job: BatchJob) -> bool:
+    if job.status != BatchJobStatus.COMPLETED.value:
+        return False
+    for item in job.items:
+        if not item.result_json:
+            continue
+        invoice: InvoiceParseResponse = InvoiceParseResponse.model_validate(item.result_json)
+        if invoice_is_viewable(invoice):
             return True
     return False
 

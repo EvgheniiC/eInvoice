@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type JSX, type RefObject } from 'react'
-import { checkHealth, createInvoiceBatch, downloadBatchAccountantPackage, fetchBatchJob, fetchCapabilities, parseInvoice, recordFunnel } from '../api/client'
+import { checkHealth, createInvoiceBatch, downloadBatchAccountantPackage, downloadBatchViewPdfs, fetchBatchJob, fetchCapabilities, parseInvoice, recordFunnel } from '../api/client'
 import { BatchSummary } from '../components/BatchSummary'
 import { FileUpload } from '../components/FileUpload'
 import { InvoiceView } from '../components/InvoiceView'
@@ -46,6 +46,7 @@ export function UploadPage({
   const [capabilities, setCapabilities] = useState<CapabilitiesResponse>(DEFAULT_CAPABILITIES)
   const [kositDegraded, setKositDegraded] = useState<boolean>(false)
   const [packageDownloading, setPackageDownloading] = useState<boolean>(false)
+  const [viewPdfDownloading, setViewPdfDownloading] = useState<boolean>(false)
   const inFlightRef: RefObject<boolean> = useRef<boolean>(false)
   const feedbackRef: RefObject<HTMLElement | null> = useRef<HTMLElement | null>(null)
 
@@ -126,6 +127,7 @@ export function UploadPage({
     setBatchJob(null)
     setSelectedBatchItemId(null)
     setPackageDownloading(false)
+    setViewPdfDownloading(false)
     setUploadedFile(file)
     setSelectedFilename(file.name)
     setShowPdf(true)
@@ -173,6 +175,7 @@ export function UploadPage({
     setSelectedFilename(`${String(files.length)} Dateien`)
     setSelectedBatchItemId(null)
     setPackageDownloading(false)
+    setViewPdfDownloading(false)
     setAnnouncement(`${String(files.length)} Dateien werden in die Prüfungswarteschlange gelegt.`)
     try {
       const created: BatchJobResponse = await createInvoiceBatch(files)
@@ -205,7 +208,7 @@ export function UploadPage({
   }
 
   async function handleDownloadPackage(): Promise<void> {
-    if (batchJob === null || packageDownloading) {
+    if (batchJob === null || packageDownloading || viewPdfDownloading) {
       return
     }
     setPackageDownloading(true)
@@ -225,6 +228,30 @@ export function UploadPage({
       setAnnouncement(message)
     } finally {
       setPackageDownloading(false)
+    }
+  }
+
+  async function handleDownloadViewPdfs(): Promise<void> {
+    if (batchJob === null || viewPdfDownloading || packageDownloading) {
+      return
+    }
+    setViewPdfDownloading(true)
+    setError(null)
+    setAnnouncement('Lesbare PDFs werden erstellt.')
+    try {
+      await downloadBatchViewPdfs(batchJob.id)
+      setAnnouncement('Lesbare PDFs wurden heruntergeladen.')
+    } catch (err: unknown) {
+      const message: string =
+        err instanceof TypeError
+          ? NETWORK_ERROR_MESSAGE
+          : err instanceof Error
+            ? err.message
+            : 'Die PDFs konnten nicht erstellt werden. Bitte versuchen Sie es erneut.'
+      setError(message)
+      setAnnouncement(message)
+    } finally {
+      setViewPdfDownloading(false)
     }
   }
 
@@ -387,6 +414,10 @@ export function UploadPage({
                 void handleDownloadPackage()
               }}
               packageDownloading={packageDownloading}
+              onDownloadViewPdfs={() => {
+                void handleDownloadViewPdfs()
+              }}
+              viewPdfDownloading={viewPdfDownloading}
             />
           </aside>
           <section className="workspace-split__detail" aria-label="Rechnungsdaten">

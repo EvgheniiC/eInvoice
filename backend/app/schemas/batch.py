@@ -38,3 +38,4 @@ class BatchJobResponse(ApiModel):
     done_count: int
     items: List[BatchItemResponse]
     export_package_available: bool = False
+    view_pdf_package_available: bool = False

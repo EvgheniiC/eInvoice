@@ -14,6 +14,7 @@ import type {
   OrgResponse,
   RegisterResponse,
   ValidationReportRequest,
+  ViewPdfRequest,
 } from '../types/invoice'
 import { DEFAULT_CAPABILITIES } from '../content/capabilities'
 
@@ -100,6 +101,17 @@ export async function downloadBatchAccountantPackage(jobId: string): Promise<voi
   await downloadResponseBlob(response, 'buchhaltung_paket.zip')
 }
 
+export async function downloadBatchViewPdfs(jobId: string): Promise<void> {
+  const response: Response = await fetch(
+    `${API_BASE}/invoices/batch/${jobId}/view-pdfs`,
+    withRequestId({ method: 'POST' }),
+  )
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response, 'PDF-Download fehlgeschlagen.'))
+  }
+  await downloadResponseBlob(response, 'lesbare_ansicht.zip')
+}
+
 export async function exportInvoice(
   invoice: InvoiceParseResponse,
   format: ExportFormat,
@@ -119,6 +131,25 @@ export async function exportInvoice(
   }
 
   await downloadResponseBlob(response, defaultFilename(invoice, format))
+}
+
+export async function downloadViewPdf(invoice: InvoiceParseResponse): Promise<void> {
+  const body: ViewPdfRequest = { invoice }
+  const response: Response = await fetch(
+    `${API_BASE}/invoices/export/view-pdf`,
+    withRequestId({
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }),
+  )
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response, 'PDF-Download fehlgeschlagen.'))
+  }
+  await downloadResponseBlob(
+    response,
+    `lesbare_${invoice.invoice_number ?? 'invoice'}.pdf`,
+  )
 }
 
 export async function downloadValidationReport(

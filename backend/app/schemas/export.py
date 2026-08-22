@@ -38,6 +38,12 @@ class ValidationReportRequest(ApiModel):
     invoice: InvoiceParseResponse
 
 
+class ViewPdfRequest(ApiModel):
+    """Request body: parsed invoice DTO to render as a working-copy PDF."""
+
+    invoice: InvoiceParseResponse
+
+
 class AccountantPackageRequest(ApiModel):
     """ZIP package for Steuerberater: original + summary + report + Excel + DATEV."""
 

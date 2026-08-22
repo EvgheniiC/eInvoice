@@ -188,6 +188,10 @@ class TestPathNormalization(unittest.TestCase):
             normalize_path(f"/api/invoices/batch/{job_id}/accountant-package"),
             "/api/invoices/batch/{job_id}/accountant-package",
         )
+        self.assertEqual(
+            normalize_path(f"/api/invoices/batch/{job_id}/view-pdfs"),
+            "/api/invoices/batch/{job_id}/view-pdfs",
+        )
 
 
 if __name__ == "__main__":

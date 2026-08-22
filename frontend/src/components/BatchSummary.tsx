@@ -7,6 +7,8 @@ type BatchSummaryProps = {
   onSelectItem: (item: BatchItemResponse) => void
   onDownloadPackage: () => void
   packageDownloading: boolean
+  onDownloadViewPdfs: () => void
+  viewPdfDownloading: boolean
 }
 
 const STATUS_LABEL: Record<BatchItemStatus, string> = {
@@ -23,9 +25,12 @@ export function BatchSummary({
   onSelectItem,
   onDownloadPackage,
   packageDownloading,
+  onDownloadViewPdfs,
+  viewPdfDownloading,
 }: BatchSummaryProps): JSX.Element {
   const percent: number = job.item_count === 0 ? 0 : Math.round((job.done_count / job.item_count) * 100)
-  const zipEnabled: boolean = job.export_package_available && !packageDownloading
+  const zipEnabled: boolean = job.export_package_available && !packageDownloading && !viewPdfDownloading
+  const viewPdfEnabled: boolean = job.view_pdf_package_available && !packageDownloading && !viewPdfDownloading
 
   return (
     <section className="batch-summary" aria-live="polite">
@@ -82,14 +87,24 @@ export function BatchSummary({
         </table>
       </div>
       <p className="batch-summary__hint">{packageHint(job)}</p>
-      <button
-        type="button"
-        className="batch-summary__zip"
-        disabled={!zipEnabled}
-        onClick={onDownloadPackage}
-      >
-        {packageDownloading ? 'Paket wird erstellt…' : 'Ein ZIP für die Buchhaltung'}
-      </button>
+      <div className="batch-summary__actions">
+        <button
+          type="button"
+          className="batch-summary__pdf"
+          disabled={!viewPdfEnabled}
+          onClick={onDownloadViewPdfs}
+        >
+          {viewPdfDownloading ? 'PDFs werden erstellt…' : 'Alle als lesbare PDF'}
+        </button>
+        <button
+          type="button"
+          className="batch-summary__zip"
+          disabled={!zipEnabled}
+          onClick={onDownloadPackage}
+        >
+          {packageDownloading ? 'Paket wird erstellt…' : 'Ein ZIP für die Buchhaltung'}
+        </button>
+      </div>
     </section>
   )
 }
@@ -97,14 +112,18 @@ export function BatchSummary({
 function packageHint(job: BatchJobResponse): string {
   if (job.export_package_available) {
     return (
-      'Klick auf eine geprüfte Zeile zeigt die Rechnung rechts. Ein ZIP mit Excel, DATEV und ' +
-      'den Originaldateien für die Kanzlei.'
+      'Klick auf eine geprüfte Zeile zeigt die Rechnung rechts. Lesbare PDFs oder ein ZIP mit ' +
+      'Excel, DATEV und den Originaldateien für die Kanzlei.'
+    )
+  }
+  if (job.view_pdf_package_available) {
+    return (
+      'Originaldateien sind nicht mehr verfügbar. Lesbare PDFs aus den geprüften Daten können ' +
+      'Sie weiterhin herunterladen.'
     )
   }
   if (job.status === 'completed') {
-    return (
-      'Originaldateien sind nicht mehr verfügbar. Für ein neues Paket die Dateien erneut hochladen.'
-    )
+    return 'Keine lesbare Rechnung in diesem Auftrag.'
   }
   return (
     'Klick auf eine geprüfte Zeile zeigt die Rechnung rechts. Originaldateien bleiben kurz ' +

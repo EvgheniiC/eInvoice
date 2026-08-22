@@ -54,6 +54,17 @@ export const FAQ_ITEMS: FaqItem[] = [
     ],
   },
   {
+    id: 'lesbare-pdf',
+    question: 'Kann ich eine lesbare PDF herunterladen?',
+    paragraphs: [
+      'Ja. Nach dem Lesen zeigt eInvoice die Rechnungsdaten und kann daraus eine lesbare PDF ' +
+        'erzeugen — eine Arbeitskopie, keine Originalrechnung und kein steuerlicher Beleg.',
+      'Eine Datei: Schaltfläche „Lesbare PDF herunterladen“. Mehrere Dateien mit Plus: ' +
+        '„Alle als lesbare PDF“ als ZIP. Für die Buchhaltung bleibt das Steuerberater-Paket ' +
+        'mit Excel und DATEV.',
+    ],
+  },
+  {
     id: 'speicherung',
     question: 'Wird meine Rechnung gespeichert?',
     paragraphs: [

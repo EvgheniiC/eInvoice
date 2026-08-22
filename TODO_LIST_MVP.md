@@ -105,7 +105,7 @@ validation checks schema/standard compliance; acceptance for Vorsteuerabzug rema
   - [x] Net / VAT / Gross
   - [x] IBAN / payment reference if present
 - [x] Mobile-friendly readable layout
-- [ ] Optional: download "view PDF" generated from structured data
+- [x] Optional: download "view PDF" generated from structured data
 
 ### 1.5 ZUGFeRD consistency check (P1, still MVP-critical)
 - [x] Compare key fields PDF-visible vs XML:

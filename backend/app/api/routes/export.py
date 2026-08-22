@@ -14,6 +14,7 @@ from app.schemas.export import (
     ExportMappingDoc,
     ExportRequest,
     ValidationReportRequest,
+    ViewPdfRequest,
 )
 from app.schemas.invoice import InvoiceParseResponse, ParseStatus
 from app.services.auth_service import OrgContext
@@ -24,6 +25,7 @@ from app.services.export_service import (
     decode_pdf_base64,
     invoice_is_exportable,
 )
+from app.services.view_pdf_service import ViewPdfService, invoice_is_viewable
 from app.services.quota_service import enforce_export
 from app.services.validation_report import (
     build_validation_report,
@@ -32,6 +34,7 @@ from app.services.validation_report import (
 
 router: APIRouter = APIRouter()
 export_service: ExportService = ExportService()
+view_pdf_service: ViewPdfService = ViewPdfService()
 
 
 @router.get("/export/mapping", response_model=List[ExportMappingDoc])
@@ -97,6 +100,49 @@ def export_validation_report(body: ValidationReportRequest) -> Response:
         "Content-Disposition": f'attachment; filename="{filename}"',
     }
     return Response(content=content, media_type="text/plain; charset=utf-8", headers=headers)
+
+
+@router.post("/export/view-pdf")
+def export_view_pdf(
+    body: ViewPdfRequest,
+    request: Request,
+    org_context: Optional[OrgContext] = Depends(get_optional_org_context),
+    db: Optional[Session] = Depends(get_optional_db),
+) -> Response:
+    """
+    Working-copy PDF from parsed XML fields. Not an original invoice.
+    Allowed for invalid invoices so the user can still print the readable view.
+    """
+    _assert_viewable(body.invoice)
+
+    try:
+        with enforce_export(request, db, org_context):
+            content, media_type, filename = view_pdf_service.render(body.invoice)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    except HTTPException:
+        raise
+    except Exception as exc:
+        log_api_error(
+            event="view_pdf_failed",
+            method=request.method,
+            path=request.url.path,
+            status_code=500,
+            request_id=get_request_id(request),
+            detail=type(exc).__name__,
+            exc_type=type(exc).__name__,
+            stack=format_safe_stack(exc),
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Lesbare PDF fehlgeschlagen.",
+        ) from exc
+
+    headers: dict[str, str] = {
+        "Content-Disposition": f'attachment; filename="{filename}"',
+    }
+    observe_funnel("export")
+    return Response(content=content, media_type=media_type, headers=headers)
 
 
 @router.post("/export/accountant-package")
@@ -186,4 +232,12 @@ def _assert_exportable(invoice: InvoiceParseResponse) -> None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Zu wenige Daten für den Export (Nummer/Betrag fehlen).",
+        )
+
+
+def _assert_viewable(invoice: InvoiceParseResponse) -> None:
+    if not invoice_is_viewable(invoice):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Fehlerhafte Rechnung kann nicht als PDF dargestellt werden.",
         )

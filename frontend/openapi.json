@@ -922,6 +922,48 @@
         }
       }
     },
+    "/api/invoices/batch/{job_id}/view-pdfs": {
+      "post": {
+        "tags": [
+          "invoices"
+        ],
+        "summary": "Export Batch View Pdfs",
+        "description": "ZIP of working-copy PDFs for every readable invoice in the completed batch.\nUses stored parse results; original files are not required.",
+        "operationId": "export_batch_view_pdfs_api_invoices_batch__job_id__view_pdfs_post",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/invoices/export/mapping": {
       "get": {
         "tags": [
@@ -1001,6 +1043,46 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/ValidationReportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/invoices/export/view-pdf": {
+      "post": {
+        "tags": [
+          "export"
+        ],
+        "summary": "Export View Pdf",
+        "description": "Working-copy PDF from parsed XML fields. Not an original invoice.\nAllowed for invalid invoices so the user can still print the readable view.",
+        "operationId": "export_view_pdf_api_invoices_export_view_pdf_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ViewPdfRequest"
               }
             }
           },
@@ -1266,6 +1348,11 @@
             "type": "boolean",
             "title": "Export Package Available",
             "default": false
+          },
+          "view_pdf_package_available": {
+            "type": "boolean",
+            "title": "View Pdf Package Available",
+            "default": false
           }
         },
         "type": "object",
@@ -1275,7 +1362,8 @@
           "item_count",
           "done_count",
           "items",
-          "export_package_available"
+          "export_package_available",
+          "view_pdf_package_available"
         ],
         "title": "BatchJobResponse"
       },
@@ -3606,6 +3694,19 @@
         ],
         "title": "ValidationStatus",
         "description": "EN 16931 / business validation outcome shown in the UI."
+      },
+      "ViewPdfRequest": {
+        "properties": {
+          "invoice": {
+            "$ref": "#/components/schemas/InvoiceParseResponse-Input"
+          }
+        },
+        "type": "object",
+        "required": [
+          "invoice"
+        ],
+        "title": "ViewPdfRequest",
+        "description": "Request body: parsed invoice DTO to render as a working-copy PDF."
       }
     }
   }
