@@ -14,7 +14,7 @@ PyPDF2>=3.0.0
 requests>=2.31.0
 
 # Export
-openpyxl>=3.1.0
+openpyxl>=3.1.5
 reportlab>=4.2.0
 
 # Observability
