@@ -40,6 +40,7 @@ LimitCORE=0
 StateDirectory=einvoice
 ReadWritePaths=/var/lib/einvoice
 Environment=BATCH_TEMP_DIR=/var/lib/einvoice/batch-tmp
+Environment=HISTORY_ORIGINAL_DIR=/var/lib/einvoice/history-originals
 
 [Install]
 WantedBy=multi-user.target

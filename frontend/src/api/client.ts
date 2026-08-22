@@ -8,6 +8,7 @@ import type {
   FeedbackResponse,
   FunnelEventRequest,
   HealthResponse,
+  HistoryListResponse,
   InvoiceParseResponse,
   MeResponse,
   MessageResponse,
@@ -441,19 +442,58 @@ export async function changeAccountPassword(
   return response.json() as Promise<MessageResponse>
 }
 
-export async function updateOrganizationName(name: string): Promise<OrgResponse> {
+export type OrgUpdatePayload = {
+  name?: string
+  history_enabled?: boolean
+  store_originals_enabled?: boolean
+}
+
+export async function updateOrganization(body: OrgUpdatePayload): Promise<OrgResponse> {
   const response: Response = await fetch(
     `${API_BASE}/org`,
     withRequestId({
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name }),
+      body: JSON.stringify(body),
     }),
   )
   if (!response.ok) {
     throw new Error(await readErrorDetail(response, 'Organisation konnte nicht gespeichert werden.'))
   }
   return response.json() as Promise<OrgResponse>
+}
+
+export async function updateOrganizationName(name: string): Promise<OrgResponse> {
+  return updateOrganization({ name })
+}
+
+export async function fetchInvoiceHistory(
+  limit: number = 50,
+  offset: number = 0,
+): Promise<HistoryListResponse> {
+  const params: URLSearchParams = new URLSearchParams({
+    limit: String(limit),
+    offset: String(offset),
+  })
+  const response: Response = await fetch(
+    `${API_BASE}/invoices/history?${params.toString()}`,
+    withRequestId({ method: 'GET' }),
+  )
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response, 'Verlauf nicht verfügbar.'))
+  }
+  return response.json() as Promise<HistoryListResponse>
+}
+
+export async function downloadHistoryAccountantPackage(recordId: string): Promise<void> {
+  const response: Response = await fetch(
+    `${API_BASE}/invoices/history/${recordId}/accountant-package`,
+    withRequestId({ method: 'POST' }),
+  )
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response, 'Paket-Download fehlgeschlagen.'))
+  }
+  await downloadResponseBlob(response, 'buchhaltung_paket.zip')
 }
 
 async function downloadResponseBlob(response: Response, fallbackName: string): Promise<void> {

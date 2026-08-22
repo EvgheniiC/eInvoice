@@ -254,12 +254,60 @@ def rename_organization(
     role: str,
     name: str,
 ) -> Organization:
+    return update_organization(
+        session,
+        organization_id=organization_id,
+        role=role,
+        allows_history=False,
+        name=name,
+    )
+
+
+def update_organization(
+    session: Session,
+    *,
+    organization_id: UUID,
+    role: str,
+    allows_history: bool,
+    name: Optional[str] = None,
+    history_enabled: Optional[bool] = None,
+    store_originals_enabled: Optional[bool] = None,
+) -> Organization:
     if role != ROLE_INHABER:
-        raise AuthError("Nur der Inhaber kann die Organisation umbenennen.")
+        raise AuthError("Nur der Inhaber kann die Organisation ändern.")
+    if name is None and history_enabled is None and store_originals_enabled is None:
+        raise AuthError("Keine Änderung übermittelt.")
     organization: Optional[Organization] = session.get(Organization, organization_id)
     if organization is None:
         raise AuthError("Organisation nicht gefunden.")
-    organization.name = name.strip()
+    if name is not None:
+        organization.name = name.strip()
+    want_history: bool = organization.history_enabled if history_enabled is None else history_enabled
+    want_originals: bool = (
+        organization.store_originals_enabled
+        if store_originals_enabled is None
+        else store_originals_enabled
+    )
+    if want_originals and not want_history:
+        raise AuthError("Dateien merken erfordert den Verlauf.")
+    turning_on_history: bool = history_enabled is True and not organization.history_enabled
+    turning_on_originals: bool = (
+        store_originals_enabled is True and not organization.store_originals_enabled
+    )
+    if (turning_on_history or turning_on_originals) and not allows_history:
+        raise AuthError(
+            "Verlauf ist in Plus enthalten. Mit Plus speichern Sie Metadaten geprüfter Rechnungen."
+        )
+    originals_were_on: bool = organization.store_originals_enabled
+    if history_enabled is not None:
+        if history_enabled and not organization.history_enabled:
+            organization.history_enabled_at = utc_now()
+        organization.history_enabled = history_enabled
+    organization.store_originals_enabled = want_originals
+    if originals_were_on and not want_originals:
+        from app.services.history_service import purge_originals_for_organization
+
+        purge_originals_for_organization(session, organization.id)
     session.commit()
     return organization
 
@@ -322,6 +370,9 @@ def delete_user_by_email(session: Session, *, email: str) -> str:
         )
         organization: Optional[Organization] = session.get(Organization, organization_id)
         if organization is not None:
+            from app.services.history_service import purge_history_for_organization
+
+            purge_history_for_organization(session, organization_id)
             session.delete(organization)
     session.delete(user)
     session.commit()

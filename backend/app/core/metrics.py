@@ -40,6 +40,8 @@ _KNOWN_PATHS: Final[frozenset[str]] = frozenset(
         "/api/org",
         "/api/admin/plans",
         "/api/invoices/parse",
+        "/api/invoices/history",
+        "/api/invoices/history/{record_id}/accountant-package",
         "/api/invoices/batch",
         "/api/invoices/batch/{job_id}",
         "/api/invoices/batch/{job_id}/accountant-package",
@@ -143,6 +145,7 @@ READY: Gauge = Gauge(
 _BATCH_JOB_PREFIX: Final[str] = "/api/invoices/batch/"
 _BATCH_PACKAGE_SUFFIX: Final[str] = "/accountant-package"
 _BATCH_VIEW_PDF_SUFFIX: Final[str] = "/view-pdfs"
+_HISTORY_PREFIX: Final[str] = "/api/invoices/history/"
 
 
 def normalize_path(path: str) -> str:
@@ -155,6 +158,10 @@ def normalize_path(path: str) -> str:
         if path.endswith(_BATCH_VIEW_PDF_SUFFIX):
             return "/api/invoices/batch/{job_id}/view-pdfs"
         return "/api/invoices/batch/{job_id}"
+    if path.startswith(_HISTORY_PREFIX):
+        if path.endswith(_BATCH_PACKAGE_SUFFIX):
+            return "/api/invoices/history/{record_id}/accountant-package"
+        return "/api/invoices/history/{record_id}"
     return "other"
 
 

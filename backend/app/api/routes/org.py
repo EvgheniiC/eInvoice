@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_current_org, get_db
 from app.db.models import Organization
 from app.schemas.auth import OrgResponse, OrgUpdateRequest, PlanInfo
-from app.services.auth_service import AuthError, OrgContext, rename_organization
+from app.services.auth_service import AuthError, OrgContext, update_organization
 from app.services.quota_service import build_plan_info
 
 router: APIRouter = APIRouter()
@@ -18,6 +18,8 @@ def _org_payload(db: Session, organization: Organization, context: OrgContext) -
         role=context.role,
         plan=plan,
         created_at=organization.created_at,
+        history_enabled=organization.history_enabled,
+        store_originals_enabled=organization.store_originals_enabled,
     )
 
 
@@ -39,11 +41,14 @@ def patch_organization(
     context: OrgContext = Depends(get_current_org),
 ) -> OrgResponse:
     try:
-        organization: Organization = rename_organization(
+        organization: Organization = update_organization(
             db,
             organization_id=context.organization_id,
             role=context.role,
+            allows_history=context.allows_history,
             name=body.name,
+            history_enabled=body.history_enabled,
+            store_originals_enabled=body.store_originals_enabled,
         )
     except AuthError as exc:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc

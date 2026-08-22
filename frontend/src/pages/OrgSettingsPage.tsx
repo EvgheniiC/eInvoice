@@ -1,5 +1,5 @@
 import { useState, type ChangeEvent, type FormEvent, type JSX } from 'react'
-import { changeAccountPassword, updateOrganizationName } from '../api/client'
+import { changeAccountPassword, updateOrganization, updateOrganizationName } from '../api/client'
 import { PageNav } from '../components/PageNav'
 import { SiteFooter } from '../components/SiteFooter'
 import type { AppRoute } from '../routing'
@@ -32,6 +32,10 @@ export function OrgSettingsPage({
   onLogout,
 }: OrgSettingsPageProps): JSX.Element {
   const [name, setName] = useState<string>(session?.organization_name ?? '')
+  const [historyEnabled, setHistoryEnabled] = useState<boolean>(session?.history_enabled ?? false)
+  const [storeOriginals, setStoreOriginals] = useState<boolean>(
+    session?.store_originals_enabled ?? false,
+  )
   const [currentPassword, setCurrentPassword] = useState<string>('')
   const [newPassword, setNewPassword] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
@@ -71,6 +75,38 @@ export function OrgSettingsPage({
       const updated: OrgResponse = await updateOrganizationName(name)
       onSession({ ...session, organization_name: updated.name })
       setInfo('Organisationsname gespeichert.')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Speichern fehlgeschlagen.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function onSaveHistory(event: FormEvent<HTMLFormElement>): Promise<void> {
+    event.preventDefault()
+    if (saving || session === null) {
+      return
+    }
+    setSaving(true)
+    setError(null)
+    setInfo(null)
+    try {
+      const updated: OrgResponse = await updateOrganization({
+        history_enabled: historyEnabled,
+        store_originals_enabled: storeOriginals,
+      })
+      onSession({
+        ...session,
+        history_enabled: updated.history_enabled,
+        store_originals_enabled: updated.store_originals_enabled,
+      })
+      setHistoryEnabled(updated.history_enabled)
+      setStoreOriginals(updated.store_originals_enabled)
+      setInfo(
+        updated.history_enabled
+          ? 'Verlauf gespeichert. Neue Prüfungen erscheinen unter Verlauf.'
+          : 'Verlauf ausgeschaltet. Neue Prüfungen werden nicht mehr gespeichert.',
+      )
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Speichern fehlgeschlagen.')
     } finally {
@@ -143,6 +179,65 @@ export function OrgSettingsPage({
         </ul>
         <p className="page__limits">{upgradeHint}</p>
       </section>
+
+      {session.plan.allows_history ? (
+        <form className="auth-form" onSubmit={onSaveHistory}>
+          <h2>Verlauf</h2>
+          <p className="auth-form__hint">
+            Ohne Häkchen speichert eInvoice nach der Prüfung nichts. Gäste bleiben unverändert.
+          </p>
+          <label className="auth-form__check" htmlFor="history-enabled">
+            <input
+              id="history-enabled"
+              type="checkbox"
+              checked={historyEnabled}
+              disabled={saving || session.role !== 'inhaber'}
+              onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                const next: boolean = event.target.checked
+                setHistoryEnabled(next)
+                if (!next) {
+                  setStoreOriginals(false)
+                }
+              }}
+            />
+            <span>
+              Verlauf speichern
+              <span className="auth-form__hint">
+                Nur Metadaten und Datei-Hash: Datum, Lieferant, Nummer, Betrag, Status.
+              </span>
+            </span>
+          </label>
+          <label className="auth-form__check" htmlFor="store-originals">
+            <input
+              id="store-originals"
+              type="checkbox"
+              checked={storeOriginals}
+              disabled={saving || session.role !== 'inhaber' || !historyEnabled}
+              onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                const next: boolean = event.target.checked
+                setStoreOriginals(next)
+                if (next) {
+                  setHistoryEnabled(true)
+                }
+              }}
+            />
+            <span>
+              Dateien merken
+              <span className="auth-form__hint">
+                Originaldatei 30 Tage behalten, damit Sie das Steuerberater-Paket erneut laden
+                können.
+              </span>
+            </span>
+          </label>
+          <button
+            type="submit"
+            className="btn btn--primary"
+            disabled={saving || session.role !== 'inhaber'}
+          >
+            Zustimmung speichern
+          </button>
+        </form>
+      ) : null}
 
       <form className="auth-form" onSubmit={onSaveOrg}>
         <label htmlFor="org-name">Name der Organisation</label>

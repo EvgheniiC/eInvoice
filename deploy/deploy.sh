@@ -137,6 +137,7 @@ if [[ "${DO_BACKEND}" -eq 1 ]]; then
 
   echo "==> install systemd units"
   install -d -m 700 -o "${WEB_USER}" -g "${WEB_GROUP}" /var/lib/einvoice/batch-tmp
+  install -d -m 700 -o "${WEB_USER}" -g "${WEB_GROUP}" /var/lib/einvoice/history-originals
   if [[ -d /etc/systemd/system ]]; then
     cp "${APP_ROOT}/deploy/einvoice-api.service" /etc/systemd/system/einvoice-api.service
     cp "${APP_ROOT}/deploy/einvoice-worker.service" /etc/systemd/system/einvoice-worker.service

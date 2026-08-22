@@ -11,9 +11,9 @@ no invoice archive. Two processing models:
 | Model | Persistence | Legal basis (planned) | Status |
 |-------|-------------|----------------------|--------|
 | Guest | File lives only in the request / temp dir | Art. 6(1)(b)/(f) DSGVO for the parse/export request | Active |
-| Account | Email, password hash, org membership, session. Plus batch originals in `BATCH_TEMP_DIR` until package TTL. | Art. 6 DSGVO + AVV; originals are operational temp, not an archive | Account tables exist; batch originals have a short TTL |
+| Account | Email, password hash, org membership, session. Plus batch originals in `BATCH_TEMP_DIR` until package TTL. Opt-in history: metadata + file hash; originals only with «Dateien merken» in `HISTORY_ORIGINAL_DIR` until retention. | Art. 6 DSGVO + AVV; history requires explicit consent | Account tables exist; history is off by default |
 
-Billing, object storage, and invoice history remain future trust-boundary expansions.
+Billing and object storage remain future trust-boundary expansions.
 
 ## Assets
 

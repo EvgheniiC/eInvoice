@@ -9,6 +9,7 @@ export type AppRoute =
   | 'reset'
   | 'verify'
   | 'org'
+  | 'history'
 
 export function pathToRoute(pathname: string): AppRoute {
   if (pathname === '/upload' || pathname.startsWith('/upload/')) {
@@ -48,6 +49,9 @@ export function pathToRoute(pathname: string): AppRoute {
   if (pathname === '/organisation' || pathname.startsWith('/organisation/')) {
     return 'org'
   }
+  if (pathname === '/verlauf' || pathname.startsWith('/verlauf/')) {
+    return 'history'
+  }
   return 'landing'
 }
 
@@ -78,6 +82,9 @@ export function routeToPath(route: AppRoute): string {
   }
   if (route === 'org') {
     return '/organisation'
+  }
+  if (route === 'history') {
+    return '/verlauf'
   }
   return '/'
 }

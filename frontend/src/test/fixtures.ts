@@ -116,6 +116,8 @@ export function buildSession(overrides: Partial<MeResponse> = {}): MeResponse {
     organization_name: 'Muster Handwerk',
     role: 'inhaber',
     memberships: [],
+    history_enabled: false,
+    store_originals_enabled: false,
     ...overrides,
     plan,
   }

@@ -81,8 +81,9 @@ export const DATENSCHUTZ: LegalDocument = {
           'Rechnungsinhalte. Die Datei wird nicht gespeichert.',
         'Konto (optional): E-Mail, Passwort-Hash, Organisationsname, Rolle, Sitzungs-Cookie. ' +
           'Transaktionale Auth-Mails (Bestätigung, Anmeldelink, Passwort-Reset). ' +
-          'Kein Rechnungsarchiv. Bei Plus liegen Originaldateien nur kurz in einem ' +
-          'Temp-Verzeichnis, damit ein Buchhaltungspaket erzeugt werden kann; danach Löschung.',
+          'Kein Rechnungsarchiv ohne Zustimmung. Bei Plus liegen Batch-Originale nur kurz ' +
+          'in einem Temp-Verzeichnis. Verlauf: Metadaten und Datei-Hash nur nach Opt-in; ' +
+          'Originaldatei nur mit „Dateien merken“ und begrenzter Aufbewahrung.',
         'Technische Verbindungsdaten beim Aufruf: IP-Adresse, Zeitpunkt, aufgerufene URL, ' +
           'User-Agent — soweit der Webserver sie für den Betrieb protokolliert.',
         'Anwendungsprotokolle: Request-ID, Dateiname (nur Basisname), Dateigröße, ' +
@@ -109,8 +110,8 @@ export const DATENSCHUTZ: LegalDocument = {
       paragraphs: [
         'Die Verarbeitung findet auf dem Server des Dienstes statt (geplante Region: ' +
           'Europäische Union; genauer Standort und Hosting-Anbieter folgen mit den ' +
-          'Betreiberangaben). Die Datei wird nicht in eine Datenbank geschrieben und nicht ' +
-          'für ein Benutzerkonto gespeichert.',
+          'Betreiberangaben). Im Gastmodus wird die Datei nicht in eine Datenbank geschrieben. ' +
+          'Im Konto nur nach ausdrücklicher Zustimmung: Metadaten/Hash, optional das Original.',
       ],
       listItems: [
         'Während der Anfrage liegt die Datei im Arbeitsspeicher.',
@@ -124,8 +125,9 @@ export const DATENSCHUTZ: LegalDocument = {
         'Gastmodell: keine Speicherung der Datei nach der Anfrage.',
         'Plus-Batch: Originaldateien bleiben wenige Stunden in einem Temp-Verzeichnis, ' +
           'damit Sie ein ZIP für die Buchhaltung laden können. Danach Löschung. Kein Archiv.',
-        'Kontomodell (geplant für Verlauf): Rechtsgrundlage Art. 6 DSGVO plus AVV; ' +
-          'Originaldatei nur mit Opt-in und begrenzter Aufbewahrung (Orientierung: 30 Tage).',
+        'Kontomodell Verlauf (nur nach Zustimmung, Plus/Team): Metadaten und Datei-Hash. ' +
+          'Originaldatei nur mit Opt-in „Dateien merken“ und begrenzter Aufbewahrung ' +
+          '(Orientierung: 30 Tage). Rechtsgrundlage Art. 6 DSGVO plus AVV.',
       ],
     },
     {

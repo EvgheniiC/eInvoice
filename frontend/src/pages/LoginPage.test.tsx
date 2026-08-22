@@ -44,6 +44,8 @@ describe('LoginPage', (): void => {
         export_used_today: 0,
       },
       memberships: [],
+      history_enabled: false,
+      store_originals_enabled: false,
     }
     vi.mocked(loginAccount).mockResolvedValue(session)
 

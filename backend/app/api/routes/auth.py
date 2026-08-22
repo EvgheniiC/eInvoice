@@ -81,6 +81,7 @@ def _me_payload(db: Session, context: OrgContext) -> MeResponse:
                 role=membership.role,
             )
         )
+    organization: Optional[Organization] = db.get(Organization, context.organization_id)
     return MeResponse(
         user_id=context.user_id,
         email=context.email,
@@ -90,6 +91,10 @@ def _me_payload(db: Session, context: OrgContext) -> MeResponse:
         role=context.role,
         plan=_plan_info(db, context),
         memberships=items,
+        history_enabled=organization.history_enabled if organization is not None else False,
+        store_originals_enabled=(
+            organization.store_originals_enabled if organization is not None else False
+        ),
     )
 
 

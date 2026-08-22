@@ -23,6 +23,8 @@ def _response(db: Session, organization: Organization, role: str = "inhaber") ->
         role=role,
         plan=plan_info,
         created_at=organization.created_at,
+        history_enabled=organization.history_enabled,
+        store_originals_enabled=organization.store_originals_enabled,
     )
 
 

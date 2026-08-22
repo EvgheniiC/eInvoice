@@ -109,9 +109,14 @@ Exhausted daily quota returns HTTP 429 with a German message and a Plus/Team hin
 Validation report download does not count as an export. Guest parse still does not
 store files. Plus batch originals live only in `BATCH_TEMP_DIR` until the package
 TTL, not in the database.
+Plus/Team history is off until the Inhaber opts in under Organisation. Default
+storage is metadata + SHA-256 file hash. `Dateien merken` keeps the original in
+`HISTORY_ORIGINAL_DIR` for `HISTORY_ORIGINAL_RETENTION_DAYS` (30) so the
+accountant package can be downloaded again. Without consent nothing is written.
 Plan catalog numbers are reapplied on API start (`seed_plans`). After pull: `alembic upgrade head`.
-Production also needs `einvoice-worker` and `BATCH_TEMP_DIR=/var/lib/einvoice/batch-tmp`
-(shared by API and worker; `PrivateTmp` must not isolate this directory).
+Production also needs `einvoice-worker`, `BATCH_TEMP_DIR=/var/lib/einvoice/batch-tmp`
+and `HISTORY_ORIGINAL_DIR=/var/lib/einvoice/history-originals`
+(shared by API and worker; `PrivateTmp` must not isolate these directories).
 
 ## Pilot Plus
 

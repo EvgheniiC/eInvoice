@@ -31,6 +31,11 @@ export function PageNav({
       </button>
       {session ? (
         <>
+          {session.plan.allows_history ? (
+            <button type="button" className="page-nav__link" onClick={() => onNavigate('history')}>
+              Verlauf
+            </button>
+          ) : null}
           <button type="button" className="page-nav__link" onClick={() => onNavigate('org')}>
             Organisation
           </button>

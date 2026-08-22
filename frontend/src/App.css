@@ -268,6 +268,31 @@
   font-weight: 500;
 }
 
+.auth-form__check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin-top: 0.75rem;
+  font-weight: 600;
+}
+
+.auth-form__check input {
+  width: auto;
+  margin-top: 0.2rem;
+}
+
+.auth-form__hint {
+  display: block;
+  margin: 0.2rem 0 0;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  font-weight: 400;
+}
+
+.history-table {
+  min-width: 40rem;
+}
+
 .password-field {
   position: relative;
 }

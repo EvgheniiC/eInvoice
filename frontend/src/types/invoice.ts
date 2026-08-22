@@ -42,6 +42,9 @@ export type BatchJobStatus = Schemas['BatchJobStatus']
 export type BatchItemStatus = Schemas['BatchItemStatus']
 export type BatchItemResponse = Schemas['BatchItemResponse']
 export type BatchJobResponse = Schemas['BatchJobResponse']
+export type HistoryItemResponse = Schemas['HistoryItemResponse']
+export type HistoryListResponse = Schemas['HistoryListResponse']
+export type HistoryItemStatus = HistoryItemResponse['status']
 
 /** UI helper: FastAPI serializes decimals as strings; Number() also accepts number. */
 export type DecimalValue = string | number

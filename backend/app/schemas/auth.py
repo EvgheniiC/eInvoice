@@ -82,10 +82,14 @@ class MeResponse(ApiModel):
     role: str
     plan: PlanInfo
     memberships: List[MembershipInfo]
+    history_enabled: bool = False
+    store_originals_enabled: bool = False
 
 
 class OrgUpdateRequest(ApiModel):
-    name: str = Field(min_length=2, max_length=120)
+    name: Optional[str] = Field(default=None, min_length=2, max_length=120)
+    history_enabled: Optional[bool] = None
+    store_originals_enabled: Optional[bool] = None
 
 
 class OrgResponse(ApiModel):
@@ -94,6 +98,8 @@ class OrgResponse(ApiModel):
     role: str
     plan: PlanInfo
     created_at: datetime
+    history_enabled: bool = False
+    store_originals_enabled: bool = False
 
 
 class SetPlanRequest(ApiModel):

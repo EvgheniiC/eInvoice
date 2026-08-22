@@ -12,6 +12,7 @@ from app.core.error_events import format_safe_stack, log_api_error, log_event, s
 from app.core.metrics import observe_funnel
 from app.core.middleware import get_request_id
 from app.schemas.batch import BatchJobResponse
+from app.schemas.history import HistoryListResponse
 from app.schemas.invoice import InvoiceParseResponse
 from app.services.auth_service import OrgContext
 from app.services.batch_service import (
@@ -22,6 +23,12 @@ from app.services.batch_service import (
     enqueue_batch,
     get_batch,
     require_batch_plan,
+)
+from app.services.history_service import (
+    build_history_accountant_package,
+    list_history,
+    record_parse_history,
+    require_history_plan,
 )
 from app.services.invoice_service import InvoiceService
 from app.services.quota_service import enforce_export, enforce_parse
@@ -77,7 +84,7 @@ async def parse_invoice(
 
     try:
         with enforce_parse(request, db, org_context, len(content)):
-            return invoice_service.parse_upload(
+            result: InvoiceParseResponse = invoice_service.parse_upload(
                 filename=file.filename,
                 content=content,
                 request_id=request_id,
@@ -94,6 +101,86 @@ async def parse_invoice(
                 level=logging.WARNING,
             )
         raise
+
+    try:
+        record_parse_history(
+            db,
+            org_context,
+            filename=file.filename,
+            content=content,
+            response=result,
+        )
+    except Exception as exc:
+        log_event(
+            logging.ERROR,
+            "history_record_failed",
+            fields={
+                "request_id": request_id,
+                "exc_type": type(exc).__name__,
+            },
+        )
+    return result
+
+
+@router.get("/history", response_model=HistoryListResponse)
+def get_invoice_history(
+    limit: int = 50,
+    offset: int = 0,
+    org_context: Optional[OrgContext] = Depends(get_optional_org_context),
+    db: Optional[Session] = Depends(get_optional_db),
+) -> HistoryListResponse:
+    """List opted-in parse metadata for the caller's organization."""
+    context: OrgContext = require_history_plan(org_context)
+    if db is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=AUTH_UNAVAILABLE,
+        )
+    return list_history(db, context, limit=limit, offset=offset)
+
+
+@router.post("/history/{record_id}/accountant-package")
+def export_history_accountant_package(
+    record_id: UUID,
+    request: Request,
+    org_context: Optional[OrgContext] = Depends(get_optional_org_context),
+    db: Optional[Session] = Depends(get_optional_db),
+) -> Response:
+    """Re-download the Steuerberater package while the opted-in original is in retention."""
+    context: OrgContext = require_history_plan(org_context)
+    if db is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=AUTH_UNAVAILABLE,
+        )
+    try:
+        with enforce_export(request, db, context):
+            content, media_type, filename = build_history_accountant_package(db, context, record_id)
+    except HTTPException:
+        raise
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    except Exception as exc:
+        log_api_error(
+            event="history_accountant_package_failed",
+            method=request.method,
+            path=request.url.path,
+            status_code=500,
+            request_id=get_request_id(request),
+            detail=type(exc).__name__,
+            exc_type=type(exc).__name__,
+            stack=format_safe_stack(exc),
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Accountant-Paket fehlgeschlagen.",
+        ) from exc
+
+    headers: dict[str, str] = {
+        "Content-Disposition": f'attachment; filename="{filename}"',
+    }
+    observe_funnel("export")
+    return Response(content=content, media_type=media_type, headers=headers)
 
 
 @router.post("/batch", response_model=BatchJobResponse, status_code=status.HTTP_202_ACCEPTED)

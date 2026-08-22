@@ -13,6 +13,7 @@ Environment=LOG_LEVEL=INFO
 Environment=LOG_FORMAT=json
 Environment=ENVIRONMENT=production
 Environment=BATCH_TEMP_DIR=/var/lib/einvoice/batch-tmp
+Environment=HISTORY_ORIGINAL_DIR=/var/lib/einvoice/history-originals
 EnvironmentFile=-/opt/eInvoice/backend/.env
 StandardOutput=journal
 StandardError=journal

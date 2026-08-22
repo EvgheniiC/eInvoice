@@ -61,10 +61,19 @@ class Organization(Base):
     name: Mapped[str] = mapped_column(String(120))
     plan_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("plans.id"), index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    history_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+    store_originals_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+    history_enabled_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     plan: Mapped[Plan] = relationship(back_populates="organizations")
     memberships: Mapped[list["Membership"]] = relationship(back_populates="organization")
     batch_jobs: Mapped[list["BatchJob"]] = relationship(
+        back_populates="organization",
+        cascade="all, delete-orphan",
+    )
+    history_records: Mapped[list["InvoiceHistory"]] = relationship(
         back_populates="organization",
         cascade="all, delete-orphan",
     )
@@ -190,3 +199,42 @@ class BatchItem(Base):
     finished_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
     job: Mapped["BatchJob"] = relationship(back_populates="items")
+
+
+class InvoiceHistory(Base):
+    """Opt-in parse journal. Default is metadata + file hash; original bytes stay on disk."""
+
+    __tablename__: str = "invoice_history"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    organization_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("organizations.id", ondelete="CASCADE"),
+        index=True,
+    )
+    created_by_user_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    processed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, index=True)
+    filename: Mapped[str] = mapped_column(String(255))
+    file_hash: Mapped[str] = mapped_column(String(64), index=True)
+    seller_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    invoice_number: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+    issue_date: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
+    gross_amount: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
+    currency: Mapped[Optional[str]] = mapped_column(String(8), nullable=True)
+    status: Mapped[str] = mapped_column(String(16))
+    source: Mapped[str] = mapped_column(String(16))
+    batch_job_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        ForeignKey("batch_jobs.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    original_storage_path: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
+    original_expires_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    result_json: Mapped[Optional[dict[str, object]]] = mapped_column(JSON, nullable=True)
+
+    organization: Mapped["Organization"] = relationship(back_populates="history_records")

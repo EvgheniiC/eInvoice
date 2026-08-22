@@ -107,8 +107,8 @@ export function LoginPage({
         </div>
         <h1 tabIndex={-1}>Anmelden</h1>
         <p className="page__lead">
-          Für Verlauf und Sammel-Export (später). Eine einzelne Rechnung können Sie weiter ohne
-          Konto prüfen.
+          Für Verlauf und Sammel-Export. Eine einzelne Rechnung können Sie weiter ohne Konto
+          prüfen.
         </p>
       </header>
 

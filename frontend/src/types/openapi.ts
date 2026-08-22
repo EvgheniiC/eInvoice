@@ -111,6 +111,28 @@ export interface components {
       kosit_ready: boolean;
       checks: components["schemas"]["HealthCheck"][];
     };
+    HistoryItemResponse: {
+      id: string;
+      processed_at: string;
+      filename: string;
+      file_hash: string;
+      seller_name: string | null;
+      invoice_number: string | null;
+      issue_date: string | null;
+      gross_amount: string | null;
+      currency: string | null;
+      status: "gueltig" | "pruefen" | "ablehnen";
+      source: "parse" | "batch";
+      original_available: boolean;
+      original_expires_at: string | null;
+    };
+    HistoryListResponse: {
+      items: components["schemas"]["HistoryItemResponse"][];
+      total: number;
+      history_enabled: boolean;
+      store_originals_enabled: boolean;
+      original_retention_days: number;
+    };
     "InvoiceParseResponse-Input": {
       status: components["schemas"]["ParseStatus"];
       message: string;
@@ -210,6 +232,8 @@ export interface components {
       role: string;
       plan: components["schemas"]["PlanInfo"];
       memberships: components["schemas"]["MembershipInfo"][];
+      history_enabled: boolean;
+      store_originals_enabled: boolean;
     };
     MembershipInfo: {
       organization_id: string;
@@ -241,9 +265,13 @@ export interface components {
       role: string;
       plan: components["schemas"]["PlanInfo"];
       created_at: string;
+      history_enabled: boolean;
+      store_originals_enabled: boolean;
     };
     OrgUpdateRequest: {
-      name: string;
+      name?: string | null;
+      history_enabled?: boolean | null;
+      store_originals_enabled?: boolean | null;
     };
     ParseStatus: "success" | "partial" | "error" | "not_implemented";
     "PartyInfo-Input": {

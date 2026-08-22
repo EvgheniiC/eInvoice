@@ -466,6 +466,7 @@ def _process_claimed_item(item_id: UUID) -> None:
             return
         _apply_parse_result(item, response)
         session.commit()
+        _record_history_after_item(session, item, content, response)
         _maybe_complete_job(session, item.job_id)
         log_event(
             logging.INFO,
@@ -474,6 +475,38 @@ def _process_claimed_item(item_id: UUID) -> None:
         )
     finally:
         session.close()
+
+
+def _record_history_after_item(
+    session: Session,
+    item: BatchItem,
+    content: bytes,
+    response: InvoiceParseResponse,
+) -> None:
+    job: Optional[BatchJob] = session.get(BatchJob, item.job_id)
+    if job is None:
+        return
+    try:
+        from app.services.history_service import record_history_for_organization
+
+        record_history_for_organization(
+            session,
+            organization_id=job.organization_id,
+            user_id=job.created_by_user_id,
+            filename=item.filename,
+            content=content,
+            response=response,
+            source="batch",
+            batch_job_id=job.id,
+            commit=True,
+        )
+    except Exception as exc:
+        session.rollback()
+        log_event(
+            logging.ERROR,
+            "history_record_failed",
+            fields={"item_id": str(item.id), "exc_type": type(exc).__name__},
+        )
 
 
 def _apply_parse_result(item: BatchItem, response: InvoiceParseResponse) -> None:

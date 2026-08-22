@@ -794,6 +794,102 @@
         }
       }
     },
+    "/api/invoices/history": {
+      "get": {
+        "tags": [
+          "invoices"
+        ],
+        "summary": "Get Invoice History",
+        "description": "List opted-in parse metadata for the caller's organization.",
+        "operationId": "get_invoice_history_api_invoices_history_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoryListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/invoices/history/{record_id}/accountant-package": {
+      "post": {
+        "tags": [
+          "invoices"
+        ],
+        "summary": "Export History Accountant Package",
+        "description": "Re-download the Steuerberater package while the opted-in original is in retention.",
+        "operationId": "export_history_accountant_package_api_invoices_history__record_id__accountant_package_post",
+        "parameters": [
+          {
+            "name": "record_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Record Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/invoices/batch": {
       "post": {
         "tags": [
@@ -1804,6 +1900,169 @@
         "title": "HealthResponse",
         "description": "Detailed health check response payload."
       },
+      "HistoryItemResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "processed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Processed At"
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "file_hash": {
+            "type": "string",
+            "title": "File Hash"
+          },
+          "seller_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seller Name"
+          },
+          "invoice_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invoice Number"
+          },
+          "issue_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Issue Date"
+          },
+          "gross_amount": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gross Amount"
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "gueltig",
+              "pruefen",
+              "ablehnen"
+            ],
+            "title": "Status"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "parse",
+              "batch"
+            ],
+            "title": "Source"
+          },
+          "original_available": {
+            "type": "boolean",
+            "title": "Original Available"
+          },
+          "original_expires_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original Expires At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "processed_at",
+          "filename",
+          "file_hash",
+          "seller_name",
+          "invoice_number",
+          "issue_date",
+          "gross_amount",
+          "currency",
+          "status",
+          "source",
+          "original_available",
+          "original_expires_at"
+        ],
+        "title": "HistoryItemResponse"
+      },
+      "HistoryListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/HistoryItemResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "history_enabled": {
+            "type": "boolean",
+            "title": "History Enabled"
+          },
+          "store_originals_enabled": {
+            "type": "boolean",
+            "title": "Store Originals Enabled"
+          },
+          "original_retention_days": {
+            "type": "integer",
+            "title": "Original Retention Days"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "history_enabled",
+          "store_originals_enabled",
+          "original_retention_days"
+        ],
+        "title": "HistoryListResponse"
+      },
       "InvoiceParseResponse-Input": {
         "properties": {
           "status": {
@@ -2657,6 +2916,16 @@
             },
             "type": "array",
             "title": "Memberships"
+          },
+          "history_enabled": {
+            "type": "boolean",
+            "title": "History Enabled",
+            "default": false
+          },
+          "store_originals_enabled": {
+            "type": "boolean",
+            "title": "Store Originals Enabled",
+            "default": false
           }
         },
         "type": "object",
@@ -2668,7 +2937,9 @@
           "organization_name",
           "role",
           "plan",
-          "memberships"
+          "memberships",
+          "history_enabled",
+          "store_originals_enabled"
         ],
         "title": "MeResponse"
       },
@@ -2842,6 +3113,16 @@
             "type": "string",
             "format": "date-time",
             "title": "Created At"
+          },
+          "history_enabled": {
+            "type": "boolean",
+            "title": "History Enabled",
+            "default": false
+          },
+          "store_originals_enabled": {
+            "type": "boolean",
+            "title": "Store Originals Enabled",
+            "default": false
           }
         },
         "type": "object",
@@ -2850,23 +3131,51 @@
           "name",
           "role",
           "plan",
-          "created_at"
+          "created_at",
+          "history_enabled",
+          "store_originals_enabled"
         ],
         "title": "OrgResponse"
       },
       "OrgUpdateRequest": {
         "properties": {
           "name": {
-            "type": "string",
-            "maxLength": 120,
-            "minLength": 2,
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120,
+                "minLength": 2
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Name"
+          },
+          "history_enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "History Enabled"
+          },
+          "store_originals_enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Store Originals Enabled"
           }
         },
         "type": "object",
-        "required": [
-          "name"
-        ],
         "title": "OrgUpdateRequest"
       },
       "ParseStatus": {

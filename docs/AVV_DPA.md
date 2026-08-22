@@ -28,10 +28,10 @@ zusätzlich ein AVV zwischen Kanzlei und Betreiber nötig sein.
 - Zweck: Lesen, Prüfen und Exportieren der vom Nutzer übermittelten Datei
 - Speicherung der Datei: Gast — nur für die Dauer der HTTP-Anfrage; Plus-Batch —
   kurzlebiges Temp-Verzeichnis bis zum Buchhaltungspaket oder TTL (kein Archiv)
-- Kein dauerhaftes Rechnungsarchiv, kein GoBD-Archiv
-- Geplantes Kontomodell (nicht Vertragsgegenstand, solange nicht eingesetzt):
-  Metadaten der Verarbeitung; Originaldatei nur bei Opt-in und begrenzter
-  Aufbewahrung; Rechtsgrundlage und AVV vor Go-live separat festlegen
+- Kein GoBD-Archiv. Verlauf nur nach Zustimmung: Metadaten und Datei-Hash;
+  Originaldatei nur bei Opt-in „Dateien merken“ und begrenzter Aufbewahrung
+  (Orientierung: 30 Tage)
+- Rechtsgrundlage und AVV vor Go-live separat festlegen
 
 ## 4. Weisungen und Sicherheit
 

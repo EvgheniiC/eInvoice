@@ -71,8 +71,11 @@ export const FAQ_ITEMS: FaqItem[] = [
       'Im Gastmodus nein. Die Datei liegt nur während der Anfrage im Speicher und in ' +
         'kurzlebigen Temp-Dateien für den Validator. Danach wird sie gelöscht.',
       'Mit Plus bleiben Originaldateien kurz im Temp-Verzeichnis, damit Sie ein ' +
-        'Buchhaltungspaket laden können. Nach wenigen Stunden werden sie gelöscht — ' +
-        'kein Rechnungsarchiv. Ein späterer Verlauf mit Einwilligung ist nicht aktiv.',
+        'Buchhaltungspaket laden können. Nach wenigen Stunden werden sie gelöscht.',
+      'Einen Verlauf gibt es nur nach ausdrücklicher Zustimmung unter Organisation: ' +
+        'standardmäßig Metadaten und Datei-Hash, keine Originaldatei. „Dateien merken“ ' +
+        'bewahrt das Original begrenzt (Orientierung: 30 Tage), damit Sie das Paket erneut ' +
+        'laden können. Ohne Häkchen wird nichts gespeichert.',
     ],
   },
   {

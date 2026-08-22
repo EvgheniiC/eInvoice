@@ -6,6 +6,7 @@ import { ForgotPasswordPage } from './pages/ForgotPasswordPage'
 import { LandingPage } from './pages/LandingPage'
 import { LegalPage } from './pages/LegalPage'
 import { LoginPage } from './pages/LoginPage'
+import { HistoryPage } from './pages/HistoryPage'
 import { OrgSettingsPage } from './pages/OrgSettingsPage'
 import { RegisterPage, type RegisterSuccess } from './pages/RegisterPage'
 import { ResetPasswordPage } from './pages/ResetPasswordPage'
@@ -175,6 +176,14 @@ function App(): JSX.Element {
           onNavigate={navigate}
           session={session}
           onSession={setSession}
+          onLogout={() => {
+            void handleLogout()
+          }}
+        />
+      ) : route === 'history' ? (
+        <HistoryPage
+          onNavigate={navigate}
+          session={session}
           onLogout={() => {
             void handleLogout()
           }}

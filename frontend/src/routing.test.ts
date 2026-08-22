@@ -17,6 +17,7 @@ describe('pathToRoute', (): void => {
     expect(pathToRoute('/passwort-zuruecksetzen')).toBe('reset')
     expect(pathToRoute('/bestaetigen')).toBe('verify')
     expect(pathToRoute('/organisation')).toBe('org')
+    expect(pathToRoute('/verlauf')).toBe('history')
   })
 
   it('maps unknown paths to landing', (): void => {
@@ -36,6 +37,7 @@ describe('routeToPath', (): void => {
     expect(routeToPath('reset')).toBe('/passwort-zuruecksetzen')
     expect(routeToPath('verify')).toBe('/bestaetigen')
     expect(routeToPath('org')).toBe('/organisation')
+    expect(routeToPath('history')).toBe('/verlauf')
     expect(routeToPath('landing')).toBe('/')
   })
 })

@@ -69,6 +69,9 @@ class Settings(BaseSettings):
     batch_item_stale_seconds: int = 180
     # Keep parsed originals until accountant ZIP download or this TTL (not an archive).
     batch_original_ttl_seconds: int = 7200
+    # Opt-in originals for history ("Dateien merken"). Not used unless the org consents.
+    history_original_retention_days: int = 30
+    history_original_dir: Optional[str] = None
     zip_max_ratio: float = 100.0
     zip_max_listed_entries: int = 200
     zip_max_uncompressed_mb: int = 200
@@ -119,6 +122,14 @@ class Settings(BaseSettings):
         if configured:
             return Path(configured)
         return Path(__file__).resolve().parents[2] / "var" / "batch-tmp"
+
+    @property
+    def resolved_history_original_dir(self) -> Path:
+        """Directory for opted-in history originals (retention, not a GoBD archive)."""
+        configured: str = (self.history_original_dir or "").strip()
+        if configured:
+            return Path(configured)
+        return Path(__file__).resolve().parents[2] / "var" / "history-originals"
 
     @property
     def auth_enabled(self) -> bool:
