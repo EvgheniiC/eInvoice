@@ -16,6 +16,8 @@ from app.core.config import settings
 from app.core.error_events import log_event
 from app.core.passwords import hash_password, hash_token, new_token, normalize_email, verify_password
 from app.db.models import AuthSession, EmailToken, Membership, Organization, Plan, UsageCounter, User
+from app.schemas.auth import validated_accountant_email, validated_iban, validated_vat_id
+from app.schemas.export import OrgProfile
 from app.services.email_service import send_auth_email
 from app.services.plan_limits import PlanLimits, merge_plan_row
 
@@ -50,6 +52,24 @@ class OrgContext:
     max_parallel: int
     allows_batch: bool
     allows_history: bool
+
+
+def organization_profile(organization: Organization) -> OrgProfile:
+    """Export-facing firm fields. Empty optional values stay None."""
+    return OrgProfile(
+        name=organization.name,
+        tax_number=organization.tax_number,
+        vat_id=organization.vat_id,
+        iban=organization.iban,
+        accountant_email=organization.accountant_email,
+    )
+
+
+def load_organization_profile(session: Session, organization_id: UUID) -> Optional[OrgProfile]:
+    organization: Optional[Organization] = session.get(Organization, organization_id)
+    if organization is None:
+        return None
+    return organization_profile(organization)
 
 
 def resolved_organization_name(name: Optional[str]) -> str:
@@ -272,10 +292,26 @@ def update_organization(
     name: Optional[str] = None,
     history_enabled: Optional[bool] = None,
     store_originals_enabled: Optional[bool] = None,
+    tax_number: Optional[str] = None,
+    vat_id: Optional[str] = None,
+    iban: Optional[str] = None,
+    accountant_email: Optional[str] = None,
+    update_tax_number: bool = False,
+    update_vat_id: bool = False,
+    update_iban: bool = False,
+    update_accountant_email: bool = False,
 ) -> Organization:
     if role != ROLE_INHABER:
         raise AuthError("Nur der Inhaber kann die Organisation ändern.")
-    if name is None and history_enabled is None and store_originals_enabled is None:
+    profile_touch: bool = (
+        update_tax_number or update_vat_id or update_iban or update_accountant_email
+    )
+    if (
+        name is None
+        and history_enabled is None
+        and store_originals_enabled is None
+        and not profile_touch
+    ):
         raise AuthError("Keine Änderung übermittelt.")
     organization: Optional[Organization] = session.get(Organization, organization_id)
     if organization is None:
@@ -308,6 +344,14 @@ def update_organization(
         from app.services.history_service import purge_originals_for_organization
 
         purge_originals_for_organization(session, organization.id)
+    if update_tax_number:
+        organization.tax_number = tax_number
+    if update_vat_id:
+        organization.vat_id = validated_vat_id(vat_id)
+    if update_iban:
+        organization.iban = validated_iban(iban)
+    if update_accountant_email:
+        organization.accountant_email = validated_accountant_email(accountant_email)
     session.commit()
     return organization
 

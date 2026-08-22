@@ -20,6 +20,10 @@ def _org_payload(db: Session, organization: Organization, context: OrgContext) -
         created_at=organization.created_at,
         history_enabled=organization.history_enabled,
         store_originals_enabled=organization.store_originals_enabled,
+        tax_number=organization.tax_number,
+        vat_id=organization.vat_id,
+        iban=organization.iban,
+        accountant_email=organization.accountant_email,
     )
 
 
@@ -41,6 +45,7 @@ def patch_organization(
     context: OrgContext = Depends(get_current_org),
 ) -> OrgResponse:
     try:
+        fields_set: set[str] = set(body.model_fields_set)
         organization: Organization = update_organization(
             db,
             organization_id=context.organization_id,
@@ -49,9 +54,19 @@ def patch_organization(
             name=body.name,
             history_enabled=body.history_enabled,
             store_originals_enabled=body.store_originals_enabled,
+            tax_number=body.tax_number,
+            vat_id=body.vat_id,
+            iban=body.iban,
+            accountant_email=body.accountant_email,
+            update_tax_number="tax_number" in fields_set,
+            update_vat_id="vat_id" in fields_set,
+            update_iban="iban" in fields_set,
+            update_accountant_email="accountant_email" in fields_set,
         )
     except AuthError as exc:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
     refreshed: OrgContext = OrgContext(
         user_id=context.user_id,
         email=context.email,

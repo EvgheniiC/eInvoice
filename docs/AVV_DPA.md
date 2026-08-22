@@ -21,6 +21,8 @@ zusätzlich ein AVV zwischen Kanzlei und Betreiber nötig sein.
 ## 2. Art der Daten
 
 - Rechnungsinhalte aus XRechnung/ZUGFeRD (Namen, Adressen, IBAN, Beträge, USt-IdNr.)
+- Optional gespeicherte Firmendaten der Organisation (Steuernummer, USt-IdNr., IBAN,
+  E-Mail des Steuerberaters), nur nach Eingabe unter Organisation
 - Technische Logs ohne Rechnungsinhalt (Request-ID, Dateiname, Größe, Status)
 
 ## 3. Zweck und Dauer

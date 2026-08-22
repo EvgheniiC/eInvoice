@@ -18,7 +18,9 @@ from app.schemas.export import (
     DATEV_LIMITATIONS,
     EXPORT_COLUMNS,
     EXPORT_FORMAT_VERSION,
+    MANDANT_MEMBER,
     ExportFormat,
+    OrgProfile,
 )
 from app.schemas.invoice import (
     InvoiceParseResponse,
@@ -74,6 +76,7 @@ class ExportService:
         pdf_filename: Optional[str] = None,
         xml_bytes: Optional[bytes] = None,
         xml_filename: Optional[str] = None,
+        org_profile: Optional[OrgProfile] = None,
     ) -> Tuple[bytes, str, str]:
         """
         ZIP for Steuerberater: original + summary + Prüfbericht + Excel + DATEV.
@@ -94,13 +97,25 @@ class ExportService:
         with zipfile.ZipFile(buffer, mode="w", compression=zipfile.ZIP_DEFLATED) as archive:
             archive.writestr(
                 "export_manifest.txt",
-                build_export_manifest(invoice, has_xml=has_xml, has_pdf=has_pdf),
+                build_export_manifest(
+                    invoice,
+                    has_xml=has_xml,
+                    has_pdf=has_pdf,
+                    org_profile=org_profile,
+                ),
             )
             archive.writestr("datev_hinweise.txt", build_datev_notes())
             archive.writestr(
                 "summary.txt",
-                build_package_summary(invoice, has_xml=has_xml, has_pdf=has_pdf),
+                build_package_summary(
+                    invoice,
+                    has_xml=has_xml,
+                    has_pdf=has_pdf,
+                    org_profile=org_profile,
+                ),
             )
+            if org_profile is not None:
+                archive.writestr(MANDANT_MEMBER, build_mandant_text(org_profile))
             archive.writestr(
                 build_validation_report_filename(invoice),
                 build_validation_report(invoice),
@@ -130,6 +145,7 @@ class ExportService:
         self,
         entries: List[BatchPackageEntry],
         completed_at: datetime,
+        org_profile: Optional[OrgProfile] = None,
     ) -> Tuple[bytes, str, str]:
         """
         One ZIP for N invoices: combined Excel + DATEV + manifest + originals.
@@ -170,6 +186,7 @@ class ExportService:
                     original_names=[name for name, _ in originals],
                     has_xml=has_xml,
                     has_pdf=has_pdf,
+                    org_profile=org_profile,
                 ),
             )
             archive.writestr("datev_hinweise.txt", build_datev_notes())
@@ -180,8 +197,11 @@ class ExportService:
                     entries=entries,
                     has_xml=has_xml,
                     has_pdf=has_pdf,
+                    org_profile=org_profile,
                 ),
             )
+            if org_profile is not None:
+                archive.writestr(MANDANT_MEMBER, build_mandant_text(org_profile))
             archive.writestr(
                 "pruefbericht_paket.txt",
                 build_batch_validation_report(exportable),
@@ -507,6 +527,41 @@ def build_batch_package_filename(completed_at: datetime, invoice_count: int) -> 
     return f"buchhaltung_paket_{date_part}_{invoice_count}Dateien.zip"
 
 
+def build_mandant_text(profile: OrgProfile) -> str:
+    """German firm sheet for the Steuerberater ZIP (and later Kanzlei letter/link)."""
+    lines: List[str] = [
+        "Mandant — eInvoice",
+        "==================",
+        "",
+        *build_mandant_field_lines(profile),
+        "",
+        "Diese Angaben stammen aus den Organisationseinstellungen.",
+        "Sie gelten für das Buchhaltungspaket und später für den Versand an die Kanzlei.",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+def build_mandant_summary_lines(profile: Optional[OrgProfile]) -> List[str]:
+    """Optional Mandant block inserted into summary.txt."""
+    if profile is None:
+        return []
+    lines: List[str] = ["", "Mandant:"]
+    lines.extend(build_mandant_field_lines(profile))
+    lines.append("")
+    return lines
+
+
+def build_mandant_field_lines(profile: OrgProfile) -> List[str]:
+    return [
+        f"Organisation: {profile.name or '—'}",
+        f"Steuernummer: {profile.tax_number or '—'}",
+        f"USt-IdNr: {profile.vat_id or '—'}",
+        f"IBAN: {profile.iban or '—'}",
+        f"E-Mail Steuerberater: {profile.accountant_email or '—'}",
+    ]
+
+
 def invoice_is_exportable(invoice: InvoiceParseResponse) -> bool:
     """Same gate as the single-invoice export endpoints."""
     if invoice.status == ParseStatus.ERROR:
@@ -520,6 +575,7 @@ def build_package_summary(
     invoice: InvoiceParseResponse,
     has_xml: bool = False,
     has_pdf: bool = False,
+    org_profile: Optional[OrgProfile] = None,
 ) -> str:
     """Short German summary for the accountant package."""
     currency: str = (
@@ -538,6 +594,7 @@ def build_package_summary(
         "============================",
         "",
         f"Exportformat: {EXPORT_FORMAT_VERSION}",
+        *build_mandant_summary_lines(org_profile),
         f"Rechnung: {invoice.invoice_number or '—'}",
         f"Datum: {_de_date(invoice.issue_date) or '—'}",
         f"Fälligkeitsdatum: {_de_date(invoice.due_date) or '—'}",
@@ -564,6 +621,11 @@ def build_package_summary(
         "- export_manifest.txt (Formatversion und Dateiliste)",
         "- datev_hinweise.txt (DATEV-Grenzen, kein DATEVconnect)",
         "- summary.txt (diese Datei)",
+        *(
+            [f"- {MANDANT_MEMBER} (Firmendaten des Mandanten)"]
+            if org_profile is not None
+            else []
+        ),
         "- Prüfbericht (für Lieferant oder Steuerberater)",
         "- Excel-Export (Übersicht + Positionen)",
         "- DATEV-Export (Buchungsvorschlag-CSV)",
@@ -611,6 +673,7 @@ def build_batch_package_summary(
     entries: List[BatchPackageEntry],
     has_xml: bool,
     has_pdf: bool,
+    org_profile: Optional[OrgProfile] = None,
 ) -> str:
     """German overview of all invoices in the batch accountant package."""
     original_count: int = sum(1 for entry in entries if entry.original_bytes is not None)
@@ -620,6 +683,7 @@ def build_batch_package_summary(
         "==========================================",
         "",
         f"Exportformat: {EXPORT_FORMAT_VERSION}",
+        *build_mandant_summary_lines(org_profile),
         f"Rechnungen im Export: {len(invoices)}",
         f"Dateien im Auftrag: {len(entries)}",
         f"Originaldateien im ZIP: {original_count}",
@@ -651,6 +715,11 @@ def build_batch_package_summary(
             "- export_manifest.txt (Formatversion und Dateiliste)",
             "- datev_hinweise.txt (DATEV-Grenzen, kein DATEVconnect)",
             "- summary.txt (diese Datei)",
+            *(
+                [f"- {MANDANT_MEMBER} (Firmendaten des Mandanten)"]
+                if org_profile is not None
+                else []
+            ),
             "- pruefbericht_paket.txt (Prüfberichte aller exportierten Rechnungen)",
             "- Excel-Export (Übersicht + Positionen, alle Rechnungen)",
             "- DATEV-Export (eine Buchungszeile je Rechnung)",
@@ -679,6 +748,7 @@ def build_batch_export_manifest(
     original_names: List[str],
     has_xml: bool,
     has_pdf: bool,
+    org_profile: Optional[OrgProfile] = None,
 ) -> str:
     """Versioned inventory for a multi-invoice Steuerberater ZIP."""
     lines: List[str] = [
@@ -695,6 +765,7 @@ def build_batch_export_manifest(
         "- export_manifest.txt",
         "- datev_hinweise.txt",
         "- summary.txt",
+        *([f"- {MANDANT_MEMBER}"] if org_profile is not None else []),
         "- pruefbericht_paket.txt",
         "- Excel (.xlsx, Blätter Invoice / Lines / Flat)",
         "- DATEV-CSV (Buchungsstapel-kompatibel, CP1252, eine Zeile je Rechnung)",
@@ -728,7 +799,12 @@ def build_batch_validation_report(invoices: List[InvoiceParseResponse]) -> str:
     return ("\n\n-----\n\n".join(parts) + "\n") if parts else ""
 
 
-def build_export_manifest(invoice: InvoiceParseResponse, has_xml: bool, has_pdf: bool) -> str:
+def build_export_manifest(
+    invoice: InvoiceParseResponse,
+    has_xml: bool,
+    has_pdf: bool,
+    org_profile: Optional[OrgProfile] = None,
+) -> str:
     """Versioned inventory so Kanzlei imports stay stable across product updates."""
     lines: List[str] = [
         "eInvoice Export-Manifest",
@@ -746,6 +822,7 @@ def build_export_manifest(invoice: InvoiceParseResponse, has_xml: bool, has_pdf:
         "- export_manifest.txt",
         "- datev_hinweise.txt",
         "- summary.txt",
+        *([f"- {MANDANT_MEMBER}"] if org_profile is not None else []),
         "- Prüfbericht (.txt)",
         "- Excel (.xlsx, Blätter Invoice / Lines / Flat)",
         "- DATEV-CSV (Buchungsstapel-kompatibel, CP1252)",

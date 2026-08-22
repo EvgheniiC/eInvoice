@@ -10,7 +10,14 @@ from fastapi.testclient import TestClient
 from openpyxl import load_workbook
 
 from app.main import app
-from app.schemas.export import DATEV_LIMITATIONS, EXPORT_COLUMNS, EXPORT_FORMAT_VERSION, ExportFormat
+from app.schemas.export import (
+    DATEV_LIMITATIONS,
+    EXPORT_COLUMNS,
+    EXPORT_FORMAT_VERSION,
+    MANDANT_MEMBER,
+    ExportFormat,
+    OrgProfile,
+)
 from app.schemas.invoice import (
     InvoiceParseResponse,
     InvoiceTotals,
@@ -27,6 +34,7 @@ from app.services.export_service import (
     build_datev_row,
     build_export_filename,
     build_flat_rows,
+    build_mandant_text,
     build_package_filename,
     build_package_summary,
 )
@@ -173,6 +181,32 @@ class TestExportService(unittest.TestCase):
             notes: str = archive.read("datev_hinweise.txt").decode("utf-8")
             self.assertIn("kein DATEVconnect", notes)
             self.assertIn("DATEVconnect", DATEV_LIMITATIONS)
+            self.assertNotIn(MANDANT_MEMBER, names)
+
+    def test_accountant_package_includes_org_profile(self) -> None:
+        profile: OrgProfile = OrgProfile(
+            name="Meister GmbH",
+            tax_number="12/345/67890",
+            vat_id="DE123456789",
+            iban="DE89370400440532013000",
+            accountant_email="sb@kanzlei.de",
+        )
+        content, _, _ = self.service.build_accountant_package(
+            invoice=self.invoice,
+            xml_bytes=b"<?xml version='1.0'?><Invoice/>",
+            xml_filename="rechnung.xml",
+            org_profile=profile,
+        )
+        with zipfile.ZipFile(io.BytesIO(content)) as archive:
+            self.assertIn(MANDANT_MEMBER, archive.namelist())
+            mandant: str = archive.read(MANDANT_MEMBER).decode("utf-8")
+            self.assertIn("Meister GmbH", mandant)
+            self.assertIn("12/345/67890", mandant)
+            self.assertIn("sb@kanzlei.de", mandant)
+            summary: str = archive.read("summary.txt").decode("utf-8")
+            self.assertIn("Mandant:", summary)
+            self.assertIn("DE123456789", summary)
+        self.assertIn("Steuernummer", build_mandant_text(profile))
 
     def test_accountant_package_extracts_xml_from_zugferd_pdf(self) -> None:
         pdf_bytes: bytes = b"%PDF-1.4 placeholder"
@@ -348,6 +382,7 @@ class TestExportApi(unittest.TestCase):
             self.assertIn("original/original.xml", names)
             self.assertIn("export_manifest.txt", names)
             self.assertIn("datev_hinweise.txt", names)
+            self.assertNotIn(MANDANT_MEMBER, names)
 
     def test_accountant_package_rejects_invalid_xml(self) -> None:
         response = self.client.post(

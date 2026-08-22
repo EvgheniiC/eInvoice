@@ -80,6 +80,8 @@ export const DATENSCHUTZ: LegalDocument = {
         'Gast (aktuell, ohne Konto): Hochgeladene Rechnungsdatei und daraus gelesene ' +
           'Rechnungsinhalte. Die Datei wird nicht gespeichert.',
         'Konto (optional): E-Mail, Passwort-Hash, Organisationsname, Rolle, Sitzungs-Cookie. ' +
+          'Optional Firmendaten der Organisation: Steuernummer, USt-IdNr., IBAN, ' +
+          'E-Mail des Steuerberaters — nur wenn der Inhaber sie unter Organisation speichert. ' +
           'Transaktionale Auth-Mails (Bestätigung, Anmeldelink, Passwort-Reset). ' +
           'Kein Rechnungsarchiv ohne Zustimmung. Bei Plus liegen Batch-Originale nur kurz ' +
           'in einem Temp-Verzeichnis. Verlauf: Metadaten und Datei-Hash nur nach Opt-in; ' +

@@ -17,7 +17,7 @@ from app.schemas.export import (
     ViewPdfRequest,
 )
 from app.schemas.invoice import InvoiceParseResponse, ParseStatus
-from app.services.auth_service import OrgContext
+from app.services.auth_service import OrgContext, load_organization_profile
 from app.services.export_service import (
     ExportService,
     assert_xml_bytes,
@@ -168,6 +168,11 @@ def export_accountant_package(
                 pdf_filename=body.pdf_filename,
                 xml_bytes=xml_bytes,
                 xml_filename=body.xml_filename,
+                org_profile=(
+                    load_organization_profile(db, org_context.organization_id)
+                    if db is not None and org_context is not None
+                    else None
+                ),
             )
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc

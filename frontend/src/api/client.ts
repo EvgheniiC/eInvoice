@@ -446,6 +446,10 @@ export type OrgUpdatePayload = {
   name?: string
   history_enabled?: boolean
   store_originals_enabled?: boolean
+  tax_number?: string | null
+  vat_id?: string | null
+  iban?: string | null
+  accountant_email?: string | null
 }
 
 export async function updateOrganization(body: OrgUpdatePayload): Promise<OrgResponse> {
@@ -465,6 +469,14 @@ export async function updateOrganization(body: OrgUpdatePayload): Promise<OrgRes
 
 export async function updateOrganizationName(name: string): Promise<OrgResponse> {
   return updateOrganization({ name })
+}
+
+export async function fetchOrganization(): Promise<OrgResponse> {
+  const response: Response = await fetch(`${API_BASE}/org`, withRequestId({ method: 'GET' }))
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response, 'Organisation konnte nicht geladen werden.'))
+  }
+  return response.json() as Promise<OrgResponse>
 }
 
 export async function fetchInvoiceHistory(
@@ -513,9 +525,15 @@ async function downloadResponseBlob(response: Response, fallbackName: string): P
 
 async function readErrorDetail(response: Response, fallback: string): Promise<string> {
   try {
-    const errorBody: { detail?: string } = await response.json()
-    if (errorBody.detail) {
+    const errorBody: { detail?: string | Array<{ msg?: string }> } = await response.json()
+    if (typeof errorBody.detail === 'string' && errorBody.detail) {
       return errorBody.detail
+    }
+    if (Array.isArray(errorBody.detail) && errorBody.detail.length > 0) {
+      const first: { msg?: string } = errorBody.detail[0]
+      if (typeof first.msg === 'string' && first.msg) {
+        return first.msg.replace(/^Value error, /i, '')
+      }
     }
   } catch {
     // keep fallback

@@ -122,8 +122,9 @@ developer-API против [rechnungsapi.de](https://www.rechnungsapi.de).
 
 #### A6. Профиль организации
 
-- [ ] Название, Steuernummer / USt-IdNr, IBAN, email Steuerberater.
-- [ ] Подстановка в пакет и в письмо/ссылку Kanzlei.
+- [x] Название, Steuernummer / USt-IdNr, IBAN, email Steuerberater.
+- [x] Подстановка в Steuerberater-ZIP (`mandant.txt` + блок в `summary.txt`).
+- [ ] Письмо / одноразовая ссылка Kanzlei — этап 4, B7 (email уже хранится).
 
 ### B. Вторым этапом — этап 4
 
@@ -234,7 +235,7 @@ developer-API против [rechnungsapi.de](https://www.rechnungsapi.de).
 3. [x] Мульти-accountant ZIP (A4).
 4. [x] История метаданных + повторный экспорт, если файл ещё в retention (A2).
 5. [x] Дубликаты (file_hash до записи, затем ключ счёта после parse) (A3).
-6. [ ] Профиль организации в пакет (A6).
+6. [x] Профиль организации в пакет (A6).
 
 Критерий готовности: Meister загружает 10 счетов и скачивает один ZIP для Kanzlei.
 

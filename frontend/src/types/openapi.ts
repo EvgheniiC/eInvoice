@@ -275,11 +275,19 @@ export interface components {
       created_at: string;
       history_enabled: boolean;
       store_originals_enabled: boolean;
+      tax_number: string | null;
+      vat_id: string | null;
+      iban: string | null;
+      accountant_email: string | null;
     };
     OrgUpdateRequest: {
       name?: string | null;
       history_enabled?: boolean | null;
       store_originals_enabled?: boolean | null;
+      tax_number?: string | null;
+      vat_id?: string | null;
+      iban?: string | null;
+      accountant_email?: string | null;
     };
     ParseStatus: "success" | "partial" | "error" | "not_implemented";
     "PartyInfo-Input": {

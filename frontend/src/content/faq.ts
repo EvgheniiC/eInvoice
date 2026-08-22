@@ -49,6 +49,9 @@ export const FAQ_ITEMS: FaqItem[] = [
       'Nutzen Sie „Paket für Steuerberater“ für eine Datei. Mit Plus: mehrere Rechnungen ' +
         'hochladen und „Ein ZIP für die Buchhaltung“ — ein Paket mit Originaldateien, ' +
         'Kurzfassung, Prüfbericht, Excel und DATEV-CSV.',
+      'Unter Organisation können Sie Steuernummer, USt-IdNr., IBAN und die E-Mail der ' +
+        'Kanzlei hinterlegen. Diese Angaben stehen dann in mandant.txt im ZIP. ' +
+        'Den Versand an die Kanzlei machen Sie vorerst selbst.',
       'Die Datei bleibt bei Ihnen: eInvoice speichert im Gastmodus kein Rechnungsarchiv. ' +
         'Sie senden das ZIP selbst an die Kanzlei.',
     ],

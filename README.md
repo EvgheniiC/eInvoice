@@ -158,7 +158,7 @@ Golden-file cases that need local `backend/tests/xml_files` or `backend/tests/pd
 - `POST /api/invoices/parse` — upload `.xml` / `.pdf`
 - `POST /api/invoices/batch` — Plus/Team: several `.xml` / `.pdf` or one `.zip` of those types
 - `GET /api/invoices/batch/{id}` — batch progress and summary
-- `POST /api/invoices/batch/{id}/accountant-package` — one ZIP for the batch (Excel + DATEV + originals)
+- `POST /api/invoices/batch/{id}/accountant-package` — one ZIP for the batch (Excel + DATEV + originals; `mandant.txt` when the org profile is set)
 - `POST /api/invoices/export` — export parsed DTO as `csv` / `excel` / `datev`
 - `POST /api/invoices/export/accountant-package` — ZIP: original XML/PDF + summary + Prüfbericht + Excel + DATEV
 - `GET /api/invoices/export/mapping` — versioned column mapping for Steuerberater

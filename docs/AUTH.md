@@ -77,6 +77,11 @@ journalctl -u einvoice-api -n 80 --no-pager | grep auth_email
 - Reset: `POST /api/auth/reset-password` with the mailed token and a new
   password; all sessions are revoked
 - `GET /api/me` and `GET/PATCH /api/org` carry org context
+- Org profile (Inhaber): name, Steuernummer, USt-IdNr, IBAN, Steuerberater email.
+  Empty values clear the field. Invalid IBAN / USt-IdNr / email return HTTP 400.
+  When set, the authenticated Steuerberater ZIP includes `mandant.txt` and a
+  Mandant block in `summary.txt`. Guest packages stay without firm data.
+  Letter / one-time Kanzlei link is stage 4 (B7), not this endpoint.
 - Quotas are enforced: daily parse/export, plan upload size, parse parallelism
 - Guest parse without a session still works (no archive); it counts against the guest IP quota
 - Authenticated parse/export counts against the organization

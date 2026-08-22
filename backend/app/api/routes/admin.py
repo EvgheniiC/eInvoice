@@ -25,6 +25,10 @@ def _response(db: Session, organization: Organization, role: str = "inhaber") ->
         created_at=organization.created_at,
         history_enabled=organization.history_enabled,
         store_originals_enabled=organization.store_originals_enabled,
+        tax_number=organization.tax_number,
+        vat_id=organization.vat_id,
+        iban=organization.iban,
+        accountant_email=organization.accountant_email,
     )
 
 

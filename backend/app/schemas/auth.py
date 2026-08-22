@@ -1,10 +1,62 @@
+import re
 from datetime import datetime
 from typing import List, Literal, Optional
 from uuid import UUID
 
-from pydantic import EmailStr, Field
+from pydantic import EmailStr, Field, TypeAdapter, field_validator
 
 from app.schemas.invoice import ApiModel
+
+_EMAIL_ADAPTER: TypeAdapter[EmailStr] = TypeAdapter(EmailStr)
+_VAT_ID_RE: re.Pattern[str] = re.compile(r"[A-Z]{2}[A-Z0-9]{2,14}")
+
+
+def _compact_alnum(value: object) -> Optional[str]:
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        raise ValueError("Ungültiger Wert.")
+    cleaned: str = re.sub(r"[\s-]+", "", value).upper()
+    if cleaned == "":
+        return None
+    return cleaned
+
+
+def iban_checksum_ok(iban: str) -> bool:
+    """ISO 13616: length, charset, and MOD-97 checksum."""
+    if len(iban) < 15 or len(iban) > 34:
+        return False
+    if not iban[:2].isalpha() or not iban[2:4].isdigit() or not iban.isalnum():
+        return False
+    rearranged: str = iban[4:] + iban[:4]
+    numeric: str = "".join(str(ord(char) - 55) if char.isalpha() else char for char in rearranged)
+    return int(numeric) % 97 == 1
+
+
+def validated_vat_id(value: Optional[str]) -> Optional[str]:
+    if value is None:
+        return None
+    if not _VAT_ID_RE.fullmatch(value):
+        raise ValueError("USt-IdNr. ist ungültig.")
+    return value
+
+
+def validated_iban(value: Optional[str]) -> Optional[str]:
+    if value is None:
+        return None
+    if not iban_checksum_ok(value):
+        raise ValueError("IBAN ist ungültig.")
+    return value
+
+
+def validated_accountant_email(value: Optional[str]) -> Optional[str]:
+    if value is None:
+        return None
+    try:
+        return str(_EMAIL_ADAPTER.validate_python(value))
+    except Exception as exc:
+        raise ValueError("E-Mail des Steuerberaters ist ungültig.") from exc
+
 
 MembershipRole = Literal["inhaber", "buero", "export_only"]
 PlanCode = Literal["free", "plus", "team"]
@@ -90,6 +142,40 @@ class OrgUpdateRequest(ApiModel):
     name: Optional[str] = Field(default=None, min_length=2, max_length=120)
     history_enabled: Optional[bool] = None
     store_originals_enabled: Optional[bool] = None
+    tax_number: Optional[str] = Field(default=None, max_length=32)
+    vat_id: Optional[str] = Field(default=None, max_length=16)
+    iban: Optional[str] = Field(default=None, max_length=42)
+    accountant_email: Optional[str] = Field(default=None, max_length=254)
+
+    @field_validator("tax_number", mode="before")
+    @classmethod
+    def normalize_tax_number(cls, value: object) -> object:
+        if value is None:
+            return None
+        if not isinstance(value, str):
+            return value
+        stripped: str = " ".join(value.split())
+        return stripped or None
+
+    @field_validator("vat_id", mode="before")
+    @classmethod
+    def normalize_vat_id(cls, value: object) -> object:
+        return _compact_alnum(value)
+
+    @field_validator("iban", mode="before")
+    @classmethod
+    def normalize_iban(cls, value: object) -> object:
+        return _compact_alnum(value)
+
+    @field_validator("accountant_email", mode="before")
+    @classmethod
+    def normalize_accountant_email(cls, value: object) -> object:
+        if value is None:
+            return None
+        if not isinstance(value, str):
+            return value
+        stripped: str = value.strip()
+        return stripped or None
 
 
 class OrgResponse(ApiModel):
@@ -100,6 +186,10 @@ class OrgResponse(ApiModel):
     created_at: datetime
     history_enabled: bool = False
     store_originals_enabled: bool = False
+    tax_number: Optional[str] = None
+    vat_id: Optional[str] = None
+    iban: Optional[str] = None
+    accountant_email: Optional[str] = None
 
 
 class SetPlanRequest(ApiModel):

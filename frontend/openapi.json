@@ -3179,6 +3179,50 @@
             "type": "boolean",
             "title": "Store Originals Enabled",
             "default": false
+          },
+          "tax_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tax Number"
+          },
+          "vat_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vat Id"
+          },
+          "iban": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Iban"
+          },
+          "accountant_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accountant Email"
           }
         },
         "type": "object",
@@ -3189,7 +3233,11 @@
           "plan",
           "created_at",
           "history_enabled",
-          "store_originals_enabled"
+          "store_originals_enabled",
+          "tax_number",
+          "vat_id",
+          "iban",
+          "accountant_email"
         ],
         "title": "OrgResponse"
       },
@@ -3229,6 +3277,54 @@
               }
             ],
             "title": "Store Originals Enabled"
+          },
+          "tax_number": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 32
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tax Number"
+          },
+          "vat_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 16
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vat Id"
+          },
+          "iban": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 42
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Iban"
+          },
+          "accountant_email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 254
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accountant Email"
           }
         },
         "type": "object",

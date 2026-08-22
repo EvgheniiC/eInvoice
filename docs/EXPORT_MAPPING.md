@@ -94,6 +94,7 @@ The same text is shipped as `datev_hinweise.txt` inside the Steuerberater ZIP.
 | `export_manifest.txt` | Format version and file list |
 | `datev_hinweise.txt` | DATEV limitations (not DATEVconnect) |
 | `summary.txt` | Short German invoice summary |
+| `mandant.txt` | Optional 1.x: firm profile from Org-Einstellungen (name, Steuernummer, USt-IdNr, IBAN, Steuerberater email) |
 | `pruefbericht_*.txt` | Validation report |
 | `*.xlsx` | Excel export |
 | `datev_*.csv` | DATEV-compatible CSV |
@@ -113,6 +114,7 @@ from a completed batch while originals still exist in `BATCH_TEMP_DIR` (short TT
 | `export_manifest.txt` | Format version and file list |
 | `datev_hinweise.txt` | DATEV limitations (not DATEVconnect) |
 | `summary.txt` | German batch overview |
+| `mandant.txt` | Optional 1.x: firm profile of the uploading organization |
 | `pruefbericht_paket.txt` | Concatenated validation reports |
 | `rechnungen_*.xlsx` | Excel: Invoice table + Lines + Flat (same columns as CSV) |
 | `datev_rechnungen_*.csv` | DATEV-compatible CSV, one booking line per invoice |

@@ -1,5 +1,9 @@
-import { useState, type ChangeEvent, type FormEvent, type JSX } from 'react'
-import { changeAccountPassword, updateOrganization, updateOrganizationName } from '../api/client'
+import { useEffect, useState, type ChangeEvent, type FormEvent, type JSX } from 'react'
+import {
+  changeAccountPassword,
+  fetchOrganization,
+  updateOrganization,
+} from '../api/client'
 import { PageNav } from '../components/PageNav'
 import { SiteFooter } from '../components/SiteFooter'
 import type { AppRoute } from '../routing'
@@ -32,6 +36,10 @@ export function OrgSettingsPage({
   onLogout,
 }: OrgSettingsPageProps): JSX.Element {
   const [name, setName] = useState<string>(session?.organization_name ?? '')
+  const [taxNumber, setTaxNumber] = useState<string>('')
+  const [vatId, setVatId] = useState<string>('')
+  const [iban, setIban] = useState<string>('')
+  const [accountantEmail, setAccountantEmail] = useState<string>('')
   const [historyEnabled, setHistoryEnabled] = useState<boolean>(session?.history_enabled ?? false)
   const [storeOriginals, setStoreOriginals] = useState<boolean>(
     session?.store_originals_enabled ?? false,
@@ -41,6 +49,26 @@ export function OrgSettingsPage({
   const [error, setError] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
   const [saving, setSaving] = useState<boolean>(false)
+  const organizationId: string | null = session?.organization_id ?? null
+
+  useEffect(() => {
+    if (organizationId === null) {
+      return
+    }
+    void fetchOrganization()
+      .then((org: OrgResponse) => {
+        setName(org.name)
+        setTaxNumber(org.tax_number ?? '')
+        setVatId(org.vat_id ?? '')
+        setIban(org.iban ?? '')
+        setAccountantEmail(org.accountant_email ?? '')
+        setHistoryEnabled(org.history_enabled)
+        setStoreOriginals(org.store_originals_enabled)
+      })
+      .catch(() => {
+        // Keep session values if the extra GET fails.
+      })
+  }, [organizationId])
 
   if (session === null) {
     return (
@@ -72,9 +100,20 @@ export function OrgSettingsPage({
     setError(null)
     setInfo(null)
     try {
-      const updated: OrgResponse = await updateOrganizationName(name)
+      const updated: OrgResponse = await updateOrganization({
+        name,
+        tax_number: taxNumber,
+        vat_id: vatId,
+        iban,
+        accountant_email: accountantEmail,
+      })
       onSession({ ...session, organization_name: updated.name })
-      setInfo('Organisationsname gespeichert.')
+      setName(updated.name)
+      setTaxNumber(updated.tax_number ?? '')
+      setVatId(updated.vat_id ?? '')
+      setIban(updated.iban ?? '')
+      setAccountantEmail(updated.accountant_email ?? '')
+      setInfo('Firmenprofil gespeichert. Es erscheint im Steuerberater-Paket.')
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Speichern fehlgeschlagen.')
     } finally {
@@ -240,6 +279,11 @@ export function OrgSettingsPage({
       ) : null}
 
       <form className="auth-form" onSubmit={onSaveOrg}>
+        <h2>Firmenprofil</h2>
+        <p className="auth-form__hint">
+          Diese Angaben stehen im Steuerberater-ZIP unter mandant.txt. Später gelten sie
+          auch für den Versand an die Kanzlei.
+        </p>
         <label htmlFor="org-name">Name der Organisation</label>
         <input
           id="org-name"
@@ -252,8 +296,61 @@ export function OrgSettingsPage({
           disabled={saving || session.role !== 'inhaber'}
           onChange={(event: ChangeEvent<HTMLInputElement>) => setName(event.target.value)}
         />
+        <label htmlFor="org-tax-number">
+          Steuernummer <span className="auth-form__optional">(Optional)</span>
+        </label>
+        <input
+          id="org-tax-number"
+          name="tax_number"
+          type="text"
+          maxLength={32}
+          autoComplete="off"
+          value={taxNumber}
+          disabled={saving || session.role !== 'inhaber'}
+          onChange={(event: ChangeEvent<HTMLInputElement>) => setTaxNumber(event.target.value)}
+        />
+        <label htmlFor="org-vat-id">
+          USt-IdNr. <span className="auth-form__optional">(Optional)</span>
+        </label>
+        <input
+          id="org-vat-id"
+          name="vat_id"
+          type="text"
+          maxLength={16}
+          autoComplete="off"
+          value={vatId}
+          disabled={saving || session.role !== 'inhaber'}
+          onChange={(event: ChangeEvent<HTMLInputElement>) => setVatId(event.target.value)}
+        />
+        <label htmlFor="org-iban">
+          IBAN <span className="auth-form__optional">(Optional)</span>
+        </label>
+        <input
+          id="org-iban"
+          name="iban"
+          type="text"
+          maxLength={42}
+          autoComplete="off"
+          spellCheck={false}
+          value={iban}
+          disabled={saving || session.role !== 'inhaber'}
+          onChange={(event: ChangeEvent<HTMLInputElement>) => setIban(event.target.value)}
+        />
+        <label htmlFor="org-accountant-email">
+          E-Mail Steuerberater <span className="auth-form__optional">(Optional)</span>
+        </label>
+        <input
+          id="org-accountant-email"
+          name="accountant_email"
+          type="email"
+          maxLength={254}
+          autoComplete="off"
+          value={accountantEmail}
+          disabled={saving || session.role !== 'inhaber'}
+          onChange={(event: ChangeEvent<HTMLInputElement>) => setAccountantEmail(event.target.value)}
+        />
         <button type="submit" className="btn btn--primary" disabled={saving || session.role !== 'inhaber'}>
-          Name speichern
+          Profil speichern
         </button>
       </form>
 

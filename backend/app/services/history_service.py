@@ -27,7 +27,7 @@ from app.schemas.invoice import (
     ParseStatus,
     ValidationStatus,
 )
-from app.services.auth_service import OrgContext
+from app.services.auth_service import OrgContext, load_organization_profile
 from app.services.export_service import ExportService, invoice_is_exportable
 
 HISTORY_FORBIDDEN_DETAIL: str = (
@@ -262,6 +262,7 @@ def build_history_accountant_package(
         pdf_filename=record.filename if pdf_bytes is not None else None,
         xml_bytes=xml_bytes,
         xml_filename=record.filename if xml_bytes is not None else None,
+        org_profile=load_organization_profile(session, org_context.organization_id),
     )
 
 

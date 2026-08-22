@@ -1,9 +1,23 @@
+from dataclasses import dataclass
 from enum import Enum
 from typing import List, Optional
 
 from pydantic import Field
 
 from app.schemas.invoice import ApiModel, InvoiceParseResponse
+
+MANDANT_MEMBER: str = "mandant.txt"
+
+
+@dataclass(frozen=True)
+class OrgProfile:
+    """Firm details copied into the Steuerberater ZIP. Later also Kanzlei letter/link."""
+
+    name: str
+    tax_number: Optional[str] = None
+    vat_id: Optional[str] = None
+    iban: Optional[str] = None
+    accountant_email: Optional[str] = None
 
 # Frozen accounting export schema. Bump major when columns/semantics break Kanzlei imports.
 EXPORT_FORMAT_VERSION: str = "1.0"

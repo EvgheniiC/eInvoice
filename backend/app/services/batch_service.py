@@ -26,7 +26,7 @@ from app.schemas.batch import (
     BatchJobStatus,
 )
 from app.schemas.invoice import InvoiceParseResponse, ParseStatus, ValidationStatus
-from app.services.auth_service import OrgContext
+from app.services.auth_service import OrgContext, load_organization_profile
 from app.services.export_service import (
     BatchPackageEntry,
     ExportService,
@@ -136,7 +136,11 @@ def build_batch_accountant_package(
 ) -> tuple[bytes, str, str]:
     """Build one Steuerberater ZIP from a completed job while originals still exist."""
     entries, completed_at = _package_entries_for_job(session, org_context, job_id)
-    return _export_service.build_batch_accountant_package(entries, completed_at)
+    return _export_service.build_batch_accountant_package(
+        entries,
+        completed_at,
+        org_profile=load_organization_profile(session, org_context.organization_id),
+    )
 
 
 def assert_batch_package_ready(

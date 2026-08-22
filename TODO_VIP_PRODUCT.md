@@ -137,7 +137,7 @@
       (`TODO_SUBSCRIPTION.md` A3)
 - [x] Экспорт нескольких счетов одним бухгалтерским пакетом.
       (`TODO_SUBSCRIPTION.md` A4)
-- [ ] Регистрация организации, лимиты по плану и профиль фирмы / Steuerberater.
+- [x] Регистрация организации, лимиты по плану и профиль фирмы / Steuerberater.
       (`TODO_SUBSCRIPTION.md` этапы 1–2, A5–A6)
 - [ ] Mandanten-Link / безопасная передача пакета Kanzlei.
       (`TODO_SUBSCRIPTION.md` B7, этап 4)

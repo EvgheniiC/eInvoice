@@ -66,6 +66,10 @@ class Organization(Base):
     history_enabled_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
+    tax_number: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
+    vat_id: Mapped[Optional[str]] = mapped_column(String(16), nullable=True)
+    iban: Mapped[Optional[str]] = mapped_column(String(34), nullable=True)
+    accountant_email: Mapped[Optional[str]] = mapped_column(String(254), nullable=True)
 
     plan: Mapped[Plan] = relationship(back_populates="organizations")
     memberships: Mapped[list["Membership"]] = relationship(back_populates="organization")
