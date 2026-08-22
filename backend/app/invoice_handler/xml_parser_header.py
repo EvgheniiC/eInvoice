@@ -20,6 +20,8 @@ from ..helper_functions import (
     parse_decimal,
     quantize_money,
     parse_xml_date,
+    get_document_level_charges,
+    HeaderTradeAdjustment,
 )
 from ..services.logger_adapter import InvoiceLogger
 
@@ -271,6 +273,10 @@ def _parse_amounts(
     header.charge_total = optional_string_to_decimal(
         find_data_within_element(roots.invoice_head_money, tags.charge_total)
     )
+    if header.charge_total is None:
+        document_charges: List[HeaderTradeAdjustment] = get_document_level_charges(roots.tree)
+        if document_charges:
+            header.charge_total = sum((item.amount for item in document_charges), Decimal("0"))
 
     net_amount: Optional[Decimal] = optional_string_to_decimal(raw_invoice_amount)
     if header.discount and not use_tax_exclusive_for_net and net_amount is not None:

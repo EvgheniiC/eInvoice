@@ -40,6 +40,16 @@
       "tax_rate": 25.0,
       "unit": "C62",
       "unit_price": 100.0
+    },
+    {
+      "description": "Cleaning",
+      "gross_amount": 250.0,
+      "net_amount": 200.0,
+      "position": 4,
+      "quantity": 1.0,
+      "tax_rate": 25.0,
+      "unit": null,
+      "unit_price": 200.0
     }
   ],
   "mismatch_fields": [],

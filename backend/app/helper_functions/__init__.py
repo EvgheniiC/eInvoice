@@ -11,10 +11,13 @@ from .amounts import (
     string_to_float_negative,
 )
 from .description import (
+    HeaderTradeAdjustment,
     _is_gu_document,
     build_description_from_item,
     document_charge_description,
+    get_document_level_charges,
     get_header_trade_allowance_discount,
+    get_header_trade_charges,
     is_ubl_placeholder_text,
 )
 from .field_extract import get_field_value
@@ -66,8 +69,11 @@ __all__ = [
     "find_attribute_within_element",
     "build_description_from_item",
     "is_ubl_placeholder_text",
+    "HeaderTradeAdjustment",
     "document_charge_description",
+    "get_document_level_charges",
     "get_header_trade_allowance_discount",
+    "get_header_trade_charges",
     "extract_payment_means_list",
     "extract_seller_vat_id_zugferd",
     "extract_invoicee_or_buyer_vat_id",

@@ -1,13 +1,23 @@
 from __future__ import annotations
 
 from decimal import Decimal
-from typing import FrozenSet, List, Optional, Tuple
+from typing import FrozenSet, List, NamedTuple, Optional, Tuple
 from xml.etree.ElementTree import Element
 
 from .amounts import parse_decimal
 from .xml_query import _xml_root_local_name, find_data_within_element
 
 _UBL_ITEM_NAME_PLACEHOLDERS: FrozenSet[str] = frozenset({"-", ".", "/", "—", "–"})
+_ZERO_RATED_VAT_CATEGORIES: FrozenSet[str] = frozenset({"Z", "E", "AE", "G", "K", "O"})
+
+
+class HeaderTradeAdjustment(NamedTuple):
+    """Document-level allowance or charge (EN 16931 BG-20 / BG-21)."""
+
+    amount: Decimal
+    description: str
+    tax_rate: Optional[Decimal]
+    tax_category: Optional[str]
 
 
 def _ubl_item_name_is_placeholder(name: str) -> bool:
@@ -100,13 +110,111 @@ def _is_gu_document(xml_tree: Element, kind_of_invoice: Optional[str] = None) ->
     return _xml_root_local_name(xml_tree) == "CreditNote"
 
 
-def document_charge_description(xml_tree: Element) -> str:
-    """Build position text from invoice-level AllowanceCharge with ChargeIndicator true."""
-    reasons: List[str] = []
+def _header_trade_settlement(xml_tree: Element) -> Optional[Element]:
+    return xml_tree.find("./SupplyChainTradeTransaction/ApplicableHeaderTradeSettlement")
+
+
+def _charge_indicator_text(ac: Element) -> str:
+    charge_ind: Optional[Element] = ac.find("ChargeIndicator")
+    if charge_ind is None:
+        return ""
+    indicator_el: Optional[Element] = charge_ind.find("Indicator")
+    if indicator_el is not None and indicator_el.text:
+        return indicator_el.text.strip().lower()
+    if charge_ind.text:
+        return charge_ind.text.strip().lower()
+    return ""
+
+
+def _charge_indicator_is_charge(ac: Element) -> Optional[bool]:
+    ind_text: str = _charge_indicator_text(ac)
+    if ind_text in ("true", "1"):
+        return True
+    if ind_text in ("false", "0"):
+        return False
+    return None
+
+
+def _adjustment_reason(ac: Element, *, default_description: str) -> str:
+    reason_el: Optional[Element] = ac.find("Reason")
+    if reason_el is None:
+        reason_el = ac.find("AllowanceChargeReason")
+    if reason_el is not None and reason_el.text and reason_el.text.strip():
+        return reason_el.text.strip()
+    reason_code_el: Optional[Element] = ac.find("ReasonCode")
+    if reason_code_el is None:
+        reason_code_el = ac.find("AllowanceChargeReasonCode")
+    if reason_code_el is not None and reason_code_el.text and reason_code_el.text.strip():
+        return reason_code_el.text.strip()
+    return default_description
+
+
+def _category_trade_tax(ac: Element) -> Tuple[Optional[Decimal], Optional[str]]:
+    tax_el: Optional[Element] = ac.find("CategoryTradeTax")
+    if tax_el is None:
+        tax_el = ac.find("TaxCategory")
+    if tax_el is None:
+        return None, None
+    category_el: Optional[Element] = tax_el.find("CategoryCode")
+    if category_el is None:
+        category_el = tax_el.find("ID")
+    tax_category: Optional[str] = (
+        category_el.text.strip() if category_el is not None and category_el.text else None
+    )
+    rate_el: Optional[Element] = tax_el.find("RateApplicablePercent")
+    if rate_el is None:
+        rate_el = tax_el.find("Percent")
+    tax_rate: Optional[Decimal] = None
+    if rate_el is not None and rate_el.text:
+        tax_rate = parse_decimal(rate_el.text.strip())
+    if tax_rate is None and tax_category in _ZERO_RATED_VAT_CATEGORIES:
+        tax_rate = Decimal("0")
+    return tax_rate, tax_category
+
+
+def _adjustment_from_cii_element(ac: Element, *, is_charge: bool) -> Optional[HeaderTradeAdjustment]:
+    indicator: Optional[bool] = _charge_indicator_is_charge(ac)
+    if indicator is None or indicator != is_charge:
+        return None
+    amt_el: Optional[Element] = ac.find("ActualAmount")
+    if amt_el is None or not amt_el.text:
+        return None
+    amount: Optional[Decimal] = parse_decimal(amt_el.text.strip())
+    if amount is None or amount <= 0:
+        return None
+    default_description: str = "Document charge" if is_charge else "Discount"
+    tax_rate: Optional[Decimal]
+    tax_category: Optional[str]
+    tax_rate, tax_category = _category_trade_tax(ac)
+    return HeaderTradeAdjustment(
+        amount=amount,
+        description=_adjustment_reason(ac, default_description=default_description),
+        tax_rate=tax_rate,
+        tax_category=tax_category,
+    )
+
+
+def _collect_header_trade_adjustments(
+    xml_tree: Element, *, is_charge: bool
+) -> List[HeaderTradeAdjustment]:
+    settlement: Optional[Element] = _header_trade_settlement(xml_tree)
+    if settlement is None:
+        return []
+    items: List[HeaderTradeAdjustment] = []
+    for ac in settlement.findall("SpecifiedTradeAllowanceCharge"):
+        parsed: Optional[HeaderTradeAdjustment] = _adjustment_from_cii_element(
+            ac, is_charge=is_charge
+        )
+        if parsed is not None:
+            items.append(parsed)
+    return items
+
+
+def _collect_ubl_document_charges(xml_tree: Element) -> List[HeaderTradeAdjustment]:
+    items: List[HeaderTradeAdjustment] = []
     for path in ("./AllowanceCharge", "./Invoice/AllowanceCharge"):
         for ac in xml_tree.findall(path):
-            indicator: Optional[Element] = ac.find("ChargeIndicator")
-            if indicator is None or not indicator.text or indicator.text.strip().lower() != "true":
+            if _charge_indicator_is_charge(ac) is not True:
                 continue
             amount_el: Optional[Element] = ac.find("Amount")
             if amount_el is None or not amount_el.text:
@@ -114,53 +222,71 @@ def document_charge_description(xml_tree: Element) -> str:
             amount: Optional[Decimal] = parse_decimal(amount_el.text)
             if amount is None or amount <= 0:
                 continue
-            reason_el: Optional[Element] = ac.find("AllowanceChargeReason")
-            if reason_el is not None and reason_el.text:
-                reasons.append(reason_el.text.strip())
+            tax_rate: Optional[Decimal]
+            tax_category: Optional[str]
+            tax_rate, tax_category = _category_trade_tax(ac)
+            items.append(
+                HeaderTradeAdjustment(
+                    amount=amount,
+                    description=_adjustment_reason(ac, default_description="Document charge"),
+                    tax_rate=tax_rate,
+                    tax_category=tax_category,
+                )
+            )
+    return items
+
+
+def document_charge_description(xml_tree: Element) -> str:
+    """Build position text from invoice-level charges (UBL or CII)."""
+    charges: List[HeaderTradeAdjustment] = get_document_level_charges(xml_tree)
+    reasons: List[str] = [
+        item.description for item in charges if item.description != "Document charge"
+    ]
     return "\n".join(reasons) if reasons else "Document charge"
+
+
+def get_header_trade_charges(xml_tree: Element) -> List[HeaderTradeAdjustment]:
+    """ZUGFeRD / Factur-X: document-level charges (ChargeIndicator true, BG-21)."""
+    return _collect_header_trade_adjustments(xml_tree, is_charge=True)
+
+
+def get_document_level_charges(xml_tree: Element) -> List[HeaderTradeAdjustment]:
+    """
+    EN 16931 BG-21 charges: CII SpecifiedTradeAllowanceCharge first, then UBL AllowanceCharge.
+    """
+    cii_charges: List[HeaderTradeAdjustment] = get_header_trade_charges(xml_tree)
+    if cii_charges:
+        return cii_charges
+    return _collect_ubl_document_charges(xml_tree)
 
 
 def get_header_trade_allowance_discount(
     xml_tree: Element,
-) -> Optional[Tuple[Decimal, str, Optional[Decimal]]]:
+) -> Optional[HeaderTradeAdjustment]:
     """
     ZUGFeRD / Factur-X: sum document-level allowances (ChargeIndicator false).
-    Returns (net amount, combined reason text, VAT percent) or None.
+    Returns the combined adjustment or None.
     """
-    settlement: Optional[Element] = xml_tree.find(
-        "./SupplyChainTradeTransaction/ApplicableHeaderTradeSettlement"
+    items: List[HeaderTradeAdjustment] = _collect_header_trade_adjustments(
+        xml_tree, is_charge=False
     )
-    if settlement is None:
+    if not items:
         return None
-    total_amount: Decimal = Decimal("0")
-    reasons: List[str] = []
-    tax_rate: Optional[Decimal] = None
-    for ac in settlement.findall("SpecifiedTradeAllowanceCharge"):
-        charge_ind: Optional[Element] = ac.find("ChargeIndicator")
-        if charge_ind is None:
-            continue
-        indicator_el: Optional[Element] = charge_ind.find("Indicator")
-        ind_text: str = ""
-        if indicator_el is not None and indicator_el.text:
-            ind_text = indicator_el.text.strip().lower()
-        elif charge_ind.text:
-            ind_text = charge_ind.text.strip().lower()
-        if ind_text not in ("false", "0"):
-            continue
-        amt_el: Optional[Element] = ac.find("ActualAmount")
-        if amt_el is None or not amt_el.text:
-            continue
-        amt: Decimal = parse_decimal(amt_el.text.strip()) or Decimal("0")
-        if amt <= 0:
-            continue
-        total_amount += amt
-        reason_el: Optional[Element] = ac.find("Reason")
-        if reason_el is not None and reason_el.text:
-            reasons.append(reason_el.text.strip())
-        rt_el: Optional[Element] = ac.find("CategoryTradeTax/RateApplicablePercent")
-        if rt_el is not None and rt_el.text:
-            tax_rate = parse_decimal(rt_el.text.strip()) or Decimal("0")
+    total_amount: Decimal = sum((item.amount for item in items), Decimal("0"))
     if total_amount <= 0:
         return None
+    reasons: List[str] = [item.description for item in items if item.description != "Discount"]
     description: str = " / ".join(reasons) if reasons else "Discount"
-    return (total_amount, description, tax_rate)
+    tax_rate: Optional[Decimal] = None
+    tax_category: Optional[str] = None
+    for item in items:
+        if item.tax_rate is not None:
+            tax_rate = item.tax_rate
+        if item.tax_category:
+            tax_category = item.tax_category
+    return HeaderTradeAdjustment(
+        amount=total_amount,
+        description=description,
+        tax_rate=tax_rate,
+        tax_category=tax_category,
+    )

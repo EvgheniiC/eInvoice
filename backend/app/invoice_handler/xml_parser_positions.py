@@ -13,7 +13,9 @@ from ..helper_functions import (
     build_description_from_item,
     is_ubl_placeholder_text,
     document_charge_description,
+    get_document_level_charges,
     get_header_trade_allowance_discount,
+    HeaderTradeAdjustment,
     _is_gu_document,
 )
 from ..services.logger_adapter import InvoiceLogger
@@ -134,50 +136,76 @@ def get_xml_positions(
         )
         item_position += 1
 
-    charge_total_str: Optional[str] = find_data_within_element(
-        xml_invoice_head_money, tags_to_search_charge_total_amount
-    )
-    charge_total_value: Optional[Decimal] = parse_decimal(charge_total_str)
-    if charge_total_value is not None and charge_total_value <= 0:
-        charge_total_value = None
-
-    line_ext_str: Optional[str] = find_data_within_element(
-        xml_invoice_head_money, tags_to_search_line_extension_amount
-    )
-    tax_exc_str: Optional[str] = find_data_within_element(
-        xml_invoice_head_money, tags_to_search_tax_exclusive_amount
-    )
-    line_ext_val: Optional[Decimal] = parse_decimal(line_ext_str)
-    tax_exc_val: Optional[Decimal] = parse_decimal(tax_exc_str)
-    add_document_charge_line: bool = bool(
-        charge_total_value
-        and line_ext_val is not None
-        and tax_exc_val is not None
-        and tax_exc_val > line_ext_val
-    )
-
-    if add_document_charge_line:
-        charge_position_text: str = document_charge_description(xml_tree)
-        charge_tax_rate: Decimal = (
-            reference_tax_rate if reference_tax_rate is not None else Decimal("0")
-        )
-        xml_invoice_data.add_position(
-            XmlInvoicePosition(
-                item_pos=item_position,
-                position_text=charge_position_text,
-                quantity=Decimal("1"),
-                single_net_price=charge_total_value,
-                tax_rate=charge_tax_rate,
-                total_net_price=charge_total_value,
-                invoice_id=xml_invoice_data.invoice_id,
-                article_number="",
-                order_pos_id="",
+    document_charges: list[HeaderTradeAdjustment] = get_document_level_charges(xml_tree)
+    if document_charges:
+        for charge in document_charges:
+            charge_tax_rate: Decimal
+            if charge.tax_rate is not None:
+                charge_tax_rate = charge.tax_rate
+            elif reference_tax_rate is not None:
+                charge_tax_rate = reference_tax_rate
+            else:
+                charge_tax_rate = Decimal("0")
+            xml_invoice_data.add_position(
+                XmlInvoicePosition(
+                    item_pos=item_position,
+                    position_text=charge.description[:1000],
+                    quantity=Decimal("1"),
+                    single_net_price=charge.amount,
+                    tax_rate=charge_tax_rate,
+                    total_net_price=charge.amount,
+                    invoice_id=xml_invoice_data.invoice_id,
+                    article_number="",
+                    order_pos_id="",
+                    tax_code=charge.tax_category,
+                )
             )
+            item_position += 1
+    else:
+        charge_total_str: Optional[str] = find_data_within_element(
+            xml_invoice_head_money, tags_to_search_charge_total_amount
         )
-        item_position += 1
+        charge_total_value: Optional[Decimal] = parse_decimal(charge_total_str)
+        if charge_total_value is not None and charge_total_value <= 0:
+            charge_total_value = None
 
-    header_allowance: Optional[Tuple[Decimal, str, Optional[Decimal]]] = (
-        get_header_trade_allowance_discount(xml_tree)
+        line_ext_str: Optional[str] = find_data_within_element(
+            xml_invoice_head_money, tags_to_search_line_extension_amount
+        )
+        tax_exc_str: Optional[str] = find_data_within_element(
+            xml_invoice_head_money, tags_to_search_tax_exclusive_amount
+        )
+        line_ext_val: Optional[Decimal] = parse_decimal(line_ext_str)
+        tax_exc_val: Optional[Decimal] = parse_decimal(tax_exc_str)
+        add_document_charge_line: bool = bool(
+            charge_total_value
+            and line_ext_val is not None
+            and tax_exc_val is not None
+            and tax_exc_val > line_ext_val
+        )
+
+        if add_document_charge_line:
+            charge_position_text: str = document_charge_description(xml_tree)
+            fallback_tax_rate: Decimal = (
+                reference_tax_rate if reference_tax_rate is not None else Decimal("0")
+            )
+            xml_invoice_data.add_position(
+                XmlInvoicePosition(
+                    item_pos=item_position,
+                    position_text=charge_position_text,
+                    quantity=Decimal("1"),
+                    single_net_price=charge_total_value,
+                    tax_rate=fallback_tax_rate,
+                    total_net_price=charge_total_value,
+                    invoice_id=xml_invoice_data.invoice_id,
+                    article_number="",
+                    order_pos_id="",
+                )
+            )
+            item_position += 1
+
+    header_allowance: Optional[HeaderTradeAdjustment] = get_header_trade_allowance_discount(
+        xml_tree
     )
     discount_amount_str: Optional[str] = find_data_within_element(xml_invoice_head_money, tags_to_search_discount)
     discount_amount: Optional[Decimal] = None
@@ -185,9 +213,9 @@ def get_xml_positions(
     discount_tax_rate: Decimal = Decimal("0")
 
     if header_allowance is not None:
-        discount_amount = header_allowance[0]
-        discount_position_text = header_allowance[1][:1000]
-        header_vat: Optional[Decimal] = header_allowance[2]
+        discount_amount = header_allowance.amount
+        discount_position_text = header_allowance.description[:1000]
+        header_vat: Optional[Decimal] = header_allowance.tax_rate
         if header_vat is not None:
             discount_tax_rate = header_vat
         elif reference_tax_rate is not None:
