@@ -221,7 +221,11 @@ export function UploadPage({
     uploadedFile !== null
 
   const pageClassName: string =
-    canShowPdfSideBySide && showPdf ? 'page page--workspace page--split' : 'page page--workspace'
+    canShowPdfSideBySide && showPdf
+      ? 'page page--split'
+      : hasBatchWorkspace
+        ? 'page page--workspace'
+        : 'page'
 
   function renderInvoicePanel(): JSX.Element | null {
     if (result === null) {
