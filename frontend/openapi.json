@@ -1626,6 +1626,41 @@
         ],
         "title": "ChangePasswordRequest"
       },
+      "DuplicateMatch": {
+        "properties": {
+          "processed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Processed At"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "match": {
+            "type": "string",
+            "enum": [
+              "file",
+              "content"
+            ],
+            "title": "Match"
+          },
+          "history_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "History Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "processed_at",
+          "message",
+          "match",
+          "history_id"
+        ],
+        "title": "DuplicateMatch",
+        "description": "Prior processing of the same file or the same invoice key."
+      },
       "ExportFormat": {
         "type": "string",
         "enum": [
@@ -2218,6 +2253,16 @@
             },
             "type": "array",
             "title": "Next Steps"
+          },
+          "duplicate": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DuplicateMatch"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -2384,6 +2429,16 @@
             },
             "type": "array",
             "title": "Next Steps"
+          },
+          "duplicate": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DuplicateMatch"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -2406,7 +2461,8 @@
           "validation_issues",
           "mismatch_warnings",
           "mismatch_fields",
-          "next_steps"
+          "next_steps",
+          "duplicate"
         ],
         "title": "InvoiceParseResponse",
         "description": "Normalized invoice DTO returned to the frontend."

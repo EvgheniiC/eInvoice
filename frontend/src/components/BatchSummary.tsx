@@ -77,6 +77,9 @@ export function BatchSummary({
                   <td>{item.filename}</td>
                   <td>
                     <span className={statusBadgeClass(item.status)}>{STATUS_LABEL[item.status]}</span>
+                    {item.invoice?.duplicate != null ? (
+                      <span className="batch-table__dup">bereits verarbeitet</span>
+                    ) : null}
                   </td>
                   <td>{formatAmount(item.gross_amount, item.currency)}</td>
                   <td>{item.seller_name ?? '—'}</td>

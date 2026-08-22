@@ -25,6 +25,7 @@ from app.services.batch_service import (
     require_batch_plan,
 )
 from app.services.history_service import (
+    attach_duplicate_hint,
     build_history_accountant_package,
     list_history,
     record_parse_history,
@@ -101,6 +102,24 @@ async def parse_invoice(
                 level=logging.WARNING,
             )
         raise
+
+    if org_context is not None and org_context.allows_history:
+        try:
+            attach_duplicate_hint(
+                db,
+                organization_id=org_context.organization_id,
+                content=content,
+                response=result,
+            )
+        except Exception as exc:
+            log_event(
+                logging.ERROR,
+                "duplicate_lookup_failed",
+                fields={
+                    "request_id": request_id,
+                    "exc_type": type(exc).__name__,
+                },
+            )
 
     try:
         record_parse_history(

@@ -137,6 +137,8 @@ export function UploadPage({
       setResult(response)
       if (response.status === 'error') {
         setAnnouncement(response.message)
+      } else if (response.duplicate !== null && response.duplicate !== undefined) {
+        setAnnouncement(response.duplicate.message)
       } else {
         setAnnouncement(`Rechnung ${file.name} wurde gelesen.`)
       }

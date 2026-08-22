@@ -102,8 +102,8 @@ developer-API против [rechnungsapi.de](https://www.rechnungsapi.de).
 
 #### A3. Дубликаты
 
-- [ ] Ключ: поставщик + номер счёта + дата + brutto (нормализованные).
-- [ ] Показывать: «Diesen Beleg haben Sie bereits am TT.MM.JJJJ verarbeitet».
+- [x] Ключ: SHA-256 файла или поставщик + номер счёта + дата + brutto (нормализованные).
+- [x] Показывать: «Diesen Beleg haben Sie bereits am TT.MM.JJJJ verarbeitet».
 
 Связано: `TODO_VIP_PRODUCT.md` P1 «Поиск дублей».
 
@@ -233,7 +233,7 @@ developer-API против [rechnungsapi.de](https://www.rechnungsapi.de).
 2. [x] Batch UI + очередь в Postgres (`batch_jobs` / `batch_items`, `einvoice-worker`) (A1, ZIP-upload).
 3. [x] Мульти-accountant ZIP (A4).
 4. [x] История метаданных + повторный экспорт, если файл ещё в retention (A2).
-5. [ ] Дубликаты до тяжёлого KoSIT, если возможно (A3).
+5. [x] Дубликаты (file_hash до записи, затем ключ счёта после parse) (A3).
 6. [ ] Профиль организации в пакет (A6).
 
 Критерий готовности: Meister загружает 10 счетов и скачивает один ZIP для Kanzlei.

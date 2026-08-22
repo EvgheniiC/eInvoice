@@ -47,6 +47,23 @@ describe('InvoiceView', (): void => {
     expect(packageButton).toBeEnabled()
   })
 
+  it('shows a prior-processing banner when the same Beleg was already checked', (): void => {
+    const invoice: InvoiceParseResponse = buildInvoice({
+      duplicate: {
+        processed_at: '2026-08-15T12:00:00+00:00',
+        message: 'Diesen Beleg haben Sie bereits am 15.08.2026 verarbeitet.',
+        match: 'file',
+        history_id: '00000000-0000-0000-0000-000000000099',
+      },
+    })
+    render(<InvoiceView invoice={invoice} />)
+
+    expect(
+      screen.getByText('Diesen Beleg haben Sie bereits am 15.08.2026 verarbeitet.'),
+    ).toBeInTheDocument()
+    expect(screen.getByText(/zweite Buchung oder Zahlung/)).toBeInTheDocument()
+  })
+
   it('downloads a working-copy PDF without accounting confirmation', async (): Promise<void> => {
     const user: UserEvent = userEvent.setup()
     vi.mocked(downloadViewPdf).mockResolvedValue()

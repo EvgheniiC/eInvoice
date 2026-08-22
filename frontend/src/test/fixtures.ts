@@ -74,6 +74,7 @@ export function buildInvoice(
     validation_status: 'valid',
     mismatch_warnings: [],
     mismatch_fields: [],
+    duplicate: null,
     ...overrides,
     seller: overrides.seller !== undefined ? overrides.seller : DEFAULT_SELLER,
     buyer: overrides.buyer !== undefined ? overrides.buyer : DEFAULT_BUYER,

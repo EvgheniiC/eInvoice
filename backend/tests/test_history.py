@@ -20,7 +20,11 @@ from app.db.session import dispose_engine
 from app.main import create_app
 from app.schemas.invoice import InvoiceParseResponse, InvoiceTotals, PartyInfo, ParseStatus
 from app.services.batch_service import drain_queue
-from app.services.history_service import HISTORY_FORBIDDEN_DETAIL, ORIGINALS_GONE_DETAIL
+from app.services.history_service import (
+    HISTORY_FORBIDDEN_DETAIL,
+    ORIGINALS_GONE_DETAIL,
+    duplicate_message,
+)
 from app.services.quota_service import reset_quota_runtime
 
 
@@ -204,6 +208,138 @@ class TestInvoiceHistory(unittest.TestCase):
         self.assertEqual(hidden.json()["total"], 0)
         stolen = self.client.post(f"/api/invoices/history/{record_id}/accountant-package")
         self.assertEqual(stolen.status_code, 404)
+
+    def test_same_file_hash_marks_duplicate(self) -> None:
+        self._register_plus("plus-dup-file@example.com")
+        self.client.patch("/api/org", json={"history_enabled": True})
+        payload: bytes = b"<Invoice id='same'/>"
+        first_at: datetime = datetime(2026, 8, 15, 12, 0, tzinfo=timezone.utc)
+        with patch(
+            "app.api.routes.invoices.invoice_service.parse_upload",
+            side_effect=_parsed_invoice,
+        ), patch("app.services.history_service.utc_now", return_value=first_at):
+            first = self.client.post(
+                "/api/invoices/parse",
+                files={"file": ("same.xml", payload, "application/xml")},
+            )
+        self.assertEqual(first.status_code, 200)
+        self.assertIsNone(first.json()["duplicate"])
+        with patch(
+            "app.api.routes.invoices.invoice_service.parse_upload",
+            side_effect=_parsed_invoice,
+        ):
+            second = self.client.post(
+                "/api/invoices/parse",
+                files={"file": ("same.xml", payload, "application/xml")},
+            )
+        self.assertEqual(second.status_code, 200)
+        duplicate: dict[str, object] = second.json()["duplicate"]
+        self.assertEqual(duplicate["match"], "file")
+        self.assertEqual(duplicate["message"], duplicate_message(first_at))
+        self.assertIn("15.08.2026", duplicate["message"])
+
+    def test_same_invoice_key_marks_content_duplicate(self) -> None:
+        self._register_plus("plus-dup-key@example.com")
+        self.client.patch("/api/org", json={"history_enabled": True})
+        first_at: datetime = datetime(2026, 3, 2, 12, 0, tzinfo=timezone.utc)
+        with patch(
+            "app.api.routes.invoices.invoice_service.parse_upload",
+            side_effect=_parsed_invoice,
+        ), patch("app.services.history_service.utc_now", return_value=first_at):
+            first = self.client.post(
+                "/api/invoices/parse",
+                files={"file": ("one.xml", b"<Invoice id='one'/>", "application/xml")},
+            )
+        self.assertEqual(first.status_code, 200)
+        with patch(
+            "app.api.routes.invoices.invoice_service.parse_upload",
+            side_effect=_parsed_invoice,
+        ):
+            second = self.client.post(
+                "/api/invoices/parse",
+                files={"file": ("one.xml", b"<Invoice id='two'/>", "application/xml")},
+            )
+        self.assertEqual(second.status_code, 200)
+        duplicate: dict[str, object] = second.json()["duplicate"]
+        self.assertEqual(duplicate["match"], "content")
+        self.assertEqual(
+            duplicate["message"],
+            "Diesen Beleg haben Sie bereits am 02.03.2026 verarbeitet.",
+        )
+
+    def test_other_org_and_history_off_are_not_duplicates(self) -> None:
+        self._register_plus("plus-dup-a@example.com")
+        self.client.patch("/api/org", json={"history_enabled": True})
+        payload: bytes = b"<Invoice id='shared'/>"
+        with patch(
+            "app.api.routes.invoices.invoice_service.parse_upload",
+            side_effect=_parsed_invoice,
+        ):
+            first = self.client.post(
+                "/api/invoices/parse",
+                files={"file": ("shared.xml", payload, "application/xml")},
+            )
+        self.assertEqual(first.status_code, 200)
+        self.client.post("/api/auth/logout")
+        self._register_plus("plus-dup-b@example.com")
+        self.client.patch("/api/org", json={"history_enabled": True})
+        with patch(
+            "app.api.routes.invoices.invoice_service.parse_upload",
+            side_effect=_parsed_invoice,
+        ):
+            isolated = self.client.post(
+                "/api/invoices/parse",
+                files={"file": ("shared.xml", payload, "application/xml")},
+            )
+        self.assertEqual(isolated.status_code, 200)
+        self.assertIsNone(isolated.json()["duplicate"])
+        self.client.post("/api/auth/logout")
+        self._register_plus("plus-dup-off@example.com")
+        with patch(
+            "app.api.routes.invoices.invoice_service.parse_upload",
+            side_effect=_parsed_invoice,
+        ):
+            first_off = self.client.post(
+                "/api/invoices/parse",
+                files={"file": ("off.xml", payload, "application/xml")},
+            )
+            second_off = self.client.post(
+                "/api/invoices/parse",
+                files={"file": ("off.xml", payload, "application/xml")},
+            )
+        self.assertIsNone(first_off.json()["duplicate"])
+        self.assertIsNone(second_off.json()["duplicate"])
+
+    def test_batch_marks_prior_file_as_duplicate(self) -> None:
+        self._register_plus("plus-dup-batch@example.com")
+        self.client.patch("/api/org", json={"history_enabled": True})
+        payload: bytes = b"<Invoice id='batch-dup'/>"
+        first_at: datetime = datetime(2026, 8, 1, 10, 0, tzinfo=timezone.utc)
+        with patch(
+            "app.api.routes.invoices.invoice_service.parse_upload",
+            side_effect=_parsed_invoice,
+        ), patch("app.services.history_service.utc_now", return_value=first_at):
+            parsed = self.client.post(
+                "/api/invoices/parse",
+                files={"file": ("prior.xml", payload, "application/xml")},
+            )
+        self.assertEqual(parsed.status_code, 200)
+        with patch(
+            "app.services.batch_service._invoice_service.parse_upload",
+            side_effect=_parsed_invoice,
+        ):
+            created = self.client.post(
+                "/api/invoices/batch",
+                files=[("files", ("again.xml", payload, "application/xml"))],
+            )
+            self.assertEqual(created.status_code, 202)
+            drain_queue()
+        listed = self.client.get(f"/api/invoices/batch/{created.json()['id']}")
+        self.assertEqual(listed.status_code, 200)
+        invoice: dict[str, object] = listed.json()["items"][0]["invoice"]
+        duplicate: dict[str, object] = invoice["duplicate"]
+        self.assertEqual(duplicate["match"], "file")
+        self.assertIn("01.08.2026", duplicate["message"])
 
     def test_disable_originals_purges_files(self) -> None:
         self._register_plus("purge@example.com")

@@ -1,6 +1,8 @@
-from enum import Enum
+from datetime import datetime
 from decimal import Decimal
+from enum import Enum
 from typing import ClassVar, List, Literal, Optional
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -120,6 +122,18 @@ class MismatchField(ApiModel):
     matched: bool
 
 
+DuplicateMatchKind = Literal["file", "content"]
+
+
+class DuplicateMatch(ApiModel):
+    """Prior processing of the same file or the same invoice key."""
+
+    processed_at: datetime
+    message: str
+    match: DuplicateMatchKind
+    history_id: UUID
+
+
 class InvoiceParseResponse(ApiModel):
     """Normalized invoice DTO returned to the frontend."""
 
@@ -145,3 +159,4 @@ class InvoiceParseResponse(ApiModel):
     mismatch_warnings: List[str] = Field(default_factory=list)
     mismatch_fields: List[MismatchField] = Field(default_factory=list)
     next_steps: List[str] = Field(default_factory=list)
+    duplicate: Optional[DuplicateMatch] = None

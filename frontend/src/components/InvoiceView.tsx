@@ -514,6 +514,12 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps): J
         />
       </dl>
 
+      {invoice.duplicate !== null && invoice.duplicate !== undefined && (
+        <div className="banner banner--warn" role="status">
+          <strong>{invoice.duplicate.message}</strong>
+          <p>Prüfen Sie, ob eine zweite Buchung oder Zahlung nötig ist.</p>
+        </div>
+      )}
       {hasMismatch && (
         <div className="banner banner--mismatch" role="alert">
           <strong>Nicht zahlen — PDF und XML weichen ab</strong>

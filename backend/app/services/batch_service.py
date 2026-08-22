@@ -443,8 +443,9 @@ def _process_claimed_item(item_id: UUID) -> None:
         session.close()
 
     response: InvoiceParseResponse
+    content: bytes = b""
     try:
-        content: bytes = _read_original(storage_path)
+        content = _read_original(storage_path)
         response = _invoice_service.parse_upload(filename=filename, content=content)
     except Exception as exc:
         log_event(
@@ -464,6 +465,7 @@ def _process_claimed_item(item_id: UUID) -> None:
         item = session.get(BatchItem, item_id)
         if item is None:
             return
+        _attach_duplicate_for_item(session, item, content, response)
         _apply_parse_result(item, response)
         session.commit()
         _record_history_after_item(session, item, content, response)
@@ -475,6 +477,32 @@ def _process_claimed_item(item_id: UUID) -> None:
         )
     finally:
         session.close()
+
+
+def _attach_duplicate_for_item(
+    session: Session,
+    item: BatchItem,
+    content: bytes,
+    response: InvoiceParseResponse,
+) -> None:
+    job: Optional[BatchJob] = session.get(BatchJob, item.job_id)
+    if job is None:
+        return
+    try:
+        from app.services.history_service import attach_duplicate_hint
+
+        attach_duplicate_hint(
+            session,
+            organization_id=job.organization_id,
+            content=content,
+            response=response,
+        )
+    except Exception as exc:
+        log_event(
+            logging.ERROR,
+            "duplicate_lookup_failed",
+            fields={"item_id": str(item.id), "exc_type": type(exc).__name__},
+        )
 
 
 def _record_history_after_item(

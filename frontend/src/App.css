@@ -1626,6 +1626,13 @@
   background: #e8f0ec;
 }
 
+.batch-table__dup {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--color-warn);
+  font-size: 0.8rem;
+}
+
 .batch-summary__hint {
   margin: 0.75rem 0 0.85rem;
   color: var(--color-muted);

@@ -62,6 +62,12 @@ export interface components {
       current_password: string;
       new_password: string;
     };
+    DuplicateMatch: {
+      processed_at: string;
+      message: string;
+      match: "file" | "content";
+      history_id: string;
+    };
     ExportFormat: "csv" | "excel" | "datev";
     ExportMappingDoc: {
       format: components["schemas"]["ExportFormat"];
@@ -153,6 +159,7 @@ export interface components {
       mismatch_warnings?: string[];
       mismatch_fields?: components["schemas"]["MismatchField-Input"][];
       next_steps?: string[];
+      duplicate?: components["schemas"]["DuplicateMatch"] | null;
     };
     "InvoiceParseResponse-Output": {
       status: components["schemas"]["ParseStatus"];
@@ -174,6 +181,7 @@ export interface components {
       mismatch_warnings: string[];
       mismatch_fields: components["schemas"]["MismatchField-Output"][];
       next_steps: string[];
+      duplicate: components["schemas"]["DuplicateMatch"] | null;
     };
     "InvoiceTotals-Input": {
       net?: number | string | null;

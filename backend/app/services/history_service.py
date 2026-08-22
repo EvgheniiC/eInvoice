@@ -6,6 +6,7 @@ import hashlib
 import logging
 import shutil
 from datetime import datetime, timedelta
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Optional
 from uuid import UUID
@@ -14,12 +15,18 @@ from fastapi import HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.core.clock import as_utc, utc_now
+from app.core.clock import as_utc, usage_timezone, utc_now
 from app.core.config import settings
 from app.core.error_events import log_event, safe_filename
 from app.db.models import InvoiceHistory, Organization
 from app.schemas.history import HistoryItemResponse, HistoryItemStatus, HistoryListResponse, HistorySource
-from app.schemas.invoice import InvoiceParseResponse, ParseStatus, ValidationStatus
+from app.schemas.invoice import (
+    DuplicateMatch,
+    DuplicateMatchKind,
+    InvoiceParseResponse,
+    ParseStatus,
+    ValidationStatus,
+)
 from app.services.auth_service import OrgContext
 from app.services.export_service import ExportService, invoice_is_exportable
 
@@ -32,6 +39,7 @@ ORIGINALS_GONE_DETAIL: str = (
 )
 NO_EXPORTABLE_DETAIL: str = "Diese Rechnung kann nicht erneut exportiert werden."
 NOT_FOUND_DETAIL: str = "Eintrag nicht gefunden."
+DUPLICATE_MESSAGE_TEMPLATE: str = "Diesen Beleg haben Sie bereits am {date} verarbeitet."
 
 _export_service: ExportService = ExportService()
 
@@ -39,6 +47,68 @@ _export_service: ExportService = ExportService()
 def hash_file_bytes(content: bytes) -> str:
     """SHA-256 hex digest of the uploaded bytes. Used for later duplicate detection."""
     return hashlib.sha256(content).hexdigest()
+
+
+def format_duplicate_date(processed_at: datetime) -> str:
+    """Calendar day in Europe/Berlin for the user-facing duplicate sentence."""
+    local: datetime = as_utc(processed_at).astimezone(usage_timezone())
+    return local.strftime("%d.%m.%Y")
+
+
+def duplicate_message(processed_at: datetime) -> str:
+    return DUPLICATE_MESSAGE_TEMPLATE.format(date=format_duplicate_date(processed_at))
+
+
+def attach_duplicate_hint(
+    session: Optional[Session],
+    *,
+    organization_id: Optional[UUID],
+    content: bytes,
+    response: InvoiceParseResponse,
+) -> InvoiceParseResponse:
+    """Annotate a parse result when the org already processed this Beleg."""
+    if session is None or organization_id is None:
+        return response
+    match: Optional[DuplicateMatch] = find_prior_duplicate(
+        session,
+        organization_id=organization_id,
+        content=content,
+        response=response,
+    )
+    if match is None:
+        return response
+    response.duplicate = match
+    return response
+
+
+def find_prior_duplicate(
+    session: Session,
+    *,
+    organization_id: UUID,
+    content: bytes,
+    response: InvoiceParseResponse,
+) -> Optional[DuplicateMatch]:
+    """Exact file first (cheap), then seller + number + date + brutto."""
+    organization: Optional[Organization] = session.get(Organization, organization_id)
+    if organization is None or not organization.history_enabled:
+        return None
+    if organization.plan is None or not organization.plan.allows_history:
+        return None
+    file_row: Optional[InvoiceHistory] = _latest_file_match(
+        session,
+        organization_id=organization_id,
+        file_hash=hash_file_bytes(content),
+    )
+    if file_row is not None:
+        return _to_duplicate_match(file_row, "file")
+    content_row: Optional[InvoiceHistory] = _latest_content_match(
+        session,
+        organization_id=organization_id,
+        response=response,
+    )
+    if content_row is not None:
+        return _to_duplicate_match(content_row, "content")
+    return None
 
 
 def require_history_plan(org_context: Optional[OrgContext]) -> OrgContext:
@@ -358,3 +428,75 @@ def _require_record(session: Session, organization_id: UUID, record_id: UUID) ->
     if record is None or record.organization_id != organization_id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=NOT_FOUND_DETAIL)
     return record
+
+
+def _latest_file_match(
+    session: Session,
+    *,
+    organization_id: UUID,
+    file_hash: str,
+) -> Optional[InvoiceHistory]:
+    return session.scalar(
+        select(InvoiceHistory)
+        .where(
+            InvoiceHistory.organization_id == organization_id,
+            InvoiceHistory.file_hash == file_hash,
+        )
+        .order_by(InvoiceHistory.processed_at.desc())
+        .limit(1)
+    )
+
+
+def _latest_content_match(
+    session: Session,
+    *,
+    organization_id: UUID,
+    response: InvoiceParseResponse,
+) -> Optional[InvoiceHistory]:
+    invoice_number: Optional[str] = _clip(response.invoice_number, 128)
+    issue_date: Optional[str] = _clip(response.issue_date, 32)
+    seller_name: Optional[str] = _clip(
+        response.seller.name if response.seller is not None else None,
+        255,
+    )
+    gross_amount: Optional[str] = _gross_amount(response)
+    if invoice_number is None or issue_date is None or seller_name is None or gross_amount is None:
+        return None
+    candidates: list[InvoiceHistory] = list(
+        session.scalars(
+            select(InvoiceHistory)
+            .where(
+                InvoiceHistory.organization_id == organization_id,
+                InvoiceHistory.invoice_number.is_not(None),
+                func.lower(InvoiceHistory.invoice_number) == invoice_number.casefold(),
+                InvoiceHistory.issue_date == issue_date,
+            )
+            .order_by(InvoiceHistory.processed_at.desc())
+            .limit(25)
+        ).all()
+    )
+    for row in candidates:
+        if row.seller_name is None or row.seller_name.casefold() != seller_name.casefold():
+            continue
+        if not _amounts_equal(row.gross_amount, gross_amount):
+            continue
+        return row
+    return None
+
+
+def _to_duplicate_match(row: InvoiceHistory, kind: DuplicateMatchKind) -> DuplicateMatch:
+    return DuplicateMatch(
+        processed_at=as_utc(row.processed_at),
+        message=duplicate_message(row.processed_at),
+        match=kind,
+        history_id=row.id,
+    )
+
+
+def _amounts_equal(stored: Optional[str], incoming: Optional[str]) -> bool:
+    if stored is None or incoming is None:
+        return False
+    try:
+        return Decimal(stored) == Decimal(incoming)
+    except InvalidOperation:
+        return stored == incoming
