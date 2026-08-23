@@ -13,6 +13,7 @@ import { ResetPasswordPage } from './pages/ResetPasswordPage'
 import { UploadPage } from './pages/UploadPage'
 import { VerifyPage } from './pages/VerifyPage'
 import { pathToRoute, routeToPath, type AppRoute } from './routing'
+import { applySeo } from './seo'
 import type { MeResponse } from './types/invoice'
 import './App.css'
 
@@ -38,6 +39,10 @@ function App(): JSX.Element {
     void fetchMe().then((value: MeResponse | null) => {
       setSession(value)
     })
+  }, [route])
+
+  useEffect(() => {
+    applySeo(window.location.pathname)
   }, [route])
 
   useEffect(() => {

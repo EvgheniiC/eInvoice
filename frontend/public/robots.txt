@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /anmelden
+Disallow: /registrieren
+Disallow: /passwort-vergessen
+Disallow: /passwort-zuruecksetzen
+Disallow: /bestaetigen
+Disallow: /organisation
+Disallow: /verlauf
+Disallow: /api/
+
+Sitemap: https://erechnung-smart.de/sitemap.xml

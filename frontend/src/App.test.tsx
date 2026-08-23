@@ -21,5 +21,6 @@ describe('App', (): void => {
 
     expect(screen.getByRole('heading', { name: 'Rechnung empfangen' })).toBeInTheDocument()
     expect(window.location.pathname).toBe('/upload')
+    expect(document.title).toBe('XRechnung oder ZUGFeRD hochladen | eInvoice')
   })
 })
