@@ -118,14 +118,6 @@ _SECTION_STYLE: ParagraphStyle = ParagraphStyle(
     spaceBefore=3 * mm,
     spaceAfter=1.5 * mm,
 )
-_DISCLAIMER_STYLE: ParagraphStyle = ParagraphStyle(
-    "view_pdf_disclaimer",
-    fontName="Helvetica",
-    fontSize=8,
-    leading=11,
-    textColor=MUTED,
-    alignment=TA_LEFT,
-)
 _WARN_STYLE: ParagraphStyle = ParagraphStyle(
     "view_pdf_warn",
     fontName="Helvetica-Bold",
@@ -208,8 +200,6 @@ def build_batch_view_pdf_filename(completed_at: datetime, invoice_count: int) ->
 def _story(invoice: InvoiceParseResponse) -> list[Flowable]:
     story: list[Flowable] = [
         Paragraph("E-Rechnung", _TITLE_STYLE),
-        _boxed(Paragraph(DISCLAIMER, _DISCLAIMER_STYLE), fill=ROW_FILL),
-        Spacer(1, 4 * mm),
         _parties_table(invoice),
         Spacer(1, 4 * mm),
         _facts_table(invoice),
@@ -450,9 +440,10 @@ def _boxed(inner: Flowable, fill: colors.Color) -> Table:
 
 def _draw_page_chrome(canvas: Canvas, doc: SimpleDocTemplate) -> None:
     canvas.saveState()
-    canvas.setFont("Helvetica", 7.5)
+    canvas.setFont("Helvetica", 6.5)
     canvas.setFillColor(MUTED)
-    canvas.drawString(PAGE_LEFT, 8 * mm, "eInvoice — Lesbare Ansicht, keine Originalrechnung")
+    canvas.drawString(PAGE_LEFT, 8 * mm, DISCLAIMER)
+    canvas.setFont("Helvetica", 7.5)
     canvas.drawRightString(A4[0] - PAGE_RIGHT, 8 * mm, f"Seite {doc.page}")
     canvas.restoreState()
 
