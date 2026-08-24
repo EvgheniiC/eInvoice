@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { UserEvent } from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { fetchOrganization, updateOrganization } from '../api/client'
 import { buildSession } from '../test/fixtures'
 import type { MeResponse, OrgResponse } from '../types/invoice'
@@ -36,6 +36,12 @@ function orgResponse(overrides: Partial<OrgResponse> = {}): OrgResponse {
 }
 
 describe('OrgSettingsPage', (): void => {
+  beforeEach((): void => {
+    vi.mocked(fetchOrganization).mockReset()
+    vi.mocked(updateOrganization).mockReset()
+    vi.mocked(fetchOrganization).mockResolvedValue(orgResponse())
+  })
+
   it('asks guests to sign in', (): void => {
     render(
       <OrgSettingsPage
@@ -96,5 +102,30 @@ describe('OrgSettingsPage', (): void => {
     })
     expect(onSession).toHaveBeenCalled()
     expect(screen.getByText(/Firmenprofil gespeichert/)).toBeInTheDocument()
+  })
+
+  it('shows field errors next to invalid USt-IdNr and IBAN', async (): Promise<void> => {
+    const user: UserEvent = userEvent.setup()
+    vi.mocked(fetchOrganization).mockResolvedValue(orgResponse({ name: 'ABC' }))
+
+    render(
+      <OrgSettingsPage
+        onNavigate={vi.fn()}
+        session={buildSession({ organization_name: 'ABC' })}
+        onSession={vi.fn()}
+        onLogout={vi.fn()}
+      />,
+    )
+
+    expect(await screen.findByDisplayValue('ABC')).toBeInTheDocument()
+    await user.type(screen.getByLabelText(/USt-IdNr/), '123')
+    await user.type(screen.getByLabelText(/^IBAN/), 'TEST12345')
+    await user.click(screen.getByRole('button', { name: 'Profil speichern' }))
+
+    expect(updateOrganization).not.toHaveBeenCalled()
+    expect(screen.getByText(/USt-IdNr\. ist ungültig/)).toBeInTheDocument()
+    expect(screen.getByText(/IBAN ist ungültig/)).toBeInTheDocument()
+    expect(screen.getByLabelText(/USt-IdNr/)).toHaveClass('auth-form__input--error')
+    expect(screen.getByLabelText(/^IBAN/)).toHaveClass('auth-form__input--error')
   })
 })

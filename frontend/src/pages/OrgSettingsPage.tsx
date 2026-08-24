@@ -6,6 +6,14 @@ import {
 } from '../api/client'
 import { PageNav } from '../components/PageNav'
 import { SiteFooter } from '../components/SiteFooter'
+import {
+  firstProfileErrorKey,
+  orgProfileErrorsFromApi,
+  profileFieldInputId,
+  validateOrgProfileFields,
+  type OrgProfileFieldErrors,
+  type OrgProfileFieldKey,
+} from '../orgProfile'
 import type { AppRoute } from '../routing'
 import type { MeResponse, MessageResponse, OrgResponse } from '../types/invoice'
 
@@ -14,6 +22,17 @@ type OrgSettingsPageProps = {
   session: MeResponse | null
   onSession: (session: MeResponse | null) => void
   onLogout: () => void
+}
+
+function FieldError({ id, message }: { id: string; message?: string }): JSX.Element | null {
+  if (!message) {
+    return null
+  }
+  return (
+    <p id={id} className="auth-form__field-error" role="alert">
+      {message}
+    </p>
+  )
 }
 
 function roleLabel(role: string): string {
@@ -48,6 +67,7 @@ export function OrgSettingsPage({
   const [newPassword, setNewPassword] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<OrgProfileFieldErrors>({})
   const [saving, setSaving] = useState<boolean>(false)
   const organizationId: string | null = session?.organization_id ?? null
 
@@ -99,6 +119,23 @@ export function OrgSettingsPage({
     setSaving(true)
     setError(null)
     setInfo(null)
+    const nextErrors: OrgProfileFieldErrors = validateOrgProfileFields({
+      name,
+      taxNumber,
+      vatId,
+      iban,
+      accountantEmail,
+    })
+    if (Object.keys(nextErrors).length > 0) {
+      setFieldErrors(nextErrors)
+      setSaving(false)
+      const firstKey: OrgProfileFieldKey | null = firstProfileErrorKey(nextErrors)
+      if (firstKey !== null) {
+        document.getElementById(profileFieldInputId(firstKey))?.focus()
+      }
+      return
+    }
+    setFieldErrors({})
     try {
       const updated: OrgResponse = await updateOrganization({
         name,
@@ -115,10 +152,32 @@ export function OrgSettingsPage({
       setAccountantEmail(updated.accountant_email ?? '')
       setInfo('Firmenprofil gespeichert. Es erscheint im Steuerberater-Paket.')
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Speichern fehlgeschlagen.')
+      const message: string =
+        err instanceof Error ? err.message : 'Speichern fehlgeschlagen.'
+      const mapped: OrgProfileFieldErrors = orgProfileErrorsFromApi(message)
+      if (Object.keys(mapped).length > 0) {
+        setFieldErrors(mapped)
+        const firstKey: OrgProfileFieldKey | null = firstProfileErrorKey(mapped)
+        if (firstKey !== null) {
+          document.getElementById(profileFieldInputId(firstKey))?.focus()
+        }
+      } else {
+        setError(message)
+      }
     } finally {
       setSaving(false)
     }
+  }
+
+  function clearFieldError(key: OrgProfileFieldKey): void {
+    setFieldErrors((current: OrgProfileFieldErrors): OrgProfileFieldErrors => {
+      if (current[key] === undefined) {
+        return current
+      }
+      const next: OrgProfileFieldErrors = { ...current }
+      delete next[key]
+      return next
+    })
   }
 
   async function onSaveHistory(event: FormEvent<HTMLFormElement>): Promise<void> {
@@ -278,7 +337,7 @@ export function OrgSettingsPage({
         </form>
       ) : null}
 
-      <form className="auth-form" onSubmit={onSaveOrg}>
+      <form className="auth-form" noValidate onSubmit={onSaveOrg}>
         <h2>Firmenprofil</h2>
         <p className="auth-form__hint">
           Diese Angaben stehen im Steuerberater-ZIP unter mandant.txt. Später gelten sie
@@ -294,8 +353,15 @@ export function OrgSettingsPage({
           maxLength={120}
           value={name}
           disabled={saving || session.role !== 'inhaber'}
-          onChange={(event: ChangeEvent<HTMLInputElement>) => setName(event.target.value)}
+          className={fieldErrors.name ? 'auth-form__input--error' : undefined}
+          aria-invalid={fieldErrors.name ? true : undefined}
+          aria-describedby={fieldErrors.name ? 'org-name-error' : undefined}
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            setName(event.target.value)
+            clearFieldError('name')
+          }}
         />
+        <FieldError id="org-name-error" message={fieldErrors.name} />
         <label htmlFor="org-tax-number">
           Steuernummer <span className="auth-form__optional">(Optional)</span>
         </label>
@@ -307,8 +373,15 @@ export function OrgSettingsPage({
           autoComplete="off"
           value={taxNumber}
           disabled={saving || session.role !== 'inhaber'}
-          onChange={(event: ChangeEvent<HTMLInputElement>) => setTaxNumber(event.target.value)}
+          className={fieldErrors.taxNumber ? 'auth-form__input--error' : undefined}
+          aria-invalid={fieldErrors.taxNumber ? true : undefined}
+          aria-describedby={fieldErrors.taxNumber ? 'org-tax-number-error' : undefined}
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            setTaxNumber(event.target.value)
+            clearFieldError('taxNumber')
+          }}
         />
+        <FieldError id="org-tax-number-error" message={fieldErrors.taxNumber} />
         <label htmlFor="org-vat-id">
           USt-IdNr. <span className="auth-form__optional">(Optional)</span>
         </label>
@@ -320,8 +393,15 @@ export function OrgSettingsPage({
           autoComplete="off"
           value={vatId}
           disabled={saving || session.role !== 'inhaber'}
-          onChange={(event: ChangeEvent<HTMLInputElement>) => setVatId(event.target.value)}
+          className={fieldErrors.vatId ? 'auth-form__input--error' : undefined}
+          aria-invalid={fieldErrors.vatId ? true : undefined}
+          aria-describedby={fieldErrors.vatId ? 'org-vat-id-error' : undefined}
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            setVatId(event.target.value)
+            clearFieldError('vatId')
+          }}
         />
+        <FieldError id="org-vat-id-error" message={fieldErrors.vatId} />
         <label htmlFor="org-iban">
           IBAN <span className="auth-form__optional">(Optional)</span>
         </label>
@@ -334,8 +414,15 @@ export function OrgSettingsPage({
           spellCheck={false}
           value={iban}
           disabled={saving || session.role !== 'inhaber'}
-          onChange={(event: ChangeEvent<HTMLInputElement>) => setIban(event.target.value)}
+          className={fieldErrors.iban ? 'auth-form__input--error' : undefined}
+          aria-invalid={fieldErrors.iban ? true : undefined}
+          aria-describedby={fieldErrors.iban ? 'org-iban-error' : undefined}
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            setIban(event.target.value)
+            clearFieldError('iban')
+          }}
         />
+        <FieldError id="org-iban-error" message={fieldErrors.iban} />
         <label htmlFor="org-accountant-email">
           E-Mail Steuerberater <span className="auth-form__optional">(Optional)</span>
         </label>
@@ -347,8 +434,15 @@ export function OrgSettingsPage({
           autoComplete="off"
           value={accountantEmail}
           disabled={saving || session.role !== 'inhaber'}
-          onChange={(event: ChangeEvent<HTMLInputElement>) => setAccountantEmail(event.target.value)}
+          className={fieldErrors.accountantEmail ? 'auth-form__input--error' : undefined}
+          aria-invalid={fieldErrors.accountantEmail ? true : undefined}
+          aria-describedby={fieldErrors.accountantEmail ? 'org-accountant-email-error' : undefined}
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            setAccountantEmail(event.target.value)
+            clearFieldError('accountantEmail')
+          }}
         />
+        <FieldError id="org-accountant-email-error" message={fieldErrors.accountantEmail} />
         <button type="submit" className="btn btn--primary" disabled={saving || session.role !== 'inhaber'}>
           Profil speichern
         </button>

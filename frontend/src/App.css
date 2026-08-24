@@ -250,6 +250,23 @@
   font: inherit;
 }
 
+.auth-form input.auth-form__input--error {
+  border-color: var(--color-danger);
+  background: var(--color-danger-bg);
+}
+
+.auth-form input.auth-form__input--error:focus {
+  outline: 2px solid var(--color-danger);
+  outline-offset: 1px;
+}
+
+.auth-form__field-error {
+  margin: 0.15rem 0 0;
+  color: var(--color-danger);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
 .auth-form__actions {
   display: flex;
   flex-wrap: wrap;
