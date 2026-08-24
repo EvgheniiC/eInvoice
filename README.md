@@ -188,6 +188,7 @@ include /opt/eInvoice/deploy/nginx-rate-limit-zone.conf;
 include /opt/eInvoice/deploy/nginx-security-snippet.conf;
 include /opt/eInvoice/deploy/nginx-api-snippet.conf;
 include /opt/eInvoice/deploy/nginx-spa-snippet.conf;
+include /opt/eInvoice/deploy/nginx-www-redirect-snippet.conf;
 ```
 
 Terminate TLS on nginx. The API listens on `127.0.0.1:8000` only.
