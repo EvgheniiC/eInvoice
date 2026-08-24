@@ -200,6 +200,8 @@ developer-API против [rechnungsapi.de](https://www.rechnungsapi.de).
 и усиливает риск DSGVO.
 
 - [ ] Закрыть P0 из `TODO_VIP_PRODUCT.md`: KoSIT в production, статусы проверки.
+      Следующий шаг: установить pinned KoSIT через `deploy/install-kosit.sh`,
+      получить HTTP 200 от `/api/health/ready` и повторить valid/invalid upload.
 - [ ] Заполнить Impressum / Verantwortlicher, hosting-Standort, подписать AVV с хостером.
 - [ ] Независимый security review до реальных Mandantenakten.
 - [ ] Пилот DATEV-импорта со Steuerberater (пункт 1.9).
@@ -238,6 +240,11 @@ developer-API против [rechnungsapi.de](https://www.rechnungsapi.de).
 6. [x] Профиль организации в пакет (A6).
 
 Критерий готовности: Meister загружает 10 счетов и скачивает один ZIP для Kanzlei.
+
+После текущего деплоя:
+
+- [ ] В batch выбранный счёт сразу показывает читаемую PDF
+- [ ] **Lesbare PDF ausblenden / anzeigen** скрывает и возвращает предпросмотр
 
 ### Этап 3 — монетизация
 

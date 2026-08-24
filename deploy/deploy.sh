@@ -19,7 +19,7 @@ APP_ROOT="${APP_ROOT:-/opt/eInvoice}"
 FRONTEND_DIR="${FRONTEND_DIR:-${APP_ROOT}/frontend}"
 WEB_ROOT="${WEB_ROOT:-/var/www/erechnung-smart}"
 API_SERVICE="${API_SERVICE:-einvoice-api}"
-HEALTH_URL="${HEALTH_URL:-http://127.0.0.1:8000/api/health/live}"
+HEALTH_URL="${HEALTH_URL:-http://127.0.0.1:8000/api/health/ready}"
 WEB_USER="${WEB_USER:-www-data}"
 WEB_GROUP="${WEB_GROUP:-www-data}"
 PREVIOUS_SHA_FILE="${PREVIOUS_SHA_FILE:-${APP_ROOT}/.deploy-previous-sha}"
@@ -153,7 +153,7 @@ if [[ "${DO_BACKEND}" -eq 1 ]]; then
   systemctl restart einvoice-worker
   systemctl --no-pager --full status einvoice-worker | sed -n '1,12p'
 
-  echo "==> health check ${HEALTH_URL}"
+  echo "==> production readiness check ${HEALTH_URL}"
   if ! wait_for_live; then
     echo "API health check failed: ${HEALTH_URL}" >&2
     if [[ "${DO_ROLLBACK}" -eq 0 && -n "${SAVED_SHA}" ]]; then
@@ -163,7 +163,7 @@ if [[ "${DO_BACKEND}" -eq 1 ]]; then
     fi
     exit 1
   fi
-  echo "    API OK"
+  echo "    API ready"
 
   if systemctl cat einvoice-alerts.timer >/dev/null 2>&1; then
     echo "==> enable einvoice-alerts.timer"

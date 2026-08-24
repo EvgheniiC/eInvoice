@@ -75,13 +75,15 @@ Optional full XRechnung Schematron (KoSIT). In **production** this is required
 
 ```
 ENVIRONMENT=production
-KOSIT_VALIDATOR_JAR=C:\path\to\validationtool.jar
-KOSIT_SCENARIOS_XML=C:\path\to\scenarios.xml
-KOSIT_JAVA_BIN=java
+KOSIT_VALIDATOR_JAR=/opt/kosit/current/validator.jar
+KOSIT_SCENARIOS_XML=/opt/kosit/current/scenarios.xml
+KOSIT_JAVA_BIN=/usr/bin/java
+KOSIT_REQUIRED=true
 ```
 
 Without KoSIT the API still runs structural/business checks. It never reports
-the invoice as valid until a KoSIT run completes. See [docs/VALIDATION.md](docs/VALIDATION.md).
+the invoice as valid until a KoSIT run completes. The pinned production
+installer and checks are documented in [docs/VALIDATION.md](docs/VALIDATION.md).
 
 Optional accounts (Stage 1): PostgreSQL + `AUTH_SECRET_KEY`. Guest upload still
 works without a login. Daily quotas for guest / Free / Plus / Team are enforced;

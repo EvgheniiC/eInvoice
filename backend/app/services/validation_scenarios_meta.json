@@ -1,9 +1,11 @@
 {
   "standard": "EN 16931:2017",
   "xrechnung_version": "3.0.2",
-  "pinned_at": "2026-08-17",
+  "validator_version": "1.6.3",
+  "configuration_release": "2026-01-31",
+  "pinned_at": "2026-08-24",
   "review_cadence_days": 90,
   "validator_project": "https://github.com/itplr-kosit/validator",
-  "scenarios_project": "https://github.com/itplr-kosit/xrechnung-validator-configuration-xrechnung",
+  "scenarios_project": "https://github.com/itplr-kosit/validator-configuration-xrechnung",
   "notes": "Replace KOSIT_SCENARIOS_XML when KoSIT publishes a new XRechnung configuration. See docs/VALIDATION.md."
 }

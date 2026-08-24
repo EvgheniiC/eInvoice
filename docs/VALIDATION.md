@@ -10,9 +10,10 @@ Set in `backend/.env` or the systemd unit:
 
 ```
 ENVIRONMENT=production
-KOSIT_JAVA_BIN=java
-KOSIT_VALIDATOR_JAR=/opt/kosit/validationtool-standalone.jar
-KOSIT_SCENARIOS_XML=/opt/kosit/scenarios.xml
+KOSIT_JAVA_BIN=/usr/bin/java
+KOSIT_VALIDATOR_JAR=/opt/kosit/current/validator.jar
+KOSIT_SCENARIOS_XML=/opt/kosit/current/scenarios.xml
+KOSIT_REQUIRED=true
 ```
 
 In production, KoSIT is mandatory. If the JAR or scenarios file is missing:
@@ -24,6 +25,37 @@ In production, KoSIT is mandatory. If the JAR or scenarios file is missing:
 
 Local development may omit KoSIT. Business rules (required fields, amount
 consistency, ZUGFeRD PDF↔XML) still run.
+
+## Pinned production installation
+
+The repository pins checksummed official artifacts:
+
+- KoSIT Validator `1.6.3` (includes the fix for GHSA-hg2c-p2m3-q29m)
+- XRechnung `3.0.2` validator configuration `2026-01-31`
+
+On Debian/Ubuntu, install the runtime dependencies and run the installer:
+
+```bash
+apt-get update
+apt-get install -y openjdk-17-jre-headless curl unzip ca-certificates
+cd /opt/eInvoice
+bash ./deploy/install-kosit.sh
+```
+
+Add the four values printed by the installer to `/opt/eInvoice/backend/.env`,
+then deploy. The deployment script checks `/api/health/ready`, not only
+liveness, so a production deployment fails while KoSIT is unavailable.
+
+After restart:
+
+```bash
+systemctl is-active einvoice-api einvoice-worker
+curl -i http://127.0.0.1:8000/api/health/ready
+curl -sS http://127.0.0.1:8000/api/health
+```
+
+Expected: both services are `active`, readiness returns HTTP 200, and health
+contains `"ready":true` and `"kosit_ready":true`.
 
 ## Fallback when KoSIT or Java is down
 
@@ -49,7 +81,7 @@ publishes a new XRechnung configuration.
 1. Download the current **validator** build from
    [itplr-kosit/validator](https://github.com/itplr-kosit/validator/releases).
 2. Download the current **XRechnung scenarios** from
-   [xrechnung-validator-configuration-xrechnung](https://github.com/itplr-kosit/xrechnung-validator-configuration-xrechnung/releases).
+   [validator-configuration-xrechnung](https://github.com/itplr-kosit/validator-configuration-xrechnung/releases).
 3. Point `KOSIT_VALIDATOR_JAR` and `KOSIT_SCENARIOS_XML` at the new files.
 4. Update `backend/app/services/validation_scenarios_meta.json`
    (`xrechnung_version`, `pinned_at`).
