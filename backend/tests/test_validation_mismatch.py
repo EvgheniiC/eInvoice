@@ -5,6 +5,7 @@ from app.schemas.invoice import (
     InvoiceParseResponse,
     InvoiceTotals,
     LineItem,
+    MismatchField,
     PartyInfo,
     ParseStatus,
     ValidationStatus,
@@ -13,6 +14,7 @@ from app.services.en16931_validator import validate_invoice
 from app.services.invoice_service import InvoiceService
 from app.services.zugferd_consistency import (
     _compare_amount,
+    _compare_date,
     _compare_iban,
     _compare_invoice_number,
 )
@@ -66,6 +68,19 @@ class TestValidationAndMismatch(unittest.TestCase):
         self.assertTrue(gross.matched)
         self.assertTrue(tax.matched)
         self.assertTrue(iban.matched)
+
+    def test_date_comparator_matches_us_short_date_format(self) -> None:
+        pdf_text: str = "Record date: 8/5/26\nDue date: 10/5/26"
+
+        issue_date: MismatchField = _compare_date(
+            pdf_text=pdf_text,
+            xml_value="2026-08-05",
+            field_name="issue_date",
+            label="Rechnungsdatum",
+        )
+
+        self.assertTrue(issue_date.matched)
+        self.assertEqual(issue_date.pdf_value, "8/5/26")
 
     def test_field_comparators_detect_mismatch(self) -> None:
         pdf_text: str = "Rechnung 999 vom 01.01.2020 Summe 10,00"

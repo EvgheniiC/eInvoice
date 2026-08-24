@@ -239,6 +239,9 @@ def _date_variants(iso_date: str) -> List[str]:
     if not match:
         return [iso_date]
     year, month, day = match.group(1), match.group(2), match.group(3)
+    short_year: str = year[-2:]
+    numeric_month: str = str(int(month))
+    numeric_day: str = str(int(day))
     return [
         iso_date,
         f"{day}.{month}.{year}",
@@ -246,6 +249,10 @@ def _date_variants(iso_date: str) -> List[str]:
         f"{day}-{month}-{year}",
         f"{day}{month}{year}",
         f"{year}{month}{day}",
+        f"{numeric_day}/{numeric_month}/{year}",
+        f"{numeric_day}/{numeric_month}/{short_year}",
+        f"{numeric_month}/{numeric_day}/{year}",
+        f"{numeric_month}/{numeric_day}/{short_year}",
     ]
 
 
