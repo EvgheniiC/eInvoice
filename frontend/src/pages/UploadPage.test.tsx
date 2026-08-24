@@ -1,8 +1,8 @@
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { UserEvent } from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
-import { checkHealth, createInvoiceBatch, downloadBatchAccountantPackage, downloadBatchViewPdfs, fetchCapabilities, parseInvoice } from '../api/client'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { checkHealth, createInvoiceBatch, downloadBatchAccountantPackage, downloadBatchViewPdfs, fetchCapabilities, fetchViewPdf, parseInvoice } from '../api/client'
 import { DEFAULT_CAPABILITIES } from '../content/capabilities'
 import { buildInvoice, buildSession } from '../test/fixtures'
 import type { BatchJobResponse, HealthResponse, InvoiceParseResponse, MeResponse } from '../types/invoice'
@@ -16,6 +16,7 @@ vi.mock('../api/client', (): {
   downloadAccountantPackage: ReturnType<typeof vi.fn>
   downloadBatchAccountantPackage: ReturnType<typeof vi.fn>
   downloadBatchViewPdfs: ReturnType<typeof vi.fn>
+  fetchViewPdf: ReturnType<typeof vi.fn>
   downloadValidationReport: ReturnType<typeof vi.fn>
   fetchCapabilities: ReturnType<typeof vi.fn>
   checkHealth: ReturnType<typeof vi.fn>
@@ -28,6 +29,7 @@ vi.mock('../api/client', (): {
   downloadAccountantPackage: vi.fn(),
   downloadBatchAccountantPackage: vi.fn(),
   downloadBatchViewPdfs: vi.fn(),
+  fetchViewPdf: vi.fn(),
   downloadValidationReport: vi.fn(),
   fetchCapabilities: vi.fn(),
   checkHealth: vi.fn(),
@@ -64,6 +66,12 @@ describe('UploadPage', (): void => {
       },
     })
   }
+
+  beforeEach((): void => {
+    vi.mocked(fetchViewPdf).mockResolvedValue(
+      new File(['pdf'], 'lesbare_invoice.pdf', { type: 'application/pdf' }),
+    )
+  })
 
   it('shows the parsed invoice after a successful upload', async (): Promise<void> => {
     const user: UserEvent = userEvent.setup()
@@ -241,6 +249,14 @@ describe('UploadPage', (): void => {
     expect(within(fileList).getByText('two.xml')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Alle als lesbare PDF' })).toBeEnabled()
     expect(screen.getByRole('button', { name: 'Ein ZIP für die Buchhaltung' })).toBeDisabled()
+    expect(await screen.findByLabelText('Lesbare PDF')).toBeInTheDocument()
+
+    const hidePdfButton: HTMLElement = screen.getByRole('button', {
+      name: 'Lesbare PDF ausblenden',
+    })
+    await user.click(hidePdfButton)
+    expect(screen.queryByLabelText('Lesbare PDF')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Lesbare PDF anzeigen' })).toBeInTheDocument()
   })
 
   it('downloads one accountant ZIP for a completed Plus batch', async (): Promise<void> => {

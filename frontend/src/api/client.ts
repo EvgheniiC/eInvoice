@@ -134,7 +134,7 @@ export async function exportInvoice(
   await downloadResponseBlob(response, defaultFilename(invoice, format))
 }
 
-export async function downloadViewPdf(invoice: InvoiceParseResponse): Promise<void> {
+export async function fetchViewPdf(invoice: InvoiceParseResponse): Promise<File> {
   const body: ViewPdfRequest = { invoice }
   const response: Response = await fetch(
     `${API_BASE}/invoices/export/view-pdf`,
@@ -147,10 +147,16 @@ export async function downloadViewPdf(invoice: InvoiceParseResponse): Promise<vo
   if (!response.ok) {
     throw new Error(await readErrorDetail(response, 'PDF-Download fehlgeschlagen.'))
   }
-  await downloadResponseBlob(
-    response,
-    `lesbare_${invoice.invoice_number ?? 'invoice'}.pdf`,
-  )
+  const blob: Blob = await response.blob()
+  const disposition: string | null = response.headers.get('Content-Disposition')
+  const filename: string =
+    parseFilename(disposition) ?? `lesbare_${invoice.invoice_number ?? 'invoice'}.pdf`
+  return new File([blob], filename, { type: blob.type || 'application/pdf' })
+}
+
+export async function downloadViewPdf(invoice: InvoiceParseResponse): Promise<void> {
+  const file: File = await fetchViewPdf(invoice)
+  downloadBlob(file, file.name)
 }
 
 export async function downloadValidationReport(
@@ -512,7 +518,10 @@ async function downloadResponseBlob(response: Response, fallbackName: string): P
   const blob: Blob = await response.blob()
   const disposition: string | null = response.headers.get('Content-Disposition')
   const filename: string = parseFilename(disposition) ?? fallbackName
+  downloadBlob(blob, filename)
+}
 
+function downloadBlob(blob: Blob, filename: string): void {
   const url: string = URL.createObjectURL(blob)
   const anchor: HTMLAnchorElement = document.createElement('a')
   anchor.href = url

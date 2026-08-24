@@ -1587,6 +1587,14 @@
   padding-top: 0;
 }
 
+.pdf-toggle--batch {
+  margin: 0 0 1rem;
+}
+
+.workspace-split__preview {
+  margin-bottom: 1.25rem;
+}
+
 .workspace-split__placeholder {
   margin: 0;
   padding: 1.25rem 1rem;

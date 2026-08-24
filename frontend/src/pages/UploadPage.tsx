@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type JSX, type RefObject } from 'react'
-import { checkHealth, createInvoiceBatch, downloadBatchAccountantPackage, downloadBatchViewPdfs, fetchBatchJob, fetchCapabilities, parseInvoice, recordFunnel } from '../api/client'
+import { checkHealth, createInvoiceBatch, downloadBatchAccountantPackage, downloadBatchViewPdfs, fetchBatchJob, fetchCapabilities, fetchViewPdf, parseInvoice, recordFunnel } from '../api/client'
 import { BatchSummary } from '../components/BatchSummary'
 import { FileUpload } from '../components/FileUpload'
 import { InvoiceView } from '../components/InvoiceView'
@@ -47,8 +47,14 @@ export function UploadPage({
   const [kositDegraded, setKositDegraded] = useState<boolean>(false)
   const [packageDownloading, setPackageDownloading] = useState<boolean>(false)
   const [viewPdfDownloading, setViewPdfDownloading] = useState<boolean>(false)
+  const [generatedViewPdf, setGeneratedViewPdf] = useState<File | null>(null)
+  const [generatedViewPdfLoading, setGeneratedViewPdfLoading] = useState<boolean>(false)
+  const [generatedViewPdfError, setGeneratedViewPdfError] = useState<string | null>(null)
+  const [showGeneratedViewPdf, setShowGeneratedViewPdf] = useState<boolean>(true)
   const inFlightRef: RefObject<boolean> = useRef<boolean>(false)
   const feedbackRef: RefObject<HTMLElement | null> = useRef<HTMLElement | null>(null)
+  const viewPdfCacheRef: RefObject<Map<string, File>> = useRef<Map<string, File>>(new Map())
+  const activeBatchJobId: string | null = batchJob?.id ?? null
 
   function bindFeedback(node: HTMLElement | null): void {
     feedbackRef.current = node
@@ -96,7 +102,7 @@ export function UploadPage({
       cancelled = true
       window.clearInterval(timer)
     }
-  }, [batchJob?.id, batchJob?.status])
+  }, [batchJob])
 
   useEffect(() => {
     if (batchJob === null || selectedBatchItemId !== null) {
@@ -116,6 +122,58 @@ export function UploadPage({
     setAnnouncement(`Rechnung ${firstReady.filename} geöffnet.`)
   }, [batchJob, selectedBatchItemId])
 
+  useEffect(() => {
+    if (
+      activeBatchJobId === null ||
+      selectedBatchItemId === null ||
+      result === null ||
+      result.status === 'error'
+    ) {
+      setGeneratedViewPdf(null)
+      setGeneratedViewPdfLoading(false)
+      setGeneratedViewPdfError(null)
+      return
+    }
+
+    const cachedPdf: File | undefined = viewPdfCacheRef.current.get(selectedBatchItemId)
+    setShowGeneratedViewPdf(true)
+    setGeneratedViewPdfError(null)
+    if (cachedPdf !== undefined) {
+      setGeneratedViewPdf(cachedPdf)
+      setGeneratedViewPdfLoading(false)
+      return
+    }
+
+    let cancelled: boolean = false
+    setGeneratedViewPdf(null)
+    setGeneratedViewPdfLoading(true)
+    void fetchViewPdf(result)
+      .then((file: File): void => {
+        if (cancelled) {
+          return
+        }
+        viewPdfCacheRef.current.set(selectedBatchItemId, file)
+        setGeneratedViewPdf(file)
+      })
+      .catch((err: unknown): void => {
+        if (cancelled) {
+          return
+        }
+        const message: string =
+          err instanceof Error ? err.message : 'Lesbare PDF konnte nicht angezeigt werden.'
+        setGeneratedViewPdfError(message)
+      })
+      .finally((): void => {
+        if (!cancelled) {
+          setGeneratedViewPdfLoading(false)
+        }
+      })
+
+    return (): void => {
+      cancelled = true
+    }
+  }, [activeBatchJobId, selectedBatchItemId, result])
+
   async function handleFile(file: File): Promise<void> {
     if (inFlightRef.current) {
       return
@@ -128,6 +186,8 @@ export function UploadPage({
     setSelectedBatchItemId(null)
     setPackageDownloading(false)
     setViewPdfDownloading(false)
+    setGeneratedViewPdf(null)
+    setGeneratedViewPdfError(null)
     setUploadedFile(file)
     setSelectedFilename(file.name)
     setShowPdf(true)
@@ -178,6 +238,9 @@ export function UploadPage({
     setSelectedBatchItemId(null)
     setPackageDownloading(false)
     setViewPdfDownloading(false)
+    setGeneratedViewPdf(null)
+    setGeneratedViewPdfError(null)
+    viewPdfCacheRef.current.clear()
     setAnnouncement(`${String(files.length)} Dateien werden in die Prüfungswarteschlange gelegt.`)
     try {
       const created: BatchJobResponse = await createInvoiceBatch(files)
@@ -423,10 +486,45 @@ export function UploadPage({
             />
           </aside>
           <section className="workspace-split__detail" aria-label="Rechnungsdaten">
-            {renderInvoicePanel() ?? (
+            {result === null ? (
               <p className="workspace-split__placeholder">
                 Datei in der Liste wählen, um die Rechnungsdaten zu sehen.
               </p>
+            ) : (
+              <>
+                {result.status !== 'error' ? (
+                  <div className="pdf-toggle pdf-toggle--batch">
+                    <button
+                      type="button"
+                      aria-pressed={showGeneratedViewPdf}
+                      onClick={() => setShowGeneratedViewPdf((visible: boolean) => !visible)}
+                    >
+                      {showGeneratedViewPdf
+                        ? 'Lesbare PDF ausblenden'
+                        : 'Lesbare PDF anzeigen'}
+                    </button>
+                    <p className="pdf-toggle__hint">
+                      Arbeitskopie aus den gelesenen Rechnungsdaten, kein Originalbeleg.
+                    </p>
+                  </div>
+                ) : null}
+                {showGeneratedViewPdf && generatedViewPdfLoading ? (
+                  <p className="workspace-split__placeholder" role="status">
+                    Lesbare PDF wird erstellt…
+                  </p>
+                ) : null}
+                {showGeneratedViewPdf && generatedViewPdfError !== null ? (
+                  <section className="status status--error" role="alert">
+                    <p>{generatedViewPdfError}</p>
+                  </section>
+                ) : null}
+                {showGeneratedViewPdf && generatedViewPdf !== null ? (
+                  <div className="workspace-split__preview">
+                    <PdfPreview file={generatedViewPdf} title="Lesbare PDF" />
+                  </div>
+                ) : null}
+                {renderInvoicePanel()}
+              </>
             )}
           </section>
         </div>
