@@ -200,8 +200,10 @@ developer-API против [rechnungsapi.de](https://www.rechnungsapi.de).
 и усиливает риск DSGVO.
 
 - [ ] Закрыть P0 из `TODO_VIP_PRODUCT.md`: KoSIT в production, статусы проверки.
-      Следующий шаг: установить pinned KoSIT через `deploy/install-kosit.sh`,
-      получить HTTP 200 от `/api/health/ready` и повторить valid/invalid upload.
+  - [x] Pinned KoSIT установлен на production
+  - [x] `/api/health/ready` → HTTP 200, `ready=true`, `kosit_ready=true`
+  - [ ] Valid upload выполняется через KoSIT и не остаётся `not_checked`
+  - [ ] Invalid upload показывает правила KoSIT и остаётся невалидным
 - [ ] Заполнить Impressum / Verantwortlicher, hosting-Standort, подписать AVV с хостером.
 - [ ] Независимый security review до реальных Mandantenakten.
 - [ ] Пилот DATEV-импорта со Steuerberater (пункт 1.9).
