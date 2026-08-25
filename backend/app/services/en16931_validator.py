@@ -331,7 +331,6 @@ def _run_kosit(
             }
             preexec: Optional[Callable[[], None]] = kosit_preexec_fn(
                 timeout_seconds=settings.kosit_timeout_seconds,
-                max_heap_mb=settings.kosit_java_max_heap_mb,
             )
             if preexec is not None:
                 run_kwargs["preexec_fn"] = preexec
@@ -549,9 +548,8 @@ def build_kosit_command(
 def kosit_preexec_fn(
     *,
     timeout_seconds: int,
-    max_heap_mb: int,
 ) -> Optional[Callable[[], None]]:
-    """Return a POSIX preexec hook that caps CPU and address space for Java."""
+    """Return a POSIX preexec hook that caps CPU and disables core dumps."""
     if os.name != "posix":
         return None
     try:
@@ -560,11 +558,11 @@ def kosit_preexec_fn(
         return None
 
     cpu_limit: int = max(5, timeout_seconds + 5)
-    as_bytes: int = max(512, max_heap_mb * 3) * 1024 * 1024
 
     def _apply_limits() -> None:
         resource.setrlimit(resource.RLIMIT_CPU, (cpu_limit, cpu_limit))
-        resource.setrlimit(resource.RLIMIT_AS, (as_bytes, as_bytes))
+        # RLIMIT_AS prevents the JVM from reserving compressed class space.
+        # Heap and total resident memory are bounded by -Xmx and systemd MemoryMax.
         resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
 
     return _apply_limits

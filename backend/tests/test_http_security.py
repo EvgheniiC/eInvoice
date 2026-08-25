@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import unittest
-from unittest.mock import patch
+from typing import Callable, Optional
+from unittest.mock import MagicMock, patch
 
 from fastapi.testclient import TestClient
 
@@ -74,11 +75,20 @@ class TestKositHardening(unittest.TestCase):
         self.assertIn("-Djava.awt.headless=true", command)
 
     def test_preexec_is_posix_only(self) -> None:
-        hook = kosit_preexec_fn(timeout_seconds=60, max_heap_mb=512)
+        hook: Optional[Callable[[], None]] = kosit_preexec_fn(timeout_seconds=60)
         if hook is None:
             self.assertTrue(True)
             return
-        self.assertTrue(callable(hook))
+        import resource
+
+        setrlimit_mock: MagicMock
+        with patch.object(resource, "setrlimit") as setrlimit_mock:
+            hook()
+
+        resources: list[int] = [call.args[0] for call in setrlimit_mock.call_args_list]
+        self.assertIn(resource.RLIMIT_CPU, resources)
+        self.assertIn(resource.RLIMIT_CORE, resources)
+        self.assertNotIn(resource.RLIMIT_AS, resources)
 
 
 if __name__ == "__main__":
