@@ -23,12 +23,14 @@ def init_account_store() -> None:
             "database_sqlite_forbidden_in_production",
             fields={"event": "database_sqlite_forbidden_in_production"},
         )
+        raise RuntimeError("Production accounts require PostgreSQL.")
     if settings.is_production and settings.auth_secret_key == "dev-only-change-me":
         log_event(
             logging.ERROR,
             "auth_secret_unconfigured",
             fields={"event": "auth_secret_unconfigured"},
         )
+        raise RuntimeError("AUTH_SECRET_KEY must be configured for production accounts.")
     url: str = (settings.database_url or "").strip()
     configure_engine(url)
     if not settings.uses_postgres:

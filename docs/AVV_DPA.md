@@ -47,7 +47,6 @@ zusätzlich ein AVV zwischen Kanzlei und Betreiber nötig sein.
 | Subunternehmer | Rolle | Ort | AVV |
 |----------------|-------|-----|-----|
 | _folgt (Hosting / VPS)_ | Server, Backup, Netz | EU bevorzugt | _folgt_ |
-| Google Ireland Ltd. (Google Fonts), falls nicht selbst gehostet | Schriftarten beim Seitenaufruf (IP) | ggf. Drittland | gesondert prüfen oder Schriften selbst hosten |
 
 Nicht vorgesehen: DATEV-Cloud, Steuerberater-API, Analyse-Tracker, Rechnungsarchiv.
 Geplant (noch nicht eingesetzt, Liste vor Go-live aktualisieren): E-Mail für

@@ -8,6 +8,7 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 from openpyxl import load_workbook
+from PyPDF2 import PdfWriter
 
 from app.main import app
 from app.schemas.export import (
@@ -74,6 +75,14 @@ def _sample_invoice() -> InvoiceParseResponse:
     )
 
 
+def _safe_pdf_bytes() -> bytes:
+    output: io.BytesIO = io.BytesIO()
+    writer: PdfWriter = PdfWriter()
+    writer.add_blank_page(width=72, height=72)
+    writer.write(output)
+    return output.getvalue()
+
+
 class TestExportService(unittest.TestCase):
     def setUp(self) -> None:
         self.service: ExportService = ExportService()
@@ -125,6 +134,24 @@ class TestExportService(unittest.TestCase):
         row = build_datev_row(invoice)
         self.assertEqual(row["Soll/Haben-Kennzeichen"], "H")
         self.assertEqual(row["Umsatz"], "270,73")
+
+    def test_exports_neutralize_spreadsheet_formulas(self) -> None:
+        invoice: InvoiceParseResponse = _sample_invoice()
+        invoice.seller = PartyInfo(name="=HYPERLINK(\"https://evil.invalid\")")
+        invoice.line_items[0].description = "+cmd|' /C calc'!A0"
+
+        csv_content, _, _ = self.service.export(invoice, ExportFormat.CSV)
+        csv_text: str = csv_content.decode("utf-8-sig")
+        self.assertIn("'=HYPERLINK", csv_text)
+        self.assertIn("'+cmd", csv_text)
+
+        datev_content, _, _ = self.service.export(invoice, ExportFormat.DATEV)
+        self.assertIn("'=HYPERLINK", datev_content.decode("cp1252"))
+
+        excel_content, _, _ = self.service.export(invoice, ExportFormat.EXCEL)
+        workbook = load_workbook(io.BytesIO(excel_content), data_only=False)
+        self.assertTrue(str(workbook["Invoice"]["B6"].value).startswith("'="))
+        self.assertTrue(str(workbook["Lines"]["B2"].value).startswith("'+"))
 
     def test_safe_filename_transliterates_umlauts(self) -> None:
         self.assertEqual(safe_filename_stem("Müller GmbH"), "Mueller_GmbH")
@@ -210,7 +237,10 @@ class TestExportService(unittest.TestCase):
 
     def test_accountant_package_extracts_xml_from_zugferd_pdf(self) -> None:
         pdf_bytes: bytes = b"%PDF-1.4 placeholder"
-        xml_text: str = "<?xml version='1.0'?><rsm:CrossIndustryInvoice/>"
+        xml_text: str = (
+            "<?xml version='1.0'?>"
+            "<rsm:CrossIndustryInvoice xmlns:rsm='urn:zugferd:test'/>"
+        )
         with unittest.mock.patch(
             "app.services.export_service.extract_embedded_xml_from_pdf",
             return_value=xml_text,
@@ -360,7 +390,7 @@ class TestExportApi(unittest.TestCase):
         self.assertTrue(len(export_response.content) > 100)
 
     def test_accountant_package_endpoint(self) -> None:
-        pdf_b64: str = base64.b64encode(b"%PDF-1.4 package").decode("ascii")
+        pdf_b64: str = base64.b64encode(_safe_pdf_bytes()).decode("ascii")
         xml_b64: str = base64.b64encode(b"<?xml version='1.0'?><Invoice/>").decode("ascii")
         response = self.client.post(
             "/api/invoices/export/accountant-package",
@@ -384,12 +414,37 @@ class TestExportApi(unittest.TestCase):
             self.assertIn("datev_hinweise.txt", names)
             self.assertNotIn(MANDANT_MEMBER, names)
 
+    def test_accountant_package_rejects_active_pdf(self) -> None:
+        active_pdf: bytes = b"%PDF-1.7\n/JavaScript (alert)\n%%EOF"
+        response = self.client.post(
+            "/api/invoices/export/accountant-package",
+            json={
+                "invoice": _sample_invoice().model_dump(mode="json"),
+                "pdf_base64": base64.b64encode(active_pdf).decode("ascii"),
+                "pdf_filename": "active.pdf",
+            },
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("aktiven Inhalten", response.json()["detail"])
+
     def test_accountant_package_rejects_invalid_xml(self) -> None:
         response = self.client.post(
             "/api/invoices/export/accountant-package",
             json={
                 "invoice": _sample_invoice().model_dump(mode="json"),
                 "xml_base64": base64.b64encode(b"not-xml").decode("ascii"),
+            },
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_accountant_package_rejects_xml_doctype(self) -> None:
+        unsafe_xml: bytes = b"<!DOCTYPE Invoice [<!ENTITY xxe SYSTEM 'file:///etc/passwd'>]><Invoice/>"
+        response = self.client.post(
+            "/api/invoices/export/accountant-package",
+            json={
+                "invoice": _sample_invoice().model_dump(mode="json"),
+                "xml_base64": base64.b64encode(unsafe_xml).decode("ascii"),
+                "xml_filename": "unsafe.xml",
             },
         )
         self.assertEqual(response.status_code, 400)

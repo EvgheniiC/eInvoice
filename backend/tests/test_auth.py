@@ -30,6 +30,24 @@ class TestAuthDisabled(unittest.TestCase):
         names: list[str] = [str(item["name"]) for item in payload["checks"]]  # type: ignore[index]
         self.assertIn("database", names)
 
+    def test_production_accounts_refuse_sqlite(self) -> None:
+        with (
+            patch.object(settings, "database_url", "sqlite://"),
+            patch.object(settings, "auth_secret_key", "configured-secret"),
+            patch.object(settings, "environment", "production"),
+        ):
+            with self.assertRaisesRegex(RuntimeError, "PostgreSQL"):
+                init_account_store()
+
+    def test_production_accounts_refuse_default_secret(self) -> None:
+        with (
+            patch.object(settings, "database_url", "postgresql://example.invalid/einvoice"),
+            patch.object(settings, "auth_secret_key", "dev-only-change-me"),
+            patch.object(settings, "environment", "production"),
+        ):
+            with self.assertRaisesRegex(RuntimeError, "AUTH_SECRET_KEY"):
+                init_account_store()
+
 
 class TestAuthFlow(unittest.TestCase):
     def setUp(self) -> None:

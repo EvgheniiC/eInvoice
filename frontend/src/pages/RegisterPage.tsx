@@ -124,6 +124,13 @@ export function RegisterPage({
           maxLength={72}
           onChange={(event: ChangeEvent<HTMLInputElement>) => setPasswordConfirm(event.target.value)}
         />
+        <p className="page__limits">
+          Informationen zur Verarbeitung Ihrer Kontodaten finden Sie unter{' '}
+          <button type="button" className="site-footer__link" onClick={() => onNavigate('legal')}>
+            Impressum &amp; Datenschutz
+          </button>
+          .
+        </p>
         <button type="submit" className="btn btn--primary" disabled={sending}>
           {sending ? 'Bitte warten…' : 'Registrieren'}
         </button>

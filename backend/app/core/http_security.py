@@ -72,11 +72,16 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         has_session: bool = bool(request.cookies.get(settings.auth_cookie_name))
         bucket_limit: int = limit
         bucket_kind: str = "guest"
-        if has_session:
+        if request.url.path == "/api/admin" or request.url.path.startswith("/api/admin/"):
+            bucket_limit = settings.admin_rate_limit_per_minute
+            bucket_kind = "admin"
+        elif has_session:
             if settings.account_rate_limit_per_minute <= 0:
                 return await call_next(request)
             bucket_limit = settings.account_rate_limit_per_minute
             bucket_kind = "account"
+        if bucket_limit <= 0:
+            return await call_next(request)
         client: str = f"{bucket_kind}:{client_key(request)}"
         bucket: Deque[float] = self._hits[client]
         while bucket and bucket[0] < window_start:
@@ -127,9 +132,11 @@ def _is_rate_limited_path(path: str) -> bool:
 
 
 def client_key(request: Request) -> str:
-    forwarded: Optional[str] = request.headers.get("x-forwarded-for")
-    if forwarded:
-        return forwarded.split(",", 1)[0].strip() or "unknown"
-    if request.client is not None and request.client.host:
-        return request.client.host
+    peer: str = request.client.host if request.client is not None and request.client.host else "unknown"
+    if peer in settings.trusted_proxy_ips:
+        forwarded: Optional[str] = request.headers.get("x-forwarded-for")
+        if forwarded:
+            return forwarded.split(",", 1)[0].strip() or peer
+    if peer:
+        return peer
     return "unknown"

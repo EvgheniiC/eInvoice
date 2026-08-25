@@ -72,9 +72,9 @@ export const DATENSCHUTZ: LegalDocument = {
     {
       heading: '2. Welche Daten verarbeitet werden',
       paragraphs: [
-        'eInvoice arbeitet ohne Benutzerkonto. Es gibt keine Registrierung und keine ' +
-          'dauerhafte Kundenakte. Es gelten zwei Verarbeitungsmodelle; aktiv ist nur das ' +
-          'Gastmodell.',
+        'eInvoice kann ohne Benutzerkonto genutzt werden. Zusätzlich gibt es optionale ' +
+          'Konten für Organisationen. Es gelten zwei getrennte Verarbeitungsmodelle; eine ' +
+          'dauerhafte Speicherung von Rechnungsoriginalen ist in beiden Modellen nicht der Standard.',
       ],
       listItems: [
         'Gast (aktuell, ohne Konto): Hochgeladene Rechnungsdatei und daraus gelesene ' +
@@ -149,9 +149,8 @@ export const DATENSCHUTZ: LegalDocument = {
       paragraphs: [
         'eInvoice setzt ein Sitzungs-Cookie nur nach Anmeldung (httpOnly). Funnel-Zähler sind ' +
           'anonyme Zählereignisse ohne Nutzerprofil.',
-        'Die Website kann Schriftarten von Google Fonts laden. Dabei erfährt Google Ihre ' +
-          'IP-Adresse. Sobald der Dienst öffentlich ist, kann dies durch selbst gehostete ' +
-          'Schriften ersetzt oder hier konkret beschrieben werden.',
+        'Die Website verwendet lokale Systemschriftarten und lädt keine Schriftarten von ' +
+          'externen Anbietern.',
       ],
     },
     {

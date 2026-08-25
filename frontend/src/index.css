@@ -10,8 +10,8 @@
   --color-danger: #6e1f1a;
   --color-danger-bg: #f8e6e4;
   --color-focus: #1f5a3d;
-  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
-  --font-body: "Manrope", "Segoe UI", sans-serif;
+  --font-display: "Iowan Old Style", Georgia, serif;
+  --font-body: "Segoe UI", Arial, sans-serif;
 
   color: var(--color-ink);
   background:

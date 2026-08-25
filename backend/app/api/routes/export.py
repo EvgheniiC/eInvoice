@@ -8,6 +8,7 @@ from app.api.deps import get_optional_db, get_optional_org_context
 from app.core.error_events import format_safe_stack, log_api_error
 from app.core.metrics import observe_funnel
 from app.core.middleware import get_request_id
+from app.helper_functions.pdf_security import assert_pdf_safe
 from app.schemas.export import (
     EXPORT_DOCS,
     AccountantPackageRequest,
@@ -206,13 +207,9 @@ def _optional_pdf_bytes(pdf_base64: Optional[str]) -> Optional[bytes]:
         return None
     try:
         pdf_bytes: bytes = decode_pdf_base64(pdf_base64)
+        assert_pdf_safe(pdf_bytes)
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
-    if not pdf_bytes.startswith(b"%PDF"):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Die angehängte Datei ist keine gültige PDF.",
-        )
     return pdf_bytes
 
 

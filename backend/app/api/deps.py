@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Iterator, Optional
+import hmac
+from typing import Collection, Iterator, Optional
 
 from fastapi import Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session, sessionmaker
@@ -69,6 +70,16 @@ def get_current_org(
     return context
 
 
+def require_org_role(context: OrgContext, allowed_roles: Collection[str]) -> OrgContext:
+    """Reject organization actions that are outside the membership role."""
+    if context.role not in allowed_roles:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Ihre Rolle erlaubt diese Aktion nicht.",
+        )
+    return context
+
+
 def require_admin_token(request: Request) -> None:
     expected: Optional[str] = settings.admin_api_token
     if not expected:
@@ -77,5 +88,5 @@ def require_admin_token(request: Request) -> None:
             detail="Admin-API ist nicht konfiguriert.",
         )
     provided: str = request.headers.get("x-admin-token", "")
-    if provided != expected:
+    if not hmac.compare_digest(provided, expected):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Ungültiges Admin-Token.")

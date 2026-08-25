@@ -48,9 +48,10 @@ alembic upgrade head
 
 `deploy/deploy.sh` does this before restarting the API.
 
-SQLite is for tests and local development. Production readiness fails if
-accounts are enabled without Postgres, without `AUTH_SECRET_KEY`, or without
-SMTP (`EMAIL_BACKEND=smtp` plus host and from-address).
+SQLite is for tests and local development. The API refuses to start when
+production accounts are enabled without PostgreSQL or with the default
+`AUTH_SECRET_KEY`. Production readiness also fails without SMTP
+(`EMAIL_BACKEND=smtp` plus host and from-address).
 
 `EMAIL_BACKEND=log` is for local development: the confirmation URL is written
 to API logs (`auth_email_token_dev`) and is not mailed.
@@ -77,6 +78,9 @@ journalctl -u einvoice-api -n 80 --no-pager | grep auth_email
 - Reset: `POST /api/auth/reset-password` with the mailed token and a new
   password; all sessions are revoked
 - `GET /api/me` and `GET/PATCH /api/org` carry org context
+- Role matrix: `inhaber` manages organization settings and invoice workflows;
+  `buero` may parse and create batches; `export_only` may read and export
+  existing organization results but may not create new parse or batch work.
 - Org profile (Inhaber): name, Steuernummer, USt-IdNr, IBAN, Steuerberater email.
   Empty values clear the field. Invalid IBAN / USt-IdNr / email return HTTP 400.
   When set, the authenticated Steuerberater ZIP includes `mandant.txt` and a
@@ -111,6 +115,9 @@ Guest Empfang stays one file per request without login. Limits are enforced:
 | Requests / minute | `RATE_LIMIT_PER_MINUTE` (30) | `ACCOUNT_RATE_LIMIT_PER_MINUTE` (60) | 60 | 60 |
 
 Exhausted daily quota returns HTTP 429 with a German message and a Plus/Team hint.
+Admin endpoints use the separate `ADMIN_RATE_LIMIT_PER_MINUTE` limit (default 5).
+`X-Forwarded-For` is trusted only when the immediate peer is listed in
+`TRUSTED_PROXY_IPS` (localhost by default for the nginx deployment).
 Validation report download does not count as an export. Guest parse still does not
 store files. Plus batch originals live only in `BATCH_TEMP_DIR` until the package
 TTL, not in the database.

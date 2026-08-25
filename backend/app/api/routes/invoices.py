@@ -6,7 +6,12 @@ from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
-from app.api.deps import AUTH_UNAVAILABLE, get_optional_db, get_optional_org_context
+from app.api.deps import (
+    AUTH_UNAVAILABLE,
+    get_optional_db,
+    get_optional_org_context,
+    require_org_role,
+)
 from app.core.config import settings
 from app.core.error_events import format_safe_stack, log_api_error, log_event, safe_filename
 from app.core.metrics import observe_funnel
@@ -14,7 +19,7 @@ from app.core.middleware import get_request_id
 from app.schemas.batch import BatchJobResponse
 from app.schemas.history import HistoryListResponse
 from app.schemas.invoice import InvoiceParseResponse
-from app.services.auth_service import OrgContext
+from app.services.auth_service import ROLE_BUERO, ROLE_INHABER, OrgContext
 from app.services.batch_service import (
     assert_batch_package_ready,
     assert_batch_view_pdfs_ready,
@@ -32,7 +37,7 @@ from app.services.history_service import (
     require_history_plan,
 )
 from app.services.invoice_service import InvoiceService
-from app.services.quota_service import enforce_export, enforce_parse
+from app.services.quota_service import enforce_export, enforce_parse, limits_for_context
 
 router: APIRouter = APIRouter()
 invoice_service: InvoiceService = InvoiceService()
@@ -49,6 +54,8 @@ async def parse_invoice(
     Accept an XRechnung XML or ZUGFeRD PDF and return a structured parse result.
     Guest upload stays unauthenticated and does not persist the file.
     """
+    if org_context is not None:
+        require_org_role(org_context, {ROLE_INHABER, ROLE_BUERO})
     request_id: Optional[str] = get_request_id(request)
 
     if file.filename is None or file.filename.strip() == "":
@@ -65,7 +72,8 @@ async def parse_invoice(
             detail=f"Nicht unterstützter Dateityp. Erlaubt: {', '.join(settings.allowed_extensions)}",
         )
 
-    content: bytes = await file.read()
+    max_upload_bytes: int = limits_for_context(org_context).max_upload_size_mb * 1024 * 1024
+    content: bytes = await _read_upload_with_limit(file, max_upload_bytes)
     if len(content) == 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -141,6 +149,22 @@ async def parse_invoice(
     return result
 
 
+async def _read_upload_with_limit(file: UploadFile, max_bytes: int) -> bytes:
+    """Read an upload incrementally and stop before unbounded memory growth."""
+    chunks: list[bytes] = []
+    total_bytes: int = 0
+    chunk_size: int = 64 * 1024
+    while chunk := await file.read(chunk_size):
+        total_bytes += len(chunk)
+        if total_bytes > max_bytes:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail=f"Datei ist zu groß. Maximum: {max_bytes // (1024 * 1024)} MB.",
+            )
+        chunks.append(chunk)
+    return b"".join(chunks)
+
+
 @router.get("/history", response_model=HistoryListResponse)
 def get_invoice_history(
     limit: int = 50,
@@ -210,6 +234,7 @@ async def create_invoice_batch(
 ) -> BatchJobResponse:
     """Queue several XML/PDF files or one ZIP (invoice members only) for Plus/Team."""
     context: OrgContext = require_batch_plan(org_context)
+    require_org_role(context, {ROLE_INHABER, ROLE_BUERO})
     if db is None:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,

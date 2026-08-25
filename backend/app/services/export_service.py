@@ -8,11 +8,13 @@ from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+from xml.etree.ElementTree import ParseError
 
 from openpyxl import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
 
 from app.helper_functions.filenames import safe_filename_stem
+from app.helper_functions.safe_xml import parse_xml
 from app.schemas.export import (
     DATEV_COLUMNS,
     DATEV_LIMITATIONS,
@@ -253,7 +255,7 @@ class ExportService:
         ]
         header_sheet.append(["field", "value"])
         for key, value in header_rows:
-            header_sheet.append([key, value if value is not None else ""])
+            header_sheet.append([key, _spreadsheet_safe(value if value is not None else "")])
 
         lines_sheet: Worksheet = workbook.create_sheet("Lines")
         lines_sheet.append(
@@ -272,9 +274,9 @@ class ExportService:
             lines_sheet.append(
                 [
                     item.position,
-                    item.description or "",
+                    _spreadsheet_safe(item.description or ""),
                     item.quantity,
-                    item.unit or "",
+                    _spreadsheet_safe(item.unit or ""),
                     item.unit_price,
                     item.tax_rate,
                     item.net_amount,
@@ -286,7 +288,7 @@ class ExportService:
         flat_sheet.append(EXPORT_COLUMNS)
         for row in build_flat_rows(invoice):
             localized: Dict[str, Any] = _localize_csv_row(row)
-            flat_sheet.append([localized.get(col, "") for col in EXPORT_COLUMNS])
+            flat_sheet.append([_spreadsheet_safe(localized.get(col, "")) for col in EXPORT_COLUMNS])
 
         output: io.BytesIO = io.BytesIO()
         workbook.save(output)
@@ -310,7 +312,7 @@ class ExportService:
             quoting=csv.QUOTE_MINIMAL,
         )
         writer.writeheader()
-        writer.writerow(build_datev_row(invoice))
+        writer.writerow(_spreadsheet_safe_row(build_datev_row(invoice)))
         return buffer.getvalue().encode("cp1252", errors="replace")
 
     def _to_excel_many(self, invoices: List[InvoiceParseResponse]) -> bytes:
@@ -340,7 +342,7 @@ class ExportService:
         )
         for invoice in invoices:
             header_sheet.append(
-                [
+                [_spreadsheet_safe(value) for value in [
                     invoice.invoice_number or "",
                     _de_date(invoice.issue_date) or invoice.issue_date or "",
                     _de_date(invoice.due_date) or invoice.due_date or "",
@@ -355,7 +357,7 @@ class ExportService:
                     invoice.payment_reference or "",
                     invoice.filename,
                     invoice.validation_status.value,
-                ]
+                ]]
             )
 
         lines_sheet: Worksheet = workbook.create_sheet("Lines")
@@ -376,7 +378,7 @@ class ExportService:
             number: str = invoice.invoice_number or ""
             for item in invoice.line_items:
                 lines_sheet.append(
-                    [
+                    [_spreadsheet_safe(value) for value in [
                         number,
                         item.position,
                         item.description or "",
@@ -386,7 +388,7 @@ class ExportService:
                         item.tax_rate,
                         item.net_amount,
                         item.gross_amount,
-                    ]
+                    ]]
                 )
 
         flat_sheet: Worksheet = workbook.create_sheet("Flat")
@@ -394,7 +396,9 @@ class ExportService:
         for invoice in invoices:
             for row in build_flat_rows(invoice):
                 localized: Dict[str, Any] = _localize_csv_row(row)
-                flat_sheet.append([localized.get(col, "") for col in EXPORT_COLUMNS])
+                flat_sheet.append(
+                    [_spreadsheet_safe(localized.get(col, "")) for col in EXPORT_COLUMNS]
+                )
 
         output: io.BytesIO = io.BytesIO()
         workbook.save(output)
@@ -412,7 +416,7 @@ class ExportService:
         )
         writer.writeheader()
         for invoice in invoices:
-            writer.writerow(build_datev_row(invoice))
+            writer.writerow(_spreadsheet_safe_row(build_datev_row(invoice)))
         return buffer.getvalue().encode("cp1252", errors="replace")
 
 
@@ -894,10 +898,12 @@ def decode_pdf_base64(value: str) -> bytes:
 
 
 def assert_xml_bytes(data: bytes) -> None:
-    """Reject payloads that are clearly not XML."""
-    stripped: bytes = data.lstrip(b"\xef\xbb\xbf \t\r\n")
-    if not stripped.startswith(b"<"):
-        raise ValueError("Die angehängte Datei ist kein gültiges XML.")
+    """Reject malformed or unsafe XML before it enters an accountant package."""
+    try:
+        xml_text: str = data.decode("utf-8-sig")
+        parse_xml(xml_text)
+    except (UnicodeDecodeError, ValueError, ParseError) as exc:
+        raise ValueError("Die angehängte Datei ist kein gültiges oder sicheres XML.") from exc
 
 
 def _extract_xml_from_zugferd(pdf_bytes: bytes) -> Optional[bytes]:
@@ -991,7 +997,21 @@ def _localize_csv_row(row: Dict[str, Any]) -> Dict[str, Any]:
             localized[amount_field] = ""
         else:
             localized[amount_field] = str(raw).replace(".", ",")
-    return localized
+    return _spreadsheet_safe_row(localized)
+
+
+def _spreadsheet_safe_row(row: Dict[str, Any]) -> Dict[str, Any]:
+    """Neutralize user-controlled spreadsheet formulas in CSV and XLSX cells."""
+    return {key: _spreadsheet_safe(value) for key, value in row.items()}
+
+
+def _spreadsheet_safe(value: Any) -> Any:
+    if not isinstance(value, str):
+        return value
+    candidate: str = value.lstrip()
+    if candidate.startswith(("=", "+", "-", "@")):
+        return f"'{value}"
+    return value
 
 
 def _num_str(value: Optional[Decimal]) -> str:

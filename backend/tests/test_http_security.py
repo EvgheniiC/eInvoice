@@ -7,8 +7,10 @@ from typing import Callable, Optional
 from unittest.mock import MagicMock, patch
 
 from fastapi.testclient import TestClient
+from starlette.requests import Request
 
 from app.core.config import settings
+from app.core.http_security import client_key
 from app.main import create_app
 from app.services.en16931_validator import build_kosit_command, kosit_preexec_fn
 
@@ -57,6 +59,34 @@ class TestRateLimit(unittest.TestCase):
             second = client.get("/api/health")
         self.assertEqual(first.status_code, 200)
         self.assertEqual(second.status_code, 200)
+
+    def test_admin_uses_dedicated_stricter_limit(self) -> None:
+        with (
+            patch.object(settings, "rate_limit_per_minute", 30),
+            patch.object(settings, "admin_rate_limit_per_minute", 2),
+        ):
+            client: TestClient = TestClient(create_app())
+            first = client.post("/api/admin/plans", json={})
+            second = client.post("/api/admin/plans", json={})
+            third = client.post("/api/admin/plans", json={})
+        self.assertNotEqual(first.status_code, 429)
+        self.assertNotEqual(second.status_code, 429)
+        self.assertEqual(third.status_code, 429)
+
+    def test_forwarded_ip_is_ignored_from_untrusted_peer(self) -> None:
+        request: Request = Request(
+            {
+                "type": "http",
+                "method": "GET",
+                "path": "/",
+                "headers": [(b"x-forwarded-for", b"198.51.100.8")],
+                "client": ("203.0.113.5", 12345),
+                "server": ("test", 80),
+                "scheme": "http",
+                "query_string": b"",
+            }
+        )
+        self.assertEqual(client_key(request), "203.0.113.5")
 
 
 class TestKositHardening(unittest.TestCase):

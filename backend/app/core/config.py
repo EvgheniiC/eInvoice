@@ -24,10 +24,12 @@ class Settings(BaseSettings):
         "http://127.0.0.1:5173",
     ]
     cors_allow_credentials: bool = True
+    trusted_proxy_ips: List[str] = ["127.0.0.1", "::1"]
     max_upload_size_mb: int = 10
     allowed_extensions: List[str] = [".xml", ".pdf"]
     # 0 disables the in-app limiter (nginx limit_req remains the edge control).
     rate_limit_per_minute: int = 30
+    admin_rate_limit_per_minute: int = 5
     # Authenticated requests use this ceiling when a session cookie is present.
     # 0 means no extra in-app limit for accounts (guest limit still applies to guests).
     account_rate_limit_per_minute: int = 60
