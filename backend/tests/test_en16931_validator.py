@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import subprocess
+import tempfile
 import unittest
 from decimal import Decimal
-from unittest.mock import patch
+from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 from app.schemas.invoice import (
     InvoiceParseResponse,
@@ -15,7 +18,7 @@ from app.schemas.invoice import (
     ValidationIssue,
     ValidationStatus,
 )
-from app.services.en16931_validator import ValidationResult, validate_invoice
+from app.services.en16931_validator import KositRunResult, ValidationResult, _run_kosit, validate_invoice
 from app.services.validation_profile import InvoiceProfile, extract_invoice_profile
 
 
@@ -128,6 +131,35 @@ class TestEn16931Validator(unittest.TestCase):
         self.assertTrue(
             any(issue.code == "KOSIT_REQUIRED_UNAVAILABLE" for issue in result.issues)
         )
+
+    def test_kosit_process_does_not_inherit_stdin(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            jar_path: Path = Path(tmp_dir) / "validator-1.6.3.jar"
+            scenarios_path: Path = Path(tmp_dir) / "scenarios.xml"
+            jar_path.write_bytes(b"jar")
+            scenarios_path.write_text("<scenarios/>", encoding="utf-8")
+
+            run_mock: MagicMock
+            with (
+                patch("app.services.en16931_validator.settings") as mock_settings,
+                patch("app.services.en16931_validator.subprocess.run") as run_mock,
+            ):
+                mock_settings.kosit_validator_jar = str(jar_path)
+                mock_settings.kosit_scenarios_xml = str(scenarios_path)
+                mock_settings.kosit_java_bin = "/usr/bin/java"
+                mock_settings.kosit_java_max_heap_mb = 512
+                mock_settings.kosit_timeout_seconds = 60
+                run_mock.return_value = subprocess.CompletedProcess(
+                    args=[],
+                    returncode=0,
+                    stdout="",
+                    stderr="",
+                )
+
+                result: KositRunResult = _run_kosit(_XR_XML)
+
+            self.assertTrue(result.completed)
+            self.assertIs(run_mock.call_args.kwargs["stdin"], subprocess.DEVNULL)
 
 
 if __name__ == "__main__":

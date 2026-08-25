@@ -324,6 +324,7 @@ def _run_kosit(
             )
             run_kwargs: Dict[str, Any] = {
                 "capture_output": True,
+                "stdin": subprocess.DEVNULL,
                 "text": True,
                 "timeout": settings.kosit_timeout_seconds,
                 "check": False,
