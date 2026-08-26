@@ -78,6 +78,9 @@ class Settings(BaseSettings):
     zip_max_listed_entries: int = 200
     zip_max_uncompressed_mb: int = 200
     public_app_url: str = "http://localhost:5173"
+    # stub = simulated Checkout return until Stripe/Mollie keys exist.
+    billing_provider: str = "stub"
+    billing_checkout_minutes: int = 30
     email_backend: str = "log"
     smtp_host: Optional[str] = None
     smtp_port: int = 587

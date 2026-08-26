@@ -297,6 +297,7 @@ developer-API против [rechnungsapi.de](https://www.rechnungsapi.de).
 - [x] Публичная страница тарифов Free / Plus / Team с честным списком доступных функций.
 - [x] Контекстный paywall и CTA на тарифы для batch, history и исчерпанных квот.
 - [x] Заявка на ручное подключение Plus / Team до интеграции автоматической оплаты.
+- [x] Заглушка Checkout: возврат на `/tarife` применяет тариф без реальной оплаты.
 - [ ] Stripe Billing или Mollie (DE/VAT): месяц / год, счета.
 - [ ] Webhook → `plan`, `seats`, `status` (active / past_due / canceled).
 - [ ] Customer portal: карта, отмена, invoices.

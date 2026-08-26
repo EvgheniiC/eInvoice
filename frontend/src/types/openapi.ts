@@ -34,6 +34,24 @@ export interface components {
       view_pdf_package_available: boolean;
     };
     BatchJobStatus: "queued" | "processing" | "completed";
+    BillingCheckoutCreate: {
+      requested_plan: "plus" | "team";
+    };
+    BillingCheckoutResponse: {
+      checkout_url: string;
+      session_id: string;
+      provider: string;
+    };
+    BillingCompleteRequest: {
+      session: string;
+    };
+    BillingCompleteResponse: {
+      accepted: boolean;
+      provider: string;
+      plan_code: string;
+      plan_name: string;
+      message: string;
+    };
     Body_create_invoice_batch_api_invoices_batch_post: {
       files: string[];
     };

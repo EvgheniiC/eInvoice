@@ -371,7 +371,13 @@ def set_plan_for_email(session: Session, *, email: str, plan_code: str) -> Organ
     return set_plan(session, organization_id=membership.organization_id, plan_code=plan_code)
 
 
-def set_plan(session: Session, *, organization_id: UUID, plan_code: str) -> Organization:
+def set_plan(
+    session: Session,
+    *,
+    organization_id: UUID,
+    plan_code: str,
+    source: str = "manual",
+) -> Organization:
     plan: Plan = _require_plan(session, plan_code)
     organization: Optional[Organization] = session.get(Organization, organization_id)
     if organization is None:
@@ -380,8 +386,12 @@ def set_plan(session: Session, *, organization_id: UUID, plan_code: str) -> Orga
     session.commit()
     log_event(
         logging.INFO,
-        "plan_set_manual",
-        fields={"organization_id": str(organization_id), "plan": plan_code},
+        "plan_set",
+        fields={
+            "organization_id": str(organization_id),
+            "plan": plan_code,
+            "source": source,
+        },
     )
     return organization
 

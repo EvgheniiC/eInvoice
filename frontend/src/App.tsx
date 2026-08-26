@@ -20,6 +20,7 @@ import './App.css'
 
 function App(): JSX.Element {
   const [route, setRoute] = useState<AppRoute>(() => pathToRoute(window.location.pathname))
+  const [locationSearch, setLocationSearch] = useState<string>(() => window.location.search)
   const [session, setSession] = useState<MeResponse | null>(null)
   const [loginNotice, setLoginNotice] = useState<string | null>(null)
   const [loginEmail, setLoginEmail] = useState<string>('')
@@ -29,6 +30,7 @@ function App(): JSX.Element {
   useEffect(() => {
     function onPopState(): void {
       setRoute(pathToRoute(window.location.pathname))
+      setLocationSearch(window.location.search)
     }
     window.addEventListener('popstate', onPopState)
     return () => {
@@ -56,12 +58,15 @@ function App(): JSX.Element {
   }, [route])
 
   function navigate(next: AppRoute, query: string = ''): void {
-    const path: string = `${routeToPath(next)}${query}`
+    const normalizedQuery: string =
+      query === '' ? '' : query.startsWith('?') ? query : `?${query}`
+    const path: string = `${routeToPath(next)}${normalizedQuery}`
     const current: string = `${window.location.pathname}${window.location.search}`
     if (current !== path) {
       window.history.pushState(null, '', path)
     }
     window.scrollTo(0, 0)
+    setLocationSearch(normalizedQuery)
     setRoute(next)
   }
 
@@ -198,6 +203,8 @@ function App(): JSX.Element {
         <PricingPage
           onNavigate={navigate}
           session={session}
+          onSession={setSession}
+          locationSearch={locationSearch}
           onLogout={() => {
             void handleLogout()
           }}

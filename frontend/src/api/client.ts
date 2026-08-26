@@ -14,6 +14,8 @@ import type {
   MessageResponse,
   OrgResponse,
   PlanUpgradeRequestResponse,
+  BillingCheckoutResponse,
+  BillingCompleteResponse,
   RegisterResponse,
   ValidationReportRequest,
   ViewPdfRequest,
@@ -520,6 +522,38 @@ export async function createPlanRequest(
     throw new Error(await readErrorDetail(response, 'Tarifanfrage konnte nicht gesendet werden.'))
   }
   return response.json() as Promise<PlanUpgradeRequestResponse>
+}
+
+export async function createBillingCheckout(
+  requestedPlan: 'plus' | 'team',
+): Promise<BillingCheckoutResponse> {
+  const response: Response = await fetch(
+    `${API_BASE}/billing/checkout`,
+    withRequestId({
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ requested_plan: requestedPlan }),
+    }),
+  )
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response, 'Zahlung konnte nicht gestartet werden.'))
+  }
+  return response.json() as Promise<BillingCheckoutResponse>
+}
+
+export async function completeBillingCheckout(sessionToken: string): Promise<BillingCompleteResponse> {
+  const response: Response = await fetch(
+    `${API_BASE}/billing/complete`,
+    withRequestId({
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session: sessionToken }),
+    }),
+  )
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response, 'Zahlung konnte nicht bestätigt werden.'))
+  }
+  return response.json() as Promise<BillingCompleteResponse>
 }
 
 export async function downloadHistoryAccountantPackage(recordId: string): Promise<void> {

@@ -49,6 +49,8 @@ export type HistoryItemStatus = HistoryItemResponse['status']
 
 export type PlanUpgradeRequestResponse = Schemas['PlanRequestResponse']
 export type PlanUpgradeRequestStatus = PlanUpgradeRequestResponse['status']
+export type BillingCheckoutResponse = Schemas['BillingCheckoutResponse']
+export type BillingCompleteResponse = Schemas['BillingCompleteResponse']
 
 /** UI helper: FastAPI serializes decimals as strings; Number() also accepts number. */
 export type DecimalValue = string | number

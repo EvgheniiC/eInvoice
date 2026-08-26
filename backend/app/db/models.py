@@ -25,6 +25,7 @@ from app.core.clock import utc_now
 
 PlanUpgradeCode = Literal["plus", "team"]
 PlanUpgradeStatus = Literal["pending", "approved", "rejected"]
+BillingCheckoutStatus = Literal["pending", "completed", "expired"]
 
 
 class Base(DeclarativeBase):
@@ -100,6 +101,10 @@ class Organization(Base):
         cascade="all, delete-orphan",
     )
     plan_upgrade_requests: Mapped[list["PlanUpgradeRequest"]] = relationship(
+        back_populates="organization",
+        cascade="all, delete-orphan",
+    )
+    billing_checkouts: Mapped[list["BillingCheckoutSession"]] = relationship(
         back_populates="organization",
         cascade="all, delete-orphan",
     )
@@ -216,6 +221,41 @@ class PlanUpgradeRequest(Base):
 
     organization: Mapped["Organization"] = relationship(back_populates="plan_upgrade_requests")
     requested_by_user: Mapped["User"] = relationship(back_populates="plan_upgrade_requests")
+
+
+class BillingCheckoutSession(Base):
+    """One Checkout attempt. Stub today; Stripe session id later."""
+
+    __tablename__: str = "billing_checkout_sessions"
+    __table_args__ = (
+        CheckConstraint(
+            "requested_plan IN ('plus', 'team')",
+            name="ck_billing_checkout_plan",
+        ),
+        CheckConstraint(
+            "status IN ('pending', 'completed', 'expired')",
+            name="ck_billing_checkout_status",
+        ),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    organization_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("organizations.id", ondelete="CASCADE"),
+        index=True,
+    )
+    requested_by_user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        index=True,
+    )
+    requested_plan: Mapped[PlanUpgradeCode] = mapped_column(String(16), index=True)
+    status: Mapped[BillingCheckoutStatus] = mapped_column(String(16), index=True, default="pending")
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    provider: Mapped[str] = mapped_column(String(16), default="stub")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    organization: Mapped["Organization"] = relationship(back_populates="billing_checkouts")
 
 
 class BatchJob(Base):

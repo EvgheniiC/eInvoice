@@ -803,6 +803,88 @@
         }
       }
     },
+    "/api/billing/checkout": {
+      "post": {
+        "tags": [
+          "billing"
+        ],
+        "summary": "Post Billing Checkout",
+        "operationId": "post_billing_checkout_api_billing_checkout_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BillingCheckoutCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingCheckoutResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/billing/complete": {
+      "post": {
+        "tags": [
+          "billing"
+        ],
+        "summary": "Post Billing Complete",
+        "operationId": "post_billing_complete_api_billing_complete_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BillingCompleteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingCompleteResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/organizations/{organization_id}/plan": {
       "post": {
         "tags": [
@@ -1616,6 +1698,96 @@
           "completed"
         ],
         "title": "BatchJobStatus"
+      },
+      "BillingCheckoutCreate": {
+        "properties": {
+          "requested_plan": {
+            "type": "string",
+            "enum": [
+              "plus",
+              "team"
+            ],
+            "title": "Requested Plan"
+          }
+        },
+        "type": "object",
+        "required": [
+          "requested_plan"
+        ],
+        "title": "BillingCheckoutCreate"
+      },
+      "BillingCheckoutResponse": {
+        "properties": {
+          "checkout_url": {
+            "type": "string",
+            "title": "Checkout Url"
+          },
+          "session_id": {
+            "type": "string",
+            "title": "Session Id"
+          },
+          "provider": {
+            "type": "string",
+            "const": "stub",
+            "title": "Provider"
+          }
+        },
+        "type": "object",
+        "required": [
+          "checkout_url",
+          "session_id",
+          "provider"
+        ],
+        "title": "BillingCheckoutResponse"
+      },
+      "BillingCompleteRequest": {
+        "properties": {
+          "session": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 8,
+            "title": "Session"
+          }
+        },
+        "type": "object",
+        "required": [
+          "session"
+        ],
+        "title": "BillingCompleteRequest"
+      },
+      "BillingCompleteResponse": {
+        "properties": {
+          "accepted": {
+            "type": "boolean",
+            "title": "Accepted"
+          },
+          "provider": {
+            "type": "string",
+            "const": "stub",
+            "title": "Provider"
+          },
+          "plan_code": {
+            "type": "string",
+            "title": "Plan Code"
+          },
+          "plan_name": {
+            "type": "string",
+            "title": "Plan Name"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "accepted",
+          "provider",
+          "plan_code",
+          "plan_name",
+          "message"
+        ],
+        "title": "BillingCompleteResponse"
       },
       "Body_create_invoice_batch_api_invoices_batch_post": {
         "properties": {

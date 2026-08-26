@@ -1,28 +1,73 @@
-import { useState, type JSX } from 'react'
-import { createPlanRequest } from '../api/client'
+import { useEffect, useRef, useState, type JSX, type RefObject } from 'react'
+import { completeBillingCheckout, createBillingCheckout, fetchMe } from '../api/client'
 import { PageNav } from '../components/PageNav'
 import { SiteFooter } from '../components/SiteFooter'
 import { PLAN_RANK, PUBLIC_PLANS, type PublicPlan, type PublicPlanCode } from '../content/plans'
 import type { AppRoute } from '../routing'
-import type { MeResponse, PlanUpgradeRequestResponse } from '../types/invoice'
+import type { BillingCheckoutResponse, BillingCompleteResponse, MeResponse } from '../types/invoice'
 
 type PricingPageProps = {
-  onNavigate: (route: AppRoute) => void
+  onNavigate: (route: AppRoute, query?: string) => void
   session: MeResponse | null
+  onSession: (session: MeResponse | null) => void
+  locationSearch: string
   onLogout: () => void
 }
 
 export function PricingPage({
   onNavigate,
   session,
+  onSession,
+  locationSearch,
   onLogout,
 }: PricingPageProps): JSX.Element {
   const [requestingPlan, setRequestingPlan] = useState<PublicPlanCode | null>(null)
+  const [completing, setCompleting] = useState<boolean>(false)
   const [info, setInfo] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const completingRef: RefObject<string | null> = useRef<string | null>(null)
   const currentPlan: PublicPlanCode | null = toPublicPlanCode(session?.plan.code)
 
-  async function requestPlan(planCode: PublicPlanCode): Promise<void> {
+  useEffect(() => {
+    const params: URLSearchParams = new URLSearchParams(
+      locationSearch.startsWith('?') ? locationSearch.slice(1) : locationSearch,
+    )
+    if (params.get('checkout') !== 'success') {
+      return
+    }
+    const sessionToken: string | null = params.get('session')
+    if (sessionToken === null || sessionToken.length < 8) {
+      return
+    }
+    if (session === null) {
+      onNavigate('login')
+      return
+    }
+    if (completingRef.current === sessionToken) {
+      return
+    }
+    completingRef.current = sessionToken
+    setCompleting(true)
+    setError(null)
+    void completeBillingCheckout(sessionToken)
+      .then(async (result: BillingCompleteResponse): Promise<void> => {
+        const nextSession: MeResponse | null = await fetchMe()
+        if (nextSession !== null) {
+          onSession(nextSession)
+        }
+        setInfo(result.message)
+        onNavigate('pricing')
+      })
+      .catch((err: unknown): void => {
+        completingRef.current = null
+        setError(err instanceof Error ? err.message : 'Zahlung konnte nicht bestätigt werden.')
+      })
+      .finally((): void => {
+        setCompleting(false)
+      })
+  }, [locationSearch, session, onNavigate, onSession])
+
+  async function startCheckout(planCode: PublicPlanCode): Promise<void> {
     if (session === null) {
       onNavigate('register')
       return
@@ -34,14 +79,11 @@ export function PricingPage({
     setInfo(null)
     setError(null)
     try {
-      const request: PlanUpgradeRequestResponse = await createPlanRequest(planCode)
-      setInfo(
-        request.status === 'pending'
-          ? `Ihre Anfrage für ${planName(planCode)} ist eingegangen. Wir melden uns per E-Mail.`
-          : `Ihre Anfrage für ${planName(planCode)} wurde aktualisiert.`,
-      )
+      const checkout: BillingCheckoutResponse = await createBillingCheckout(planCode)
+      const url: URL = new URL(checkout.checkout_url, window.location.origin)
+      onNavigate('pricing', url.search)
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Tarifanfrage konnte nicht gesendet werden.')
+      setError(err instanceof Error ? err.message : 'Zahlung konnte nicht gestartet werden.')
     } finally {
       setRequestingPlan(null)
     }
@@ -66,7 +108,7 @@ export function PricingPage({
       <div className="pricing-grid">
         {PUBLIC_PLANS.map((plan: PublicPlan) => {
           const isCurrent: boolean = currentPlan === plan.code
-          const canRequest: boolean =
+          const canUpgrade: boolean =
             session !== null &&
             session.role === 'inhaber' &&
             currentPlan !== null &&
@@ -100,17 +142,17 @@ export function PricingPage({
                   Konto erstellen
                 </button>
               ) : session.role !== 'inhaber' ? (
-                <p className="page__limits">Nur der Inhaber kann einen Tarif anfragen.</p>
-              ) : canRequest ? (
+                <p className="page__limits">Nur der Inhaber kann den Tarif wechseln.</p>
+              ) : canUpgrade ? (
                 <button
                   type="button"
                   className="btn btn--primary"
-                  disabled={requestingPlan !== null}
+                  disabled={requestingPlan !== null || completing}
                   onClick={() => {
-                    void requestPlan(plan.code)
+                    void startCheckout(plan.code)
                   }}
                 >
-                  {requestingPlan === plan.code ? 'Anfrage wird gesendet…' : 'Freischaltung anfragen'}
+                  {requestingPlan === plan.code ? 'Weiterleitung…' : 'Jetzt upgraden'}
                 </button>
               ) : null}
             </section>
@@ -119,12 +161,25 @@ export function PricingPage({
       </div>
 
       <p className="pricing-note">
-        Einführungspreise pro Monat zuzüglich gesetzlicher Umsatzsteuer. Plus und Team werden
-        derzeit manuell freigeschaltet; es findet noch keine automatische Zahlung statt.
+        Einführungspreise pro Monat zuzüglich gesetzlicher Umsatzsteuer. Die Zahlung ist noch eine
+        Test-Rückkehr ohne echte Abbuchung: nach der Bestätigung wechselt der Tarif automatisch.
         Rechnungsdateien werden nur mit Ihrer ausdrücklichen Zustimmung gespeichert.
       </p>
-      {info ? <p className="status status--info" role="status">{info}</p> : null}
-      {error ? <p className="status status--error" role="alert">{error}</p> : null}
+      {completing ? (
+        <p className="status status--info" role="status">
+          Zahlung wird bestätigt…
+        </p>
+      ) : null}
+      {info ? (
+        <p className="status status--info" role="status">
+          {info}
+        </p>
+      ) : null}
+      {error ? (
+        <p className="status status--error" role="alert">
+          {error}
+        </p>
+      ) : null}
       <SiteFooter onNavigate={onNavigate} />
     </main>
   )
@@ -135,8 +190,4 @@ function toPublicPlanCode(value: string | undefined): PublicPlanCode | null {
     return value
   }
   return null
-}
-
-function planName(code: PublicPlanCode): string {
-  return PUBLIC_PLANS.find((plan: PublicPlan): boolean => plan.code === code)?.name ?? code
 }
