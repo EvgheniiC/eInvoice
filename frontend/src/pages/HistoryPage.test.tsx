@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import type { UserEvent } from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { downloadHistoryAccountantPackage, fetchInvoiceHistory } from '../api/client'
+import type { AppRoute } from '../routing'
 import { buildSession } from '../test/fixtures'
 import type { HistoryListResponse } from '../types/invoice'
 import { HistoryPage } from './HistoryPage'
@@ -48,6 +49,23 @@ describe('HistoryPage', (): void => {
     expect(screen.getByRole('heading', { name: 'Verlauf' })).toBeInTheDocument()
     expect(screen.getByText('Bitte zuerst anmelden.')).toBeInTheDocument()
     expect(screen.getAllByRole('button', { name: 'Anmelden' }).length).toBeGreaterThan(0)
+  })
+
+  it('points Free users to the Plus tariff', async (): Promise<void> => {
+    const user: UserEvent = userEvent.setup()
+    const onNavigate: (route: AppRoute) => void = vi.fn()
+    render(
+      <HistoryPage
+        onNavigate={onNavigate}
+        session={buildSession()}
+        onLogout={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByText(/Verlauf ist in Plus enthalten/)).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Plus ansehen' }))
+    expect(onNavigate).toHaveBeenCalledWith('pricing')
+    expect(fetchInvoiceHistory).not.toHaveBeenCalled()
   })
 
   it('points Plus users to org settings when history is off', async (): Promise<void> => {

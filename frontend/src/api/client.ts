@@ -13,6 +13,7 @@ import type {
   MeResponse,
   MessageResponse,
   OrgResponse,
+  PlanUpgradeRequestResponse,
   RegisterResponse,
   ValidationReportRequest,
   ViewPdfRequest,
@@ -501,6 +502,24 @@ export async function fetchInvoiceHistory(
     throw new Error(await readErrorDetail(response, 'Verlauf nicht verfügbar.'))
   }
   return response.json() as Promise<HistoryListResponse>
+}
+
+export async function createPlanRequest(
+  requestedPlan: 'plus' | 'team',
+  message: string | null = null,
+): Promise<PlanUpgradeRequestResponse> {
+  const response: Response = await fetch(
+    `${API_BASE}/plan-requests`,
+    withRequestId({
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ requested_plan: requestedPlan, message }),
+    }),
+  )
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response, 'Tarifanfrage konnte nicht gesendet werden.'))
+  }
+  return response.json() as Promise<PlanUpgradeRequestResponse>
 }
 
 export async function downloadHistoryAccountantPackage(recordId: string): Promise<void> {

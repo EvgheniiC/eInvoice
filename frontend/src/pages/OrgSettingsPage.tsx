@@ -276,6 +276,11 @@ export function OrgSettingsPage({
           <li>{quotaHint}</li>
         </ul>
         <p className="page__limits">{upgradeHint}</p>
+        {session.plan.code !== 'team' ? (
+          <button type="button" className="btn btn--secondary" onClick={() => onNavigate('pricing')}>
+            Tarife vergleichen
+          </button>
+        ) : null}
       </section>
 
       {session.plan.allows_history ? (

@@ -4,12 +4,27 @@ from __future__ import annotations
 
 import uuid
 from datetime import date, datetime
-from typing import Optional
+from typing import Literal, Optional
 
-from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, JSON, String, UniqueConstraint
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    Date,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    JSON,
+    String,
+    UniqueConstraint,
+    text,
+)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from app.core.clock import utc_now
+
+PlanUpgradeCode = Literal["plus", "team"]
+PlanUpgradeStatus = Literal["pending", "approved", "rejected"]
 
 
 class Base(DeclarativeBase):
@@ -50,6 +65,9 @@ class User(Base):
 
     memberships: Mapped[list["Membership"]] = relationship(back_populates="user")
     sessions: Mapped[list["AuthSession"]] = relationship(back_populates="user")
+    plan_upgrade_requests: Mapped[list["PlanUpgradeRequest"]] = relationship(
+        back_populates="requested_by_user"
+    )
 
 
 class Organization(Base):
@@ -78,6 +96,10 @@ class Organization(Base):
         cascade="all, delete-orphan",
     )
     history_records: Mapped[list["InvoiceHistory"]] = relationship(
+        back_populates="organization",
+        cascade="all, delete-orphan",
+    )
+    plan_upgrade_requests: Mapped[list["PlanUpgradeRequest"]] = relationship(
         back_populates="organization",
         cascade="all, delete-orphan",
     )
@@ -148,6 +170,52 @@ class UsageCounter(Base):
     usage_date: Mapped[date] = mapped_column(Date, index=True)
     action: Mapped[str] = mapped_column(String(16))
     count: Mapped[int] = mapped_column(Integer, default=0)
+
+
+class PlanUpgradeRequest(Base):
+    """Manual request for an organization subscription upgrade."""
+
+    __tablename__: str = "plan_upgrade_requests"
+    __table_args__ = (
+        CheckConstraint(
+            "requested_plan IN ('plus', 'team')",
+            name="ck_plan_upgrade_requests_plan",
+        ),
+        CheckConstraint(
+            "status IN ('pending', 'approved', 'rejected')",
+            name="ck_plan_upgrade_requests_status",
+        ),
+        Index(
+            "uq_plan_upgrade_requests_pending_org_plan",
+            "organization_id",
+            "requested_plan",
+            unique=True,
+            postgresql_where=text("status = 'pending'"),
+            sqlite_where=text("status = 'pending'"),
+        ),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    organization_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("organizations.id", ondelete="CASCADE"),
+        index=True,
+    )
+    requested_by_user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        index=True,
+    )
+    requested_plan: Mapped[PlanUpgradeCode] = mapped_column(String(16), index=True)
+    status: Mapped[PlanUpgradeStatus] = mapped_column(String(16), index=True, default="pending")
+    message: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utc_now,
+        onupdate=utc_now,
+    )
+
+    organization: Mapped["Organization"] = relationship(back_populates="plan_upgrade_requests")
+    requested_by_user: Mapped["User"] = relationship(back_populates="plan_upgrade_requests")
 
 
 class BatchJob(Base):

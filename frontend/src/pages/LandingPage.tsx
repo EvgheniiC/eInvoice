@@ -95,6 +95,21 @@ export function LandingPage({
         </div>
       </section>
 
+      <section className="landing-section" aria-labelledby="pricing-heading">
+        <h2 id="pricing-heading" className="landing-section__title">
+          Kostenlos starten, bei Bedarf im Stapel arbeiten
+        </h2>
+        <p className="landing-section__lead">
+          Einzelne Rechnungen bleiben ohne Registrierung kostenlos. Plus und Team bieten Batch,
+          Verlauf, Duplikate und höhere Kontingente.
+        </p>
+        <div className="landing-section__cta">
+          <button type="button" className="btn btn--secondary" onClick={() => onNavigate('pricing')}>
+            Tarife vergleichen
+          </button>
+        </div>
+      </section>
+
       <section className="landing-section" aria-labelledby="elster-heading">
         <h2 id="elster-heading" className="landing-section__title">
           Nicht ELSTER — sondern der lesbare Rechnungseingang

@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { UserEvent } from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { downloadViewPdf } from '../api/client'
+import { downloadViewPdf, exportInvoice } from '../api/client'
 import { InvoiceView } from './InvoiceView'
 import { buildInvoice, buildInvalidInvoice } from '../test/fixtures'
 import type { InvoiceParseResponse } from '../types/invoice'
@@ -72,5 +72,22 @@ describe('InvoiceView', (): void => {
 
     await user.click(screen.getByRole('button', { name: 'Lesbare PDF herunterladen' }))
     expect(downloadViewPdf).toHaveBeenCalledWith(invoice)
+  })
+
+  it('offers an upgrade when the export quota is exhausted', async (): Promise<void> => {
+    const user: UserEvent = userEvent.setup()
+    const onUpgrade: () => void = vi.fn()
+    vi.mocked(exportInvoice).mockRejectedValue(
+      new Error('Tageskontingent erreicht. Bitte Tarif wechseln.'),
+    )
+    render(<InvoiceView invoice={buildInvoice()} onUpgrade={onUpgrade} />)
+
+    await user.click(screen.getByRole('button', { name: 'CSV' }))
+    const upgradeButton: HTMLElement = await screen.findByRole('button', {
+      name: 'Höhere Kontingente ansehen',
+    })
+    await user.click(upgradeButton)
+
+    expect(onUpgrade).toHaveBeenCalledTimes(1)
   })
 })

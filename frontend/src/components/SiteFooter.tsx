@@ -10,6 +10,9 @@ export function SiteFooter({ onNavigate }: SiteFooterProps): JSX.Element {
     <footer className="site-footer">
       {onNavigate ? (
         <nav className="site-footer__nav" aria-label="Fußzeile">
+          <button type="button" className="site-footer__link" onClick={() => onNavigate('pricing')}>
+            Tarife
+          </button>
           <button type="button" className="site-footer__link" onClick={() => onNavigate('help')}>
             Hilfe &amp; FAQ
           </button>

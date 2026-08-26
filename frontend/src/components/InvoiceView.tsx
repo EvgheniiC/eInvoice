@@ -25,6 +25,7 @@ type FieldState = 'ok' | 'missing' | 'error' | 'mismatch'
 interface InvoiceViewProps {
   invoice: InvoiceParseResponse
   sourceFile?: File | null
+  onUpgrade?: () => void
 }
 
 function formatAmount(value: DecimalValue | null | undefined, currency: string | null): string {
@@ -346,7 +347,11 @@ function PartyBlock({
   )
 }
 
-export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps): JSX.Element {
+export function InvoiceView({
+  invoice,
+  sourceFile = null,
+  onUpgrade,
+}: InvoiceViewProps): JSX.Element {
   const currency: string | null = invoice.totals?.currency ?? null
   const [exportError, setExportError] = useState<string | null>(null)
   const [exporting, setExporting] = useState<ExportAction | null>(null)
@@ -664,9 +669,16 @@ export function InvoiceView({ invoice, sourceFile = null }: InvoiceViewProps): J
           Lieferanten oder Steuerberater.
         </p>
         {exportError && (
-          <p className="status status--error" role="alert">
-            {exportError}
-          </p>
+          <>
+            <p className="status status--error" role="alert">
+              {exportError}
+            </p>
+            {onUpgrade !== undefined && /(Kontingent|Tarif|Plus|Limit)/i.test(exportError) ? (
+              <button type="button" className="btn btn--secondary" onClick={onUpgrade}>
+                Höhere Kontingente ansehen
+              </button>
+            ) : null}
+          </>
         )}
       </div>
 

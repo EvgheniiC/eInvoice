@@ -37,6 +37,15 @@ export function seoForPath(pathname: string): SeoPage {
       robots: 'index,follow',
     }
   }
+  if (path === '/tarife') {
+    return {
+      title: 'Tarife für XRechnung und ZUGFeRD | eInvoice',
+      description:
+        'Free, Plus und Team für XRechnung und ZUGFeRD: einzelne Rechnungen kostenlos oder Batch, Verlauf und höhere Kontingente.',
+      canonicalPath: '/tarife',
+      robots: 'index,follow',
+    }
+  }
   if (path === '/impressum') {
     return {
       title: 'Impressum | eInvoice',

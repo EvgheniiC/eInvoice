@@ -316,6 +316,23 @@ export interface components {
       parse_used_today: number;
       export_used_today: number;
     };
+    PlanRequestCreate: {
+      requested_plan: "plus" | "team";
+      message?: string | null;
+    };
+    PlanRequestResponse: {
+      id: string;
+      organization_id: string;
+      requested_by_user_id: string;
+      requested_plan: "plus" | "team";
+      status: "pending" | "approved" | "rejected";
+      message: string | null;
+      created_at: string;
+      updated_at: string;
+    };
+    PlanRequestStatusUpdate: {
+      status: "approved" | "rejected";
+    };
     ReadinessResponse: {
       status: string;
       ready: boolean;

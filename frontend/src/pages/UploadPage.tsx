@@ -322,6 +322,11 @@ export function UploadPage({
 
   const allowsBatch: boolean = Boolean(session?.plan.allows_batch)
   const hasBatchWorkspace: boolean = batchJob !== null
+  const canUpgradePlan: boolean = session?.plan.code === 'free' || session?.plan.code === 'plus'
+  const showUpgradeAction: boolean =
+    canUpgradePlan &&
+    error !== null &&
+    /(Kontingent|Tarif|Plus|Batch|Limit)/i.test(error)
 
   const canShowPdfSideBySide: boolean =
     result !== null &&
@@ -375,14 +380,22 @@ export function UploadPage({
             <PdfPreview file={uploadedFile} title="Visuelle PDF" />
           </div>
           <div className="invoice-split__data">
-            <InvoiceView invoice={result} sourceFile={uploadedFile} />
+            <InvoiceView
+              invoice={result}
+              sourceFile={uploadedFile}
+              onUpgrade={canUpgradePlan ? () => onNavigate('pricing') : undefined}
+            />
           </div>
         </div>
       )
     }
     return (
       <div ref={bindFeedback} tabIndex={-1}>
-        <InvoiceView invoice={result} sourceFile={uploadedFile} />
+        <InvoiceView
+          invoice={result}
+          sourceFile={uploadedFile}
+          onUpgrade={canUpgradePlan ? () => onNavigate('pricing') : undefined}
+        />
       </div>
     )
   }
@@ -438,10 +451,15 @@ export function UploadPage({
       />
 
       {session !== null && !allowsBatch ? (
-        <p className="page__limits">
-          Mehrere Dateien auf einmal sind in Plus enthalten. Dieser Tarif prüft eine Datei pro
-          Vorgang.
-        </p>
+        <div className="paywall-hint">
+          <p className="page__limits">
+            Mehrere Dateien auf einmal sind in Plus enthalten. Dieser Tarif prüft eine Datei pro
+            Vorgang.
+          </p>
+          <button type="button" className="btn btn--secondary" onClick={() => onNavigate('pricing')}>
+            Plus ansehen
+          </button>
+        </div>
       ) : null}
 
       {loading && (
@@ -465,6 +483,11 @@ export function UploadPage({
             <strong>Nächster Schritt:</strong> Datei prüfen oder erneut hochladen. Bleibt das
             Problem bestehen, versuchen Sie es später erneut.
           </p>
+          {showUpgradeAction ? (
+            <button type="button" className="btn btn--secondary" onClick={() => onNavigate('pricing')}>
+              Höhere Kontingente ansehen
+            </button>
+          ) : null}
         </section>
       )}
 

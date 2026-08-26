@@ -10,6 +10,7 @@ export type AppRoute =
   | 'verify'
   | 'org'
   | 'history'
+  | 'pricing'
 
 export function pathToRoute(pathname: string): AppRoute {
   if (pathname === '/upload' || pathname.startsWith('/upload/')) {
@@ -52,6 +53,9 @@ export function pathToRoute(pathname: string): AppRoute {
   if (pathname === '/verlauf' || pathname.startsWith('/verlauf/')) {
     return 'history'
   }
+  if (pathname === '/tarife' || pathname.startsWith('/tarife/')) {
+    return 'pricing'
+  }
   return 'landing'
 }
 
@@ -85,6 +89,9 @@ export function routeToPath(route: AppRoute): string {
   }
   if (route === 'history') {
     return '/verlauf'
+  }
+  if (route === 'pricing') {
+    return '/tarife'
   }
   return '/'
 }

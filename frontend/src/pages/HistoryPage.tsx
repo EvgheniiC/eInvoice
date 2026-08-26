@@ -103,6 +103,9 @@ export function HistoryPage({
       ) : !canUseHistory ? (
         <section className="legal-section">
           <p>Verlauf ist in Plus enthalten. Im Gast- und Free-Tarif wird nichts gespeichert.</p>
+          <button type="button" className="btn btn--primary" onClick={() => onNavigate('pricing')}>
+            Plus ansehen
+          </button>
         </section>
       ) : loading ? (
         <p className="status status--info" role="status">

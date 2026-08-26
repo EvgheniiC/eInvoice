@@ -3,8 +3,9 @@
 Документ детализирует платный слой поверх MVP. Базовый продукт и критерии качества —
 в `TODO_VIP_PRODUCT.md`. Рынок и конкуренты — в `TODO_CONCURENT.md`.
 
-**Правило порядка:** не начинать этапы 1–5, пока не закрыты блокеры этапа 0
+**Правило порядка:** не открывать публичный Plus и оплату, пока не закрыты блокеры этапа 0
 (P0 из `TODO_VIP_PRODUCT.md`: KoSIT в production, AVV, security review, пилот DATEV).
+Внутренняя реализация этапов 1–2 допустима только для подготовки безопасного пилота.
 
 Главный сценарий подписки:
 
@@ -194,25 +195,66 @@ developer-API против [rechnungsapi.de](https://www.rechnungsapi.de).
 
 ## 5. План реализации
 
-### Этап 0 — блокеры (до любого аккаунта)
+### Этап 0 — блокеры (до публичного Plus и реальных Mandantenakten)
 
 Подписка со хранением счетов раньше этого ломает trust («файл только в запросе»)
 и усиливает риск DSGVO.
 
-- [ ] Закрыть P0 из `TODO_VIP_PRODUCT.md`: KoSIT в production, статусы проверки.
+- [x] Закрыть P0 из `TODO_VIP_PRODUCT.md`: KoSIT в production, статусы проверки.
   - [x] Pinned KoSIT установлен на production
   - [x] `/api/health/ready` → HTTP 200, `ready=true`, `kosit_ready=true`
-  - [ ] Valid upload выполняется через KoSIT и не остаётся `not_checked`
-  - [ ] Invalid upload показывает правила KoSIT и остаётся невалидным
-- [ ] Заполнить Impressum / Verantwortlicher, hosting-Standort, подписать AVV с хостером.
-- [ ] Независимый security review до реальных Mandantenakten.
-- [ ] Пилот DATEV-импорта со Steuerberater (пункт 1.9).
+  - [x] Деплой исправления: KoSIT не наследует `stdin` и проверяет только файл счёта
+  - [x] Valid upload выполняется через KoSIT: `Prüfung: gültig`
+  - [x] Invalid upload остаётся невалидным и показывает конкретную диагностику KoSIT
+        (`KOSIT_NO_SCENARIO` для неподдерживаемого профиля)
+- [ ] Заполнить Impressum / Verantwortlicher и Datenschutzerklärung.
+  - [ ] `TODO — WRITE LATER:` юридическое имя / ФИО Betreiber.
+  - [ ] `TODO — WRITE LATER:` полный почтовый адрес Betreiber.
+  - [ ] `TODO — WRITE LATER:` контактный email.
+  - [ ] `TODO — WRITE LATER:` hosting-провайдер и страна / локация дата-центра.
+  - [ ] `TODO — WRITE LATER:` подписан ли AVV с хостером.
+        AVV (Auftragsverarbeitungsvertrag) — договор обработки данных по Art. 28 DSGVO:
+        хостер обязуется обрабатывать загруженные данные только по инструкциям Betreiber,
+        соблюдать меры безопасности и правила удаления / привлечения subprocessors.
+- [x] Провести внутренний static security review всего приложения.
+  - [x] Production accounts fail closed без PostgreSQL и настроенного `AUTH_SECRET_KEY`.
+  - [x] Accountant package повторно проверяет PDF и XML перед добавлением оригинала.
+  - [x] CSV / Excel / DATEV нейтрализуют spreadsheet formula injection.
+  - [x] Добавлены role checks, trusted-proxy policy, строгий admin rate limit
+        и ограниченное по размеру потоковое чтение upload.
+- [ ] Провести независимый review running production deployment до реальных Mandantenakten:
+      DAST / pentest, TLS, firewall, `.env`, journald, backup encryption и edge rate limits.
+- [ ] Реальный пилот DATEV-импорта со Steuerberater (пункт 1.9).
+  - [ ] Согласовать с Kanzlei тестовый Mandant, используемый Kontenrahmen (SKR03 / SKR04),
+        Wirtschaftsjahr и допустимый способ импорта.
+  - [ ] Подготовить анонимизированный набор: обычный счёт, Gutschrift, несколько ставок НДС,
+        Skonto / скидка и Sonderfall, который реально встречается у пилотного Handwerk.
+  - [ ] Сформировать одиночный и batch Steuerberater-Paket без ручного изменения файлов.
+  - [ ] Зафиксировать версию eInvoice, export format, входные fixtures и SHA-256
+        перед передачей пакета.
+  - [ ] Выполнить импорт в DATEV Kanzlei-Rechnungswesen вместе со Steuerberater,
+        а не ограничиваться открытием CSV в Excel.
+  - [ ] Проверить кодировку CP1252, разделитель, даты, Soll / Haben, суммы, валюту,
+        Belegfeld 1, Buchungstext и отсутствие отклонённых строк.
+  - [ ] Сверить в DATEV количество документов и контрольные суммы gross / tax с eInvoice.
+  - [ ] Зафиксировать, какие поля Kanzlei должна дополнять вручную:
+        Konto, Gegenkonto, BU-Schlüssel, Beraternummer, Mandantennummer и Wirtschaftsjahr.
+  - [ ] Записать ошибки / предупреждения DATEV, скриншоты результата и замечания
+        Steuerberater без персональных данных клиента.
+  - [ ] Исправить mapping / экспорт и повторять импорт до согласованных критериев приёмки.
+  - [ ] Критерии приёмки: 100% тестовых документов импортированы без технических ошибок;
+        суммы и Soll / Haben совпадают; нет повреждения Umlaut / Sonderzeichen;
+        Steuerberater письменно подтверждает пригодность пакета для пилота.
 - [x] Зафиксировать две модели обработки:
       гость — файл не персистится;
       аккаунт — отдельный legal basis (Art. 6 DSGVO + AVV) и opt-in на файлы.
-- [x] Обновить Datenschutzerklärung: что хранится, TTL, subprocessors (email, платежи, object storage в DE).
+- [x] Обновить Datenschutzerklärung: модели guest / account, opt-in, TTL и локальные шрифты.
+- [ ] После выбора провайдеров дополнить Datenschutzerklärung и AVV:
+      email, hosting, платежи и object storage в DE (`TODO — WRITE LATER` выше).
 - [x] Обновить `docs/THREAT_MODEL.md` и `docs/AVV_DPA.md` под аккаунты и биллинг.
-- [ ] Пилот с Handwerk и метрики воронки (1.9) — спрос на batch/историю подтверждён, не угадан.
+- [ ] После успешного DATEV-импорта провести пилот с Handwerk и собрать метрики воронки
+      (1.9) — спрос на batch / историю должен быть подтверждён, а не угадан.
+- [ ] Только после legal / security, DATEV-импорта и пилота Handwerk переходить к оплате.
 
 Готовность этапа 0 = можно начинать этап 1.
 
@@ -245,18 +287,21 @@ developer-API против [rechnungsapi.de](https://www.rechnungsapi.de).
 
 После текущего деплоя:
 
-- [ ] В batch выбранный счёт сразу показывает читаемую PDF
-- [ ] **Lesbare PDF ausblenden / anzeigen** скрывает и возвращает предпросмотр
+- [x] В batch выбранный счёт сразу показывает читаемую PDF
+- [x] **Lesbare PDF ausblenden / anzeigen** скрывает и возвращает предпросмотр
 
 ### Этап 3 — монетизация
 
 Ориентир: 2–3 недели, можно параллельно с концом этапа 2.
 
+- [x] Публичная страница тарифов Free / Plus / Team с честным списком доступных функций.
+- [x] Контекстный paywall и CTA на тарифы для batch, history и исчерпанных квот.
+- [x] Заявка на ручное подключение Plus / Team до интеграции автоматической оплаты.
 - [ ] Stripe Billing или Mollie (DE/VAT): месяц / год, счета.
 - [ ] Webhook → `plan`, `seats`, `status` (active / past_due / canceled).
 - [ ] Customer portal: карта, отмена, invoices.
-- [ ] Paywall только на batch / history / повышенный лимит — не на гостевой parse.
-- [ ] Немецкие тексты тарифа на лендинге: отличие от ELSTER и от Buchhaltung
+- [x] Paywall только на batch / history / повышенный лимит — не на гостевой parse.
+- [x] Немецкие тексты тарифа на лендинге: отличие от ELSTER и от Buchhaltung
       (`TODO_VIP_PRODUCT.md` P1 SEO/сравнение; `TODO_CONCURENT.md` §7.1).
 
 ### Этап 4 — Firma и интеграции

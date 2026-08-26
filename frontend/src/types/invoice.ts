@@ -47,5 +47,8 @@ export type HistoryItemResponse = Schemas['HistoryItemResponse']
 export type HistoryListResponse = Schemas['HistoryListResponse']
 export type HistoryItemStatus = HistoryItemResponse['status']
 
+export type PlanUpgradeRequestResponse = Schemas['PlanRequestResponse']
+export type PlanUpgradeRequestStatus = PlanUpgradeRequestResponse['status']
+
 /** UI helper: FastAPI serializes decimals as strings; Number() also accepts number. */
 export type DecimalValue = string | number

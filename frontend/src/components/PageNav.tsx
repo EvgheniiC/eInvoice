@@ -18,6 +18,9 @@ export function PageNav({
   const className: string = overlay ? 'page-nav page-nav--overlay' : 'page-nav'
   return (
     <nav className={className} aria-label="Seiten">
+      <button type="button" className="page-nav__link" onClick={() => onNavigate('pricing')}>
+        Tarife
+      </button>
       <button type="button" className="page-nav__link" onClick={() => onNavigate('help')}>
         Hilfe
       </button>

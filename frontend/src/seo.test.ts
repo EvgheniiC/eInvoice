@@ -13,6 +13,7 @@ describe('seoForPath', (): void => {
 
   it('indexes public product and legal pages', (): void => {
     expect(seoForPath('/upload').canonicalPath).toBe('/upload')
+    expect(seoForPath('/tarife').canonicalPath).toBe('/tarife')
     expect(seoForPath('/impressum').title).toContain('Impressum')
     expect(seoForPath('/datenschutz').canonicalPath).toBe('/datenschutz')
     expect(seoForPath('/faq').canonicalPath).toBe('/hilfe')
@@ -51,6 +52,7 @@ describe('public crawl files', (): void => {
   it('publishes sitemap.xml for the public pages', (): void => {
     expect(sitemapXml).toContain(`${SITE_ORIGIN}/</loc>`)
     expect(sitemapXml).toContain(`${SITE_ORIGIN}/upload</loc>`)
+    expect(sitemapXml).toContain(`${SITE_ORIGIN}/tarife</loc>`)
     expect(sitemapXml).toContain(`${SITE_ORIGIN}/hilfe</loc>`)
     expect(sitemapXml).toContain(`${SITE_ORIGIN}/impressum</loc>`)
     expect(sitemapXml).toContain(`${SITE_ORIGIN}/datenschutz</loc>`)

@@ -8,6 +8,7 @@ import { LegalPage } from './pages/LegalPage'
 import { LoginPage } from './pages/LoginPage'
 import { HistoryPage } from './pages/HistoryPage'
 import { OrgSettingsPage } from './pages/OrgSettingsPage'
+import { PricingPage } from './pages/PricingPage'
 import { RegisterPage, type RegisterSuccess } from './pages/RegisterPage'
 import { ResetPasswordPage } from './pages/ResetPasswordPage'
 import { UploadPage } from './pages/UploadPage'
@@ -187,6 +188,14 @@ function App(): JSX.Element {
         />
       ) : route === 'history' ? (
         <HistoryPage
+          onNavigate={navigate}
+          session={session}
+          onLogout={() => {
+            void handleLogout()
+          }}
+        />
+      ) : route === 'pricing' ? (
+        <PricingPage
           onNavigate={navigate}
           session={session}
           onLogout={() => {
