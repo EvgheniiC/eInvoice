@@ -26,7 +26,7 @@ export const PUBLIC_PLANS: readonly PublicPlan[] = [
   {
     code: 'plus',
     name: 'Plus',
-    priceMonthly: '12,90 €',
+    priceMonthly: '4,99 €',
     summary: 'Für Handwerk und kleine Büros mit regelmäßigem Rechnungseingang.',
     features: [
       '100 Prüfungen und Exporte pro Tag',
@@ -39,7 +39,7 @@ export const PUBLIC_PLANS: readonly PublicPlan[] = [
   {
     code: 'team',
     name: 'Team',
-    priceMonthly: '24,90 €',
+    priceMonthly: '9,99 €',
     summary: 'Für Firmen mit höherem Volumen und größeren Stapeln.',
     features: [
       '500 Prüfungen und Exporte pro Tag',

@@ -41,8 +41,8 @@ describe('PricingPage', (): void => {
     expect(screen.getByRole('heading', { name: 'Free' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Plus' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Team' })).toBeInTheDocument()
-    expect(screen.getByText('12,90 €')).toBeInTheDocument()
-    expect(screen.getByText('24,90 €')).toBeInTheDocument()
+    expect(screen.getByText('4,99 €')).toBeInTheDocument()
+    expect(screen.getByText('9,99 €')).toBeInTheDocument()
 
     const requestButtons: HTMLElement[] = screen.getAllByRole('button', {
       name: 'Freischaltung anfragen',
