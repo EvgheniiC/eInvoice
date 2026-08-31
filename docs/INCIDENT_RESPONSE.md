@@ -36,12 +36,9 @@ support mailbox with an attached invoice):
 1. Stop the leak (fix logging, delete temp files, quarantine the mailbox).
 2. Record time, systems, and what category of data may be involved — not the
    invoice itself.
-3. Notify the Verantwortlicher (Impressum) and follow Art. 33/34 DSGVO once
-   operator identity is filled in.
+3. Notify the Verantwortlicher (Svetlana Costina, svetlana.costina@gmx.de)
+   and follow Art. 33/34 DSGVO.
 4. Do not request the original invoice again “for debugging”.
-
-A named 72-hour notification contact is still a placeholder until Betreiber
-data exists.
 
 ## Aftercare
 

@@ -113,8 +113,7 @@ export function HelpPage({ onNavigate, session, onLogout }: HelpPageProps): JSX.
             onChange={(event: ChangeEvent<HTMLInputElement>) => setContactEmail(event.target.value)}
           />
           <p className="feedback-form__hint">
-            Kein Datei-Upload. Maximal 2000 Zeichen. Support-Kontakt folgt mit den
-            Betreiberangaben.
+            Kein Datei-Upload. Maximal 2000 Zeichen. Support: svetlana.costina@gmx.de
           </p>
           <button type="submit" className="btn btn--primary" disabled={sending}>
             {sending ? 'Wird gesendet…' : 'Nachricht senden'}

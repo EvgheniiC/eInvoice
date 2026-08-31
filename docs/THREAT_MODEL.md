@@ -59,7 +59,9 @@ unless nginx overwrites it (the API snippet sets `X-Forwarded-For $remote_addr`)
 - No independent pentest / code audit yet
 - In-app rate limit is per process (one uvicorn worker); nginx is the edge control
 - Google Fonts (if enabled on the SPA) send visitor IPs to Google until self-hosted
-- Operator/hosting identity and AVV counterparties are not filled in yet
+- Operator is Svetlana Costina (Einzelunternehmen), Elbinger Straße 70,
+  27755 Delmenhorst, svetlana.costina@gmx.de. Hosting: Hetzner Online GmbH,
+  datacenter Nürnberg, Germany; AVV concluded in the Hetzner customer account.
 - KoSIT is a large Java attack surface; keep the JAR and JRE patched
 
 ## Review checklist before real invoices
@@ -67,4 +69,5 @@ unless nginx overwrites it (the API snippet sets `X-Forwarded-For $remote_addr`)
 - [ ] External security review of this document and the running deployment
 - [ ] Confirm TLS, security snippets, and `ENVIRONMENT=production` on the host
 - [ ] Confirm journald does not capture request bodies (app never logs them)
-- [ ] Fill Impressum / Verantwortlicher and sign AVV with the hoster
+- [x] Fill Impressum / Verantwortlicher (name, address, e-mail)
+- [x] Name the hoster and sign AVV with the hoster (Hetzner Online GmbH)

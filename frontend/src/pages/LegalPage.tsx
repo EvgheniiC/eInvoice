@@ -42,7 +42,6 @@ export function LegalPage({
         <h1 tabIndex={-1}>Impressum &amp; Datenschutz</h1>
         <p className="page__lead">
           Angaben zum Diensteanbieter und zur Verarbeitung hochgeladener Rechnungsdateien.
-          Firmendaten werden vor dem öffentlichen Betrieb ergänzt.
         </p>
         <nav className="legal-toc" aria-label="Abschnitte">
           {documents.map((document: LegalDocument) => (

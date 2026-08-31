@@ -87,8 +87,7 @@ export const FAQ_ITEMS: FaqItem[] = [
     paragraphs: [
       'Nutzen Sie das Formular unten. Bitte keine Rechnungsdatei, kein XML, keine IBAN und ' +
         'keine personenbezogenen Rechnungsdaten einfügen.',
-      'Eine feste Support-E-Mail und die erwartete Antwortzeit folgen mit den Betreiberangaben ' +
-        'vor dem öffentlichen Betrieb.',
+      'Support-E-Mail: svetlana.costina@gmx.de. Bitte keine Rechnungsdatei anhängen.',
     ],
   },
 ]

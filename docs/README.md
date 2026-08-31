@@ -10,4 +10,4 @@ Product notes and design docs for the eInvoice web utility
 - [Service level objectives](SLO.md)
 - [Incident response](INCIDENT_RESPONSE.md)
 - [Threat model](THREAT_MODEL.md)
-- [AVV / DPA template](AVV_DPA.md) (operator details not filled in yet)
+- [AVV / DPA](AVV_DPA.md) (Verantwortliche: Svetlana Costina; Hosting: Hetzner Online GmbH, Nürnberg)

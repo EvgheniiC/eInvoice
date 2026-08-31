@@ -1,22 +1,21 @@
-# Auftragsverarbeitungsvertrag (AVV / DPA) — Vorlage
+# Auftragsverarbeitung (AVV / DPA)
 
-Diese Vorlage ist **kein** fertiger Vertrag. Betreiber, Hosting und
-Subunternehmer sind noch nicht eingesetzt. Vor einem öffentlichen Cloud-Betrieb
-müssen die Platzhalter ersetzt und der Text von einer fachkundigen Person
-geprüft werden.
+eInvoice ist **Verantwortlicher** gegenüber dem Nutzer, der eine Datei hochlädt.
+Der Hosting-Anbieter ist **Auftragsverarbeiter** des Betreibers (Art. 28 DSGVO).
 
-eInvoice ist in der Regel **Verantwortlicher** gegenüber dem Handwerksbetrieb,
-der eine Datei hochlädt. Der Hosting-Anbieter ist dann **Auftragsverarbeiter**
-des Betreibers (Art. 28 DSGVO).
+Der verbindliche AV-Vertrag mit dem Hoster liegt **nicht** in diesem Repository:
+er wurde im Hetzner-Kundenkonto abgeschlossen. Diese Datei ist die interne
+Subprocessor-Liste für Datenschutztexte und Reviews.
 
 Wenn eine Kanzlei eInvoice als Werkzeug für Mandantenakten einsetzt, kann
 zusätzlich ein AVV zwischen Kanzlei und Betreiber nötig sein.
 
 ## 1. Parteien
 
-- Verantwortlicher: _folgt_
-- Auftragsverarbeiter (Hosting): _folgt_
+- Verantwortlicher: Svetlana Costina (Einzelunternehmen), Elbinger Straße 70, 27755 Delmenhorst, svetlana.costina@gmx.de
+- Auftragsverarbeiter (Hosting): Hetzner Online GmbH, Industriestraße 25, 91710 Gunzenhausen, Deutschland; Rechenzentrum Nürnberg
 - Gegenstand: Bereitstellung der eInvoice-Webanwendung (Upload, Prüfung, Export)
+- AV-Vertrag Hosting: abgeschlossen im Hetzner-Kundenkonto (Art. 28 DSGVO)
 
 ## 2. Art der Daten
 
@@ -33,7 +32,6 @@ zusätzlich ein AVV zwischen Kanzlei und Betreiber nötig sein.
 - Kein GoBD-Archiv. Verlauf nur nach Zustimmung: Metadaten und Datei-Hash;
   Originaldatei nur bei Opt-in „Dateien merken“ und begrenzter Aufbewahrung
   (Orientierung: 30 Tage)
-- Rechtsgrundlage und AVV vor Go-live separat festlegen
 
 ## 4. Weisungen und Sicherheit
 
@@ -41,28 +39,33 @@ zusätzlich ein AVV zwischen Kanzlei und Betreiber nötig sein.
 - TLS, Zugriffsbeschränkung der API auf localhost hinter nginx
 - Keine Rechnungsinhalte in Anwendungsprotokollen
 - KoSIT-Validator als lokaler Prozess, nicht als Drittanbieter-API
+- TOMs des Hosters: Anlage zum Hetzner-AV-Vertrag (Abruf im Kundenkonto)
 
-## 5. Subunternehmer (Liste — Stand Vorlage)
+## 5. Subunternehmer (Stand: 31. August 2026)
 
 | Subunternehmer | Rolle | Ort | AVV |
 |----------------|-------|-----|-----|
-| _folgt (Hosting / VPS)_ | Server, Backup, Netz | EU bevorzugt | _folgt_ |
+| Hetzner Online GmbH | Server, Backup, Netz | Nürnberg, Deutschland | ja, Kundenkonto |
+| GMX (United Internet) | Kontaktpostfach | Deutschland | noch nicht als Processor für Rechnungsinhalte vorgesehen |
 
 Nicht vorgesehen: DATEV-Cloud, Steuerberater-API, Analyse-Tracker, Rechnungsarchiv.
-Geplant (noch nicht eingesetzt, Liste vor Go-live aktualisieren): E-Mail für
-Support/Feedback, Zahlungsdienst (Stripe oder Mollie), object storage in DE nur
-für Opt-in-Dateien.
+Geplant (noch nicht eingesetzt, Liste vor Go-live aktualisieren): transaktionale
+E-Mail, Zahlungsdienst (Stripe oder Mollie), object storage in DE nur für Opt-in-Dateien.
+
+Hetzner-Subunternehmer des Hosters: siehe [Hetzner-Liste](https://www.hetzner.com/AV/subunternehmer.pdf).
 
 ## 6. Löschung und Nachweis
 
 Nach Ende jeder Anfrage: temporäre Dateien löschen. Auf Verlangen des
 Verantwortlichen: Bestätigung, dass kein Rechnungsarchiv existiert.
 Server-Logs ohne Rechnungsinhalt unterliegen der betrieblichen Aufbewahrung des
-Hosters (_Frist folgt_).
+Hosters.
 
-## 7. Offene Punkte vor Unterschrift
+## 7. Offene Punkte
 
-- [ ] Name, Anschrift, Register des Verantwortlichen
-- [ ] Hosting-Vertrag und TOMs des Auftragsverarbeiters
-- [ ] Endgültige Subprocessor-Liste
-- [ ] Rechtsprüfung dieser Vorlage
+- [x] Name des Verantwortlichen: Svetlana Costina (Einzelunternehmen)
+- [x] Anschrift des Verantwortlichen: Elbinger Straße 70, 27755 Delmenhorst
+- [x] Hosting-AVV und TOMs: Hetzner Online GmbH, abgeschlossen im Kundenkonto
+- [x] Genaues Rechenzentrum: Nürnberg
+- [ ] Endgültige Subprocessor-Liste nach Stripe/Mollie und Auth-Mail
+- [ ] Rechtsprüfung dieser Übersicht

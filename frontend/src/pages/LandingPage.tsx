@@ -160,8 +160,8 @@ export function LandingPage({
           <li>Protokolle enthalten keinen Rechnungsinhalt (kein IBAN, kein XML)</li>
         </ul>
         <p className="landing-limitations">
-          Betreiberangaben folgen vor dem öffentlichen Betrieb. Impressum, Datenschutz und Hilfe
-          öffnen Sie oben rechts.
+          Diensteanbieterin ist Svetlana Costina (Einzelunternehmen), Elbinger Straße 70,
+          27755 Delmenhorst. Impressum, Datenschutz und Hilfe öffnen Sie oben rechts.
         </p>
       </section>
 

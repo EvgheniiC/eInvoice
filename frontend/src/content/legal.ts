@@ -12,32 +12,34 @@ export type LegalDocument = {
   sections: LegalSection[]
 }
 
-const PLACEHOLDER: string = 'Angaben folgen vor dem öffentlichen Betrieb.'
-
 export const IMPRESSUM: LegalDocument = {
   id: 'impressum',
   title: 'Impressum',
-  updatedLabel: 'Stand: August 2026',
+  updatedLabel: 'Stand: 31. August 2026',
   intro:
-    'Dieses Impressum erfüllt die Struktur nach § 5 DDG. Die Betreiberdaten sind ' +
-    'noch nicht hinterlegt und werden ergänzt, bevor der Dienst öffentlich angeboten wird.',
+    'Dieses Impressum erfüllt die Struktur nach § 5 DDG. Diensteanbieterin ist ' +
+    'Svetlana Costina (Einzelunternehmen). Steuernummer und USt-IdNr. werden nach ' +
+    'Mitteilung des Finanzamts ergänzt.',
   sections: [
     {
       heading: 'Diensteanbieter',
-      paragraphs: [PLACEHOLDER],
+      paragraphs: [
+        'Svetlana Costina betreibt eInvoice als Einzelunternehmen.',
+      ],
       listItems: [
-        'Name / Firma: —',
-        'Anschrift: —',
-        'Vertretungsberechtigte Person: —',
-        'Kontakt (E-Mail): —',
+        'Name / Firma: Svetlana Costina',
+        'Rechtsform: Einzelunternehmen',
+        'Anschrift: Elbinger Straße 70, 27755 Delmenhorst, Deutschland',
+        'Vertretungsberechtigte Person: Svetlana Costina',
+        'Kontakt (E-Mail): svetlana.costina@gmx.de',
       ],
     },
     {
       heading: 'Weitere Angaben (falls zutreffend)',
       paragraphs: [
-        'Registergericht, Registernummer, Umsatzsteuer-ID und berufsrechtliche Angaben ' +
-          'werden ergänzt, sobald sie feststehen. Bis dahin ist dieser Dienst nicht als ' +
-          'öffentliches Angebot einer bestimmten Person oder Firma zu verstehen.',
+        'Ein Handelsregistereintrag ist für dieses Einzelunternehmen nicht vorgesehen. ' +
+          'Steuernummer und USt-IdNr. liegen noch nicht vor und werden nach Mitteilung ' +
+          'des Finanzamts hier ergänzt.',
       ],
     },
     {
@@ -55,18 +57,17 @@ export const IMPRESSUM: LegalDocument = {
 export const DATENSCHUTZ: LegalDocument = {
   id: 'datenschutz',
   title: 'Datenschutzerklärung',
-  updatedLabel: 'Stand: August 2026',
+  updatedLabel: 'Stand: 31. August 2026',
   intro:
     'Diese Erklärung beschreibt, wie eInvoice Dateien und Nutzungsdaten verarbeitet. ' +
-    'Name und Kontaktdaten des Verantwortlichen werden ergänzt, bevor der Dienst ' +
-    'öffentlich betrieben wird.',
+    'Verantwortliche ist Svetlana Costina (Einzelunternehmen).',
   sections: [
     {
       heading: '1. Verantwortlicher',
       paragraphs: [
-        PLACEHOLDER,
-        'Sobald der Verantwortliche feststeht, finden Sie Name, Anschrift und E-Mail ' +
-          'in diesem Abschnitt sowie im Impressum.',
+        'Svetlana Costina, Einzelunternehmen.',
+        'Elbinger Straße 70, 27755 Delmenhorst, Deutschland.',
+        'E-Mail: svetlana.costina@gmx.de',
       ],
     },
     {
@@ -110,10 +111,10 @@ export const DATENSCHUTZ: LegalDocument = {
     {
       heading: '4. Wo die Datei verarbeitet wird — Speicherung und Löschung',
       paragraphs: [
-        'Die Verarbeitung findet auf dem Server des Dienstes statt (geplante Region: ' +
-          'Europäische Union; genauer Standort und Hosting-Anbieter folgen mit den ' +
-          'Betreiberangaben). Im Gastmodus wird die Datei nicht in eine Datenbank geschrieben. ' +
-          'Im Konto nur nach ausdrücklicher Zustimmung: Metadaten/Hash, optional das Original.',
+        'Die Verarbeitung findet auf einem Server von Hetzner Online GmbH in Nürnberg, ' +
+          'Deutschland, statt. Mit Hetzner besteht ein AV-Vertrag nach Art. 28 DSGVO. ' +
+          'Im Gastmodus wird die Datei nicht in eine Datenbank geschrieben. Im Konto nur ' +
+          'nach ausdrücklicher Zustimmung: Metadaten/Hash, optional das Original.',
       ],
       listItems: [
         'Während der Anfrage liegt die Datei im Arbeitsspeicher.',
@@ -137,11 +138,14 @@ export const DATENSCHUTZ: LegalDocument = {
       paragraphs: [
         'Die Datei wird nicht an Steuerberater, DATEV oder andere Fachanwendungen gesendet. ' +
           'Ein Export verbleibt bei Ihnen, bis Sie ihn selbst weitergeben.',
-        'Der KoSIT-Validator läuft als lokaler Java-Prozess auf demselben Server, nicht als ' +
+        'Hosting: Hetzner Online GmbH, Industriestraße 25, 91710 Gunzenhausen, Deutschland, ' +
+          'ist Auftragsverarbeiter für Server, Netz und Backup (Rechenzentrum Nürnberg). ' +
+          'Es besteht ein AV-Vertrag nach Art. 28 DSGVO (abgeschlossen im Hetzner-Kundenkonto). ' +
+          'Der KoSIT-Validator läuft als lokaler Java-Prozess auf demselben Server, nicht als ' +
           'externer Cloud-Dienst.',
-        'Hosting-Anbieter, CDN oder E-Mail-Postfach für Support sind Auftragsverarbeiter, ' +
-          'sobald sie eingesetzt werden. Die Liste folgt mit den Betreiberangaben. Ein ' +
-          'AV-Vertrag (Art. 28 DSGVO) wird vor einem öffentlichen Cloud-Betrieb vorbereitet.',
+        'Das Kontaktpostfach liegt bei GMX (United Internet, Deutschland). Zahlungsdienst ' +
+          'und object storage sind noch nicht eingesetzt; die Liste wird ergänzt, sobald ' +
+          'sie genutzt werden.',
       ],
     },
     {
@@ -162,7 +166,7 @@ export const DATENSCHUTZ: LegalDocument = {
         'Weil Rechnungsdateien nach der Anfrage (Gast) bzw. nach kurzer Batch-Frist (Plus) ' +
           'nicht dauerhaft gespeichert werden, können wir danach in der Regel keine Kopie ' +
           'Ihrer hochgeladenen Datei mehr herausgeben oder löschen — sie ist dann bereits entfernt.',
-        'Kontakt für Datenschutzanfragen: folgt mit den Betreiberangaben.',
+        'Kontakt für Datenschutzanfragen: svetlana.costina@gmx.de',
       ],
     },
     {
