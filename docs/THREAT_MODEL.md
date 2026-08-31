@@ -58,7 +58,6 @@ unless nginx overwrites it (the API snippet sets `X-Forwarded-For $remote_addr`)
 
 - No independent pentest / code audit yet
 - In-app rate limit is per process (one uvicorn worker); nginx is the edge control
-- Google Fonts (if enabled on the SPA) send visitor IPs to Google until self-hosted
 - Operator is Svetlana Costina (Einzelunternehmen), Elbinger Straße 70,
   27755 Delmenhorst, svetlana.costina@gmx.de. Hosting: Hetzner Online GmbH,
   datacenter Nürnberg, Germany; AVV concluded in the Hetzner customer account.
