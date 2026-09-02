@@ -2,6 +2,7 @@ import { useEffect, useState, type ChangeEvent, type FormEvent, type JSX } from 
 import { submitFeedback } from '../api/client'
 import { PageNav } from '../components/PageNav'
 import { SiteFooter } from '../components/SiteFooter'
+import { SUPPORT_EMAIL } from '../content/contact'
 import { FAQ_ITEMS, type FaqItem } from '../content/faq'
 import type { AppRoute } from '../routing'
 import type { FeedbackResponse, MeResponse } from '../types/invoice'
@@ -113,7 +114,7 @@ export function HelpPage({ onNavigate, session, onLogout }: HelpPageProps): JSX.
             onChange={(event: ChangeEvent<HTMLInputElement>) => setContactEmail(event.target.value)}
           />
           <p className="feedback-form__hint">
-            Kein Datei-Upload. Maximal 2000 Zeichen. Support: svetlana.costina@gmx.de
+            Kein Datei-Upload. Maximal 2000 Zeichen. Support: {SUPPORT_EMAIL}
           </p>
           <button type="submit" className="btn btn--primary" disabled={sending}>
             {sending ? 'Wird gesendet…' : 'Nachricht senden'}

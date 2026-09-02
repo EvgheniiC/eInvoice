@@ -1,14 +1,27 @@
+import os
 from pathlib import Path
 from typing import ClassVar, List, Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+def _readable_env_file() -> Optional[str]:
+    """Use .env only when this process can read it.
+
+    systemd already injects the same file via EnvironmentFile as root.
+    If the file is root:600, www-data must not crash on PermissionError.
+    """
+    path: Path = Path(".env")
+    if path.is_file() and os.access(path, os.R_OK):
+        return ".env"
+    return None
+
+
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
     model_config: ClassVar[SettingsConfigDict] = SettingsConfigDict(
-        env_file=".env",
+        env_file=_readable_env_file(),
         env_file_encoding="utf-8",
     )
 

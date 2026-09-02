@@ -24,13 +24,13 @@ ENVIRONMENT=production
 DATABASE_URL=postgresql+psycopg://einvoice:choose-a-password@127.0.0.1:5432/einvoice
 AUTH_SECRET_KEY=long-random-string
 ADMIN_API_TOKEN=long-random-string
-PUBLIC_APP_URL=https://your-public-host
+PUBLIC_APP_URL=https://erechnung-smart.de
 EMAIL_BACKEND=smtp
-SMTP_HOST=smtp.example.com
+SMTP_HOST=mail.your-server.de
 SMTP_PORT=587
-SMTP_USERNAME=noreply@your-public-host
+SMTP_USERNAME=noreply@erechnung-smart.de
 SMTP_PASSWORD=choose-a-password
-SMTP_FROM=noreply@your-public-host
+SMTP_FROM=noreply@erechnung-smart.de
 SMTP_STARTTLS=true
 ```
 
@@ -57,8 +57,17 @@ production accounts are enabled without PostgreSQL or with the default
 to API logs (`auth_email_token_dev`) and is not mailed.
 
 After changing SMTP settings: `systemctl restart einvoice-api`. Quote
-`SMTP_PASSWORD` if it contains `#`, spaces, or `$`. With GMX 2FA use the
-application-specific password, not the mailbox password. Probe with:
+`SMTP_PASSWORD` if it contains `#`, spaces, or `$`. Use the Hetzner mailbox
+password for `noreply@erechnung-smart.de` (konsoleH → E-Mail → Mailboxen).
+`support@erechnung-smart.de` is the public inbox only; it is not used as SMTP
+login. The API runs as `www-data`; after editing `.env` as root:
+
+```bash
+chown root:www-data /opt/eInvoice/backend/.env
+chmod 640 /opt/eInvoice/backend/.env
+```
+
+Probe with:
 
 ```bash
 cd /opt/eInvoice/backend

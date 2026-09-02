@@ -72,19 +72,20 @@ echo "==> App root: ${APP_ROOT}"
 cd "${APP_ROOT}"
 
 wait_for_live() {
-  local ok=0
   local _
-  for _ in $(seq 1 20); do
+  # systemd reports "started" before uvicorn binds; cold import after pip
+  # often needs more than a few seconds on a 1 GB VPS.
+  for _ in $(seq 1 60); do
     if curl -fsS "${HEALTH_URL}" >/dev/null; then
-      ok=1
-      break
+      return 0
     fi
-    sleep 0.5
+    sleep 1
   done
-  if [[ "${ok}" -ne 1 ]]; then
-    return 1
-  fi
-  return 0
+  echo "journal (${API_SERVICE}):" >&2
+  journalctl -u "${API_SERVICE}" -n 50 --no-pager >&2 || true
+  echo "journal (einvoice-worker):" >&2
+  journalctl -u einvoice-worker -n 20 --no-pager >&2 || true
+  return 1
 }
 
 restore_previous_sha() {
@@ -158,7 +159,13 @@ if [[ "${DO_BACKEND}" -eq 1 ]]; then
     echo "API health check failed: ${HEALTH_URL}" >&2
     if [[ "${DO_ROLLBACK}" -eq 0 && -n "${SAVED_SHA}" ]]; then
       restore_previous_sha "${SAVED_SHA}"
+      if [[ -d /etc/systemd/system ]]; then
+        cp "${APP_ROOT}/deploy/einvoice-api.service" /etc/systemd/system/einvoice-api.service
+        cp "${APP_ROOT}/deploy/einvoice-worker.service" /etc/systemd/system/einvoice-worker.service
+        systemctl daemon-reload
+      fi
       systemctl restart "${API_SERVICE}"
+      systemctl restart einvoice-worker
       wait_for_live || true
     fi
     exit 1

@@ -12,7 +12,7 @@ zusätzlich ein AVV zwischen Kanzlei und Betreiber nötig sein.
 
 ## 1. Parteien
 
-- Verantwortlicher: Svetlana Costina (Einzelunternehmen), Elbinger Straße 70, 27755 Delmenhorst, svetlana.costina@gmx.de
+- Verantwortlicher: Svetlana Costina (Einzelunternehmen), Elbinger Straße 70, 27755 Delmenhorst, support@erechnung-smart.de
 - Auftragsverarbeiter (Hosting): Hetzner Online GmbH, Industriestraße 25, 91710 Gunzenhausen, Deutschland; Rechenzentrum Nürnberg
 - Gegenstand: Bereitstellung der eInvoice-Webanwendung (Upload, Prüfung, Export)
 - AV-Vertrag Hosting: abgeschlossen im Hetzner-Kundenkonto (Art. 28 DSGVO)
@@ -46,11 +46,11 @@ zusätzlich ein AVV zwischen Kanzlei und Betreiber nötig sein.
 | Subunternehmer | Rolle | Ort | AVV |
 |----------------|-------|-----|-----|
 | Hetzner Online GmbH | Server, Backup, Netz | Nürnberg, Deutschland | ja, Kundenkonto |
-| GMX (United Internet) | Kontaktpostfach | Deutschland | noch nicht als Processor für Rechnungsinhalte vorgesehen |
+| Hetzner Online GmbH | Kontaktpostfach und transaktionale Auth-Mails | Deutschland | ja, Kundenkonto (Webhosting) |
 
 Nicht vorgesehen: DATEV-Cloud, Steuerberater-API, Analyse-Tracker, Rechnungsarchiv.
-Geplant (noch nicht eingesetzt, Liste vor Go-live aktualisieren): transaktionale
-E-Mail, Zahlungsdienst (Stripe oder Mollie), object storage in DE nur für Opt-in-Dateien.
+Geplant (noch nicht eingesetzt, Liste vor Go-live aktualisieren): Zahlungsdienst
+(Stripe oder Mollie), object storage in DE nur für Opt-in-Dateien.
 
 Hetzner-Subunternehmer des Hosters: siehe [Hetzner-Liste](https://www.hetzner.com/AV/subunternehmer.pdf).
 

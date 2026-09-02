@@ -1,3 +1,5 @@
+import { SUPPORT_EMAIL } from './contact'
+
 export type FaqItem = {
   id: string
   question: string
@@ -87,7 +89,7 @@ export const FAQ_ITEMS: FaqItem[] = [
     paragraphs: [
       'Nutzen Sie das Formular unten. Bitte keine Rechnungsdatei, kein XML, keine IBAN und ' +
         'keine personenbezogenen Rechnungsdaten einfügen.',
-      'Support-E-Mail: svetlana.costina@gmx.de. Bitte keine Rechnungsdatei anhängen.',
+      `Support-E-Mail: ${SUPPORT_EMAIL}. Bitte keine Rechnungsdatei anhängen.`,
     ],
   },
 ]

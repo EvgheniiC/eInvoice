@@ -173,7 +173,7 @@ def _send_smtp(*, to_email: str, subject: str, body: str) -> None:
             fields={"error": type(exc).__name__, "smtp_code": exc.smtp_code},
         )
         raise EmailDeliveryError(
-            "Die SMTP-Anmeldung ist fehlgeschlagen. Bitte Benutzername und App-Passwort prüfen."
+            "Die SMTP-Anmeldung ist fehlgeschlagen. Bitte Benutzername und Postfach-Passwort prüfen."
         ) from exc
     except smtplib.SMTPSenderRefused as exc:
         log_event(
@@ -187,7 +187,7 @@ def _send_smtp(*, to_email: str, subject: str, body: str) -> None:
             },
         )
         raise EmailDeliveryError(
-            "Der Absender wurde vom Mailserver abgelehnt. SMTP_FROM muss genau dem GMX-Konto entsprechen."
+            "Der Absender wurde vom Mailserver abgelehnt. SMTP_FROM muss dem Postfach entsprechen, mit dem sich der Server anmeldet."
         ) from exc
     except (OSError, smtplib.SMTPException) as exc:
         log_event(

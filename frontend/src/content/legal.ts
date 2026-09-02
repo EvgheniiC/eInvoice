@@ -1,3 +1,5 @@
+import { SUPPORT_EMAIL } from './contact'
+
 export type LegalSection = {
   heading: string
   paragraphs: string[]
@@ -15,7 +17,7 @@ export type LegalDocument = {
 export const IMPRESSUM: LegalDocument = {
   id: 'impressum',
   title: 'Impressum',
-  updatedLabel: 'Stand: 31. August 2026',
+  updatedLabel: 'Stand: 2. September 2026',
   intro:
     'Dieses Impressum erfüllt die Struktur nach § 5 DDG. Diensteanbieterin ist ' +
     'Svetlana Costina (Einzelunternehmen). Steuernummer und USt-IdNr. werden nach ' +
@@ -31,7 +33,7 @@ export const IMPRESSUM: LegalDocument = {
         'Rechtsform: Einzelunternehmen',
         'Anschrift: Elbinger Straße 70, 27755 Delmenhorst, Deutschland',
         'Vertretungsberechtigte Person: Svetlana Costina',
-        'Kontakt (E-Mail): svetlana.costina@gmx.de',
+        `Kontakt (E-Mail): ${SUPPORT_EMAIL}`,
       ],
     },
     {
@@ -57,7 +59,7 @@ export const IMPRESSUM: LegalDocument = {
 export const DATENSCHUTZ: LegalDocument = {
   id: 'datenschutz',
   title: 'Datenschutzerklärung',
-  updatedLabel: 'Stand: 31. August 2026',
+  updatedLabel: 'Stand: 2. September 2026',
   intro:
     'Diese Erklärung beschreibt, wie eInvoice Dateien und Nutzungsdaten verarbeitet. ' +
     'Verantwortliche ist Svetlana Costina (Einzelunternehmen).',
@@ -67,7 +69,7 @@ export const DATENSCHUTZ: LegalDocument = {
       paragraphs: [
         'Svetlana Costina, Einzelunternehmen.',
         'Elbinger Straße 70, 27755 Delmenhorst, Deutschland.',
-        'E-Mail: svetlana.costina@gmx.de',
+        `E-Mail: ${SUPPORT_EMAIL}`,
       ],
     },
     {
@@ -143,7 +145,8 @@ export const DATENSCHUTZ: LegalDocument = {
           'Es besteht ein AV-Vertrag nach Art. 28 DSGVO (abgeschlossen im Hetzner-Kundenkonto). ' +
           'Der KoSIT-Validator läuft als lokaler Java-Prozess auf demselben Server, nicht als ' +
           'externer Cloud-Dienst.',
-        'Das Kontaktpostfach liegt bei GMX (United Internet, Deutschland). Zahlungsdienst ' +
+        'Kontaktpostfach und transaktionale Auth-Mails (Bestätigung, Anmeldelink, ' +
+          'Passwort-Reset) laufen über Hetzner Online GmbH, Deutschland. Zahlungsdienst ' +
           'und object storage sind noch nicht eingesetzt; die Liste wird ergänzt, sobald ' +
           'sie genutzt werden.',
       ],
@@ -166,7 +169,7 @@ export const DATENSCHUTZ: LegalDocument = {
         'Weil Rechnungsdateien nach der Anfrage (Gast) bzw. nach kurzer Batch-Frist (Plus) ' +
           'nicht dauerhaft gespeichert werden, können wir danach in der Regel keine Kopie ' +
           'Ihrer hochgeladenen Datei mehr herausgeben oder löschen — sie ist dann bereits entfernt.',
-        'Kontakt für Datenschutzanfragen: svetlana.costina@gmx.de',
+        `Kontakt für Datenschutzanfragen: ${SUPPORT_EMAIL}`,
       ],
     },
     {
