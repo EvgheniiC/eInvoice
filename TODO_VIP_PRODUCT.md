@@ -90,7 +90,7 @@
 - [x] Зафиксировать subprocess/Java validator с минимальными правами и лимитами ресурсов.
 - [x] Зафиксировать threat model (`docs/THREAT_MODEL.md`) до работы с реальными счетами клиентов.
 - [ ] Выполнить независимую security-проверку до работы с реальными счетами клиентов.
-- [x] Подготовить AVV/DPA и список subprocessors (`docs/AVV_DPA.md`); данные оператора и хостера ещё не заполнены.
+- [x] Подготовить AVV/DPA и список subprocessors (`docs/AVV_DPA.md`); оператор и Hetzner-AVV заполнены.
 
 #### 1.7 Качество интерфейса
 
@@ -272,9 +272,10 @@
    и не показывает «gültig».
 2. **DATEV ещё нужно подтвердить пилотом:** текущий экспорт намеренно минимальный и не является
    DATEVconnect; реальный импорт в Kanzlei-Rechnungswesen остаётся пунктом 1.9.
-3. **Trust/legal слой частично готов:** Impressum и Datenschutzerklärung есть в
-   интерфейсе, но данные оператора, точный hosting-Standort и подписанный AVV ещё
-   не заполнены.
+3. **Trust/legal слой частично готов:** Impressum заполнен (Svetlana Costina,
+   Elbinger Straße 70, 27755 Delmenhorst, svetlana.costina@gmx.de); хостер —
+   Hetzner Online GmbH, Rechenzentrum Nürnberg, AVV в Kundenkonto заключён.
+   Ждут Steuernummer/USt-IdNr. от Finanzamt.
 4. **Production security baseline в репозитории, внешний review открыт:** заголовки,
    rate limit, timeout, XML/PDF-защита и nginx/systemd-сниппеты есть; независимая
    security-проверка перед реальными Mandantenakten ещё не выполнена.

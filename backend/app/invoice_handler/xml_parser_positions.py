@@ -15,7 +15,9 @@ from ..helper_functions import (
     document_charge_description,
     get_document_level_charges,
     get_header_trade_allowance_discount,
+    get_line_allowance_discount,
     HeaderTradeAdjustment,
+    LineAllowanceDiscount,
     _is_gu_document,
 )
 from ..services.logger_adapter import InvoiceLogger
@@ -110,7 +112,10 @@ def get_xml_positions(
         else:
             single_net_price = parse_decimal(single_raw)
             total_net_price = parse_decimal(total_raw)
-        order_pos_id = find_data_within_element(position, tags_to_search_order_line_reference)
+        order_pos_id: Optional[str] = find_data_within_element(
+            position, tags_to_search_order_line_reference
+        )
+        line_discount: LineAllowanceDiscount = get_line_allowance_discount(position)
 
         article_number: str = ""
         try:
@@ -132,6 +137,8 @@ def get_xml_positions(
                 invoice_id=xml_invoice_data.invoice_id,
                 article_number=article_number,
                 order_pos_id=order_pos_id,
+                discount_percent=line_discount.percent,
+                discount_amount=line_discount.amount,
             )
         )
         item_position += 1

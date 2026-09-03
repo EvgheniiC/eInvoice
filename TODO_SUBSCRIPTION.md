@@ -208,14 +208,14 @@ developer-API против [rechnungsapi.de](https://www.rechnungsapi.de).
   - [x] Invalid upload остаётся невалидным и показывает конкретную диагностику KoSIT
         (`KOSIT_NO_SCENARIO` для неподдерживаемого профиля)
 - [ ] Заполнить Impressum / Verantwortlicher и Datenschutzerklärung.
-  - [ ] `TODO — WRITE LATER:` юридическое имя / ФИО Betreiber.
-  - [ ] `TODO — WRITE LATER:` полный почтовый адрес Betreiber.
-  - [ ] `TODO — WRITE LATER:` контактный email.
-  - [ ] `TODO — WRITE LATER:` hosting-провайдер и страна / локация дата-центра.
-  - [ ] `TODO — WRITE LATER:` подписан ли AVV с хостером.
-        AVV (Auftragsverarbeitungsvertrag) — договор обработки данных по Art. 28 DSGVO:
-        хостер обязуется обрабатывать загруженные данные только по инструкциям Betreiber,
-        соблюдать меры безопасности и правила удаления / привлечения subprocessors.
+  - [x] юридическое имя / ФИО Betreiber: Svetlana Costina (Einzelunternehmen).
+  - [x] полный почтовый адрес: Elbinger Straße 70, 27755 Delmenhorst.
+  - [x] контактный email: svetlana.costina@gmx.de.
+  - [ ] `TODO — WRITE LATER:` Steuernummer / USt-IdNr. (ждём письмо Finanzamt).
+  - [ ] `TODO — WRITE LATER:` IBAN (счёт ещё не активирован; для Impressum не нужен).
+  - [x] hosting-провайдер: Hetzner Online GmbH, Rechenzentrum Nürnberg.
+  - [x] AVV с хостером: заключён в Hetzner-Kundenkonto (Art. 28 DSGVO).
+        PDF и Kundennummer в репозиторий не класть.
 - [x] Провести внутренний static security review всего приложения.
   - [x] Production accounts fail closed без PostgreSQL и настроенного `AUTH_SECRET_KEY`.
   - [x] Accountant package повторно проверяет PDF и XML перед добавлением оригинала.
@@ -250,7 +250,7 @@ developer-API против [rechnungsapi.de](https://www.rechnungsapi.de).
       аккаунт — отдельный legal basis (Art. 6 DSGVO + AVV) и opt-in на файлы.
 - [x] Обновить Datenschutzerklärung: модели guest / account, opt-in, TTL и локальные шрифты.
 - [ ] После выбора провайдеров дополнить Datenschutzerklärung и AVV:
-      email, hosting, платежи и object storage в DE (`TODO — WRITE LATER` выше).
+      платежи и object storage в DE; hosting/email уже внесены (Hetzner, GMX).
 - [x] Обновить `docs/THREAT_MODEL.md` и `docs/AVV_DPA.md` под аккаунты и биллинг.
 - [ ] После успешного DATEV-импорта провести пилот с Handwerk и собрать метрики воронки
       (1.9) — спрос на batch / историю должен быть подтверждён, а не угадан.

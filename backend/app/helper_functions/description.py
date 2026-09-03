@@ -20,6 +20,13 @@ class HeaderTradeAdjustment(NamedTuple):
     tax_category: Optional[str]
 
 
+class LineAllowanceDiscount(NamedTuple):
+    """Line-level allowance (EN 16931 BG-27). Empty when XML has none."""
+
+    amount: Optional[Decimal]
+    percent: Optional[Decimal]
+
+
 def _ubl_item_name_is_placeholder(name: str) -> bool:
     """True if supplier used a sentinel instead of a real article name."""
     trimmed: str = name.strip()
@@ -290,3 +297,82 @@ def get_header_trade_allowance_discount(
         tax_rate=tax_rate,
         tax_category=tax_category,
     )
+
+
+_EMPTY_LINE_DISCOUNT: LineAllowanceDiscount = LineAllowanceDiscount(
+    amount=None, percent=None
+)
+_LINE_ALLOWANCE_AMOUNT_TAGS: Tuple[str, ...] = ("Amount", "ActualAmount")
+_LINE_ALLOWANCE_PERCENT_TAGS: Tuple[str, ...] = (
+    "MultiplierFactorNumeric",
+    "CalculationPercent",
+)
+
+
+def _allowance_elements_with_false_indicator(candidates: List[Element]) -> List[Element]:
+    return [item for item in candidates if _charge_indicator_is_charge(item) is False]
+
+
+def _line_discount_allowance_elements(position: Element) -> List[Element]:
+    """UBL line allowance, else CII settlement, else CII price-level (not both)."""
+    ubl_allowances: List[Element] = _allowance_elements_with_false_indicator(
+        position.findall("AllowanceCharge")
+    )
+    if ubl_allowances:
+        return ubl_allowances
+
+    settlement_allowances: List[Element] = _allowance_elements_with_false_indicator(
+        position.findall("SpecifiedLineTradeSettlement/SpecifiedTradeAllowanceCharge")
+    )
+    if settlement_allowances:
+        return settlement_allowances
+
+    return _allowance_elements_with_false_indicator(
+        position.findall(
+            "SpecifiedLineTradeAgreement/GrossPriceProductTradePrice/AppliedTradeAllowanceCharge"
+        )
+    )
+
+
+def _first_child_decimal(element: Element, tags: Tuple[str, ...]) -> Optional[Decimal]:
+    for tag in tags:
+        child: Optional[Element] = element.find(tag)
+        if child is None or not child.text:
+            continue
+        parsed: Optional[Decimal] = parse_decimal(child.text.strip())
+        if parsed is not None:
+            return parsed
+    return None
+
+
+def get_line_allowance_discount(position: Element) -> LineAllowanceDiscount:
+    """
+    Read invoice-line allowances (ChargeIndicator false). Charges are ignored.
+
+    Several allowances: sum amounts; percent only when exactly one allowance is kept.
+    CII: settlement first; price-level is the same discount and is not added twice.
+    Missing allowance block: both fields stay empty (do not derive from unit vs line).
+    """
+    amounts: List[Decimal] = []
+    percents: List[Decimal] = []
+    for allowance in _line_discount_allowance_elements(position):
+        amount: Optional[Decimal] = _first_child_decimal(
+            allowance, _LINE_ALLOWANCE_AMOUNT_TAGS
+        )
+        if amount is None or amount <= 0:
+            continue
+        amounts.append(amount)
+        percent: Optional[Decimal] = _first_child_decimal(
+            allowance, _LINE_ALLOWANCE_PERCENT_TAGS
+        )
+        if percent is not None:
+            percents.append(percent)
+
+    if not amounts:
+        return _EMPTY_LINE_DISCOUNT
+
+    total_amount: Decimal = sum(amounts, Decimal("0"))
+    percent_value: Optional[Decimal] = (
+        percents[0] if len(amounts) == 1 and len(percents) == 1 else None
+    )
+    return LineAllowanceDiscount(amount=total_amount, percent=percent_value)

@@ -3,7 +3,8 @@
 Product notes and design docs for the eInvoice web utility
 (XRechnung / ZUGFeRD parse, validate, and export).
 
-- [Export mapping](EXPORT_MAPPING.md)
+- [EXPORT mapping](EXPORT_MAPPING.md)
+- [Steuerberater DATEV pilot (Gesprächsleitfaden)](STEUERBERATER_PILOT.md)
 - [Validation / KoSIT](VALIDATION.md)
 - [Accounts](AUTH.md)
 - [Alerts](ALERTS.md)

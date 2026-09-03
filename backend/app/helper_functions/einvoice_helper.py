@@ -21,12 +21,14 @@ from .amounts import (
 )
 from .description import (
     HeaderTradeAdjustment,
+    LineAllowanceDiscount,
     _is_gu_document,
     build_description_from_item,
     document_charge_description,
     get_document_level_charges,
     get_header_trade_allowance_discount,
     get_header_trade_charges,
+    get_line_allowance_discount,
     is_ubl_placeholder_text,
 )
 from .field_extract import extract_value, find_value_by_keywords, get_field_value
@@ -68,10 +70,12 @@ __all__ = [
     "_is_gu_document",
     "build_description_from_item",
     "HeaderTradeAdjustment",
+    "LineAllowanceDiscount",
     "document_charge_description",
     "get_document_level_charges",
     "get_header_trade_allowance_discount",
     "get_header_trade_charges",
+    "get_line_allowance_discount",
     "is_ubl_placeholder_text",
     "extract_value",
     "find_value_by_keywords",
