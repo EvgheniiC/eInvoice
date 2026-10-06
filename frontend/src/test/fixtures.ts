@@ -119,6 +119,7 @@ export function buildSession(overrides: Partial<MeResponse> = {}): MeResponse {
     memberships: [],
     history_enabled: false,
     store_originals_enabled: false,
+    is_admin: false,
     ...overrides,
     plan,
   }

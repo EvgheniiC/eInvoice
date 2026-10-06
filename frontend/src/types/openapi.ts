@@ -12,6 +12,11 @@ export interface components {
       xml_base64?: string | null;
       xml_filename?: string | null;
     };
+    AdminStatsResponse: {
+      visits_today: number;
+      visits_by_day: components["schemas"]["VisitDayStat"][];
+      paid_plan_users: number;
+    };
     BatchItemResponse: {
       id: string;
       filename: string;
@@ -260,6 +265,7 @@ export interface components {
       memberships: components["schemas"]["MembershipInfo"][];
       history_enabled: boolean;
       store_originals_enabled: boolean;
+      is_admin: boolean;
     };
     MembershipInfo: {
       organization_id: string;
@@ -443,6 +449,10 @@ export interface components {
     ValidationStatus: "valid" | "invalid" | "warning" | "not_checked";
     ViewPdfRequest: {
       invoice: components["schemas"]["InvoiceParseResponse-Input"];
+    };
+    VisitDayStat: {
+      visit_date: string;
+      visitors: number;
     };
   };
 }

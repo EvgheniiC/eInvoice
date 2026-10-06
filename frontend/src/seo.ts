@@ -93,6 +93,9 @@ export function seoForPath(pathname: string): SeoPage {
   if (path === '/verlauf') {
     return noIndexPage('Verlauf | eInvoice', '/verlauf')
   }
+  if (path === '/statistik') {
+    return noIndexPage('Statistik | eInvoice', '/statistik')
+  }
 
   return LANDING
 }

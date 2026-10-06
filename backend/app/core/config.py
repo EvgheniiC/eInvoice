@@ -78,6 +78,8 @@ class Settings(BaseSettings):
     auth_session_days: int = 14
     auth_token_hours: int = 24
     admin_api_token: Optional[str] = None
+    # Comma-separated login emails that may open the statistics page.
+    admin_emails: str = ""
     # Shared with einvoice-worker. Must not rely on /tmp (systemd PrivateTmp).
     batch_temp_dir: Optional[str] = None
     batch_poll_seconds: float = 1.0
@@ -148,6 +150,16 @@ class Settings(BaseSettings):
         if configured:
             return Path(configured)
         return Path(__file__).resolve().parents[2] / "var" / "history-originals"
+
+    @property
+    def admin_email_set(self) -> set[str]:
+        """Normalized allowlist. Empty means nobody is an administrator."""
+        found: set[str] = set()
+        for item in self.admin_emails.split(","):
+            normalized: str = item.strip().casefold()
+            if normalized:
+                found.add(normalized)
+        return found
 
     @property
     def auth_enabled(self) -> bool:

@@ -25,6 +25,7 @@ describe('seoForPath', (): void => {
     expect(seoForPath('/registrieren').robots).toBe('noindex,nofollow')
     expect(seoForPath('/organisation').robots).toBe('noindex,nofollow')
     expect(seoForPath('/verlauf').robots).toBe('noindex,nofollow')
+    expect(seoForPath('/statistik').robots).toBe('noindex,nofollow')
   })
 })
 

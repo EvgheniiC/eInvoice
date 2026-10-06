@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.config import settings
 from app.db.session import get_session_factory
+from app.services.admin_access import is_admin_email
 from app.services.auth_service import OrgContext, resolve_session
 
 AUTH_UNAVAILABLE: str = "Kontofunktionen sind nicht konfiguriert."
@@ -77,6 +78,13 @@ def require_org_role(context: OrgContext, allowed_roles: Collection[str]) -> Org
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Ihre Rolle erlaubt diese Aktion nicht.",
         )
+    return context
+
+
+def require_admin_user(context: OrgContext = Depends(get_current_org)) -> OrgContext:
+    """Allow the statistics page only for emails listed in server settings."""
+    if not is_admin_email(context.email):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Kein Zugriff.")
     return context
 
 

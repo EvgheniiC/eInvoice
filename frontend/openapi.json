@@ -885,6 +885,27 @@
         }
       }
     },
+    "/api/admin/stats": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Admin Stats",
+        "operationId": "admin_stats_api_admin_stats_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminStatsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/organizations/{organization_id}/plan": {
       "post": {
         "tags": [
@@ -1536,6 +1557,33 @@
         ],
         "title": "AccountantPackageRequest",
         "description": "ZIP package for Steuerberater: original + summary + report + Excel + DATEV."
+      },
+      "AdminStatsResponse": {
+        "properties": {
+          "visits_today": {
+            "type": "integer",
+            "title": "Visits Today"
+          },
+          "visits_by_day": {
+            "items": {
+              "$ref": "#/components/schemas/VisitDayStat"
+            },
+            "type": "array",
+            "title": "Visits By Day"
+          },
+          "paid_plan_users": {
+            "type": "integer",
+            "title": "Paid Plan Users"
+          }
+        },
+        "type": "object",
+        "required": [
+          "visits_today",
+          "visits_by_day",
+          "paid_plan_users"
+        ],
+        "title": "AdminStatsResponse",
+        "description": "Daily visitors and the number of people on Plus or Team."
       },
       "BatchItemResponse": {
         "properties": {
@@ -3299,6 +3347,11 @@
             "type": "boolean",
             "title": "Store Originals Enabled",
             "default": false
+          },
+          "is_admin": {
+            "type": "boolean",
+            "title": "Is Admin",
+            "default": false
           }
         },
         "type": "object",
@@ -3312,7 +3365,8 @@
           "plan",
           "memberships",
           "history_enabled",
-          "store_originals_enabled"
+          "store_originals_enabled",
+          "is_admin"
         ],
         "title": "MeResponse"
       },
@@ -4600,6 +4654,26 @@
         ],
         "title": "ViewPdfRequest",
         "description": "Request body: parsed invoice DTO to render as a working-copy PDF."
+      },
+      "VisitDayStat": {
+        "properties": {
+          "visit_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Visit Date"
+          },
+          "visitors": {
+            "type": "integer",
+            "title": "Visitors"
+          }
+        },
+        "type": "object",
+        "required": [
+          "visit_date",
+          "visitors"
+        ],
+        "title": "VisitDayStat",
+        "description": "Unique browsers on one calendar day."
       }
     }
   }

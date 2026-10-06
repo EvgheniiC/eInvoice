@@ -313,6 +313,19 @@ class BatchItem(Base):
     job: Mapped["BatchJob"] = relationship(back_populates="items")
 
 
+class SiteVisit(Base):
+    """One browser per calendar day. The key is a hash, never a raw cookie or IP."""
+
+    __tablename__: str = "site_visits"
+    __table_args__ = (
+        UniqueConstraint("visit_date", "visitor_key", name="uq_site_visit_day"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    visit_date: Mapped[date] = mapped_column(Date, index=True)
+    visitor_key: Mapped[str] = mapped_column(String(64))
+
+
 class InvoiceHistory(Base):
     """Opt-in parse journal. Default is metadata + file hash; original bytes stay on disk."""
 

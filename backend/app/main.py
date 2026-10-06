@@ -25,6 +25,7 @@ from app.core.metrics import (
     set_readiness_gauges,
 )
 from app.core.middleware import RequestObservabilityMiddleware, get_request_id
+from app.core.visit_middleware import VisitTrackingMiddleware
 from app.db.bootstrap import init_account_store
 
 
@@ -75,6 +76,7 @@ def create_app() -> FastAPI:
     application.add_middleware(RateLimitMiddleware)
     application.add_middleware(RequestTimeoutMiddleware)
     application.add_middleware(SecurityHeadersMiddleware)
+    application.add_middleware(VisitTrackingMiddleware)
     # Outer-most: request id + slow-request warning wrap the other middleware.
     application.add_middleware(RequestObservabilityMiddleware)
     _register_exception_handlers(application)

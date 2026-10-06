@@ -96,6 +96,9 @@ export const DATENSCHUTZ: LegalDocument = {
         'Optionales Feedback: Freitext ohne Dateianhang. Bitte keine Rechnungsdaten einfügen. ' +
           'Funnel-Zähler (Seite aufgerufen / Datei gewählt / Prüfung / Export) ohne ' +
           'Rechnungsinhalt und ohne Nutzerprofil.',
+        'Besuchszähler: zufällige Browser-Kennung im Cookie einv_visitor (httpOnly). ' +
+          'Gespeichert werden nur ein Hash dieser Kennung und das Datum, 30 Tage, ' +
+          'ohne Rechnungsinhalt und ohne Zuordnung zum Konto.',
       ],
     },
     {
@@ -107,7 +110,8 @@ export const DATENSCHUTZ: LegalDocument = {
         'Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO (Vertrag / vorvertragliche Anfrage), ' +
           'soweit Sie den Dienst nutzen, hilfsweise Art. 6 Abs. 1 lit. f DSGVO (berechtigtes ' +
           'Interesse an einem funktionierenden, sicheren Rechnungseingang). Server-Logs stützen ' +
-          'sich auf Art. 6 Abs. 1 lit. f DSGVO (Sicherheit und Missbrauchsabwehr).',
+          'sich auf Art. 6 Abs. 1 lit. f DSGVO (Sicherheit und Missbrauchsabwehr). ' +
+          'Besuchszahlen (eindeutige Browser pro Tag) ebenfalls auf Art. 6 Abs. 1 lit. f DSGVO.',
       ],
     },
     {
@@ -154,7 +158,10 @@ export const DATENSCHUTZ: LegalDocument = {
     {
       heading: '6. Cookies und Schriftarten',
       paragraphs: [
-        'eInvoice setzt ein Sitzungs-Cookie nur nach Anmeldung (httpOnly). Funnel-Zähler sind ' +
+        'eInvoice setzt ein Sitzungs-Cookie nur nach Anmeldung (httpOnly). Zusätzlich ein ' +
+          'Besuchszähler-Cookie einv_visitor (httpOnly): eine zufällige Kennung, damit derselbe ' +
+          'Browser an einem Tag einmal zählt, auch ohne Konto. Gespeichert wird nur der Hash ' +
+          'plus Datum, 30 Tage, ohne Verknüpfung zum Konto. Funnel-Zähler sind ' +
           'anonyme Zählereignisse ohne Nutzerprofil.',
         'Die Website verwendet lokale Systemschriftarten und lädt keine Schriftarten von ' +
           'externen Anbietern.',

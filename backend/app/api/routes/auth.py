@@ -20,6 +20,7 @@ from app.schemas.auth import (
     ResetPasswordRequest,
     TokenRequest,
 )
+from app.services.admin_access import is_admin_email
 from app.services.email_service import EmailDeliveryError
 from app.services.auth_service import (
     PURPOSE_MAGIC,
@@ -95,6 +96,7 @@ def _me_payload(db: Session, context: OrgContext) -> MeResponse:
         store_originals_enabled=(
             organization.store_originals_enabled if organization is not None else False
         ),
+        is_admin=is_admin_email(context.email),
     )
 
 

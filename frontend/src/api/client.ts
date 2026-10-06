@@ -1,5 +1,6 @@
 import type {
   AccountantPackageRequest,
+  AdminStatsResponse,
   BatchJobResponse,
   CapabilitiesResponse,
   ExportFormat,
@@ -274,6 +275,17 @@ export async function submitFeedback(
     throw new Error(await readErrorDetail(response, 'Feedback konnte nicht gesendet werden.'))
   }
   return response.json() as Promise<FeedbackResponse>
+}
+
+export async function fetchAdminStats(): Promise<AdminStatsResponse> {
+  const response: Response = await fetch(
+    `${API_BASE}/admin/stats`,
+    withRequestId({ method: 'GET' }),
+  )
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response, 'Statistik ist nicht verfügbar.'))
+  }
+  return response.json() as Promise<AdminStatsResponse>
 }
 
 export async function fetchMe(): Promise<MeResponse | null> {

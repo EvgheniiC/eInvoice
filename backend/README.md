@@ -43,6 +43,7 @@ Optional. Guest parse works without `DATABASE_URL`. See [docs/AUTH.md](../docs/A
 DATABASE_URL=postgresql+psycopg://einvoice:secret@127.0.0.1:5432/einvoice
 AUTH_SECRET_KEY=...
 ADMIN_API_TOKEN=...
+ADMIN_EMAILS=you@example.com
 ```
 
 ```bash

@@ -3,13 +3,23 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_db, require_admin_token
+from app.api.deps import get_db, require_admin_token, require_admin_user
 from app.db.models import Organization, Plan
 from app.schemas.auth import OrgResponse, PlanInfo, SetPlanByEmailRequest, SetPlanRequest
-from app.services.auth_service import AuthError, set_plan, set_plan_for_email
+from app.schemas.stats import AdminStatsResponse
+from app.services.auth_service import AuthError, OrgContext, set_plan, set_plan_for_email
 from app.services.quota_service import build_plan_info_for_org
+from app.services.site_stats_service import load_admin_stats
 
 router: APIRouter = APIRouter()
+
+
+@router.get("/admin/stats", response_model=AdminStatsResponse)
+def admin_stats(
+    db: Session = Depends(get_db),
+    _context: OrgContext = Depends(require_admin_user),
+) -> AdminStatsResponse:
+    return load_admin_stats(db)
 
 
 def _response(db: Session, organization: Organization, role: str = "inhaber") -> OrgResponse:

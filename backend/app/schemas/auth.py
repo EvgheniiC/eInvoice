@@ -136,6 +136,7 @@ class MeResponse(ApiModel):
     memberships: List[MembershipInfo]
     history_enabled: bool = False
     store_originals_enabled: bool = False
+    is_admin: bool = False
 
 
 class OrgUpdateRequest(ApiModel):

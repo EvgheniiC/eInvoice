@@ -24,6 +24,7 @@ ENVIRONMENT=production
 DATABASE_URL=postgresql+psycopg://einvoice:choose-a-password@127.0.0.1:5432/einvoice
 AUTH_SECRET_KEY=long-random-string
 ADMIN_API_TOKEN=long-random-string
+ADMIN_EMAILS=you@example.com
 PUBLIC_APP_URL=https://erechnung-smart.de
 EMAIL_BACKEND=smtp
 SMTP_HOST=mail.your-server.de
@@ -35,6 +36,7 @@ SMTP_STARTTLS=true
 ```
 
 Generate secrets with `python -c "import secrets; print(secrets.token_urlsafe(48))"`.
+`ADMIN_EMAILS` is a comma-separated list of login addresses that see the Statistik page.
 Then `alembic upgrade head` and `systemctl restart einvoice-api`.
 
 Install account packages into the existing venv (after pull), then apply schema:

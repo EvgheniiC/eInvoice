@@ -19,6 +19,7 @@ describe('pathToRoute', (): void => {
     expect(pathToRoute('/organisation')).toBe('org')
     expect(pathToRoute('/verlauf')).toBe('history')
     expect(pathToRoute('/tarife')).toBe('pricing')
+    expect(pathToRoute('/statistik')).toBe('stats')
   })
 
   it('maps unknown paths to landing', (): void => {
@@ -40,6 +41,7 @@ describe('routeToPath', (): void => {
     expect(routeToPath('org')).toBe('/organisation')
     expect(routeToPath('history')).toBe('/verlauf')
     expect(routeToPath('pricing')).toBe('/tarife')
+    expect(routeToPath('stats')).toBe('/statistik')
     expect(routeToPath('landing')).toBe('/')
   })
 })

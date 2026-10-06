@@ -46,6 +46,7 @@ describe('LoginPage', (): void => {
       memberships: [],
       history_enabled: false,
       store_originals_enabled: false,
+      is_admin: false,
     }
     vi.mocked(loginAccount).mockResolvedValue(session)
 

@@ -9,6 +9,7 @@ import { LoginPage } from './pages/LoginPage'
 import { HistoryPage } from './pages/HistoryPage'
 import { OrgSettingsPage } from './pages/OrgSettingsPage'
 import { PricingPage } from './pages/PricingPage'
+import { AdminStatsPage } from './pages/AdminStatsPage'
 import { RegisterPage, type RegisterSuccess } from './pages/RegisterPage'
 import { ResetPasswordPage } from './pages/ResetPasswordPage'
 import { UploadPage } from './pages/UploadPage'
@@ -22,6 +23,7 @@ function App(): JSX.Element {
   const [route, setRoute] = useState<AppRoute>(() => pathToRoute(window.location.pathname))
   const [locationSearch, setLocationSearch] = useState<string>(() => window.location.search)
   const [session, setSession] = useState<MeResponse | null>(null)
+  const [sessionReady, setSessionReady] = useState<boolean>(false)
   const [loginNotice, setLoginNotice] = useState<string | null>(null)
   const [loginEmail, setLoginEmail] = useState<string>('')
   const [loginVerifyToken, setLoginVerifyToken] = useState<string | null>(null)
@@ -39,9 +41,18 @@ function App(): JSX.Element {
   }, [])
 
   useEffect(() => {
+    let cancelled: boolean = false
+    setSessionReady(false)
     void fetchMe().then((value: MeResponse | null) => {
+      if (cancelled) {
+        return
+      }
       setSession(value)
+      setSessionReady(true)
     })
+    return () => {
+      cancelled = true
+    }
   }, [route])
 
   useEffect(() => {
@@ -195,6 +206,15 @@ function App(): JSX.Element {
         <HistoryPage
           onNavigate={navigate}
           session={session}
+          onLogout={() => {
+            void handleLogout()
+          }}
+        />
+      ) : route === 'stats' ? (
+        <AdminStatsPage
+          onNavigate={navigate}
+          session={session}
+          sessionReady={sessionReady}
           onLogout={() => {
             void handleLogout()
           }}

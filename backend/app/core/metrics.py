@@ -43,6 +43,7 @@ _KNOWN_PATHS: Final[frozenset[str]] = frozenset(
         "/api/billing/checkout",
         "/api/billing/complete",
         "/api/admin/plans",
+        "/api/admin/stats",
         "/api/invoices/parse",
         "/api/invoices/history",
         "/api/invoices/history/{record_id}/accountant-package",
