@@ -230,6 +230,8 @@ export interface components {
       quantity?: number | string | null;
       unit?: string | null;
       unit_price?: number | string | null;
+      discount_percent?: number | string | null;
+      discount_amount?: number | string | null;
       tax_rate?: number | string | null;
       net_amount?: number | string | null;
       gross_amount?: number | string | null;
@@ -240,6 +242,8 @@ export interface components {
       quantity: string | null;
       unit: string | null;
       unit_price: string | null;
+      discount_percent: string | null;
+      discount_amount: string | null;
       tax_rate: string | null;
       net_amount: string | null;
       gross_amount: string | null;

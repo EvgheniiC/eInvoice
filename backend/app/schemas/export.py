@@ -20,7 +20,7 @@ class OrgProfile:
     accountant_email: Optional[str] = None
 
 # Frozen accounting export schema. Bump major when columns/semantics break Kanzlei imports.
-EXPORT_FORMAT_VERSION: str = "1.0"
+EXPORT_FORMAT_VERSION: str = "1.1"
 
 DATEV_LIMITATIONS: str = (
     "Minimaler DATEV-Buchungsstapel-CSV (Semikolon, deutsche Dezimalzahlen, CP1252). "
@@ -100,6 +100,8 @@ EXPORT_COLUMNS: List[str] = [
     "line_quantity",
     "line_unit",
     "line_unit_price",
+    "line_discount_percent",
+    "line_discount_amount",
     "line_tax_rate",
     "line_net_amount",
 ]

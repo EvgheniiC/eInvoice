@@ -5,7 +5,7 @@ Testdateien liegen lokal unter `backend/tests/xml_files/` und `backend/tests/pdf
 (nicht im Git). Pakete auf **https://erechnung-smart.de** erzeugen, damit Format
 und KoSIT dem Production-Stand entsprechen.
 
-Exportvertrag: Format **1.0**, siehe `docs/EXPORT_MAPPING.md`.
+Exportvertrag: Format **1.1**, siehe `docs/EXPORT_MAPPING.md`.
 
 ---
 
@@ -53,7 +53,7 @@ Nicht in den Pilot-ZIP (nur zum Zeigen der Prüfung, nicht zum DATEV-Import):
 
 Erwarteter Inhalt jedes Einzel-ZIP:
 
-- `export_manifest.txt` (Format 1.0)
+- `export_manifest.txt` (Format 1.1)
 - `datev_hinweise.txt`
 - `summary.txt`
 - `pruefbericht_*.txt`

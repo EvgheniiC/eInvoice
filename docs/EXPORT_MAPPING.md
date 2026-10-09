@@ -1,6 +1,6 @@
 # Export mapping
 
-Stable accounting export contract for eInvoice **format version 1.0**.
+Stable accounting export contract for eInvoice **format version 1.1**.
 
 Use this document together with `GET /api/invoices/export/mapping`.
 Column names and DATEV field names in 1.x stay additive: new optional columns may
@@ -45,6 +45,8 @@ no positions, one row with empty `line_*` fields is written.
 | `line_quantity` | BT-129 | 2 decimal places |
 | `line_unit` | BT-130 | |
 | `line_unit_price` | BT-146 | 2 decimal places |
+| `line_discount_percent` | BT-147 | Line allowance percent; empty when the line has none |
+| `line_discount_amount` | BT-136 | Line allowance amount; empty when the line has none |
 | `line_tax_rate` | BT-151 | 2 decimal places |
 | `line_net_amount` | BT-131 | 2 decimal places |
 
@@ -120,12 +122,13 @@ from a completed batch while originals still exist in `BATCH_TEMP_DIR` (short TT
 | `datev_rechnungen_*.csv` | DATEV-compatible CSV, one booking line per invoice |
 | `original/NN_*.xml` / `original/NN_*.pdf` | Source files from the batch |
 
-This is a 1.x addition (optional ZIP members). Column names stay on version **1.0**.
+This is a 1.x addition (optional ZIP members). CSV/Excel columns are version **1.1**.
 
 ## Versioning
 
-Current version: **1.0**
+Current version: **1.1**
 
+- **1.1** adds optional `line_discount_percent` and `line_discount_amount`. Empty when the line has no allowance. DATEV stays one gross booking line.
 - **Patch / product UI changes** do not bump this version
 - **1.x** may add optional columns or ZIP members
 - **2.0** is required if a column is renamed, removed, or changes meaning

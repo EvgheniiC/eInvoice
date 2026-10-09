@@ -90,4 +90,33 @@ describe('InvoiceView', (): void => {
 
     expect(onUpgrade).toHaveBeenCalledTimes(1)
   })
+
+  it('hides discount columns when no line has an allowance', (): void => {
+    render(<InvoiceView invoice={buildInvoice()} />)
+    expect(screen.queryByRole('columnheader', { name: 'Rabatt %' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('columnheader', { name: 'Rabatt' })).not.toBeInTheDocument()
+  })
+
+  it('shows line discount next to the unit price', (): void => {
+    const invoice: InvoiceParseResponse = buildInvoice({
+      line_items: [
+        {
+          ...buildInvoice().line_items[0],
+          description: 'TUER',
+          quantity: '1',
+          unit_price: '706.27',
+          discount_percent: '18.50',
+          discount_amount: '130.66',
+          net_amount: '575.61',
+        },
+      ],
+    })
+    render(<InvoiceView invoice={invoice} />)
+    expect(screen.getByRole('columnheader', { name: 'Rabatt %' })).toBeInTheDocument()
+    expect(screen.getByRole('columnheader', { name: 'Rabatt' })).toBeInTheDocument()
+    expect(screen.getByText('18,50 %')).toBeInTheDocument()
+    expect(screen.getByText('130,66 EUR')).toBeInTheDocument()
+    expect(screen.getByText('706,27 EUR')).toBeInTheDocument()
+    expect(screen.getByText('575,61 EUR')).toBeInTheDocument()
+  })
 })

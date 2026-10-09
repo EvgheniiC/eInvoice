@@ -52,6 +52,8 @@ class LineItem(ApiModel):
     quantity: Optional[Decimal] = None
     unit: Optional[str] = None
     unit_price: Optional[Decimal] = None
+    discount_percent: Optional[Decimal] = None
+    discount_amount: Optional[Decimal] = None
     tax_rate: Optional[Decimal] = None
     net_amount: Optional[Decimal] = None
     gross_amount: Optional[Decimal] = None

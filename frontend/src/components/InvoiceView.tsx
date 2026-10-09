@@ -43,6 +43,25 @@ function formatAmount(value: DecimalValue | null | undefined, currency: string |
   return currency ? `${formatted} ${currency}` : formatted
 }
 
+function formatPercent(value: DecimalValue | null | undefined): string {
+  if (value === null || value === undefined) {
+    return '—'
+  }
+  const numericValue: number = Number(value)
+  if (!Number.isFinite(numericValue)) {
+    return '—'
+  }
+  const formatted: string = numericValue.toLocaleString('de-DE', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+  return `${formatted} %`
+}
+
+function lineHasDiscount(item: LineItem): boolean {
+  return item.discount_amount != null || item.discount_percent != null
+}
+
 function formatDateDe(value: string | null | undefined): string {
   if (!value) {
     return '—'
@@ -353,6 +372,7 @@ export function InvoiceView({
   onUpgrade,
 }: InvoiceViewProps): JSX.Element {
   const currency: string | null = invoice.totals?.currency ?? null
+  const showLineDiscount: boolean = invoice.line_items.some(lineHasDiscount)
   const [exportError, setExportError] = useState<string | null>(null)
   const [exporting, setExporting] = useState<ExportAction | null>(null)
   const [exportConfirmed, setExportConfirmed] = useState<boolean>(false)
@@ -846,6 +866,8 @@ export function InvoiceView({
                   <th scope="col">Beschreibung</th>
                   <th scope="col">Menge</th>
                   <th scope="col">Preis</th>
+                  {showLineDiscount && <th scope="col">Rabatt %</th>}
+                  {showLineDiscount && <th scope="col">Rabatt</th>}
                   <th scope="col">MwSt %</th>
                   <th scope="col">Netto</th>
                   <th scope="col">Brutto</th>
@@ -863,6 +885,8 @@ export function InvoiceView({
                       {item.unit ? ` ${item.unit}` : ''}
                     </td>
                     <td>{formatAmount(item.unit_price, currency)}</td>
+                    {showLineDiscount && <td>{formatPercent(item.discount_percent)}</td>}
+                    {showLineDiscount && <td>{formatAmount(item.discount_amount, currency)}</td>}
                     <td>{item.tax_rate !== null ? `${String(item.tax_rate)} %` : '—'}</td>
                     <td>{formatAmount(item.net_amount, currency)}</td>
                     <td>{formatAmount(item.gross_amount, currency)}</td>

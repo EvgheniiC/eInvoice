@@ -4,6 +4,7 @@ import io
 import unittest
 import unittest.mock
 import zipfile
+from decimal import Decimal
 from pathlib import Path
 
 from fastapi.testclient import TestClient
@@ -108,6 +109,8 @@ class TestExportService(unittest.TestCase):
         self.assertEqual(rows[0]["gross"], "270,73")
         self.assertEqual(rows[0]["issue_date"], "31.01.2025")
         self.assertEqual(rows[0]["line_description"], "Beratung")
+        self.assertEqual(rows[0]["line_discount_percent"], "")
+        self.assertEqual(rows[0]["line_discount_amount"], "")
 
     def test_excel_sheets(self) -> None:
         content, media, filename = self.service.export(self.invoice, ExportFormat.EXCEL)
@@ -118,6 +121,20 @@ class TestExportService(unittest.TestCase):
         self.assertGreaterEqual(workbook["Lines"].max_row, 2)
         self.assertEqual(workbook["Invoice"]["A2"].value, "export_format_version")
         self.assertEqual(workbook["Invoice"]["B2"].value, EXPORT_FORMAT_VERSION)
+        line_headers: list[object] = [cell.value for cell in workbook["Lines"][1]]
+        self.assertIn("discount_percent", line_headers)
+        self.assertIn("discount_amount", line_headers)
+
+    def test_csv_writes_line_discount(self) -> None:
+        invoice: InvoiceParseResponse = _sample_invoice()
+        invoice.line_items[0].discount_percent = Decimal("18.50")
+        invoice.line_items[0].discount_amount = Decimal("130.66")
+        content, _, _ = self.service.export(invoice, ExportFormat.CSV)
+        text: str = content.decode("utf-8-sig")
+        reader = csv.DictReader(io.StringIO(text), delimiter=";")
+        rows = list(reader)
+        self.assertEqual(rows[0]["line_discount_percent"], "18,50")
+        self.assertEqual(rows[0]["line_discount_amount"], "130,66")
 
     def test_datev_german_decimal_and_encoding(self) -> None:
         content, media, filename = self.service.export(self.invoice, ExportFormat.DATEV)

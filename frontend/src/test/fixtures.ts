@@ -50,6 +50,8 @@ const DEFAULT_LINE_ITEMS: LineItem[] = [
     quantity: '1',
     unit: 'HUR',
     unit_price: '227.50',
+    discount_percent: null,
+    discount_amount: null,
     tax_rate: '19',
     net_amount: '227.50',
     gross_amount: '270.73',

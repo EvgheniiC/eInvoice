@@ -6,6 +6,7 @@ import io
 import unittest
 import zipfile
 from datetime import datetime, timezone
+from decimal import Decimal
 from typing import Optional
 
 from PyPDF2 import PdfReader
@@ -120,6 +121,16 @@ class TestViewPdfService(unittest.TestCase):
         self.assertIn("DE95 7004 0041 0228 8405 00", text)
         self.assertLess(text.find("Zahlungsreferenz"), text.find("Positionen"))
         self.assertLess(text.find("Positionen"), text.find("Steuersatz"))
+        self.assertNotIn("Rabatt", text)
+
+    def test_pdf_shows_line_discount_when_present(self) -> None:
+        invoice: InvoiceParseResponse = _sample_invoice()
+        invoice.line_items[0].discount_percent = Decimal("18.50")
+        invoice.line_items[0].discount_amount = Decimal("130.66")
+        text: str = _pdf_text(self.service.render(invoice)[0])
+        self.assertIn("Rabatt", text)
+        self.assertIn("18,50", text)
+        self.assertIn("130,66", text)
 
     def test_invalid_invoice_still_renders(self) -> None:
         invoice: InvoiceParseResponse = _sample_invoice()

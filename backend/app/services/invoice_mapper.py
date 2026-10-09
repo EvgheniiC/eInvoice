@@ -215,6 +215,8 @@ def _map_line_items(header: XmlInvoiceHeader) -> List[LineItem]:
                 quantity=_as_decimal(position_dict.get("quantity")),
                 unit=unit,
                 unit_price=_as_decimal(position_dict.get("single_net_price")),
+                discount_percent=_as_decimal(position_dict.get("discount_percent")),
+                discount_amount=_as_decimal(position_dict.get("discount_amount")),
                 tax_rate=tax_rate,
                 net_amount=net_amount,
                 gross_amount=gross_amount,

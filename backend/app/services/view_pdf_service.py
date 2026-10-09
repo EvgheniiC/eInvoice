@@ -352,38 +352,77 @@ def _tax_table(invoice: InvoiceParseResponse) -> Table:
     return _grid_table(tax_rows, [USABLE_WIDTH * 0.22, USABLE_WIDTH * 0.26])
 
 
+def _line_has_discount(item: LineItem) -> bool:
+    return item.discount_amount is not None or item.discount_percent is not None
+
+
 def _positions_table(invoice: InvoiceParseResponse) -> Table:
     currency: Optional[str] = invoice.totals.currency if invoice.totals else None
+    show_discount: bool = any(_line_has_discount(item) for item in invoice.line_items)
     header: list[Paragraph] = [
         _p("Nr", _TH_STYLE),
         _p("Beschreibung", _TH_STYLE),
         _p("Menge", _TH_STYLE),
         _p("Preis", _TH_STYLE),
-        _p("Gesamt", _TH_STYLE),
-        _p("MwSt %", _TH_STYLE),
     ]
+    if show_discount:
+        header.extend(
+            [
+                _p("Rabatt %", _TH_STYLE),
+                _p("Rabatt", _TH_STYLE),
+            ]
+        )
+    header.extend(
+        [
+            _p("Gesamt", _TH_STYLE),
+            _p("MwSt %", _TH_STYLE),
+        ]
+    )
     rows: list[list[Paragraph]] = [header]
     for index, item in enumerate(invoice.line_items):
         position: str = str(item.position) if item.position is not None else str(index + 1)
         total: Optional[Decimal] = item.net_amount if item.net_amount is not None else item.gross_amount
-        rows.append(
+        cells: list[Paragraph] = [
+            _p(position, _TD_STYLE),
+            _p(_pdf_text(item.description), _TD_STYLE),
+            _p(_format_quantity(item), _TD_RIGHT_STYLE),
+            _p(_format_amount(item.unit_price, currency), _TD_RIGHT_STYLE),
+        ]
+        if show_discount:
+            cells.extend(
+                [
+                    _p(_format_discount_percent(item.discount_percent), _TD_RIGHT_STYLE),
+                    _p(_format_amount(item.discount_amount, currency), _TD_RIGHT_STYLE),
+                ]
+            )
+        cells.extend(
             [
-                _p(position, _TD_STYLE),
-                _p(_pdf_text(item.description), _TD_STYLE),
-                _p(_format_quantity(item), _TD_RIGHT_STYLE),
-                _p(_format_amount(item.unit_price, currency), _TD_RIGHT_STYLE),
                 _p(_format_amount(total, currency), _TD_RIGHT_STYLE),
                 _p(_format_percent(item.tax_rate), _TD_RIGHT_STYLE),
             ]
         )
-    widths: list[float] = [
-        USABLE_WIDTH * 0.07,
-        USABLE_WIDTH * 0.41,
-        USABLE_WIDTH * 0.12,
-        USABLE_WIDTH * 0.14,
-        USABLE_WIDTH * 0.14,
-        USABLE_WIDTH * 0.12,
-    ]
+        rows.append(cells)
+    widths: list[float] = (
+        [
+            USABLE_WIDTH * 0.06,
+            USABLE_WIDTH * 0.27,
+            USABLE_WIDTH * 0.10,
+            USABLE_WIDTH * 0.12,
+            USABLE_WIDTH * 0.10,
+            USABLE_WIDTH * 0.13,
+            USABLE_WIDTH * 0.12,
+            USABLE_WIDTH * 0.10,
+        ]
+        if show_discount
+        else [
+            USABLE_WIDTH * 0.07,
+            USABLE_WIDTH * 0.41,
+            USABLE_WIDTH * 0.12,
+            USABLE_WIDTH * 0.14,
+            USABLE_WIDTH * 0.14,
+            USABLE_WIDTH * 0.12,
+        ]
+    )
     table: Table = _grid_table(rows, widths, repeat_header=True)
     return table
 
@@ -481,6 +520,14 @@ def _format_amount(value: Optional[Decimal], currency: Optional[str]) -> str:
     if currency:
         return f"{number} {_pdf_text(currency)}"
     return number
+
+
+def _format_discount_percent(value: Optional[Decimal]) -> str:
+    if value is None:
+        return MISSING
+    quantized: Decimal = value.quantize(Decimal("0.01"))
+    text: str = f"{quantized:.2f}".replace(".", ",")
+    return f"{text} %"
 
 
 def _format_percent(value: Optional[Decimal]) -> str:

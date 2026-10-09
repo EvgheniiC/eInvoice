@@ -10,6 +10,8 @@ from unittest.mock import Mock
 from app.data_class.XmlInvoiceHeader import XmlInvoiceHeader
 from app.invoice_handler.xml_parser_header import get_xml_header
 from app.invoice_handler.xml_parser_positions import get_xml_positions
+from app.schemas.invoice import LineItem
+from app.services.invoice_mapper import map_to_parse_response
 
 CII_NS: str = """xmlns:rsm="urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100"
  xmlns:ram="urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100"
@@ -236,6 +238,19 @@ class TestUblLineAllowances(unittest.TestCase):
             self.assertEqual(position["total_net_price"], line_net)
             self.assertEqual(position["discount_amount"], amount)
             self.assertEqual(position["discount_percent"], percent)
+
+    def test_api_line_item_keeps_unit_price_and_exposes_discount(self) -> None:
+        header: XmlInvoiceHeader = _parse(_babelsberg_ubl_xml())
+        line: LineItem = map_to_parse_response(
+            filename="discount.xml",
+            file_type="xrechnung_xml",
+            header=header,
+            vendor_data={},
+        ).line_items[0]
+        self.assertEqual(line.unit_price, Decimal("706.27"))
+        self.assertEqual(line.net_amount, Decimal("575.61"))
+        self.assertEqual(line.discount_amount, Decimal("130.66"))
+        self.assertEqual(line.discount_percent, Decimal("18.50"))
 
     def test_no_allowance_leaves_discount_empty(self) -> None:
         xml_text: str = _ubl_invoice_xml(
