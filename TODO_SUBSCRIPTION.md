@@ -212,7 +212,7 @@ developer-API против [rechnungsapi.de](https://www.rechnungsapi.de).
   - [x] полный почтовый адрес: Elbinger Straße 70, 27755 Delmenhorst.
   - [x] контактный email: svetlana.costina@gmx.de.
   - [ ] `TODO — WRITE LATER:` Steuernummer / USt-IdNr. (ждём письмо Finanzamt).
-  - [ ] `TODO — WRITE LATER:` IBAN (счёт ещё не активирован; для Impressum не нужен).
+  - [x] IBAN фирмы активирован. В Impressum номер не публикуется.
   - [x] hosting-провайдер: Hetzner Online GmbH, Rechenzentrum Nürnberg.
   - [x] AVV с хостером: заключён в Hetzner-Kundenkonto (Art. 28 DSGVO).
         PDF и Kundennummer в репозиторий не класть.
