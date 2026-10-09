@@ -58,6 +58,9 @@ export function PageNav({
           Anmelden
         </button>
       )}
+      <button type="button" className="page-nav__link" onClick={() => onNavigate('upload')}>
+        Rechnung hochladen
+      </button>
     </nav>
   )
 }
