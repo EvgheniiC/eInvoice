@@ -124,6 +124,34 @@ class TestAdminStats(unittest.TestCase):
         )
         self.assertEqual(yesterday_row["visitors"], 1)
 
+    def test_actions_count_reads_and_accountant_packages(self) -> None:
+        from app.core.metrics import observe_funnel
+
+        self._verify(ADMIN_EMAIL)
+        self._login(ADMIN_EMAIL)
+        landing = self.client.post("/api/telemetry/funnel", json={"step": "landing"})
+        upload = self.client.post("/api/telemetry/funnel", json={"step": "upload"})
+        self.assertEqual(landing.status_code, 200)
+        self.assertEqual(upload.status_code, 200)
+        observe_funnel("parse_success")
+        observe_funnel("accountant_package")
+        observe_funnel("export")
+
+        stats = self.client.get("/api/admin/stats")
+        self.assertEqual(stats.status_code, 200)
+        body: dict[str, object] = stats.json()
+        self.assertEqual(body["parses_today"], 1)
+        self.assertEqual(body["packages_today"], 1)
+        self.assertEqual(body["exports_today"], 1)
+        actions: list[dict[str, object]] = body["actions_by_day"]  # type: ignore[assignment]
+        self.assertEqual(len(actions), 14)
+        today_row: dict[str, object] = actions[0]
+        self.assertEqual(today_row["landing"], 1)
+        self.assertEqual(today_row["upload"], 1)
+        self.assertEqual(today_row["parse_success"], 1)
+        self.assertEqual(today_row["accountant_package"], 1)
+        self.assertNotIn("invoice", stats.text)
+
     def _verify(self, email: str) -> None:
         registered = self.client.post(
             "/api/auth/register",

@@ -223,6 +223,7 @@ def export_history_accountant_package(
         "Content-Disposition": f'attachment; filename="{filename}"',
     }
     observe_funnel("export")
+    observe_funnel("accountant_package")
     return Response(content=content, media_type=media_type, headers=headers)
 
 
@@ -304,6 +305,7 @@ def export_batch_accountant_package(
         "Content-Disposition": f'attachment; filename="{filename}"',
     }
     observe_funnel("export")
+    observe_funnel("accountant_package")
     return Response(content=content, media_type=media_type, headers=headers)
 
 

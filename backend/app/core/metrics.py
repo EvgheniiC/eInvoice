@@ -42,6 +42,9 @@ _KNOWN_PATHS: Final[frozenset[str]] = frozenset(
         "/api/admin/plan-requests",
         "/api/billing/checkout",
         "/api/billing/complete",
+        "/api/billing/config",
+        "/api/billing/portal",
+        "/api/billing/webhook",
         "/api/admin/plans",
         "/api/admin/stats",
         "/api/invoices/parse",
@@ -61,7 +64,7 @@ _KNOWN_PATHS: Final[frozenset[str]] = frozenset(
 )
 
 _FUNNEL_STEPS: Final[frozenset[str]] = frozenset(
-    {"landing", "upload", "parse_success", "export"}
+    {"landing", "upload", "parse_success", "export", "accountant_package"}
 )
 
 _SKIP_PATHS: Final[frozenset[str]] = frozenset({"/metrics"})
@@ -229,7 +232,11 @@ def observe_funnel(step: str) -> None:
     try:
         FUNNEL_TOTAL.labels(label).inc()
     except Exception:
-        return
+        pass
+    # Lazy import: error logging imports this module, so a top-level import would cycle.
+    from app.services.site_stats_service import record_funnel_step
+
+    record_funnel_step(label)
 
 
 def observe_timeout(component: str) -> None:

@@ -3,13 +3,17 @@ import { fetchAdminStats } from '../api/client'
 import { PageNav } from '../components/PageNav'
 import { SiteFooter } from '../components/SiteFooter'
 import type { AppRoute } from '../routing'
-import type { AdminStatsResponse, MeResponse, VisitDayStat } from '../types/invoice'
+import type { ActionDayStat, AdminStatsResponse, MeResponse } from '../types/invoice'
 
 type AdminStatsPageProps = {
   onNavigate: (route: AppRoute) => void
   session: MeResponse | null
   sessionReady: boolean
   onLogout: () => void
+}
+
+function packageTotal(days: ActionDayStat[]): number {
+  return days.reduce((sum: number, day: ActionDayStat) => sum + day.accountant_package, 0)
 }
 
 function formatCount(value: number): string {
@@ -72,7 +76,10 @@ export function AdminStatsPage({
         </div>
         <h1 tabIndex={-1}>Statistik</h1>
         <p className="page__lead">
-          Besuche zählen jeden Browser einmal pro Tag, einschließlich Gäste ohne Konto.
+          Besuche zählen jeden Browser einmal pro Tag, einschließlich Gäste ohne Konto. Gelesen und
+          Steuerberater-Paket zählt der Server nur nach einer echten Prüfung oder einem echten ZIP.
+          Seitenaufrufe kann derselbe Browser mehrfach auslösen. Ältere Tage bleiben bei 0, bis diese
+          Zählung läuft.
         </p>
       </header>
 
@@ -109,27 +116,51 @@ export function AdminStatsPage({
               <dd>{formatCount(stats.visits_today)}</dd>
             </div>
             <div className="stats-card">
+              <dt>Rechnungen gelesen heute</dt>
+              <dd>{formatCount(stats.parses_today)}</dd>
+            </div>
+            <div className="stats-card">
+              <dt>Steuerberater-Pakete heute</dt>
+              <dd>{formatCount(stats.packages_today)}</dd>
+            </div>
+            <div className="stats-card">
+              <dt>Steuerberater-Pakete, 14 Tage</dt>
+              <dd>{formatCount(packageTotal(stats.actions_by_day))}</dd>
+            </div>
+            <div className="stats-card">
               <dt>Personen mit Plus oder Team</dt>
               <dd>{formatCount(stats.paid_plan_users)}</dd>
             </div>
           </dl>
-          <h2>Besuche pro Tag</h2>
-          <table className="stats-table">
-            <thead>
-              <tr>
-                <th scope="col">Datum</th>
-                <th scope="col">Besuche</th>
-              </tr>
-            </thead>
-            <tbody>
-              {stats.visits_by_day.map((day: VisitDayStat) => (
-                <tr key={day.visit_date}>
-                  <td>{formatVisitDate(day.visit_date)}</td>
-                  <td>{formatCount(day.visitors)}</td>
+          <h2>Aktionen pro Tag</h2>
+          <div className="stats-table-wrap">
+            <table className="stats-table">
+              <thead>
+                <tr>
+                  <th scope="col">Datum</th>
+                  <th className="num" scope="col">Besuche</th>
+                  <th className="num" scope="col">Startseite</th>
+                  <th className="num" scope="col">Empfang</th>
+                  <th className="num" scope="col">Gelesen</th>
+                  <th className="num" scope="col">Paket</th>
+                  <th className="num" scope="col">Downloads</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {stats.actions_by_day.map((day: ActionDayStat) => (
+                  <tr key={day.event_date}>
+                    <td>{formatVisitDate(day.event_date)}</td>
+                    <td className="num">{formatCount(day.visitors)}</td>
+                    <td className="num">{formatCount(day.landing)}</td>
+                    <td className="num">{formatCount(day.upload)}</td>
+                    <td className="num">{formatCount(day.parse_success)}</td>
+                    <td className="num">{formatCount(day.accountant_package)}</td>
+                    <td className="num">{formatCount(day.export)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </>
       )}
       <SiteFooter onNavigate={onNavigate} />

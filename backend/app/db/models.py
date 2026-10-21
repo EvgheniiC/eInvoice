@@ -89,6 +89,10 @@ class Organization(Base):
     vat_id: Mapped[Optional[str]] = mapped_column(String(16), nullable=True)
     iban: Mapped[Optional[str]] = mapped_column(String(34), nullable=True)
     accountant_email: Mapped[Optional[str]] = mapped_column(String(254), nullable=True)
+    stripe_customer_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, unique=True)
+    stripe_subscription_id: Mapped[Optional[str]] = mapped_column(
+        String(255), nullable=True, unique=True
+    )
 
     plan: Mapped[Plan] = relationship(back_populates="organizations")
     memberships: Mapped[list["Membership"]] = relationship(back_populates="organization")
@@ -251,6 +255,7 @@ class BillingCheckoutSession(Base):
     status: Mapped[BillingCheckoutStatus] = mapped_column(String(16), index=True, default="pending")
     token_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     provider: Mapped[str] = mapped_column(String(16), default="stub")
+    provider_session_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
     completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
@@ -311,6 +316,24 @@ class BatchItem(Base):
     finished_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
     job: Mapped["BatchJob"] = relationship(back_populates="items")
+
+
+class FunnelDaily(Base):
+    """Daily action counts. No visitor id and no invoice content."""
+
+    __tablename__: str = "funnel_daily"
+    __table_args__ = (
+        UniqueConstraint("event_date", "step", name="uq_funnel_daily_step"),
+        CheckConstraint(
+            "step IN ('landing', 'upload', 'parse_success', 'export', 'accountant_package')",
+            name="ck_funnel_daily_step",
+        ),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    event_date: Mapped[date] = mapped_column(Date, index=True)
+    step: Mapped[str] = mapped_column(String(32))
+    event_count: Mapped[int] = mapped_column(Integer, default=0)
 
 
 class SiteVisit(Base):

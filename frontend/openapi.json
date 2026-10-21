@@ -803,6 +803,28 @@
         }
       }
     },
+    "/api/billing/config": {
+      "get": {
+        "tags": [
+          "billing"
+        ],
+        "summary": "Get Billing Config",
+        "description": "Tell the Tarife page whether checkout charges through Stripe.",
+        "operationId": "get_billing_config_api_billing_config_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingConfigResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/billing/checkout": {
       "post": {
         "tags": [
@@ -838,6 +860,47 @@
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
                 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/billing/portal": {
+      "post": {
+        "tags": [
+          "billing"
+        ],
+        "summary": "Post Billing Portal",
+        "operationId": "post_billing_portal_api_billing_portal_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingPortalResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/billing/webhook": {
+      "post": {
+        "tags": [
+          "billing"
+        ],
+        "summary": "Post Billing Webhook",
+        "description": "Stripe fulfillment. The browser success page does not activate the plan.",
+        "operationId": "post_billing_webhook_api_billing_webhook_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           }
@@ -1558,11 +1621,68 @@
         "title": "AccountantPackageRequest",
         "description": "ZIP package for Steuerberater: original + summary + report + Excel + DATEV."
       },
+      "ActionDayStat": {
+        "properties": {
+          "event_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Event Date"
+          },
+          "visitors": {
+            "type": "integer",
+            "title": "Visitors"
+          },
+          "landing": {
+            "type": "integer",
+            "title": "Landing"
+          },
+          "upload": {
+            "type": "integer",
+            "title": "Upload"
+          },
+          "parse_success": {
+            "type": "integer",
+            "title": "Parse Success"
+          },
+          "accountant_package": {
+            "type": "integer",
+            "title": "Accountant Package"
+          },
+          "export": {
+            "type": "integer",
+            "title": "Export"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event_date",
+          "visitors",
+          "landing",
+          "upload",
+          "parse_success",
+          "accountant_package",
+          "export"
+        ],
+        "title": "ActionDayStat",
+        "description": "Visitors plus action counts for one calendar day. No invoice content."
+      },
       "AdminStatsResponse": {
         "properties": {
           "visits_today": {
             "type": "integer",
             "title": "Visits Today"
+          },
+          "parses_today": {
+            "type": "integer",
+            "title": "Parses Today"
+          },
+          "packages_today": {
+            "type": "integer",
+            "title": "Packages Today"
+          },
+          "exports_today": {
+            "type": "integer",
+            "title": "Exports Today"
           },
           "visits_by_day": {
             "items": {
@@ -1570,6 +1690,13 @@
             },
             "type": "array",
             "title": "Visits By Day"
+          },
+          "actions_by_day": {
+            "items": {
+              "$ref": "#/components/schemas/ActionDayStat"
+            },
+            "type": "array",
+            "title": "Actions By Day"
           },
           "paid_plan_users": {
             "type": "integer",
@@ -1579,11 +1706,15 @@
         "type": "object",
         "required": [
           "visits_today",
+          "parses_today",
+          "packages_today",
+          "exports_today",
           "visits_by_day",
+          "actions_by_day",
           "paid_plan_users"
         ],
         "title": "AdminStatsResponse",
-        "description": "Daily visitors and the number of people on Plus or Team."
+        "description": "Daily visitors, product actions, and people on Plus or Team."
       },
       "BatchItemResponse": {
         "properties": {
@@ -1776,7 +1907,10 @@
           },
           "provider": {
             "type": "string",
-            "const": "stub",
+            "enum": [
+              "stub",
+              "stripe"
+            ],
             "title": "Provider"
           }
         },
@@ -1811,7 +1945,10 @@
           },
           "provider": {
             "type": "string",
-            "const": "stub",
+            "enum": [
+              "stub",
+              "stripe"
+            ],
             "title": "Provider"
           },
           "plan_code": {
@@ -1836,6 +1973,38 @@
           "message"
         ],
         "title": "BillingCompleteResponse"
+      },
+      "BillingConfigResponse": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "stub",
+              "stripe"
+            ],
+            "title": "Provider"
+          }
+        },
+        "type": "object",
+        "required": [
+          "provider"
+        ],
+        "title": "BillingConfigResponse",
+        "description": "Which checkout the Tarife page should explain. No secrets."
+      },
+      "BillingPortalResponse": {
+        "properties": {
+          "portal_url": {
+            "type": "string",
+            "title": "Portal Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "portal_url"
+        ],
+        "title": "BillingPortalResponse",
+        "description": "Stripe Customer Portal URL for card, invoices, and cancellation."
       },
       "Body_create_invoice_batch_api_invoices_batch_post": {
         "properties": {

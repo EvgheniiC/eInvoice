@@ -14,8 +14,22 @@ vi.mock('../api/client', (): { fetchAdminStats: ReturnType<typeof vi.fn> } => ({
 
 const stats: AdminStatsResponse = {
   visits_today: 3,
+  parses_today: 2,
+  packages_today: 1,
+  exports_today: 1,
   paid_plan_users: 2,
   visits_by_day: [{ visit_date: '2026-10-06', visitors: 3 }],
+  actions_by_day: [
+    {
+      event_date: '2026-10-06',
+      visitors: 3,
+      landing: 4,
+      upload: 3,
+      parse_success: 2,
+      accountant_package: 1,
+      export: 1,
+    },
+  ],
 }
 
 describe('AdminStatsPage', (): void => {
@@ -35,7 +49,10 @@ describe('AdminStatsPage', (): void => {
 
     expect(await screen.findByRole('heading', { name: 'Statistik' })).toBeInTheDocument()
     expect(screen.getByText('Besuche heute').parentElement).toHaveTextContent('3')
+    expect(screen.getByText('Rechnungen gelesen heute').parentElement).toHaveTextContent('2')
+    expect(screen.getByText('Steuerberater-Pakete heute').parentElement).toHaveTextContent('1')
     expect(screen.getByText('Personen mit Plus oder Team').parentElement).toHaveTextContent('2')
+    expect(screen.getByRole('columnheader', { name: 'Paket' })).toBeInTheDocument()
     expect(screen.getByRole('cell', { name: '06.10.2026' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Statistik' })).toBeInTheDocument()
 

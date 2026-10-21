@@ -124,6 +124,112 @@ class TestBillingCheckout(unittest.TestCase):
             assert plan is not None
             self.assertEqual(plan.code, "plus")
 
+    def test_stripe_checkout_does_not_activate_until_webhook(self) -> None:
+        self._register_and_verify("stripe-start@example.com")
+        fake_session: dict[str, str] = {
+            "id": "cs_test_123",
+            "url": "https://checkout.stripe.com/c/pay/cs_test_123",
+        }
+        with (
+            patch.object(settings, "billing_provider", "stripe"),
+            patch.object(settings, "stripe_secret_key", "sk_test"),
+            patch.object(settings, "stripe_price_plus", "price_plus"),
+            patch.object(settings, "stripe_price_team", "price_team"),
+            patch("stripe.checkout.Session.create", return_value=fake_session),
+        ):
+            created: Response = self.client.post(
+                "/api/billing/checkout",
+                json={"requested_plan": "plus"},
+            )
+            self.assertEqual(self.client.get("/api/billing/config").json()["provider"], "stripe")
+        self.assertEqual(created.status_code, 201)
+        payload: dict[str, str] = created.json()
+        self.assertEqual(payload["provider"], "stripe")
+        self.assertEqual(payload["checkout_url"], fake_session["url"])
+        self.assertEqual(self.client.get("/api/me").json()["plan"]["code"], "free")
+
+    def test_stripe_webhook_activates_plus_and_cancellation_returns_to_free(self) -> None:
+        self._register_and_verify("stripe-paid@example.com")
+        organization_id: str = str(self.client.get("/api/me").json()["organization_id"])
+        paid_event: dict[str, object] = {
+            "type": "checkout.session.completed",
+            "data": {
+                "object": {
+                    "id": "cs_paid",
+                    "mode": "subscription",
+                    "payment_status": "paid",
+                    "client_reference_id": organization_id,
+                    "customer": "cus_paid",
+                    "subscription": "sub_paid",
+                    "metadata": {"requested_plan": "plus"},
+                }
+            },
+        }
+        subscription: dict[str, object] = {
+            "id": "sub_paid",
+            "customer": "cus_paid",
+            "status": "active",
+            "metadata": {"organization_id": organization_id, "requested_plan": "plus"},
+            "items": {"data": [{"id": "si_paid", "price": {"id": "price_plus"}}]},
+        }
+        with (
+            patch.object(settings, "billing_provider", "stripe"),
+            patch.object(settings, "stripe_secret_key", "sk_test"),
+            patch.object(settings, "stripe_webhook_secret", "whsec_test"),
+            patch.object(settings, "stripe_price_plus", "price_plus"),
+            patch.object(settings, "stripe_price_team", "price_team"),
+            patch("stripe.Webhook.construct_event", return_value=paid_event),
+            patch("stripe.Subscription.retrieve", return_value=subscription),
+        ):
+            unpaid: dict[str, object] = {
+                "type": "checkout.session.completed",
+                "data": {
+                    "object": {
+                        "id": "cs_wait",
+                        "mode": "subscription",
+                        "payment_status": "unpaid",
+                        "client_reference_id": organization_id,
+                        "customer": "cus_paid",
+                        "subscription": "sub_wait",
+                    }
+                },
+            }
+            with patch("stripe.Webhook.construct_event", return_value=unpaid):
+                waiting: Response = self.client.post(
+                    "/api/billing/webhook",
+                    content=b"{}",
+                    headers={"stripe-signature": "t=1,v1=abc"},
+                )
+            self.assertEqual(waiting.status_code, 200)
+            self.assertEqual(self.client.get("/api/me").json()["plan"]["code"], "free")
+
+            confirmed: Response = self.client.post(
+                "/api/billing/webhook",
+                content=b"{}",
+                headers={"stripe-signature": "t=1,v1=abc"},
+            )
+        self.assertEqual(confirmed.status_code, 200)
+        self.assertEqual(self.client.get("/api/me").json()["plan"]["parse_per_day"], 100)
+        self.assertEqual(self.client.get("/api/me").json()["plan"]["code"], "plus")
+
+        deleted: dict[str, object] = {
+            "type": "customer.subscription.deleted",
+            "data": {"object": {"id": "sub_paid", "customer": "cus_paid", "status": "canceled"}},
+        }
+        with (
+            patch.object(settings, "billing_provider", "stripe"),
+            patch.object(settings, "stripe_secret_key", "sk_test"),
+            patch.object(settings, "stripe_webhook_secret", "whsec_test"),
+            patch("stripe.Webhook.construct_event", return_value=deleted),
+        ):
+            ended: Response = self.client.post(
+                "/api/billing/webhook",
+                content=b"{}",
+                headers={"stripe-signature": "t=1,v1=abc"},
+            )
+        self.assertEqual(ended.status_code, 200)
+        self.assertEqual(self.client.get("/api/me").json()["plan"]["code"], "free")
+
     def test_unknown_session_is_not_found(self) -> None:
         self._register_and_verify("missing@example.com")
         response: Response = self.client.post(

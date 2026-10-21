@@ -12,9 +12,22 @@ export interface components {
       xml_base64?: string | null;
       xml_filename?: string | null;
     };
+    ActionDayStat: {
+      event_date: string;
+      visitors: number;
+      landing: number;
+      upload: number;
+      parse_success: number;
+      accountant_package: number;
+      export: number;
+    };
     AdminStatsResponse: {
       visits_today: number;
+      parses_today: number;
+      packages_today: number;
+      exports_today: number;
       visits_by_day: components["schemas"]["VisitDayStat"][];
+      actions_by_day: components["schemas"]["ActionDayStat"][];
       paid_plan_users: number;
     };
     BatchItemResponse: {
@@ -45,17 +58,23 @@ export interface components {
     BillingCheckoutResponse: {
       checkout_url: string;
       session_id: string;
-      provider: string;
+      provider: "stub" | "stripe";
     };
     BillingCompleteRequest: {
       session: string;
     };
     BillingCompleteResponse: {
       accepted: boolean;
-      provider: string;
+      provider: "stub" | "stripe";
       plan_code: string;
       plan_name: string;
       message: string;
+    };
+    BillingConfigResponse: {
+      provider: "stub" | "stripe";
+    };
+    BillingPortalResponse: {
+      portal_url: string;
     };
     Body_create_invoice_batch_api_invoices_batch_post: {
       files: string[];

@@ -93,9 +93,15 @@ class Settings(BaseSettings):
     zip_max_listed_entries: int = 200
     zip_max_uncompressed_mb: int = 200
     public_app_url: str = "http://localhost:5173"
-    # stub = simulated Checkout return until Stripe/Mollie keys exist.
+    # stub = simulated Checkout return. stripe = Stripe Billing subscription.
     billing_provider: str = "stub"
     billing_checkout_minutes: int = 30
+    stripe_secret_key: Optional[str] = None
+    stripe_webhook_secret: Optional[str] = None
+    stripe_price_plus: Optional[str] = None
+    stripe_price_team: Optional[str] = None
+    # Enable only after a Stripe Tax registration exists. Otherwise Stripe collects nothing.
+    stripe_automatic_tax: bool = False
     email_backend: str = "log"
     smtp_host: Optional[str] = None
     smtp_port: int = 587

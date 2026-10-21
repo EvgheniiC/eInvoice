@@ -130,6 +130,9 @@ class RequestTimeoutMiddleware(BaseHTTPMiddleware):
 
 
 def _is_rate_limited_path(path: str) -> bool:
+    # Stripe retries this endpoint. A 429 would delay plan activation.
+    if path == "/api/billing/webhook":
+        return False
     return any(path == prefix or path.startswith(prefix + "/") for prefix in _RATE_LIMITED_PREFIXES)
 
 

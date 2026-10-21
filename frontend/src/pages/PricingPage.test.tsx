@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { UserEvent } from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { completeBillingCheckout, createBillingCheckout, fetchMe } from '../api/client'
+import { completeBillingCheckout, createBillingCheckout, fetchBillingConfig, fetchMe } from '../api/client'
 import type { AppRoute } from '../routing'
 import { buildSession } from '../test/fixtures'
 import type { BillingCheckoutResponse, BillingCompleteResponse, MeResponse } from '../types/invoice'
@@ -11,10 +11,12 @@ import { PricingPage } from './PricingPage'
 vi.mock('../api/client', (): {
   createBillingCheckout: ReturnType<typeof vi.fn>
   completeBillingCheckout: ReturnType<typeof vi.fn>
+  fetchBillingConfig: ReturnType<typeof vi.fn>
   fetchMe: ReturnType<typeof vi.fn>
 } => ({
   createBillingCheckout: vi.fn(),
   completeBillingCheckout: vi.fn(),
+  fetchBillingConfig: vi.fn(),
   fetchMe: vi.fn(),
 }))
 
@@ -57,6 +59,7 @@ function plusSession(): MeResponse {
 
 describe('PricingPage', (): void => {
   it('starts checkout and applies the plan after the stub return', async (): Promise<void> => {
+    vi.mocked(fetchBillingConfig).mockResolvedValue({ provider: 'stub' })
     const user: UserEvent = userEvent.setup()
     const onNavigate: (route: AppRoute, query?: string) => void = vi.fn()
     const onSession: (session: MeResponse | null) => void = vi.fn()
@@ -105,6 +108,7 @@ describe('PricingPage', (): void => {
   })
 
   it('sends guests to registration', async (): Promise<void> => {
+    vi.mocked(fetchBillingConfig).mockResolvedValue({ provider: 'stub' })
     const user: UserEvent = userEvent.setup()
     const onNavigate: (route: AppRoute, query?: string) => void = vi.fn()
 

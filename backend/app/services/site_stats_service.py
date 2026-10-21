@@ -10,7 +10,7 @@ import uuid
 from datetime import date, timedelta
 from typing import Optional, Sequence
 
-from sqlalchemy import delete, distinct, func, select
+from sqlalchemy import Insert, delete, distinct, func, select
 from sqlalchemy.engine import Row
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
@@ -20,9 +20,15 @@ from starlette.responses import Response
 from app.core.config import settings
 from app.core.clock import usage_date_today
 from app.core.error_events import log_event
-from app.db.models import Membership, Organization, Plan, SiteVisit
+from app.db.models import FunnelDaily, Membership, Organization, Plan, SiteVisit
 from app.db.session import get_session_factory
-from app.schemas.stats import PAID_PLAN_CODES, VISIT_HISTORY_DAYS, AdminStatsResponse, VisitDayStat
+from app.schemas.stats import (
+    PAID_PLAN_CODES,
+    VISIT_HISTORY_DAYS,
+    ActionDayStat,
+    AdminStatsResponse,
+    VisitDayStat,
+)
 
 VISITOR_COOKIE_NAME: str = "einv_visitor"
 VISIT_RETENTION_DAYS: int = 30
@@ -97,6 +103,47 @@ def record_site_visit(raw_id: str) -> None:
         session.close()
 
 
+def record_funnel_step(step: str) -> None:
+    """Add one action to today's counter. Failures must not break the request."""
+    factory: Optional[sessionmaker[Session]] = get_session_factory()
+    if factory is None or not step:
+        return
+    today: date = usage_date_today()
+    session: Session = factory()
+    try:
+        _increment_funnel_step(session, event_date=today, step=step)
+        cutoff: date = today - timedelta(days=VISIT_RETENTION_DAYS)
+        session.execute(delete(FunnelDaily).where(FunnelDaily.event_date < cutoff))
+        session.commit()
+    except Exception:
+        session.rollback()
+        log_event(logging.WARNING, "funnel_record_failed", fields={"step": step})
+    finally:
+        session.close()
+
+
+def _increment_funnel_step(session: Session, *, event_date: date, step: str) -> None:
+    """Insert the day's counter or add one. Works on SQLite and PostgreSQL."""
+    bind: object = session.get_bind()
+    dialect_name: str = str(getattr(getattr(bind, "dialect", None), "name", ""))
+    if dialect_name == "postgresql":
+        from sqlalchemy.dialects.postgresql import insert as dialect_insert
+    else:
+        from sqlalchemy.dialects.sqlite import insert as dialect_insert
+    statement: Insert = dialect_insert(FunnelDaily).values(
+        id=uuid.uuid4(),
+        event_date=event_date,
+        step=step,
+        event_count=1,
+    )
+    session.execute(
+        statement.on_conflict_do_update(
+            index_elements=["event_date", "step"],
+            set_={"event_count": FunnelDaily.event_count + 1},
+        )
+    )
+
+
 def load_admin_stats(session: Session) -> AdminStatsResponse:
     """Visitors for the recent days and distinct people on Plus or Team."""
     today: date = usage_date_today()
@@ -121,8 +168,35 @@ def load_admin_stats(session: Session) -> AdminStatsResponse:
         )
         or 0
     )
+    action_rows: Sequence[Row[tuple[date, str, int]]] = session.execute(
+        select(FunnelDaily.event_date, FunnelDaily.step, FunnelDaily.event_count).where(
+            FunnelDaily.event_date >= start,
+            FunnelDaily.event_date <= today,
+        )
+    ).all()
+    actions: dict[tuple[date, str], int] = {
+        (row[0], row[1]): int(row[2]) for row in action_rows
+    }
+    action_days: list[ActionDayStat] = []
+    for offset in range(VISIT_HISTORY_DAYS):
+        day: date = today - timedelta(days=offset)
+        action_days.append(
+            ActionDayStat(
+                event_date=day,
+                visitors=counts.get(day, 0),
+                landing=actions.get((day, "landing"), 0),
+                upload=actions.get((day, "upload"), 0),
+                parse_success=actions.get((day, "parse_success"), 0),
+                accountant_package=actions.get((day, "accountant_package"), 0),
+                export=actions.get((day, "export"), 0),
+            )
+        )
     return AdminStatsResponse(
         visits_today=counts.get(today, 0),
+        parses_today=actions.get((today, "parse_success"), 0),
+        packages_today=actions.get((today, "accountant_package"), 0),
+        exports_today=actions.get((today, "export"), 0),
         visits_by_day=days,
+        actions_by_day=action_days,
         paid_plan_users=paid_users,
     )

@@ -16,9 +16,25 @@ class VisitDayStat(ApiModel):
     visitors: int
 
 
+class ActionDayStat(ApiModel):
+    """Visitors plus action counts for one calendar day. No invoice content."""
+
+    event_date: date
+    visitors: int
+    landing: int
+    upload: int
+    parse_success: int
+    accountant_package: int
+    export: int
+
+
 class AdminStatsResponse(ApiModel):
-    """Daily visitors and the number of people on Plus or Team."""
+    """Daily visitors, product actions, and people on Plus or Team."""
 
     visits_today: int
+    parses_today: int
+    packages_today: int
+    exports_today: int
     visits_by_day: List[VisitDayStat]
+    actions_by_day: List[ActionDayStat]
     paid_plan_users: int

@@ -1,10 +1,22 @@
 import { useEffect, useRef, useState, type JSX, type RefObject } from 'react'
-import { completeBillingCheckout, createBillingCheckout, fetchMe } from '../api/client'
+import {
+  completeBillingCheckout,
+  createBillingCheckout,
+  createBillingPortal,
+  fetchBillingConfig,
+  fetchMe,
+} from '../api/client'
 import { PageNav } from '../components/PageNav'
 import { SiteFooter } from '../components/SiteFooter'
 import { PLAN_RANK, PUBLIC_PLANS, type PublicPlan, type PublicPlanCode } from '../content/plans'
 import type { AppRoute } from '../routing'
-import type { BillingCheckoutResponse, BillingCompleteResponse, MeResponse } from '../types/invoice'
+import type {
+  BillingCheckoutResponse,
+  BillingCompleteResponse,
+  BillingConfigResponse,
+  BillingPortalResponse,
+  MeResponse,
+} from '../types/invoice'
 
 type PricingPageProps = {
   onNavigate: (route: AppRoute, query?: string) => void
@@ -23,21 +35,64 @@ export function PricingPage({
 }: PricingPageProps): JSX.Element {
   const [requestingPlan, setRequestingPlan] = useState<PublicPlanCode | null>(null)
   const [completing, setCompleting] = useState<boolean>(false)
+  const [openingPortal, setOpeningPortal] = useState<boolean>(false)
+  const [billingProvider, setBillingProvider] = useState<'stub' | 'stripe'>('stub')
   const [info, setInfo] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const completingRef: RefObject<string | null> = useRef<string | null>(null)
   const currentPlan: PublicPlanCode | null = toPublicPlanCode(session?.plan.code)
+  const canManageSubscription: boolean =
+    billingProvider === 'stripe' &&
+    session?.role === 'inhaber' &&
+    (currentPlan === 'plus' || currentPlan === 'team')
+
+  useEffect(() => {
+    let cancelled: boolean = false
+    void fetchBillingConfig()
+      .then((config: BillingConfigResponse) => {
+        if (!cancelled) {
+          setBillingProvider(config.provider)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setBillingProvider('stub')
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     const params: URLSearchParams = new URLSearchParams(
       locationSearch.startsWith('?') ? locationSearch.slice(1) : locationSearch,
     )
-    if (params.get('checkout') !== 'success') {
+    const checkoutState: string | null = params.get('checkout')
+    if (checkoutState === 'cancel') {
+      setInfo('Zahlung abgebrochen. Der Tarif ist unverändert.')
+      return
+    }
+    if (checkoutState !== 'success') {
       return
     }
     const sessionToken: string | null = params.get('session')
     if (sessionToken === null || sessionToken.length < 8) {
-      return
+      setInfo('Zahlung eingegangen. Der Tarif wird aktiv, sobald Stripe die Zahlung bestätigt.')
+      let cancelled: boolean = false
+      const refresh = (): void => {
+        void fetchMe().then((nextSession: MeResponse | null) => {
+          if (!cancelled && nextSession !== null) {
+            onSession(nextSession)
+          }
+        })
+      }
+      refresh()
+      const timer: number = window.setTimeout(refresh, 2000)
+      return () => {
+        cancelled = true
+        window.clearTimeout(timer)
+      }
     }
     if (session === null) {
       onNavigate('login')
@@ -81,6 +136,10 @@ export function PricingPage({
     try {
       const checkout: BillingCheckoutResponse = await createBillingCheckout(planCode)
       const url: URL = new URL(checkout.checkout_url, window.location.origin)
+      if (url.hostname !== window.location.hostname) {
+        window.location.assign(url.toString())
+        return
+      }
       onNavigate('pricing', url.search)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Zahlung konnte nicht gestartet werden.')
@@ -100,8 +159,8 @@ export function PricingPage({
         </div>
         <h1 tabIndex={-1}>Tarife</h1>
         <p className="page__lead">
-          Einzelne Rechnungen bleiben kostenlos. Plus und Team ergänzen Batch, Verlauf und höhere
-          Kontingente.
+          Free prüft bis zu 10 Rechnungen pro Tag, eine Datei nach der anderen. Plus hebt das auf 100
+          Prüfungen und 20 Dateien, Team auf 500 Prüfungen und 50 Dateien.
         </p>
       </header>
 
@@ -161,10 +220,33 @@ export function PricingPage({
       </div>
 
       <p className="pricing-note">
-        Einführungspreise pro Monat zuzüglich gesetzlicher Umsatzsteuer. Die Zahlung ist noch eine
-        Test-Rückkehr ohne echte Abbuchung: nach der Bestätigung wechselt der Tarif automatisch.
-        Rechnungsdateien werden nur mit Ihrer ausdrücklichen Zustimmung gespeichert.
+        {billingProvider === 'stripe'
+          ? 'Plus und Team sind Monatsabos über Stripe, zuzüglich gesetzlicher Umsatzsteuer. Der Tarif wird aktiv, sobald Stripe die Zahlung bestätigt. Karte, Rechnungen und Kündigung liegen im Kundenportal. Rechnungsdateien werden nur mit Ihrer ausdrücklichen Zustimmung gespeichert.'
+          : 'Einführungspreise pro Monat zuzüglich gesetzlicher Umsatzsteuer. Die Zahlung ist noch eine Test-Rückkehr ohne echte Abbuchung: nach der Bestätigung wechselt der Tarif automatisch und das Limit von 10 Rechnungen entfällt. Rechnungsdateien werden nur mit Ihrer ausdrücklichen Zustimmung gespeichert.'}
       </p>
+      {canManageSubscription ? (
+        <p>
+          <button
+            type="button"
+            className="btn btn--secondary"
+            disabled={openingPortal}
+            onClick={() => {
+              setOpeningPortal(true)
+              setError(null)
+              void createBillingPortal()
+                .then((portal: BillingPortalResponse) => {
+                  window.location.assign(portal.portal_url)
+                })
+                .catch((err: unknown) => {
+                  setError(err instanceof Error ? err.message : 'Kundenportal konnte nicht geöffnet werden.')
+                  setOpeningPortal(false)
+                })
+            }}
+          >
+            {openingPortal ? 'Weiterleitung…' : 'Abo verwalten'}
+          </button>
+        </p>
+      ) : null}
       {completing ? (
         <p className="status status--info" role="status">
           Zahlung wird bestätigt…

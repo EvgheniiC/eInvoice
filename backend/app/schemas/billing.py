@@ -1,4 +1,4 @@
-"""API schemas for Checkout. Provider is stub until Stripe/Mollie is wired."""
+"""API schemas for Checkout. stub simulates payment; stripe charges a subscription."""
 
 from typing import Literal
 
@@ -7,7 +7,7 @@ from pydantic import Field
 from app.schemas.invoice import ApiModel
 from app.schemas.plan_request import RequestedPlan
 
-BillingProvider = Literal["stub"]
+BillingProvider = Literal["stub", "stripe"]
 
 
 class BillingCheckoutCreate(ApiModel):
@@ -30,3 +30,15 @@ class BillingCompleteResponse(ApiModel):
     plan_code: str
     plan_name: str
     message: str
+
+
+class BillingConfigResponse(ApiModel):
+    """Which checkout the Tarife page should explain. No secrets."""
+
+    provider: BillingProvider
+
+
+class BillingPortalResponse(ApiModel):
+    """Stripe Customer Portal URL for card, invoices, and cancellation."""
+
+    portal_url: str

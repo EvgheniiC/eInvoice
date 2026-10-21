@@ -17,6 +17,8 @@ import type {
   PlanUpgradeRequestResponse,
   BillingCheckoutResponse,
   BillingCompleteResponse,
+  BillingConfigResponse,
+  BillingPortalResponse,
   RegisterResponse,
   ValidationReportRequest,
   ViewPdfRequest,
@@ -534,6 +536,28 @@ export async function createPlanRequest(
     throw new Error(await readErrorDetail(response, 'Tarifanfrage konnte nicht gesendet werden.'))
   }
   return response.json() as Promise<PlanUpgradeRequestResponse>
+}
+
+export async function fetchBillingConfig(): Promise<BillingConfigResponse> {
+  const response: Response = await fetch(
+    `${API_BASE}/billing/config`,
+    withRequestId({ method: 'GET' }),
+  )
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response, 'Tarifinformationen sind nicht verfügbar.'))
+  }
+  return response.json() as Promise<BillingConfigResponse>
+}
+
+export async function createBillingPortal(): Promise<BillingPortalResponse> {
+  const response: Response = await fetch(
+    `${API_BASE}/billing/portal`,
+    withRequestId({ method: 'POST' }),
+  )
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response, 'Kundenportal konnte nicht geöffnet werden.'))
+  }
+  return response.json() as Promise<BillingPortalResponse>
 }
 
 export async function createBillingCheckout(

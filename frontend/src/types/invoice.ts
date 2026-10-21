@@ -37,6 +37,7 @@ export type FunnelEventResponse = Schemas['FunnelEventResponse']
 export type MeResponse = Schemas['MeResponse']
 export type AdminStatsResponse = Schemas['AdminStatsResponse']
 export type VisitDayStat = Schemas['VisitDayStat']
+export type ActionDayStat = Schemas['ActionDayStat']
 export type PlanInfo = Schemas['PlanInfo']
 export type RegisterResponse = Schemas['RegisterResponse']
 export type MessageResponse = Schemas['MessageResponse']
@@ -53,6 +54,8 @@ export type PlanUpgradeRequestResponse = Schemas['PlanRequestResponse']
 export type PlanUpgradeRequestStatus = PlanUpgradeRequestResponse['status']
 export type BillingCheckoutResponse = Schemas['BillingCheckoutResponse']
 export type BillingCompleteResponse = Schemas['BillingCompleteResponse']
+export type BillingConfigResponse = Schemas['BillingConfigResponse']
+export type BillingPortalResponse = Schemas['BillingPortalResponse']
 
 /** UI helper: FastAPI serializes decimals as strings; Number() also accepts number. */
 export type DecimalValue = string | number
