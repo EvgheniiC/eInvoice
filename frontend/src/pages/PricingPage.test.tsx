@@ -122,8 +122,26 @@ describe('PricingPage', (): void => {
       />,
     )
 
+    expect(screen.getByRole('button', { name: 'Kostenlos prüfen' })).toBeInTheDocument()
     await user.click(screen.getAllByRole('button', { name: 'Konto erstellen' })[0])
     expect(onNavigate).toHaveBeenCalledWith('register')
     expect(createBillingCheckout).not.toHaveBeenCalled()
+  })
+
+  it('hides the free check button when the organization already pays', (): void => {
+    vi.mocked(fetchBillingConfig).mockResolvedValue({ provider: 'stub' })
+
+    render(
+      <PricingPage
+        onNavigate={vi.fn()}
+        session={plusSession()}
+        onSession={vi.fn()}
+        locationSearch=""
+        onLogout={vi.fn()}
+      />,
+    )
+
+    expect(screen.queryByRole('button', { name: 'Kostenlos prüfen' })).not.toBeInTheDocument()
+    expect(screen.getByText('Aktueller Tarif')).toBeInTheDocument()
   })
 })

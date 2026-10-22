@@ -192,7 +192,7 @@ export function PricingPage({
               </ul>
               {isCurrent ? (
                 <p className="pricing-card__current">Aktueller Tarif</p>
-              ) : plan.code === 'free' ? (
+              ) : showFreeCheck(plan.code, currentPlan) ? (
                 <button type="button" className="btn btn--secondary" onClick={() => onNavigate('upload')}>
                   Kostenlos prüfen
                 </button>
@@ -272,4 +272,8 @@ function toPublicPlanCode(value: string | undefined): PublicPlanCode | null {
     return value
   }
   return null
+}
+
+function showFreeCheck(planCode: PublicPlanCode, currentPlan: PublicPlanCode | null): boolean {
+  return planCode === 'free' && currentPlan !== 'plus' && currentPlan !== 'team'
 }
