@@ -230,6 +230,56 @@ class TestBillingCheckout(unittest.TestCase):
         self.assertEqual(ended.status_code, 200)
         self.assertEqual(self.client.get("/api/me").json()["plan"]["code"], "free")
 
+    def test_stripe_webhook_reads_resources_that_have_no_dict_get(self) -> None:
+        self._register_and_verify("stripe-object@example.com")
+        organization_id: str = str(self.client.get("/api/me").json()["organization_id"])
+        paid_event: _StripeResource = _StripeResource(
+            {
+                "type": "checkout.session.completed",
+                "data": _StripeResource(
+                    {
+                        "object": _StripeResource(
+                            {
+                                "id": "cs_object",
+                                "mode": "subscription",
+                                "payment_status": "paid",
+                                "client_reference_id": organization_id,
+                                "customer": "cus_object",
+                                "subscription": "sub_object",
+                                "metadata": _StripeResource({"requested_plan": "team"}),
+                            }
+                        )
+                    }
+                ),
+            }
+        )
+        subscription: _StripeResource = _StripeResource(
+            {
+                "id": "sub_object",
+                "status": "active",
+                "metadata": _StripeResource({"requested_plan": "team"}),
+                "items": _StripeResource(
+                    {"data": [_StripeResource({"price": _StripeResource({"id": "price_team"})})]}
+                ),
+            }
+        )
+        with (
+            patch.object(settings, "billing_provider", "stripe"),
+            patch.object(settings, "stripe_secret_key", "sk_test"),
+            patch.object(settings, "stripe_webhook_secret", "whsec_test"),
+            patch.object(settings, "stripe_price_plus", "price_plus"),
+            patch.object(settings, "stripe_price_team", "price_team"),
+            patch("stripe.Webhook.construct_event", return_value=paid_event),
+            patch("stripe.Subscription.retrieve", return_value=subscription),
+        ):
+            response: Response = self.client.post(
+                "/api/billing/webhook",
+                content=b"{}",
+                headers={"stripe-signature": "t=1,v1=abc"},
+            )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.client.get("/api/me").json()["plan"]["code"], "team")
+
     def test_unknown_session_is_not_found(self) -> None:
         self._register_and_verify("missing@example.com")
         response: Response = self.client.post(
@@ -253,6 +303,16 @@ class TestBillingCheckout(unittest.TestCase):
             json={"token": token},
         )
         self.assertEqual(verified.status_code, 200)
+
+
+class _StripeResource:
+    """Stripe resources support item access and have no dict.get()."""
+
+    def __init__(self, values: dict[str, object]) -> None:
+        self._values: dict[str, object] = values
+
+    def __getitem__(self, key: str) -> object:
+        return self._values[key]
 
 
 if __name__ == "__main__":

@@ -177,8 +177,13 @@ def handle_stripe_webhook(payload: bytes, signature: str) -> None:
     db: Session = factory()
     try:
         _dispatch_stripe_event(db, event)
-    except Exception:
+    except Exception as exc:
         db.rollback()
+        log_event(
+            logging.ERROR,
+            "stripe_webhook_failed",
+            fields={"error": type(exc).__name__},
+        )
         raise
     finally:
         db.close()
@@ -361,19 +366,22 @@ def _dispatch_stripe_event(session: Session, event: Any) -> None:
 
 
 def _apply_checkout_session(session: Session, checkout_session: Any) -> None:
-    if str(checkout_session.get("mode") or "") != "subscription":
+    if str(_stripe_value(checkout_session, "mode") or "") != "subscription":
         return
-    if str(checkout_session.get("payment_status") or "") not in {"paid", "no_payment_required"}:
+    if str(_stripe_value(checkout_session, "payment_status") or "") not in {
+        "paid",
+        "no_payment_required",
+    }:
         return
-    reference: str = str(checkout_session.get("client_reference_id") or "")
-    customer_id: Optional[str] = _stripe_id(checkout_session.get("customer"))
+    reference: str = str(_stripe_value(checkout_session, "client_reference_id") or "")
+    customer_id: Optional[str] = _stripe_id(_stripe_value(checkout_session, "customer"))
     organization: Optional[Organization] = _organization_by_reference(session, reference)
     if organization is None:
         organization = _organization_by_customer(session, customer_id)
     if organization is None:
         log_event(logging.WARNING, "stripe_checkout_org_missing")
         return
-    subscription_id: Optional[str] = _stripe_id(checkout_session.get("subscription"))
+    subscription_id: Optional[str] = _stripe_id(_stripe_value(checkout_session, "subscription"))
     plan_code: Optional[str] = _plan_from_remote_subscription(subscription_id)
     if plan_code is None:
         plan_code = _plan_from_checkout(checkout_session)
@@ -381,7 +389,7 @@ def _apply_checkout_session(session: Session, checkout_session: Any) -> None:
         log_event(logging.WARNING, "stripe_checkout_plan_missing")
         return
     paid_plan: RequestedPlan = "plus" if plan_code == "plus" else "team"
-    provider_session_id: str = str(checkout_session.get("id") or "")
+    provider_session_id: str = str(_stripe_value(checkout_session, "id") or "")
     if provider_session_id:
         pending: Optional[BillingCheckoutSession] = session.scalar(
             select(BillingCheckoutSession).where(
@@ -407,7 +415,7 @@ def _apply_checkout_session(session: Session, checkout_session: Any) -> None:
 
 
 def _apply_subscription(session: Session, subscription: Any) -> None:
-    status: str = str(subscription.get("status") or "")
+    status: str = str(_stripe_value(subscription, "status") or "")
     organization: Optional[Organization] = _organization_for_subscription(session, subscription)
     if organization is None:
         log_event(logging.WARNING, "stripe_subscription_org_missing", fields={"status": status})
@@ -430,8 +438,8 @@ def _apply_subscription(session: Session, subscription: Any) -> None:
         session,
         organization=organization,
         plan_code=plan_code,
-        customer_id=_stripe_id(subscription.get("customer")),
-        subscription_id=_stripe_id(subscription.get("id")),
+        customer_id=_stripe_id(_stripe_value(subscription, "customer")),
+        subscription_id=_stripe_id(_stripe_value(subscription, "id")),
         source="stripe_subscription",
     )
 
@@ -442,8 +450,9 @@ def _end_subscription(session: Session, subscription: Any) -> None:
         log_event(logging.WARNING, "stripe_subscription_end_org_missing")
         return
     organization.stripe_subscription_id = None
-    if _stripe_id(subscription.get("customer")):
-        organization.stripe_customer_id = _stripe_id(subscription.get("customer"))
+    customer_id: Optional[str] = _stripe_id(_stripe_value(subscription, "customer"))
+    if customer_id:
+        organization.stripe_customer_id = customer_id
     set_plan(
         session,
         organization_id=organization.id,
@@ -475,7 +484,7 @@ def _activate_paid_plan(
 
 def _log_stripe_money_event(session: Session, *, event_type: str, data_object: Any) -> None:
     """Record disputes, refunds, and fraud warnings without changing the plan automatically."""
-    customer_id: Optional[str] = _stripe_id(data_object.get("customer"))
+    customer_id: Optional[str] = _stripe_id(_stripe_value(data_object, "customer"))
     organization: Optional[Organization] = _organization_by_customer(session, customer_id)
     log_event(
         logging.WARNING,
@@ -488,19 +497,19 @@ def _log_stripe_money_event(session: Session, *, event_type: str, data_object: A
 
 
 def _organization_for_subscription(session: Session, subscription: Any) -> Optional[Organization]:
-    subscription_id: Optional[str] = _stripe_id(subscription.get("id"))
+    subscription_id: Optional[str] = _stripe_id(_stripe_value(subscription, "id"))
     if subscription_id:
         found: Optional[Organization] = session.scalar(
             select(Organization).where(Organization.stripe_subscription_id == subscription_id)
         )
         if found is not None:
             return found
-    customer_id: Optional[str] = _stripe_id(subscription.get("customer"))
+    customer_id: Optional[str] = _stripe_id(_stripe_value(subscription, "customer"))
     by_customer: Optional[Organization] = _organization_by_customer(session, customer_id)
     if by_customer is not None:
         return by_customer
-    metadata: Any = subscription.get("metadata") or {}
-    return _organization_by_reference(session, str(metadata.get("organization_id") or ""))
+    metadata: Any = _stripe_value(subscription, "metadata") or {}
+    return _organization_by_reference(session, str(_stripe_value(metadata, "organization_id") or ""))
 
 
 def _organization_by_reference(session: Session, reference: str) -> Optional[Organization]:
@@ -532,21 +541,21 @@ def _plan_from_remote_subscription(subscription_id: Optional[str]) -> Optional[s
 
 
 def _plan_from_checkout(checkout_session: Any) -> Optional[str]:
-    metadata: Any = checkout_session.get("metadata") or {}
-    requested: str = str(metadata.get("requested_plan") or "")
+    metadata: Any = _stripe_value(checkout_session, "metadata") or {}
+    requested: str = str(_stripe_value(metadata, "requested_plan") or "")
     if requested in {"plus", "team"}:
         return requested
     return None
 
 
 def _plan_from_subscription(subscription: Any) -> Optional[str]:
-    items: Any = (subscription.get("items") or {}).get("data") or []
+    items: list[Any] = _stripe_list(_stripe_value(subscription, "items"))
     if not items:
-        metadata: Any = subscription.get("metadata") or {}
-        requested: str = str(metadata.get("requested_plan") or "")
+        metadata: Any = _stripe_value(subscription, "metadata") or {}
+        requested: str = str(_stripe_value(metadata, "requested_plan") or "")
         return requested if requested in {"plus", "team"} else None
-    price: Any = items[0].get("price")
-    price_id: str = price if isinstance(price, str) else str((price or {}).get("id") or "")
+    price: Any = _stripe_value(items[0], "price")
+    price_id: str = price if isinstance(price, str) else str(_stripe_value(price, "id") or "")
     return _plan_code_for_price(price_id)
 
 
@@ -575,7 +584,7 @@ def _change_stripe_price(
     requested_plan: RequestedPlan,
 ) -> None:
     current: Any = stripe.Subscription.retrieve(subscription_id)
-    items: Any = (current["items"]["data"] if current.get("items") else []) or []
+    items: list[Any] = _stripe_list(_stripe_value(current, "items"))
     if not items:
         raise BillingError("Das bestehende Abo hat keine Position.")
     stripe.Subscription.modify(
@@ -584,6 +593,28 @@ def _change_stripe_price(
         proration_behavior="create_prorations",
         metadata={"requested_plan": requested_plan},
     )
+
+
+def _stripe_value(value: Any, key: str) -> Any:
+    """Read one field from a dict or a Stripe resource. Resources have no .get()."""
+    if value is None:
+        return None
+    if isinstance(value, dict):
+        return value.get(key)
+    try:
+        return value[key]
+    except (KeyError, TypeError, AttributeError):
+        return None
+
+
+def _stripe_list(value: Any) -> list[Any]:
+    """Normalize a Stripe list object or a plain list to a list of entries."""
+    if isinstance(value, list):
+        return value
+    data: Any = _stripe_value(value, "data")
+    if isinstance(data, list):
+        return data
+    return []
 
 
 def _stripe_id(value: object) -> Optional[str]:

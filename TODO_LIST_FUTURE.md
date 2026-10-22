@@ -76,3 +76,38 @@ Keep this as a separate `PDF → E-Rechnung` flow rather than presenting the pro
 - [ ] Deep integrations (Lexware, sevDesk, DATEV Unternehmen online native APIs)
 - [ ] Multi-company Steuerberater portal (full)
 - [ ] Mobile native apps
+
+---
+
+## Buyer acceptance rules (IVECO letter, saved 2026-10-22)
+
+Supplier notice received on another project. IVECO Group tells suppliers to send invoices and credit notes only as e-invoices. Saved as a real buyer example, not as a build commitment.
+
+### What the letter requires
+
+- Formats they accept: XRechnung, ZUGFeRD.
+- Their intake channels: MyInvoices portal (“E-Invoice Upload”), email addresses from “Rules Management” for registered suppliers, PEPPOL.
+- Besides VAT-mandatory fields, they require:
+  1. IVECO Deutschland AG purchase-order number, if one exists
+  2. First and last name of the person who ordered
+  3. Workflow cost-center assignment
+- Invoices missing these fields will be rejected unposted and returned on request.
+- Paper fallback until 2026-10-05: Genpact Poland (scan center in Bielsko-Biala). From that date IVECO returns paper documents; this is their internal cutoff, not the statutory issuing deadline.
+- Legal framing in the letter: from 2025-01-01 recipients must be able to receive XRechnung / ZUGFeRD. The duty to *issue* e-invoices for everyone is later (transition through 2027–2028). IVECO can demand structured invoices earlier by contract.
+
+### EN 16931 mapping (do not treat as KoSIT errors)
+
+| Buyer field | EN 16931 | Already extracted |
+|---|---|---|
+| Bestellnummer | BT-13 order reference | yes |
+| Besteller name | BT-56 buyer contact; often also BT-10 | buyer / buyer reference |
+| Kostenstelle | BT-19 buyer accounting reference, sometimes line BT-133 | `cost_center` |
+
+KoSIT can accept a file that IVECO will still reject. A future check should be a separate “buyer fields missing” warning.
+
+### How this could be used later
+
+- Inbound: optional buyer checklist (order reference, orderer name, cost center) on top of EN 16931 validation.
+- Outbound: if a supplier must *send* to a buyer like IVECO, that belongs to the PDF → E-Rechnung flow above, with the same three fields checked before download.
+- Sales example: a large customer drops paper on 2026-10-05, ahead of the general issuing mandate.
+- Do not build their MyInvoices portal, their mailboxes, or a PEPPOL access point from this letter. PEPPOL stays a separate candidate above.
