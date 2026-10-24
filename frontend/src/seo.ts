@@ -10,12 +10,17 @@ export type SeoPage = {
   robots: SeoRobots
 }
 
-const DEFAULT_DESCRIPTION: string =
-  'XRechnung und ZUGFeRD in Sekunden verstehen, prüfen und für die Buchhaltung exportieren.'
+export const LANDING_HEADLINE: string =
+  'XRechnung und ZUGFeRD öffnen, prüfen und exportieren'
+
+export const LANDING_DESCRIPTION: string =
+  'Lesbare Rechnung in Sekunden, Prüfung und Export für die Buchhaltung.'
+
+const DEFAULT_DESCRIPTION: string = LANDING_DESCRIPTION
 
 const LANDING: SeoPage = {
-  title: 'XRechnung und ZUGFeRD prüfen | eInvoice',
-  description: DEFAULT_DESCRIPTION,
+  title: `${LANDING_HEADLINE} | ${SITE_NAME}`,
+  description: LANDING_DESCRIPTION,
   canonicalPath: '/',
   robots: 'index,follow',
 }

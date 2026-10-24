@@ -4,6 +4,7 @@ import { InvoiceHeroVisual } from '../components/InvoiceHeroVisual'
 import { PageNav } from '../components/PageNav'
 import { SiteFooter } from '../components/SiteFooter'
 import { DEFAULT_CAPABILITIES } from '../content/capabilities'
+import { LANDING_DESCRIPTION, LANDING_HEADLINE } from '../seo'
 import type { AppRoute } from '../routing'
 import type { CapabilitiesResponse, MeResponse, SupportedFormat } from '../types/invoice'
 
@@ -39,12 +40,9 @@ export function LandingPage({
         <div className="landing-hero__copy">
           <p className="landing-brand">eInvoice</p>
           <h1 className="landing-hero__title" tabIndex={-1}>
-            E-Rechnungen kommen als XML — und bleiben unlesbar.
+            {LANDING_HEADLINE}
           </h1>
-          <p className="landing-hero__lead">
-            XRechnung und ZUGFeRD in Sekunden verstehen, prüfen und für die Buchhaltung
-            exportieren.
-          </p>
+          <p className="landing-hero__lead">{LANDING_DESCRIPTION}</p>
           <p className="landing-hero__note">
             Ohne Registrierung. Die Datei wird nur für diese Anfrage verarbeitet und danach
             gelöscht.

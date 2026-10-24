@@ -8,7 +8,10 @@ describe('seoForPath', (): void => {
     const page: SeoPage = seoForPath('/unknown')
     expect(page.canonicalPath).toBe('/')
     expect(page.robots).toBe('index,follow')
-    expect(page.title).toContain('XRechnung')
+    expect(page.title).toBe('XRechnung und ZUGFeRD öffnen, prüfen und exportieren | eInvoice')
+    expect(page.description).toBe(
+      'Lesbare Rechnung in Sekunden, Prüfung und Export für die Buchhaltung.',
+    )
   })
 
   it('indexes public product and legal pages', (): void => {
