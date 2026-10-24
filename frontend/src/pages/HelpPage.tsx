@@ -3,17 +3,59 @@ import { submitFeedback } from '../api/client'
 import { PageNav } from '../components/PageNav'
 import { SiteFooter } from '../components/SiteFooter'
 import { SUPPORT_EMAIL } from '../content/contact'
-import { FAQ_ITEMS, type FaqItem } from '../content/faq'
+import { FAQ_ITEMS, faqByPath, faqPageJsonLd, type FaqItem } from '../content/faq'
+import { pagesByKind, type PublicPageLink } from '../content/publicPages'
+import { AppLink } from '../navigation'
 import type { AppRoute } from '../routing'
+import { SITE_ORIGIN } from '../seo'
 import type { FeedbackResponse, MeResponse } from '../types/invoice'
 
 type HelpPageProps = {
+  pathname?: string
   onNavigate: (route: AppRoute) => void
   session: MeResponse | null
   onLogout: () => void
 }
 
-export function HelpPage({ onNavigate, session, onLogout }: HelpPageProps): JSX.Element {
+function FaqLinks({ item }: { item: FaqItem }): JSX.Element | null {
+  if (!item.links || item.links.length === 0) {
+    return null
+  }
+  return (
+    <ul>
+      {item.links.map((link: PublicPageLink) => (
+        <li key={link.href}>
+          <AppLink href={link.href}>{link.label}</AppLink>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function FaqBody({ item }: { item: FaqItem }): JSX.Element {
+  return (
+    <>
+      {item.paragraphs.map((paragraph: string, index: number) => (
+        <p key={`${item.id}-p-${index}`}>{paragraph}</p>
+      ))}
+      {item.listItems ? (
+        <ul>
+          {item.listItems.map((entry: string, index: number) => (
+            <li key={`${item.id}-li-${index}`}>{entry}</li>
+          ))}
+        </ul>
+      ) : null}
+      <FaqLinks item={item} />
+    </>
+  )
+}
+
+export function HelpPage({
+  pathname = '/hilfe',
+  onNavigate,
+  session,
+  onLogout,
+}: HelpPageProps): JSX.Element {
   const [message, setMessage] = useState<string>('')
   const [contactEmail, setContactEmail] = useState<string>('')
   const [sending, setSending] = useState<boolean>(false)
@@ -53,36 +95,59 @@ export function HelpPage({ onNavigate, session, onLogout }: HelpPageProps): JSX.
     }
   }
 
+  const article: FaqItem | null = faqByPath(pathname)
+  const topics: readonly { path: string; h1: string }[] = pagesByKind('topic')
+
   return (
     <main id="main-content" className="page page--legal" tabIndex={-1}>
+      {article === null ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: faqPageJsonLd(`${SITE_ORIGIN}/hilfe`) }}
+        />
+      ) : null}
       <header className="page__header">
         <div className="page__header-row">
-          <button type="button" className="page__home" onClick={() => onNavigate('landing')}>
+          <AppLink href="/" className="page__home">
             ← eInvoice
-          </button>
+          </AppLink>
           <PageNav onNavigate={onNavigate} session={session} onLogout={onLogout} />
         </div>
-        <h1 tabIndex={-1}>Hilfe &amp; FAQ</h1>
-        <p className="page__lead">
-          Kurze Antworten zum Rechnungseingang — ohne Registrierung und ohne Rechnungsarchiv.
-        </p>
+        <h1 tabIndex={-1}>{article === null ? 'Hilfe & FAQ' : article.question}</h1>
+        {article === null ? (
+          <p className="page__lead">
+            Kurze Antworten zum Rechnungseingang — ohne Registrierung und ohne Rechnungsarchiv.
+          </p>
+        ) : (
+          <p className="page__lead">
+            <AppLink href="/hilfe">Alle Fragen</AppLink>
+          </p>
+        )}
       </header>
 
-      {FAQ_ITEMS.map((item: FaqItem) => (
-        <section key={item.id} id={item.id} className="legal-section">
-          <h2>{item.question}</h2>
-          {item.paragraphs.map((paragraph: string, index: number) => (
-            <p key={`${item.id}-p-${index}`}>{paragraph}</p>
+      {article === null ? (
+        <>
+          <ul className="landing-benefits">
+            {topics.map((topic: { path: string; h1: string }) => (
+              <li key={topic.path}>
+                <AppLink href={topic.path}>{topic.h1}</AppLink>
+              </li>
+            ))}
+          </ul>
+          {FAQ_ITEMS.map((item: FaqItem) => (
+            <section key={item.id} id={item.id} className="legal-section">
+              <h2>
+                <AppLink href={item.path}>{item.question}</AppLink>
+              </h2>
+              <FaqBody item={item} />
+            </section>
           ))}
-          {item.listItems ? (
-            <ul>
-              {item.listItems.map((entry: string, index: number) => (
-                <li key={`${item.id}-li-${index}`}>{entry}</li>
-              ))}
-            </ul>
-          ) : null}
+        </>
+      ) : (
+        <section className="legal-section">
+          <FaqBody item={article} />
         </section>
-      ))}
+      )}
 
       <section id="feedback" className="legal-section">
         <h2>Feedback ohne Rechnungsdatei</h2>
@@ -132,7 +197,7 @@ export function HelpPage({ onNavigate, session, onLogout }: HelpPageProps): JSX.
         ) : null}
       </section>
 
-      <SiteFooter onNavigate={onNavigate} />
+      <SiteFooter />
     </main>
   )
 }

@@ -1,0 +1,224 @@
+{
+  "pages": [
+    {
+      "path": "/",
+      "kind": "home",
+      "h1": "XRechnung und ZUGFeRD öffnen, prüfen und exportieren",
+      "title": "XRechnung und ZUGFeRD öffnen, prüfen und exportieren | eInvoice",
+      "description": "Lesbare Rechnung in Sekunden, Prüfung und Export für die Buchhaltung.",
+      "paragraphs": [
+        "Lesbare Rechnung in Sekunden, Prüfung und Export für die Buchhaltung.",
+        "Ohne Registrierung. Die Datei wird nur für diese Anfrage verarbeitet und danach gelöscht."
+      ]
+    },
+    {
+      "path": "/upload",
+      "kind": "shell",
+      "h1": "Rechnung empfangen",
+      "title": "XRechnung oder ZUGFeRD hochladen | eInvoice",
+      "description": "XRechnung-XML oder ZUGFeRD-PDF hochladen, prüfen und als Excel, DATEV-CSV oder Steuerberater-Paket exportieren.",
+      "paragraphs": [
+        "XRechnung-XML oder ZUGFeRD-PDF hochladen — lesbare Ansicht der Rechnungsdaten."
+      ]
+    },
+    {
+      "path": "/tarife",
+      "kind": "shell",
+      "h1": "Tarife",
+      "title": "Tarife für XRechnung und ZUGFeRD | eInvoice",
+      "description": "Free, Plus und Team für XRechnung und ZUGFeRD: einzelne Rechnungen kostenlos oder Batch, Verlauf und höhere Kontingente.",
+      "paragraphs": [
+        "Free prüft bis zu 10 Rechnungen pro Tag, eine Datei nach der anderen. Plus hebt das auf 100 Prüfungen und 20 Dateien, Team auf 500 Prüfungen und 50 Dateien."
+      ]
+    },
+    {
+      "path": "/hilfe",
+      "kind": "shell",
+      "h1": "Hilfe & FAQ",
+      "title": "Hilfe und FAQ | eInvoice",
+      "description": "Antworten zu XRechnung, ZUGFeRD, Upload, Validierung und Export für die Buchhaltung.",
+      "paragraphs": [
+        "Kurze Antworten zum Rechnungseingang — ohne Registrierung und ohne Rechnungsarchiv."
+      ]
+    },
+    {
+      "path": "/impressum",
+      "kind": "shell",
+      "h1": "Impressum & Datenschutz",
+      "title": "Impressum | eInvoice",
+      "description": "Impressum und Angaben zum Diensteanbieter von eInvoice.",
+      "paragraphs": [
+        "Angaben zum Diensteanbieter und zur Verarbeitung hochgeladener Rechnungsdateien."
+      ]
+    },
+    {
+      "path": "/datenschutz",
+      "kind": "shell",
+      "h1": "Impressum & Datenschutz",
+      "title": "Datenschutzerklärung | eInvoice",
+      "description": "Datenschutzerklärung: wie eInvoice hochgeladene Rechnungsdateien verarbeitet und wieder löscht.",
+      "paragraphs": [
+        "Angaben zum Diensteanbieter und zur Verarbeitung hochgeladener Rechnungsdateien."
+      ]
+    },
+    {
+      "path": "/xrechnung-oeffnen",
+      "kind": "topic",
+      "h1": "XRechnung öffnen",
+      "title": "XRechnung öffnen | eInvoice",
+      "description": "XRechnung-XML hochladen und als lesbare Rechnung öffnen: Nummer, Betrag, Fälligkeit und IBAN.",
+      "paragraphs": [
+        "Eine XRechnung ist eine XML-Datei (UBL Invoice, UBL CreditNote oder UN/CEFACT CII), kein normales PDF.",
+        "eInvoice öffnet die Datei im Browser und zeigt die Rechnungsdaten in einer lesbaren Ansicht.",
+        "Danach können Sie die Rechnung prüfen und als Excel, DATEV-CSV oder Steuerberater-Paket exportieren."
+      ]
+    },
+    {
+      "path": "/zugferd-oeffnen",
+      "kind": "topic",
+      "h1": "ZUGFeRD öffnen",
+      "title": "ZUGFeRD öffnen | eInvoice",
+      "description": "ZUGFeRD- und Factur-X-PDF öffnen: das eingebettete XML wird gelesen und als Rechnung angezeigt.",
+      "paragraphs": [
+        "ZUGFeRD und Factur-X sind PDF-Dateien mit einer XML-Rechnung im Inneren.",
+        "eInvoice liest dieses XML und zeigt Nummer, Beträge, Steuer und Zahlungsdaten.",
+        "Ein normales PDF ohne eingebettetes XML kann dieser Dienst nicht öffnen."
+      ]
+    },
+    {
+      "path": "/e-rechnung-lesen",
+      "kind": "topic",
+      "h1": "E-Rechnung lesen",
+      "title": "E-Rechnung lesen | eInvoice",
+      "description": "E-Rechnung lesen statt XML-Text: XRechnung und ZUGFeRD als verständliche Rechnung anzeigen.",
+      "paragraphs": [
+        "Viele Programme zeigen eine E-Rechnung als unlesbaren XML-Text.",
+        "eInvoice liest XRechnung und ZUGFeRD und zeigt Lieferant, Empfänger, Positionen, Steuer und IBAN.",
+        "Eine lesbare PDF ist eine Arbeitskopie, keine Originalrechnung und kein steuerlicher Beleg."
+      ]
+    },
+    {
+      "path": "/xrechnung-zugferd-pruefen",
+      "kind": "topic",
+      "h1": "XRechnung und ZUGFeRD prüfen",
+      "title": "XRechnung und ZUGFeRD prüfen | eInvoice",
+      "description": "XRechnung und ZUGFeRD prüfen: Validierung und Warnung, wenn PDF und XML voneinander abweichen.",
+      "paragraphs": [
+        "eInvoice prüft die hochgeladene Datei und zeigt den Status der Rechnung.",
+        "Wenn bei ZUGFeRD das sichtbare PDF und das eingebettete XML bei Nummer, Summe, Steuer oder IBAN abweichen, erscheint eine Warnung.",
+        "Die Entscheidung über Zahlung und Vorsteuer bleibt bei Ihnen bzw. Ihrem Steuerberater."
+      ]
+    },
+    {
+      "path": "/steuerberater-export",
+      "kind": "topic",
+      "h1": "E-Rechnung für den Steuerberater exportieren",
+      "title": "E-Rechnung für den Steuerberater exportieren | eInvoice",
+      "description": "E-Rechnung für den Steuerberater exportieren: Originaldatei, Prüfbericht, Excel und DATEV-CSV als ZIP.",
+      "paragraphs": [
+        "Nach dem Lesen erzeugen Sie ein Paket mit Originaldatei, Kurzfassung, Prüfbericht, Excel und DATEV-CSV.",
+        "Das ZIP senden Sie selbst an die Kanzlei. eInvoice verschickt es nicht.",
+        "Im Gastmodus wird die Rechnung nicht gespeichert."
+      ]
+    },
+    {
+      "path": "/hilfe/was-ist-xml",
+      "kind": "faq",
+      "h1": "Was ist eine XML-Rechnung?",
+      "title": "Was ist eine XML-Rechnung? | eInvoice",
+      "description": "Eine XRechnung ist XML. eInvoice zeigt Nummer, Betrag, Fälligkeit und IBAN als lesbare Rechnung.",
+      "paragraphs": [
+        "Eine XRechnung ist eine maschinenlesbare Datei (XML), kein klassisches Papier-PDF. Viele Programme zeigen sie als unlesbaren Text. eInvoice liest die Datei und zeigt Nummer, Betrag, Fälligkeit und IBAN in einer normalen Rechnungssicht.",
+        "ZUGFeRD und Factur-X sind PDFs mit derselben XML-Rechnung im Inneren. Ohne eingebettetes XML ist ein normales PDF für diesen Dienst nicht verarbeitbar."
+      ],
+      "links": [
+        { "href": "/xrechnung-oeffnen", "label": "XRechnung öffnen" },
+        { "href": "/e-rechnung-lesen", "label": "E-Rechnung lesen" }
+      ]
+    },
+    {
+      "path": "/hilfe/formate",
+      "kind": "faq",
+      "h1": "Welche Dateien werden unterstützt?",
+      "title": "Welche Dateien werden unterstützt? | eInvoice",
+      "description": "XRechnung (UBL und CII) und ZUGFeRD/Factur-X als PDF mit eingebettetem XML.",
+      "paragraphs": [
+        "Aktuell: XRechnung (UBL Invoice, UBL CreditNote, UN/CEFACT CII) und ZUGFeRD/Factur-X als PDF mit eingebettetem XML. Geprüfte Profile: EN 16931 und XRechnung 3.0. Im Gastmodus eine Datei pro Anfrage. Mit Plus mehrere Dateien oder ein ZIP."
+      ],
+      "listItems": [
+        "Maximale Dateigröße: 10 MB (Gastmodus); Plus und Team höher",
+        "Gastmodus: eine Datei pro Anfrage, begrenzte Prüfungen und Exporte pro Tag",
+        "Nicht unterstützt: Scan-PDF, Foto, openTRANS, andere XML-Formate, verschachtelte ZIP-Archive",
+        "DATEV-Export ist eine Buchungsstapel-CSV, kein DATEVconnect"
+      ],
+      "links": [{ "href": "/zugferd-oeffnen", "label": "ZUGFeRD öffnen" }]
+    },
+    {
+      "path": "/hilfe/mismatch",
+      "kind": "faq",
+      "h1": "PDF und XML weichen ab — was soll ich zahlen?",
+      "title": "PDF und XML weichen ab — was soll ich zahlen? | eInvoice",
+      "description": "Wenn PDF und XML voneinander abweichen, nicht den PDF-Betrag überweisen. Der Lieferant soll eine korrigierte E-Rechnung senden.",
+      "paragraphs": [
+        "Wenn sichtbares PDF und eingebettetes XML unterschiedliche Nummer, Summe, MwSt oder IBAN zeigen, nicht einfach den PDF-Betrag überweisen.",
+        "Nächster Schritt: den Lieferanten um eine korrigierte E-Rechnung bitten. Die Entscheidung über Zahlung und Vorsteuer bleibt bei Ihnen bzw. Ihrem Steuerberater."
+      ],
+      "links": [
+        { "href": "/xrechnung-zugferd-pruefen", "label": "XRechnung und ZUGFeRD prüfen" }
+      ]
+    },
+    {
+      "path": "/hilfe/steuerberater",
+      "kind": "faq",
+      "h1": "Was übergebe ich dem Steuerberater?",
+      "title": "Was übergebe ich dem Steuerberater? | eInvoice",
+      "description": "Paket für den Steuerberater: Originaldateien, Kurzfassung, Prüfbericht, Excel und DATEV-CSV.",
+      "paragraphs": [
+        "Nutzen Sie „Paket für Steuerberater“ für eine Datei. Mit Plus: mehrere Rechnungen hochladen und „Ein ZIP für die Buchhaltung“ — ein Paket mit Originaldateien, Kurzfassung, Prüfbericht, Excel und DATEV-CSV.",
+        "Unter Organisation können Sie Steuernummer, USt-IdNr., IBAN und die E-Mail der Kanzlei hinterlegen. Diese Angaben stehen dann in mandant.txt im ZIP. Den Versand an die Kanzlei machen Sie vorerst selbst.",
+        "Die Datei bleibt bei Ihnen: eInvoice speichert im Gastmodus kein Rechnungsarchiv. Sie senden das ZIP selbst an die Kanzlei."
+      ],
+      "links": [
+        {
+          "href": "/steuerberater-export",
+          "label": "E-Rechnung für den Steuerberater exportieren"
+        }
+      ]
+    },
+    {
+      "path": "/hilfe/lesbare-pdf",
+      "kind": "faq",
+      "h1": "Kann ich eine lesbare PDF herunterladen?",
+      "title": "Kann ich eine lesbare PDF herunterladen? | eInvoice",
+      "description": "eInvoice erzeugt eine lesbare PDF als Arbeitskopie, keine Originalrechnung.",
+      "paragraphs": [
+        "Ja. Nach dem Lesen zeigt eInvoice die Rechnungsdaten und kann daraus eine lesbare PDF erzeugen — eine Arbeitskopie, keine Originalrechnung und kein steuerlicher Beleg.",
+        "Eine Datei: Schaltfläche „Lesbare PDF herunterladen“. Mehrere Dateien mit Plus: „Alle als lesbare PDF“ als ZIP. Für die Buchhaltung bleibt das Steuerberater-Paket mit Excel und DATEV."
+      ],
+      "links": [{ "href": "/e-rechnung-lesen", "label": "E-Rechnung lesen" }]
+    },
+    {
+      "path": "/hilfe/speicherung",
+      "kind": "faq",
+      "h1": "Wird meine Rechnung gespeichert?",
+      "title": "Wird meine Rechnung gespeichert? | eInvoice",
+      "description": "Im Gastmodus wird die Rechnung nach der Anfrage gelöscht. Ein Verlauf gibt es nur nach ausdrücklicher Zustimmung.",
+      "paragraphs": [
+        "Im Gastmodus nein. Die Datei liegt nur während der Anfrage im Speicher und in kurzlebigen Temp-Dateien für den Validator. Danach wird sie gelöscht.",
+        "Mit Plus bleiben Originaldateien kurz im Temp-Verzeichnis, damit Sie ein Buchhaltungspaket laden können. Nach wenigen Stunden werden sie gelöscht.",
+        "Einen Verlauf gibt es nur nach ausdrücklicher Zustimmung unter Organisation: standardmäßig Metadaten und Datei-Hash, keine Originaldatei. „Dateien merken“ bewahrt das Original begrenzt (Orientierung: 30 Tage), damit Sie das Paket erneut laden können. Ohne Häkchen wird nichts gespeichert."
+      ]
+    },
+    {
+      "path": "/hilfe/support",
+      "kind": "faq",
+      "h1": "Wie erreiche ich den Support?",
+      "title": "Wie erreiche ich den Support? | eInvoice",
+      "description": "Feedback ohne Rechnungsdatei. Kein XML, keine IBAN und keine Rechnungsdaten in die Nachricht.",
+      "paragraphs": [
+        "Nutzen Sie das Formular auf der Hilfeseite. Bitte keine Rechnungsdatei, kein XML, keine IBAN und keine personenbezogenen Rechnungsdaten einfügen.",
+        "Support-E-Mail: support@erechnung-smart.de. Bitte keine Rechnungsdatei anhängen."
+      ]
+    }
+  ]
+}

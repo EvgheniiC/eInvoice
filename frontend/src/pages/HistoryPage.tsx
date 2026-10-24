@@ -180,7 +180,7 @@ export function HistoryPage({
           {error}
         </p>
       ) : null}
-      <SiteFooter onNavigate={onNavigate} />
+      <SiteFooter />
     </main>
   )
 }

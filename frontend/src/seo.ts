@@ -1,3 +1,5 @@
+import { publicPageByPath, type PublicPage } from './content/publicPages'
+
 export const SITE_ORIGIN: string = 'https://erechnung-smart.de'
 export const SITE_NAME: string = 'eInvoice'
 
@@ -10,17 +12,16 @@ export type SeoPage = {
   robots: SeoRobots
 }
 
-export const LANDING_HEADLINE: string =
-  'XRechnung und ZUGFeRD öffnen, prüfen und exportieren'
+const HOME_PAGE: PublicPage = requiredPublicPage('/')
 
-export const LANDING_DESCRIPTION: string =
-  'Lesbare Rechnung in Sekunden, Prüfung und Export für die Buchhaltung.'
+export const LANDING_HEADLINE: string = HOME_PAGE.h1
+export const LANDING_DESCRIPTION: string = HOME_PAGE.description
 
 const DEFAULT_DESCRIPTION: string = LANDING_DESCRIPTION
 
 const LANDING: SeoPage = {
-  title: `${LANDING_HEADLINE} | ${SITE_NAME}`,
-  description: LANDING_DESCRIPTION,
+  title: HOME_PAGE.title,
+  description: HOME_PAGE.description,
   canonicalPath: '/',
   robots: 'index,follow',
 }
@@ -30,52 +31,33 @@ function normalizePath(pathname: string): string {
   return trimmed === '' ? '/' : trimmed
 }
 
+function requiredPublicPage(path: string): PublicPage {
+  const page: PublicPage | null = publicPageByPath(path)
+  if (page === null) {
+    throw new Error(`Missing public page: ${path}`)
+  }
+  return page
+}
+
+function pageSeo(page: PublicPage, canonicalPath: string = page.path): SeoPage {
+  return {
+    title: page.title,
+    description: page.description,
+    canonicalPath,
+    robots: 'index,follow',
+  }
+}
+
 export function seoForPath(pathname: string): SeoPage {
   const path: string = normalizePath(pathname)
 
-  if (path === '/upload') {
-    return {
-      title: 'XRechnung oder ZUGFeRD hochladen | eInvoice',
-      description:
-        'XRechnung-XML oder ZUGFeRD-PDF hochladen, prüfen und als Excel, DATEV-CSV oder Steuerberater-Paket exportieren.',
-      canonicalPath: '/upload',
-      robots: 'index,follow',
-    }
+  if (path === '/faq') {
+    return pageSeo(requiredPublicPage('/hilfe'), '/hilfe')
   }
-  if (path === '/tarife') {
-    return {
-      title: 'Tarife für XRechnung und ZUGFeRD | eInvoice',
-      description:
-        'Free, Plus und Team für XRechnung und ZUGFeRD: einzelne Rechnungen kostenlos oder Batch, Verlauf und höhere Kontingente.',
-      canonicalPath: '/tarife',
-      robots: 'index,follow',
-    }
-  }
-  if (path === '/impressum') {
-    return {
-      title: 'Impressum | eInvoice',
-      description: 'Impressum und Angaben zum Diensteanbieter von eInvoice.',
-      canonicalPath: '/impressum',
-      robots: 'index,follow',
-    }
-  }
-  if (path === '/datenschutz') {
-    return {
-      title: 'Datenschutzerklärung | eInvoice',
-      description:
-        'Datenschutzerklärung: wie eInvoice hochgeladene Rechnungsdateien verarbeitet und wieder löscht.',
-      canonicalPath: '/datenschutz',
-      robots: 'index,follow',
-    }
-  }
-  if (path === '/hilfe' || path === '/faq') {
-    return {
-      title: 'Hilfe und FAQ | eInvoice',
-      description:
-        'Antworten zu XRechnung, ZUGFeRD, Upload, Validierung und Export für die Buchhaltung.',
-      canonicalPath: '/hilfe',
-      robots: 'index,follow',
-    }
+
+  const published: PublicPage | null = publicPageByPath(path)
+  if (published !== null) {
+    return pageSeo(published)
   }
   if (path === '/anmelden') {
     return noIndexPage('Anmelden | eInvoice', '/anmelden')

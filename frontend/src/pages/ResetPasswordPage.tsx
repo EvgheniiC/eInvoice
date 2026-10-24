@@ -110,7 +110,7 @@ export function ResetPasswordPage({
           Anmeldung
         </button>
       </p>
-      <SiteFooter onNavigate={onNavigate} />
+      <SiteFooter />
     </main>
   )
 }

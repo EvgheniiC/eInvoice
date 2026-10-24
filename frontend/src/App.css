@@ -47,6 +47,9 @@
 }
 
 .page-nav__link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
   border: 1px solid #8a9a90;
   border-radius: 999px;
   padding: 0.45rem 1rem;
@@ -92,6 +95,7 @@
 
 .page__home {
   display: inline-flex;
+  text-decoration: none;
   align-items: center;
   min-height: 44px;
   margin: 0 0 0.85rem;
@@ -250,6 +254,10 @@
 }
 
 .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
   border-radius: 8px;
   padding: 0.7rem 1.25rem;
   min-height: 44px;
@@ -565,7 +573,13 @@
   margin: 0 0 0.85rem;
 }
 
+.landing-hero__lead a {
+  color: var(--color-brand-dark);
+}
+
 .site-footer__link {
+  display: inline-flex;
+  align-items: center;
   border: 0;
   padding: 0;
   min-height: 44px;

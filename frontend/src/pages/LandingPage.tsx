@@ -4,19 +4,19 @@ import { InvoiceHeroVisual } from '../components/InvoiceHeroVisual'
 import { PageNav } from '../components/PageNav'
 import { SiteFooter } from '../components/SiteFooter'
 import { DEFAULT_CAPABILITIES } from '../content/capabilities'
+import { pagesByKind, type PublicPage } from '../content/publicPages'
+import { AppLink } from '../navigation'
 import { LANDING_DESCRIPTION, LANDING_HEADLINE } from '../seo'
 import type { AppRoute } from '../routing'
 import type { CapabilitiesResponse, MeResponse, SupportedFormat } from '../types/invoice'
 
 type LandingPageProps = {
-  onStart: () => void
   onNavigate: (route: AppRoute) => void
   session: MeResponse | null
   onLogout: () => void
 }
 
 export function LandingPage({
-  onStart,
   onNavigate,
   session,
   onLogout,
@@ -42,15 +42,20 @@ export function LandingPage({
           <h1 className="landing-hero__title" tabIndex={-1}>
             {LANDING_HEADLINE}
           </h1>
-          <p className="landing-hero__lead">{LANDING_DESCRIPTION}</p>
+          <p className="landing-hero__lead">
+            {LANDING_DESCRIPTION}{' '}
+            <AppLink href="/upload">prüfen</AppLink>
+            {' · '}
+            <AppLink href="/hilfe">exportieren</AppLink>
+          </p>
           <p className="landing-hero__note">
             Ohne Registrierung. Die Datei wird nur für diese Anfrage verarbeitet und danach
             gelöscht.
           </p>
           <div className="landing-hero__cta">
-            <button type="button" className="btn btn--primary" onClick={onStart}>
+            <AppLink href="/upload" className="btn btn--primary">
               Rechnung hochladen
-            </button>
+            </AppLink>
           </div>
         </div>
         <InvoiceHeroVisual />
@@ -87,9 +92,9 @@ export function LandingPage({
           </li>
         </ol>
         <div className="landing-section__cta">
-          <button type="button" className="btn btn--primary" onClick={onStart}>
+          <AppLink href="/upload" className="btn btn--primary">
             Rechnung hochladen
-          </button>
+          </AppLink>
         </div>
       </section>
 
@@ -102,9 +107,9 @@ export function LandingPage({
           Verlauf, Duplikate und höhere Kontingente.
         </p>
         <div className="landing-section__cta">
-          <button type="button" className="btn btn--secondary" onClick={() => onNavigate('pricing')}>
+          <AppLink href="/tarife" className="btn btn--secondary">
             Tarife vergleichen
-          </button>
+          </AppLink>
         </div>
       </section>
 
@@ -163,7 +168,20 @@ export function LandingPage({
         </p>
       </section>
 
-      <SiteFooter onNavigate={onNavigate} />
+      <section className="landing-section" aria-labelledby="topics-heading">
+        <h2 id="topics-heading" className="landing-section__title">
+          Öffnen, lesen, prüfen, exportieren
+        </h2>
+        <ul className="landing-benefits">
+          {pagesByKind('topic').map((topic: PublicPage) => (
+            <li key={topic.path}>
+              <AppLink href={topic.path}>{topic.h1}</AppLink>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <SiteFooter />
     </main>
   )
 }

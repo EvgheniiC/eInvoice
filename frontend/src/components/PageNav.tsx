@@ -1,4 +1,5 @@
 import type { JSX } from 'react'
+import { AppLink } from '../navigation'
 import type { AppRoute } from '../routing'
 import type { MeResponse } from '../types/invoice'
 
@@ -18,20 +19,15 @@ export function PageNav({
   const className: string = overlay ? 'page-nav page-nav--overlay' : 'page-nav'
   return (
     <nav className={className} aria-label="Seiten">
-      <button type="button" className="page-nav__link" onClick={() => onNavigate('pricing')}>
+      <AppLink href="/tarife" className="page-nav__link">
         Tarife
-      </button>
-      <button type="button" className="page-nav__link" onClick={() => onNavigate('help')}>
+      </AppLink>
+      <AppLink href="/hilfe" className="page-nav__link">
         Hilfe
-      </button>
-      <button
-        type="button"
-        className="page-nav__link"
-        onClick={() => onNavigate('legal')}
-        aria-label="Impressum und Datenschutz"
-      >
+      </AppLink>
+      <AppLink href="/impressum" className="page-nav__link">
         Impressum
-      </button>
+      </AppLink>
       {session ? (
         <>
           {session.is_admin ? (
@@ -58,9 +54,9 @@ export function PageNav({
           Anmelden
         </button>
       )}
-      <button type="button" className="page-nav__link" onClick={() => onNavigate('upload')}>
+      <AppLink href="/upload" className="page-nav__link">
         Rechnung hochladen
-      </button>
+      </AppLink>
     </nav>
   )
 }

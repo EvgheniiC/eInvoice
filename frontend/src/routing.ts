@@ -1,8 +1,11 @@
+import { publicPageByPath } from './content/publicPages'
+
 export type AppRoute =
   | 'landing'
   | 'upload'
   | 'legal'
   | 'help'
+  | 'topic'
   | 'login'
   | 'register'
   | 'forgot'
@@ -13,7 +16,15 @@ export type AppRoute =
   | 'pricing'
   | 'stats'
 
+function normalizePath(pathname: string): string {
+  const trimmed: string = pathname.replace(/\/+$/, '')
+  return trimmed === '' ? '/' : trimmed
+}
+
 export function pathToRoute(pathname: string): AppRoute {
+  if (publicPageByPath(normalizePath(pathname))?.kind === 'topic') {
+    return 'topic'
+  }
   if (pathname === '/upload' || pathname.startsWith('/upload/')) {
     return 'upload'
   }

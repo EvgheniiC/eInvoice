@@ -193,7 +193,7 @@ export function LoginPage({
           Registrieren
         </button>
       </p>
-      <SiteFooter onNavigate={onNavigate} />
+      <SiteFooter />
     </main>
   )
 }

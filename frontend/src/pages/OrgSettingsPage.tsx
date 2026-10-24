@@ -106,7 +106,7 @@ export function OrgSettingsPage({
         <button type="button" className="btn btn--primary" onClick={() => onNavigate('login')}>
           Anmelden
         </button>
-        <SiteFooter onNavigate={onNavigate} />
+        <SiteFooter />
       </main>
     )
   }
@@ -491,7 +491,7 @@ export function OrgSettingsPage({
           {info}
         </p>
       ) : null}
-      <SiteFooter onNavigate={onNavigate} />
+      <SiteFooter />
     </main>
   )
 }

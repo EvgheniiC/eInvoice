@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
+import indexHtml from '../index.html?raw'
 import robotsTxt from '../public/robots.txt?raw'
 import sitemapXml from '../public/sitemap.xml?raw'
-import { applySeo, seoForPath, SITE_ORIGIN, type SeoPage } from './seo'
+import { PUBLIC_PAGES } from './content/publicPages'
+import { applySeo, LANDING_DESCRIPTION, LANDING_HEADLINE, seoForPath, SITE_ORIGIN, type SeoPage } from './seo'
 
 describe('seoForPath', (): void => {
   it('uses the homepage as canonical for unknown paths', (): void => {
@@ -9,9 +11,9 @@ describe('seoForPath', (): void => {
     expect(page.canonicalPath).toBe('/')
     expect(page.robots).toBe('index,follow')
     expect(page.title).toBe('XRechnung und ZUGFeRD öffnen, prüfen und exportieren | eInvoice')
-    expect(page.description).toBe(
-      'Lesbare Rechnung in Sekunden, Prüfung und Export für die Buchhaltung.',
-    )
+    expect(page.description).toBe(LANDING_DESCRIPTION)
+    expect(indexHtml).toContain(LANDING_HEADLINE)
+    expect(indexHtml).toContain(LANDING_DESCRIPTION)
   })
 
   it('indexes public product and legal pages', (): void => {
@@ -21,6 +23,20 @@ describe('seoForPath', (): void => {
     expect(seoForPath('/datenschutz').canonicalPath).toBe('/datenschutz')
     expect(seoForPath('/faq').canonicalPath).toBe('/hilfe')
     expect(seoForPath('/hilfe').robots).toBe('index,follow')
+    expect(seoForPath('/faq').canonicalPath).toBe('/hilfe')
+  })
+
+  it('gives each topic and FAQ page a stable title and canonical', (): void => {
+    expect(seoForPath('/xrechnung-oeffnen')).toEqual({
+      title: 'XRechnung öffnen | eInvoice',
+      description:
+        'XRechnung-XML hochladen und als lesbare Rechnung öffnen: Nummer, Betrag, Fälligkeit und IBAN.',
+      canonicalPath: '/xrechnung-oeffnen',
+      robots: 'index,follow',
+    })
+    expect(seoForPath('/hilfe/was-ist-xml').title).toBe('Was ist eine XML-Rechnung? | eInvoice')
+    expect(seoForPath('/hilfe/was-ist-xml').canonicalPath).toBe('/hilfe/was-ist-xml')
+    expect(seoForPath('/steuerberater-export').canonicalPath).toBe('/steuerberater-export')
   })
 
   it('keeps account pages out of the index', (): void => {
@@ -62,5 +78,8 @@ describe('public crawl files', (): void => {
     expect(sitemapXml).toContain(`${SITE_ORIGIN}/impressum</loc>`)
     expect(sitemapXml).toContain(`${SITE_ORIGIN}/datenschutz</loc>`)
     expect(sitemapXml).not.toContain('/anmelden')
+    for (const page of PUBLIC_PAGES) {
+      expect(sitemapXml).toContain(`${SITE_ORIGIN}${page.path}</loc>`)
+    }
   })
 })

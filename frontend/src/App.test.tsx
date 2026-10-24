@@ -14,10 +14,10 @@ describe('App', (): void => {
     window.history.replaceState(null, '', '/')
     render(<App />)
 
-    const startButtons: HTMLElement[] = screen.getAllByRole('button', {
+    const startLinks: HTMLElement[] = screen.getAllByRole('link', {
       name: 'Rechnung hochladen',
     })
-    await user.click(startButtons[0])
+    await user.click(startLinks[0])
 
     expect(screen.getByRole('heading', { name: 'Rechnung empfangen' })).toBeInTheDocument()
     expect(window.location.pathname).toBe('/upload')

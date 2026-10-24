@@ -49,16 +49,18 @@ describe('HistoryPage', (): void => {
     expect(screen.getByRole('heading', { name: 'Verlauf' })).toBeInTheDocument()
     expect(screen.getByText('Bitte zuerst anmelden.')).toBeInTheDocument()
     expect(screen.getAllByRole('button', { name: 'Anmelden' }).length).toBeGreaterThan(0)
-    expect(screen.getByRole('button', { name: 'Rechnung hochladen' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Rechnung hochladen' })).toHaveAttribute(
+      'href',
+      '/upload',
+    )
   })
 
-  it('opens the upload page from the top menu', async (): Promise<void> => {
-    const user: UserEvent = userEvent.setup()
-    const onNavigate: (route: AppRoute) => void = vi.fn()
-    render(<HistoryPage onNavigate={onNavigate} session={null} onLogout={vi.fn()} />)
-
-    await user.click(screen.getByRole('button', { name: 'Rechnung hochladen' }))
-    expect(onNavigate).toHaveBeenCalledWith('upload')
+  it('links to the upload page from the top menu', (): void => {
+    render(<HistoryPage onNavigate={vi.fn()} session={null} onLogout={vi.fn()} />)
+    expect(screen.getByRole('link', { name: 'Rechnung hochladen' })).toHaveAttribute(
+      'href',
+      '/upload',
+    )
   })
 
   it('points Free users to the Plus tariff', async (): Promise<void> => {

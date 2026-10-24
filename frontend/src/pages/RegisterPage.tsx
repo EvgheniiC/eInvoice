@@ -146,7 +146,7 @@ export function RegisterPage({
           Anmelden
         </button>
       </p>
-      <SiteFooter onNavigate={onNavigate} />
+      <SiteFooter />
     </main>
   )
 }

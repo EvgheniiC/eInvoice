@@ -1,26 +1,23 @@
 import type { JSX } from 'react'
-import type { AppRoute } from '../routing'
+import { AppLink } from '../navigation'
 
-type SiteFooterProps = {
-  onNavigate?: (route: AppRoute) => void
-}
-
-export function SiteFooter({ onNavigate }: SiteFooterProps): JSX.Element {
+export function SiteFooter(): JSX.Element {
   return (
     <footer className="site-footer">
-      {onNavigate ? (
-        <nav className="site-footer__nav" aria-label="Fußzeile">
-          <button type="button" className="site-footer__link" onClick={() => onNavigate('pricing')}>
-            Tarife
-          </button>
-          <button type="button" className="site-footer__link" onClick={() => onNavigate('help')}>
-            Hilfe &amp; FAQ
-          </button>
-          <button type="button" className="site-footer__link" onClick={() => onNavigate('legal')}>
-            Impressum &amp; Datenschutz
-          </button>
-        </nav>
-      ) : null}
+      <nav className="site-footer__nav" aria-label="Fußzeile">
+        <AppLink href="/tarife" className="site-footer__link">
+          Tarife
+        </AppLink>
+        <AppLink href="/hilfe" className="site-footer__link">
+          Hilfe &amp; FAQ
+        </AppLink>
+        <AppLink href="/impressum" className="site-footer__link">
+          Impressum
+        </AppLink>
+        <AppLink href="/datenschutz" className="site-footer__link">
+          Datenschutz
+        </AppLink>
+      </nav>
       <p>
         eInvoice unterstützt bei der technischen und inhaltlichen Prüfung, ersetzt aber keine
         Rechts- oder Steuerberatung und gibt keine Garantie für den Vorsteuerabzug. Die

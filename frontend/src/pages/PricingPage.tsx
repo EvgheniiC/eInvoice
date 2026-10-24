@@ -262,7 +262,7 @@ export function PricingPage({
           {error}
         </p>
       ) : null}
-      <SiteFooter onNavigate={onNavigate} />
+      <SiteFooter />
     </main>
   )
 }

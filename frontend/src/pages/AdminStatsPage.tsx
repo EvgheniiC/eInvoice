@@ -163,7 +163,7 @@ export function AdminStatsPage({
           </div>
         </>
       )}
-      <SiteFooter onNavigate={onNavigate} />
+      <SiteFooter />
     </main>
   )
 }

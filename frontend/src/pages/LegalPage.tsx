@@ -75,7 +75,7 @@ export function LegalPage({
         </article>
       ))}
 
-      <SiteFooter onNavigate={onNavigate} />
+      <SiteFooter />
     </main>
   )
 }

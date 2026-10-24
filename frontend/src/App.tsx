@@ -12,7 +12,9 @@ import { PricingPage } from './pages/PricingPage'
 import { AdminStatsPage } from './pages/AdminStatsPage'
 import { RegisterPage, type RegisterSuccess } from './pages/RegisterPage'
 import { ResetPasswordPage } from './pages/ResetPasswordPage'
+import { TopicPage } from './pages/TopicPage'
 import { UploadPage } from './pages/UploadPage'
+import { FollowPathProvider } from './navigation'
 import { VerifyPage } from './pages/VerifyPage'
 import { pathToRoute, routeToPath, type AppRoute } from './routing'
 import { applySeo } from './seo'
@@ -21,6 +23,7 @@ import './App.css'
 
 function App(): JSX.Element {
   const [route, setRoute] = useState<AppRoute>(() => pathToRoute(window.location.pathname))
+  const [pathname, setPathname] = useState<string>(() => window.location.pathname)
   const [locationSearch, setLocationSearch] = useState<string>(() => window.location.search)
   const [session, setSession] = useState<MeResponse | null>(null)
   const [sessionReady, setSessionReady] = useState<boolean>(false)
@@ -31,6 +34,7 @@ function App(): JSX.Element {
 
   useEffect(() => {
     function onPopState(): void {
+      setPathname(window.location.pathname)
       setRoute(pathToRoute(window.location.pathname))
       setLocationSearch(window.location.search)
     }
@@ -57,7 +61,17 @@ function App(): JSX.Element {
 
   useEffect(() => {
     applySeo(window.location.pathname)
-  }, [route])
+  }, [route, pathname])
+
+  useEffect(() => {
+    const normalized: string = window.location.pathname.replace(/\/+$/, '') || '/'
+    if (normalized !== '/faq') {
+      return
+    }
+    window.history.replaceState(null, '', '/hilfe')
+    setPathname('/hilfe')
+    setRoute('help')
+  }, [])
 
   useEffect(() => {
     if (isFirstRoute.current) {
@@ -77,8 +91,20 @@ function App(): JSX.Element {
       window.history.pushState(null, '', path)
     }
     window.scrollTo(0, 0)
+    setPathname(routeToPath(next))
     setLocationSearch(normalizedQuery)
     setRoute(next)
+  }
+
+  function followPath(path: string): void {
+    const current: string = `${window.location.pathname}${window.location.search}`
+    if (current !== path) {
+      window.history.pushState(null, '', path)
+    }
+    window.scrollTo(0, 0)
+    setPathname(path)
+    setLocationSearch('')
+    setRoute(pathToRoute(path))
   }
 
   function handleRegistered(result: RegisterSuccess): void {
@@ -113,7 +139,7 @@ function App(): JSX.Element {
   }
 
   return (
-    <>
+    <FollowPathProvider followPath={followPath}>
       <a className="skip-link" href="#main-content">
         Zum Inhalt springen
       </a>
@@ -135,8 +161,18 @@ function App(): JSX.Element {
             void handleLogout()
           }}
         />
+      ) : route === 'topic' ? (
+        <TopicPage
+          pathname={pathname}
+          onNavigate={navigate}
+          session={session}
+          onLogout={() => {
+            void handleLogout()
+          }}
+        />
       ) : route === 'help' ? (
         <HelpPage
+          pathname={pathname}
           onNavigate={navigate}
           session={session}
           onLogout={() => {
@@ -231,7 +267,6 @@ function App(): JSX.Element {
         />
       ) : (
         <LandingPage
-          onStart={() => navigate('upload')}
           onNavigate={navigate}
           session={session}
           onLogout={() => {
@@ -239,7 +274,7 @@ function App(): JSX.Element {
           }}
         />
       )}
-    </>
+    </FollowPathProvider>
   )
 }
 

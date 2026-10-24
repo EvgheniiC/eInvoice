@@ -91,7 +91,7 @@ export function ForgotPasswordPage({
           Anmeldung
         </button>
       </p>
-      <SiteFooter onNavigate={onNavigate} />
+      <SiteFooter />
     </main>
   )
 }

@@ -572,7 +572,7 @@ export function UploadPage({
         </>
       )}
 
-      <SiteFooter onNavigate={onNavigate} />
+      <SiteFooter />
     </main>
   )
 }

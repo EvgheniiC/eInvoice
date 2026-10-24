@@ -71,7 +71,7 @@ export function VerifyPage({
           {error}
         </p>
       ) : null}
-      <SiteFooter onNavigate={onNavigate} />
+      <SiteFooter />
     </main>
   )
 }
