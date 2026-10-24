@@ -41,16 +41,16 @@ zusätzlich ein AVV zwischen Kanzlei und Betreiber nötig sein.
 - KoSIT-Validator als lokaler Prozess, nicht als Drittanbieter-API
 - TOMs des Hosters: Anlage zum Hetzner-AV-Vertrag (Abruf im Kundenkonto)
 
-## 5. Subunternehmer (Stand: 31. August 2026)
+## 5. Subunternehmer (Stand: 24. Oktober 2026)
 
 | Subunternehmer | Rolle | Ort | AVV |
 |----------------|-------|-----|-----|
 | Hetzner Online GmbH | Server, Backup, Netz | Nürnberg, Deutschland | ja, Kundenkonto |
 | Hetzner Online GmbH | Kontaktpostfach und transaktionale Auth-Mails | Deutschland | ja, Kundenkonto (Webhosting) |
+| Stripe Payments Europe, Limited | Abonnement-Zahlung für Plus und Team | Dublin, Irland | ja, Stripe-Dienstevertrag |
 
 Nicht vorgesehen: DATEV-Cloud, Steuerberater-API, Analyse-Tracker, Rechnungsarchiv.
-Geplant (noch nicht eingesetzt, Liste vor Go-live aktualisieren): Zahlungsdienst
-(Stripe oder Mollie), object storage in DE nur für Opt-in-Dateien.
+Geplant (noch nicht eingesetzt): object storage in DE nur für Opt-in-Dateien.
 
 Hetzner-Subunternehmer des Hosters: siehe [Hetzner-Liste](https://www.hetzner.com/AV/subunternehmer.pdf).
 
@@ -67,5 +67,5 @@ Hosters.
 - [x] Anschrift des Verantwortlichen: Elbinger Straße 70, 27755 Delmenhorst
 - [x] Hosting-AVV und TOMs: Hetzner Online GmbH, abgeschlossen im Kundenkonto
 - [x] Genaues Rechenzentrum: Nürnberg
-- [ ] Endgültige Subprocessor-Liste nach Stripe/Mollie und Auth-Mail
+- [x] Endgültige Subprocessor-Liste: Hetzner und Stripe; Object Storage noch nicht eingesetzt
 - [ ] Rechtsprüfung dieser Übersicht

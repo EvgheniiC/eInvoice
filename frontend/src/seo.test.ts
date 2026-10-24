@@ -50,6 +50,7 @@ describe('public crawl files', (): void => {
   it('publishes robots.txt with sitemap and API disallow', (): void => {
     expect(robotsTxt).toContain('User-agent: *')
     expect(robotsTxt).toContain('Disallow: /api/')
+    expect(robotsTxt).toContain('Disallow: /statistik')
     expect(robotsTxt).toContain(`Sitemap: ${SITE_ORIGIN}/sitemap.xml`)
   })
 

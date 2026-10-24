@@ -7,6 +7,7 @@ Disallow: /passwort-zuruecksetzen
 Disallow: /bestaetigen
 Disallow: /organisation
 Disallow: /verlauf
+Disallow: /statistik
 Disallow: /api/
 
 Sitemap: https://erechnung-smart.de/sitemap.xml

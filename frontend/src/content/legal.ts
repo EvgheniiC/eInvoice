@@ -59,7 +59,7 @@ export const IMPRESSUM: LegalDocument = {
 export const DATENSCHUTZ: LegalDocument = {
   id: 'datenschutz',
   title: 'Datenschutzerklärung',
-  updatedLabel: 'Stand: 2. September 2026',
+  updatedLabel: 'Stand: 24. Oktober 2026',
   intro:
     'Diese Erklärung beschreibt, wie eInvoice Dateien und Nutzungsdaten verarbeitet. ' +
     'Verantwortliche ist Svetlana Costina (Einzelunternehmen).',
@@ -150,9 +150,11 @@ export const DATENSCHUTZ: LegalDocument = {
           'Der KoSIT-Validator läuft als lokaler Java-Prozess auf demselben Server, nicht als ' +
           'externer Cloud-Dienst.',
         'Kontaktpostfach und transaktionale Auth-Mails (Bestätigung, Anmeldelink, ' +
-          'Passwort-Reset) laufen über Hetzner Online GmbH, Deutschland. Zahlungsdienst ' +
-          'und object storage sind noch nicht eingesetzt; die Liste wird ergänzt, sobald ' +
-          'sie genutzt werden.',
+          'Passwort-Reset) laufen über Hetzner Online GmbH, Deutschland. Zahlungen für ' +
+          'die Tarife Plus und Team verarbeitet Stripe Payments Europe, Limited, ' +
+          '1 Grand Canal Street Lower, Dublin, Irland. Übermittelt werden Name, E-Mail, ' +
+          'Tarif und eine Zahlungsreferenz. Die Kartennummer verarbeitet Stripe, nicht ' +
+          'eInvoice. Object Storage ist noch nicht eingesetzt.',
       ],
     },
     {
