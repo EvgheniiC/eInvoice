@@ -39,20 +39,21 @@ describe('analytics consent', (): void => {
     saveAnalyticsConsent('granted', '/hilfe', '')
     const script: Element | null = document.querySelector(`script[data-ga="${GA_MEASUREMENT_ID}"]`)
     expect(script?.getAttribute('src')).toContain(GA_MEASUREMENT_ID)
-    const pageViews: unknown[] = (window.dataLayer ?? []).filter(
-      (entry: unknown): boolean => Array.isArray(entry) && entry[0] === 'event' && entry[1] === 'page_view',
-    )
-    expect(pageViews).toEqual([
-      [
-        'event',
-        'page_view',
-        {
-          page_path: '/hilfe',
-          page_location: `${window.location.origin}/hilfe`,
-          page_title: document.title,
-        },
-      ],
-    ])
+    const pageViews: unknown[] = (window.dataLayer ?? []).filter((entry: unknown): boolean => {
+      if (entry === null || typeof entry !== 'object') {
+        return false
+      }
+      const command: ArrayLike<unknown> = entry as ArrayLike<unknown>
+      return command[0] === 'event' && command[1] === 'page_view'
+    })
+    expect(pageViews).toHaveLength(1)
+    const pageView: ArrayLike<unknown> = pageViews[0] as ArrayLike<unknown>
+    expect(Array.isArray(pageView)).toBe(false)
+    expect(pageView[2]).toEqual({
+      page_path: '/hilfe',
+      page_location: `${window.location.origin}/hilfe`,
+      page_title: document.title,
+    })
   })
 
   it('stores a refusal and can ask again', (): void => {

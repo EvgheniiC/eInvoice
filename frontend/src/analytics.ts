@@ -42,9 +42,10 @@ function normalizePath(pathname: string): string {
   return trimmed === '' ? '/' : trimmed
 }
 
-function gtag(...args: unknown[]): void {
+function gtag(..._args: unknown[]): void {
   window.dataLayer = window.dataLayer ?? []
-  window.dataLayer.push(args)
+  // gtag.js only sends the Arguments object. A plain array stays in the queue.
+  window.dataLayer.push(arguments)
 }
 
 function measurementCookieSuffix(): string {
