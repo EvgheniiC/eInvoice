@@ -99,6 +99,11 @@ export const DATENSCHUTZ: LegalDocument = {
         'Besuchszähler: zufällige Browser-Kennung im Cookie einv_visitor (httpOnly). ' +
           'Gespeichert werden nur ein Hash dieser Kennung und das Datum, 30 Tage, ' +
           'ohne Rechnungsinhalt und ohne Zuordnung zum Konto.',
+        'Google Analytics, nur nach Einwilligung: öffentliche Seiten-URL, Zeitpunkt, ' +
+          'Browsertyp, Gerät, ungefähre Region aus der IP-Adresse, Scrollen und Klicks auf ' +
+          'externe Links. Kein Rechnungsinhalt, kein Dateiname, keine Kontoseiten ' +
+          '(Anmeldung, Organisation, Verlauf, Statistik) und keine Adressen mit Token ' +
+          'oder Zahlungssitzung.',
       ],
     },
     {
@@ -112,6 +117,8 @@ export const DATENSCHUTZ: LegalDocument = {
           'Interesse an einem funktionierenden, sicheren Rechnungseingang). Server-Logs stützen ' +
           'sich auf Art. 6 Abs. 1 lit. f DSGVO (Sicherheit und Missbrauchsabwehr). ' +
           'Besuchszahlen (eindeutige Browser pro Tag) ebenfalls auf Art. 6 Abs. 1 lit. f DSGVO.',
+        'Google Analytics wird nur nach Einwilligung eingesetzt (Art. 6 Abs. 1 lit. a DSGVO ' +
+          'und § 25 TDDDG). Ohne Einwilligung wird kein Google-Tag geladen.',
       ],
     },
     {
@@ -155,6 +162,10 @@ export const DATENSCHUTZ: LegalDocument = {
           '1 Grand Canal Street Lower, Dublin, Irland. Übermittelt werden Name, E-Mail, ' +
           'Tarif und eine Zahlungsreferenz. Die Kartennummer verarbeitet Stripe, nicht ' +
           'eInvoice. Object Storage ist noch nicht eingesetzt.',
+        'Reichweitenmessung nach Einwilligung: Google Ireland Limited, Gordon House, ' +
+          'Barrow Street, Dublin 4, Irland (Google Analytics 4). Google kann dabei Daten ' +
+          'in die USA übermitteln. Es werden keine Werbedaten und keine Rechnungsinhalte ' +
+          'übermittelt.',
       ],
     },
     {
@@ -165,6 +176,11 @@ export const DATENSCHUTZ: LegalDocument = {
           'Browser an einem Tag einmal zählt, auch ohne Konto. Gespeichert wird nur der Hash ' +
           'plus Datum, 30 Tage, ohne Verknüpfung zum Konto. Funnel-Zähler sind ' +
           'anonyme Zählereignisse ohne Nutzerprofil.',
+        'Google Analytics läuft nur nach Einwilligung. Dann setzt Google das Cookie _ga. ' +
+          'Die Entscheidung (Akzeptieren oder Ablehnen) bleibt im Browser unter dem Schlüssel ' +
+          'einv_analytics_consent und wird nicht an den Server gesendet. Über ' +
+          '„Cookie-Einstellungen“ in der Fußzeile kann die Einwilligung jederzeit widerrufen ' +
+          'werden; weitere Seitenaufrufe gehen dann nicht mehr an Google.',
         'Die Website verwendet lokale Systemschriftarten und lädt keine Schriftarten von ' +
           'externen Anbietern.',
       ],

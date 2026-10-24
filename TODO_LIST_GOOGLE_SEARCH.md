@@ -103,7 +103,7 @@ For each page:
 - [x] Prerender covers landing, upload, tarife, hilfe, impressum, datenschutz, topic pages, and FAQ pages
 - [x] Account pages stay client-only and `noindex`
 - [x] The built files in `frontend/dist` contain the H1 in the HTML body (checked 24 October 2026)
-- [ ] After deploy, repeat that check against `https://erechnung-smart.de`
+- [x] After deploy, the live pages return their own title and H1 (checked 24 October 2026)
 
 ---
 
@@ -111,10 +111,10 @@ For each page:
 
 The verification file is in the repo. The console steps are outside the repo.
 
-- [ ] Confirm the property `https://erechnung-smart.de/` is verified
-- [ ] Submit `https://erechnung-smart.de/sitemap.xml`
-- [ ] Inspect URL for `/`, `/upload`, `/tarife`, `/hilfe` and fix any «Discovered – currently not indexed» or «Crawled – currently not indexed» cause
-- [ ] After each new topic page is deployed, request indexing for that exact URL
+- [x] Confirm the property `https://erechnung-smart.de/` is verified
+- [x] Submit `https://erechnung-smart.de/sitemap.xml` again after the new URLs were added (24 October 2026)
+- [x] Request indexing for `/`, `/hilfe`, and the five topic pages (24 October 2026)
+- [ ] In a few days, open Индексирование → Страницы and confirm the new URLs are indexed. Fix any «Обнаружена, но не проиндексирована» only after Google has had time to crawl
 - [ ] Check Coverage / Pages weekly until the public URLs are indexed
 
 ---
@@ -123,7 +123,7 @@ The verification file is in the repo. The console steps are outside the repo.
 
 On-page text does not outrank ELSTER, DATEV, easybill, or validator landing pages. Those results have links.
 
-- [ ] Ask pilot Steuerberater to link to one specific page (for example `/steuerberater-export`), not only to the homepage
+- [ ] Ask pilot Steuerberater to link to `/steuerberater-export`. The exact sentence is in `docs/STEUERBERATER_PILOT.md` section 4; sending it is manual
 - [ ] List the tool once in a relevant German directory or «kostenlose E-Rechnung Tools» article, with the matching URL
 - [ ] When answering a public question (forum, blog comment), link to the page that answers that question
 - [ ] Do not buy links and do not publish the same text on many sites

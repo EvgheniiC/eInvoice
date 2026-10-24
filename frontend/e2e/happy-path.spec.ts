@@ -1,4 +1,5 @@
 import { expect, test, type Download, type Page, type Route } from '@playwright/test'
+import { CONSENT_STORAGE_KEY } from '../src/analytics'
 import { buildInvoice } from '../src/test/fixtures'
 import type { InvoiceParseResponse } from '../src/types/invoice'
 
@@ -34,6 +35,9 @@ test('happy path: landing, upload, result, Steuerberater package', async ({
     },
   )
 
+  await page.addInitScript((storageKey: string): void => {
+    localStorage.setItem(storageKey, 'denied')
+  }, CONSENT_STORAGE_KEY)
   await page.goto('/')
   await page.getByRole('button', { name: 'Rechnung hochladen' }).first().click()
   await expect(page).toHaveURL(/\/upload$/)

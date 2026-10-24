@@ -84,7 +84,17 @@ Bitte keine echten Mandantendaten in Screenshots; Testmandant reicht.
 
 ---
 
-## 4. Was wir nicht versprechen
+## 4. Bitte um einen Link
+
+Einen Satz an die Kanzlei schicken, nachdem das Paket besprochen ist. Die URL muss genau so bleiben.
+
+> Für den Empfang von XRechnung und ZUGFeRD nutzen wir eInvoice: Datei öffnen, prüfen und als Paket für die Kanzlei exportieren. Kurz beschrieben hier: https://erechnung-smart.de/steuerberater-export
+
+Nicht auf die Startseite verlinken. Keine bezahlten Linkpakete.
+
+---
+
+## 5. Was wir nicht versprechen
 
 - DATEVconnect, DATEV Unternehmen online, GoBD-Archiv
 - Automatisches SKR-Mapping / Kreditorenstamm

@@ -17,6 +17,8 @@ import { UploadPage } from './pages/UploadPage'
 import { FollowPathProvider } from './navigation'
 import { VerifyPage } from './pages/VerifyPage'
 import { pathToRoute, routeToPath, type AppRoute } from './routing'
+import { trackPublicPage } from './analytics'
+import { ConsentBanner } from './components/ConsentBanner'
 import { applySeo } from './seo'
 import type { MeResponse } from './types/invoice'
 import './App.css'
@@ -61,6 +63,7 @@ function App(): JSX.Element {
 
   useEffect(() => {
     applySeo(window.location.pathname)
+    trackPublicPage(window.location.pathname, window.location.search)
   }, [route, pathname])
 
   useEffect(() => {
@@ -274,6 +277,7 @@ function App(): JSX.Element {
           }}
         />
       )}
+      <ConsentBanner />
     </FollowPathProvider>
   )
 }

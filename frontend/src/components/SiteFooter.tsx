@@ -1,4 +1,5 @@
 import type { JSX } from 'react'
+import { openAnalyticsConsentPrompt } from '../analytics'
 import { AppLink } from '../navigation'
 
 export function SiteFooter(): JSX.Element {
@@ -17,6 +18,9 @@ export function SiteFooter(): JSX.Element {
         <AppLink href="/datenschutz" className="site-footer__link">
           Datenschutz
         </AppLink>
+        <button type="button" className="site-footer__link" onClick={openAnalyticsConsentPrompt}>
+          Cookie-Einstellungen
+        </button>
       </nav>
       <p>
         eInvoice unterstützt bei der technischen und inhaltlichen Prüfung, ersetzt aber keine
