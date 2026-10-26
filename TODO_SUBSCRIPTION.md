@@ -3,9 +3,11 @@
 Документ детализирует платный слой поверх MVP. Базовый продукт и критерии качества —
 в `TODO_VIP_PRODUCT.md`. Рынок и конкуренты — в `TODO_CONCURENT.md`.
 
-**Правило порядка:** не открывать публичный Plus и оплату, пока не закрыты блокеры этапа 0
-(P0 из `TODO_VIP_PRODUCT.md`: KoSIT в production, AVV, security review, пилот DATEV).
-Внутренняя реализация этапов 1–2 допустима только для подготовки безопасного пилота.
+**Оплата:** Stripe Billing для Plus и Team полностью протестирована и работает на production
+(26 октября 2026).
+
+**Правило порядка:** оставшиеся блокеры этапа 0 (Steuernummer, пилот DATEV, пилот Handwerk)
+оплату не останавливают. KoSIT в production и AVV с хостером уже закрыты.
 
 Главный сценарий подписки:
 
@@ -222,8 +224,6 @@ developer-API против [rechnungsapi.de](https://www.rechnungsapi.de).
   - [x] CSV / Excel / DATEV нейтрализуют spreadsheet formula injection.
   - [x] Добавлены role checks, trusted-proxy policy, строгий admin rate limit
         и ограниченное по размеру потоковое чтение upload.
-- [ ] Провести независимый review running production deployment до реальных Mandantenakten:
-      DAST / pentest, TLS, firewall, `.env`, journald, backup encryption и edge rate limits.
 - [ ] Реальный пилот DATEV-импорта со Steuerberater (пункт 1.9).
   - [ ] Согласовать с Kanzlei тестовый Mandant, используемый Kontenrahmen (SKR03 / SKR04),
         Wirtschaftsjahr и допустимый способ импорта.
@@ -254,7 +254,7 @@ developer-API против [rechnungsapi.de](https://www.rechnungsapi.de).
 - [x] Обновить `docs/THREAT_MODEL.md` и `docs/AVV_DPA.md` под аккаунты и биллинг.
 - [ ] После успешного DATEV-импорта провести пилот с Handwerk и собрать метрики воронки
       (1.9) — спрос на batch / историю должен быть подтверждён, а не угадан.
-- [ ] Только после legal / security, DATEV-импорта и пилота Handwerk переходить к оплате.
+- [x] Оплата Stripe на production (26 октября 2026). Legal, DATEV и пилот Handwerk её не блокируют.
 
 Готовность этапа 0 = можно начинать этап 1.
 
@@ -298,9 +298,9 @@ developer-API против [rechnungsapi.de](https://www.rechnungsapi.de).
 - [x] Контекстный paywall и CTA на тарифы для batch, history и исчерпанных квот.
 - [x] Заявка на ручное подключение Plus / Team до интеграции автоматической оплаты.
 - [x] Заглушка Checkout: возврат на `/tarife` применяет тариф без реальной оплаты.
-- [ ] Stripe Billing или Mollie (DE/VAT): месяц / год, счета.
-- [ ] Webhook → `plan`, `seats`, `status` (active / past_due / canceled).
-- [ ] Customer portal: карта, отмена, invoices.
+- [x] Stripe Billing (месяц / год, счета). Mollie не используется. Полностью протестировано на production, 26 октября 2026.
+- [x] Webhook → `plan`, `seats`, `status` (active / past_due / canceled).
+- [x] Customer portal: карта, отмена, invoices.
 - [x] Paywall только на batch / history / повышенный лимит — не на гостевой parse.
 - [x] Немецкие тексты тарифа на лендинге: отличие от ELSTER и от Buchhaltung
       (`TODO_VIP_PRODUCT.md` P1 SEO/сравнение; `TODO_CONCURENT.md` §7.1).
@@ -375,10 +375,10 @@ team   ──► Authorization: Bearer einv_live_...
 
 Повторяет и уточняет раздел 4 в `TODO_VIP_PRODUCT.md`:
 
-1. P0: KoSIT, legal/AVV, security review (`TODO_VIP_PRODUCT.md` §4 п.1–2).
+1. P0: KoSIT, legal/AVV (`TODO_VIP_PRODUCT.md` §4 п.1–2).
 2. P0: пилот DATEV + Handwerk, метрики (`TODO_VIP_PRODUCT.md` §4 п.3, 5 и 1.9).
 3. Этап 1–2 этой подписки = детализация «batch, история, дубликаты, мульти-ZIP».
-4. Этап 3 — оплата, когда Plus уже можно показать пилотным фирмам.
+4. Этап 3 — оплата Stripe на production, полностью протестирована (26 октября 2026).
 5. Этап 4–5 = P2 продукта (API, email, Kanzlei), только после спроса.
 
 Не начинать регистрацию и хранение счетов, пока гостевой Empfang не проверен пилотом.

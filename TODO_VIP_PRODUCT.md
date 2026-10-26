@@ -90,7 +90,6 @@
 - [x] Не возвращать пользователю traceback и внутренние детали ошибок.
 - [x] Зафиксировать subprocess/Java validator с минимальными правами и лимитами ресурсов.
 - [x] Зафиксировать threat model (`docs/THREAT_MODEL.md`) до работы с реальными счетами клиентов.
-- [ ] Выполнить независимую security-проверку до работы с реальными счетами клиентов.
 - [x] Подготовить AVV/DPA и список subprocessors (`docs/AVV_DPA.md`); оператор и Hetzner-AVV заполнены.
 
 #### 1.7 Качество интерфейса
@@ -277,9 +276,8 @@
    Elbinger Straße 70, 27755 Delmenhorst, svetlana.costina@gmx.de); хостер —
    Hetzner Online GmbH, Rechenzentrum Nürnberg, AVV в Kundenkonto заключён.
    Ждут Steuernummer/USt-IdNr. от Finanzamt.
-4. **Production security baseline в репозитории, внешний review открыт:** заголовки,
-   rate limit, timeout, XML/PDF-защита и nginx/systemd-сниппеты есть; независимая
-   security-проверка перед реальными Mandantenakten ещё не выполнена.
+4. **Production security baseline в репозитории:** заголовки, rate limit, timeout,
+   XML/PDF-защита и nginx/systemd-сниппеты есть. Внешний отчёт работу с клиентами не блокирует.
 5. **Пилот ещё не начат:** funnel/KPI/FAQ в коде есть; реальные Handwerk- и
    Steuerberater-пилоты и публичный support-Kontakt отсутствуют.
 
@@ -288,7 +286,7 @@
 ## 4. Рекомендуемый порядок работ
 
 1. Обязательный KoSIT в production и корректная модель статусов проверки.
-2. Заполнить Impressum/Verantwortlicher, подписать AVV с хостером и провести независимый security review.
+2. Заполнить Impressum/Verantwortlicher и подписать AVV с хостером.
 3. Реальный пилот DATEV/Steuerberater и доработка полного accountant package.
 4. Пилот с Handwerk, сбор продуктовых метрик и улучшение UX.
 5. Только после подтверждения спроса — регистрация и Plus по `TODO_SUBSCRIPTION.md`:

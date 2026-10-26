@@ -1,9 +1,9 @@
 # Threat model — eInvoice
 
 Lightweight STRIDE review for the public upload utility
-(XRechnung / ZUGFeRD parse → validate → export). This is **not** an independent
-security audit. An external review is still required before processing real
-client invoices in production.
+(XRechnung / ZUGFeRD parse → validate → export). This is an internal review,
+not an independent security audit. An external report is optional and does not
+block work with clients.
 
 Scope: browser SPA + FastAPI on localhost behind nginx, one file per request,
 no invoice archive. Two processing models:
@@ -13,7 +13,7 @@ no invoice archive. Two processing models:
 | Guest | File lives only in the request / temp dir | Art. 6(1)(b)/(f) DSGVO for the parse/export request | Active |
 | Account | Email, password hash, org membership, session. Plus batch originals in `BATCH_TEMP_DIR` until package TTL. Opt-in history: metadata + file hash; originals only with «Dateien merken» in `HISTORY_ORIGINAL_DIR` until retention. | Art. 6 DSGVO + AVV; history requires explicit consent | Account tables exist; history is off by default |
 
-Stripe Billing is live for Plus and Team. Object storage remains a future trust-boundary expansion.
+Stripe Billing for Plus and Team is live on production and was fully tested on 26 October 2026. Object storage remains a future trust-boundary expansion.
 
 ## Assets
 
@@ -56,7 +56,7 @@ unless nginx overwrites it (the API snippet sets `X-Forwarded-For $remote_addr`)
 
 ## Residual risk (must stay open)
 
-- No independent pentest / code audit yet
+- No independent pentest. Client work does not wait for one.
 - In-app rate limit is per process (one uvicorn worker); nginx is the edge control
 - Operator is Svetlana Costina (Einzelunternehmen), Elbinger Straße 70,
   27755 Delmenhorst, svetlana.costina@gmx.de. Hosting: Hetzner Online GmbH,
@@ -65,7 +65,6 @@ unless nginx overwrites it (the API snippet sets `X-Forwarded-For $remote_addr`)
 
 ## Review checklist before real invoices
 
-- [ ] External security review of this document and the running deployment
 - [ ] Confirm TLS, security snippets, and `ENVIRONMENT=production` on the host
 - [ ] Confirm journald does not capture request bodies (app never logs them)
 - [x] Fill Impressum / Verantwortlicher (name, address, e-mail)

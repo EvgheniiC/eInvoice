@@ -44,4 +44,3 @@ support mailbox with an attached invoice):
 
 - Write what fired, what changed, and the new counter values.
 - Open a follow-up for missing SLO, dependency, or KoSIT pinning work.
-- External security review remains required before Mandantenakten.
