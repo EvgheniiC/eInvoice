@@ -48,14 +48,24 @@ Local sample pairs (not in git): `*RECHNUNG1.xml` + matching `*RECHNUNG1.pdf`
 Allow an invoice issuer to upload an existing plain PDF, review the extracted data, and download a compliant E-Rechnung for sending.
 
 ### Possible scope
-- [ ] Extract invoice fields and line items from text-based PDFs; evaluate OCR separately for scanned documents
-- [ ] Show an editable review step and require explicit user confirmation before generation
-- [ ] Check required invoice fields and tax calculations
-- [ ] Generate XRechnung XML and/or ZUGFeRD PDF with embedded EN 16931 XML
-- [ ] Validate generated documents with KoSIT before download
-- [ ] Clearly identify the generated structured document as authoritative
-- [ ] Add German guidance explaining that only the invoice issuer may convert and send the invoice
-- [ ] Never claim that automatic extraction alone guarantees legal or tax compliance
+- [x] Extract header fields from text-based PDFs. Line items stay manual. OCR for scans is not included.
+- [x] Show an editable review step and require explicit user confirmation before generation
+- [x] Check required invoice fields and recompute tax from the confirmed lines (7% and 19% only)
+- [x] Generate XRechnung CII and ZUGFeRD XML, and embed the XML into the original PDF
+- [x] Allow download only after a completed valid KoSIT run
+- [x] Tell the issuer that the XML, not the visible PDF, is authoritative
+- [x] German guidance: only the invoice issuer may send the file
+- [x] Do not claim that automatic extraction guarantees legal or tax compliance
+
+Page: `/erstellen`. API: `POST /api/issue/draft`, `POST /api/issue/build`.
+The file is not stored. Seller name, VAT ID and IBAN are prefilled from the organization when the user is signed in.
+
+### Still open
+- [ ] OCR for scanned PDFs
+- [ ] Reading line items from the PDF
+- [ ] 0% VAT and exemption reasons
+- [ ] Line and header discounts
+- [ ] A real KoSIT pass on generated files from pilot invoices
 
 ### Product positioning
 Keep this as a separate `PDF → E-Rechnung` flow rather than presenting the product as accounting software or a full invoice editor.

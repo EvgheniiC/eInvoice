@@ -23,6 +23,7 @@ import type {
   ValidationReportRequest,
   ViewPdfRequest,
 } from '../types/invoice'
+import type { IssueBuildResponse, IssueDraft, IssueDraftResponse } from '../types/issue'
 import { DEFAULT_CAPABILITIES } from '../content/capabilities'
 
 const API_BASE: string = '/api'
@@ -637,6 +638,39 @@ async function readErrorDetail(response: Response, fallback: string): Promise<st
     // keep fallback
   }
   return fallback
+}
+
+export async function createIssueDraft(file: File): Promise<IssueDraftResponse> {
+  const formData: FormData = new FormData()
+  formData.append('file', file)
+  const response: Response = await fetch(
+    `${API_BASE}/issue/draft`,
+    withRequestId({ method: 'POST', body: formData }),
+  )
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response, 'PDF konnte nicht gelesen werden.'))
+  }
+  return response.json() as Promise<IssueDraftResponse>
+}
+
+export async function buildIssue(
+  draft: IssueDraft,
+  pdf: File,
+  confirmed: boolean,
+): Promise<IssueBuildResponse> {
+  const pdfBase64: string = await fileToBase64(pdf)
+  const response: Response = await fetch(
+    `${API_BASE}/issue/build`,
+    withRequestId({
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ draft, pdf_base64: pdfBase64, confirmed }),
+    }),
+  )
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response, 'E-Rechnung konnte nicht erzeugt werden.'))
+  }
+  return response.json() as Promise<IssueBuildResponse>
 }
 
 function isPdfFile(file: File): boolean {

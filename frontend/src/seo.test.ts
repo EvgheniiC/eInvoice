@@ -43,6 +43,8 @@ describe('seoForPath', (): void => {
     expect(seoForPath('/anmelden').robots).toBe('noindex,nofollow')
     expect(seoForPath('/registrieren').robots).toBe('noindex,nofollow')
     expect(seoForPath('/organisation').robots).toBe('noindex,nofollow')
+    expect(seoForPath('/erstellen').robots).toBe('noindex,nofollow')
+    expect(seoForPath('/erstellen').canonicalPath).toBe('/erstellen')
     expect(seoForPath('/verlauf').robots).toBe('noindex,nofollow')
     expect(seoForPath('/statistik').robots).toBe('noindex,nofollow')
   })

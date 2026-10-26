@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from app.api.routes import admin, auth, billing, export, health, invoices, org, plan_requests, product
+from app.api.routes import admin, auth, billing, export, health, invoices, issue, org, plan_requests, product
 
 api_router: APIRouter = APIRouter()
 api_router.include_router(health.router, tags=["health"])
@@ -13,4 +13,5 @@ api_router.include_router(plan_requests.router, tags=["plan requests"])
 api_router.include_router(billing.router, tags=["billing"])
 api_router.include_router(admin.router, tags=["admin"])
 api_router.include_router(invoices.router, prefix="/invoices", tags=["invoices"])
+api_router.include_router(issue.router, prefix="/issue", tags=["issue"])
 api_router.include_router(export.router, prefix="/invoices", tags=["export"])

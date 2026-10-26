@@ -79,6 +79,9 @@ export interface components {
     Body_create_invoice_batch_api_invoices_batch_post: {
       files: string[];
     };
+    Body_create_issue_draft_api_issue_draft_post: {
+      file: string;
+    };
     Body_parse_invoice_api_invoices_parse_post: {
       file: string;
     };
@@ -133,6 +136,11 @@ export interface components {
     };
     FeedbackResponse: {
       accepted: boolean;
+      message: string;
+    };
+    FieldHint: {
+      field: string;
+      source: "pdf" | "organization" | "empty";
       message: string;
     };
     FunnelEventRequest: {
@@ -242,6 +250,95 @@ export interface components {
       allowance: string | null;
       charge: string | null;
       tax_breakdown: components["schemas"]["TaxBreakdown-Output"][];
+    };
+    "IssueAddress-Input": {
+      line?: string | null;
+      postcode?: string | null;
+      city?: string | null;
+      country?: string | null;
+    };
+    "IssueAddress-Output": {
+      line: string | null;
+      postcode: string | null;
+      city: string | null;
+      country: string | null;
+    };
+    IssueArtifact: {
+      format: "xrechnung" | "zugferd_xml" | "zugferd_pdf";
+      filename: string;
+      media_type: string;
+      content_base64: string | null;
+      download_allowed: boolean;
+      validation_status: components["schemas"]["ValidationStatus"];
+      validation_issues: components["schemas"]["ValidationIssue-Output"][];
+    };
+    IssueBuildRequest: {
+      draft: components["schemas"]["IssueDraft-Input"];
+      pdf_base64?: string | null;
+      confirmed?: boolean;
+    };
+    IssueBuildResponse: {
+      ready: boolean;
+      message: string;
+      blocking_issues: components["schemas"]["ValidationIssue-Output"][];
+      artifacts: components["schemas"]["IssueArtifact"][];
+    };
+    "IssueDraft-Input": {
+      invoice_number?: string | null;
+      issue_date?: string | null;
+      currency?: string;
+      buyer_reference?: string | null;
+      seller?: components["schemas"]["IssueParty-Input"];
+      buyer?: components["schemas"]["IssueParty-Input"];
+      lines?: components["schemas"]["IssueLineInput-Input"][];
+    };
+    "IssueDraft-Output": {
+      invoice_number: string | null;
+      issue_date: string | null;
+      currency: string;
+      buyer_reference: string | null;
+      seller: components["schemas"]["IssueParty-Output"];
+      buyer: components["schemas"]["IssueParty-Output"];
+      lines: components["schemas"]["IssueLineInput-Output"][];
+    };
+    IssueDraftResponse: {
+      filename: string;
+      text_found: boolean;
+      draft: components["schemas"]["IssueDraft-Output"];
+      hints: components["schemas"]["FieldHint"][];
+      warnings: string[];
+    };
+    "IssueLineInput-Input": {
+      description?: string | null;
+      quantity?: number | string | null;
+      unit_code?: string | null;
+      unit_price?: number | string | null;
+      tax_rate?: number | string | null;
+    };
+    "IssueLineInput-Output": {
+      description: string | null;
+      quantity: string | null;
+      unit_code: string | null;
+      unit_price: string | null;
+      tax_rate: string | null;
+    };
+    "IssueParty-Input": {
+      name?: string | null;
+      address?: components["schemas"]["IssueAddress-Input"];
+      vat_id?: string | null;
+      email?: string | null;
+      contact_name?: string | null;
+      phone?: string | null;
+      iban?: string | null;
+    };
+    "IssueParty-Output": {
+      name: string | null;
+      address: components["schemas"]["IssueAddress-Output"];
+      vat_id: string | null;
+      email: string | null;
+      contact_name: string | null;
+      phone: string | null;
+      iban: string | null;
     };
     "LineItem-Input": {
       position?: number | null;

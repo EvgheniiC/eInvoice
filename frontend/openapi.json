@@ -1371,6 +1371,90 @@
         }
       }
     },
+    "/api/issue/draft": {
+      "post": {
+        "tags": [
+          "issue"
+        ],
+        "summary": "Create Issue Draft",
+        "description": "Read a plain PDF into an editable draft. Guest uploads are not persisted.",
+        "operationId": "create_issue_draft_api_issue_draft_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_create_issue_draft_api_issue_draft_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueDraftResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/issue/build": {
+      "post": {
+        "tags": [
+          "issue"
+        ],
+        "summary": "Create Issue Files",
+        "description": "Build XRechnung and ZUGFeRD from a confirmed draft. Download stays closed until KoSIT is valid.",
+        "operationId": "create_issue_files_api_issue_build_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IssueBuildRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueBuildResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/invoices/export/mapping": {
       "get": {
         "tags": [
@@ -2023,6 +2107,20 @@
         ],
         "title": "Body_create_invoice_batch_api_invoices_batch_post"
       },
+      "Body_create_issue_draft_api_issue_draft_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_create_issue_draft_api_issue_draft_post"
+      },
       "Body_parse_invoice_api_invoices_parse_post": {
         "properties": {
           "file": {
@@ -2340,6 +2438,35 @@
         ],
         "title": "FeedbackResponse",
         "description": "Acknowledgement for submitted feedback."
+      },
+      "FieldHint": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "title": "Field"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "pdf",
+              "organization",
+              "empty"
+            ],
+            "title": "Source"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "field",
+          "source",
+          "message"
+        ],
+        "title": "FieldHint",
+        "description": "Where a draft value came from, so the form can show uncertainty."
       },
       "FunnelEventRequest": {
         "properties": {
@@ -3194,6 +3321,707 @@
         ],
         "title": "InvoiceTotals",
         "description": "Invoice monetary totals."
+      },
+      "IssueAddress-Input": {
+        "properties": {
+          "line": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Line"
+          },
+          "postcode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Postcode"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          }
+        },
+        "type": "object",
+        "title": "IssueAddress",
+        "description": "Postal address entered or read for one party."
+      },
+      "IssueAddress-Output": {
+        "properties": {
+          "line": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Line"
+          },
+          "postcode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Postcode"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          }
+        },
+        "type": "object",
+        "required": [
+          "line",
+          "postcode",
+          "city",
+          "country"
+        ],
+        "title": "IssueAddress",
+        "description": "Postal address entered or read for one party."
+      },
+      "IssueArtifact": {
+        "properties": {
+          "format": {
+            "type": "string",
+            "enum": [
+              "xrechnung",
+              "zugferd_xml",
+              "zugferd_pdf"
+            ],
+            "title": "Format"
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "media_type": {
+            "type": "string",
+            "title": "Media Type"
+          },
+          "content_base64": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Base64"
+          },
+          "download_allowed": {
+            "type": "boolean",
+            "title": "Download Allowed"
+          },
+          "validation_status": {
+            "$ref": "#/components/schemas/ValidationStatus"
+          },
+          "validation_issues": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationIssue-Output"
+            },
+            "type": "array",
+            "title": "Validation Issues"
+          }
+        },
+        "type": "object",
+        "required": [
+          "format",
+          "filename",
+          "media_type",
+          "content_base64",
+          "download_allowed",
+          "validation_status",
+          "validation_issues"
+        ],
+        "title": "IssueArtifact",
+        "description": "One generated file. Bytes are present only after a completed valid KoSIT run."
+      },
+      "IssueBuildRequest": {
+        "properties": {
+          "draft": {
+            "$ref": "#/components/schemas/IssueDraft-Input"
+          },
+          "pdf_base64": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pdf Base64"
+          },
+          "confirmed": {
+            "type": "boolean",
+            "title": "Confirmed",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "draft"
+        ],
+        "title": "IssueBuildRequest",
+        "description": "Confirmed draft plus the original PDF used for a ZUGFeRD container."
+      },
+      "IssueBuildResponse": {
+        "properties": {
+          "ready": {
+            "type": "boolean",
+            "title": "Ready"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "blocking_issues": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationIssue-Output"
+            },
+            "type": "array",
+            "title": "Blocking Issues"
+          },
+          "artifacts": {
+            "items": {
+              "$ref": "#/components/schemas/IssueArtifact"
+            },
+            "type": "array",
+            "title": "Artifacts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ready",
+          "message",
+          "blocking_issues",
+          "artifacts"
+        ],
+        "title": "IssueBuildResponse",
+        "description": "Build result. Download stays closed until KoSIT reports the file valid."
+      },
+      "IssueDraft-Input": {
+        "properties": {
+          "invoice_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invoice Number"
+          },
+          "issue_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Issue Date"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency",
+            "default": "EUR"
+          },
+          "buyer_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Buyer Reference"
+          },
+          "seller": {
+            "$ref": "#/components/schemas/IssueParty-Input"
+          },
+          "buyer": {
+            "$ref": "#/components/schemas/IssueParty-Input"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/IssueLineInput-Input"
+            },
+            "type": "array",
+            "title": "Lines"
+          }
+        },
+        "type": "object",
+        "title": "IssueDraft",
+        "description": "Editable invoice the issuer confirms before XML is built."
+      },
+      "IssueDraft-Output": {
+        "properties": {
+          "invoice_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invoice Number"
+          },
+          "issue_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Issue Date"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency",
+            "default": "EUR"
+          },
+          "buyer_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Buyer Reference"
+          },
+          "seller": {
+            "$ref": "#/components/schemas/IssueParty-Output"
+          },
+          "buyer": {
+            "$ref": "#/components/schemas/IssueParty-Output"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/IssueLineInput-Output"
+            },
+            "type": "array",
+            "title": "Lines"
+          }
+        },
+        "type": "object",
+        "required": [
+          "invoice_number",
+          "issue_date",
+          "currency",
+          "buyer_reference",
+          "seller",
+          "buyer",
+          "lines"
+        ],
+        "title": "IssueDraft",
+        "description": "Editable invoice the issuer confirms before XML is built."
+      },
+      "IssueDraftResponse": {
+        "properties": {
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "text_found": {
+            "type": "boolean",
+            "title": "Text Found"
+          },
+          "draft": {
+            "$ref": "#/components/schemas/IssueDraft-Output"
+          },
+          "hints": {
+            "items": {
+              "$ref": "#/components/schemas/FieldHint"
+            },
+            "type": "array",
+            "title": "Hints"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filename",
+          "text_found",
+          "draft",
+          "hints",
+          "warnings"
+        ],
+        "title": "IssueDraftResponse",
+        "description": "Best-effort draft. Nothing is stored after the response is sent."
+      },
+      "IssueLineInput-Input": {
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity"
+          },
+          "unit_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Code"
+          },
+          "unit_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Price"
+          },
+          "tax_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tax Rate"
+          }
+        },
+        "type": "object",
+        "title": "IssueLineInput",
+        "description": "One invoice line before totals are calculated."
+      },
+      "IssueLineInput-Output": {
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity"
+          },
+          "unit_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Code"
+          },
+          "unit_price": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Price"
+          },
+          "tax_rate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tax Rate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "description",
+          "quantity",
+          "unit_code",
+          "unit_price",
+          "tax_rate"
+        ],
+        "title": "IssueLineInput",
+        "description": "One invoice line before totals are calculated."
+      },
+      "IssueParty-Input": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "address": {
+            "$ref": "#/components/schemas/IssueAddress-Input"
+          },
+          "vat_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vat Id"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "contact_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contact Name"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "iban": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Iban"
+          }
+        },
+        "type": "object",
+        "title": "IssueParty",
+        "description": "Seller or buyer data for an outgoing invoice."
+      },
+      "IssueParty-Output": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "address": {
+            "$ref": "#/components/schemas/IssueAddress-Output"
+          },
+          "vat_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vat Id"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "contact_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contact Name"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "iban": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Iban"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "address",
+          "vat_id",
+          "email",
+          "contact_name",
+          "phone",
+          "iban"
+        ],
+        "title": "IssueParty",
+        "description": "Seller or buyer data for an outgoing invoice."
       },
       "LineItem-Input": {
         "properties": {

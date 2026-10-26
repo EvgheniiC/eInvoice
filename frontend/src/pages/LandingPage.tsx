@@ -57,6 +57,10 @@ export function LandingPage({
               Rechnung hochladen
             </AppLink>
           </div>
+          <p className="landing-hero__note">
+            Eigene PDF-Rechnung als E-Rechnung vorbereiten:{' '}
+            <AppLink href="/erstellen">E-Rechnung erstellen</AppLink>
+          </p>
         </div>
         <InvoiceHeroVisual />
       </section>

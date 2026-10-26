@@ -83,6 +83,9 @@ export function seoForPath(pathname: string): SeoPage {
   if (path === '/statistik') {
     return noIndexPage('Statistik | eInvoice', '/statistik')
   }
+  if (path === '/erstellen') {
+    return noIndexPage('E-Rechnung aus PDF erstellen | eInvoice', '/erstellen')
+  }
 
   return LANDING
 }

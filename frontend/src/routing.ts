@@ -15,6 +15,7 @@ export type AppRoute =
   | 'history'
   | 'pricing'
   | 'stats'
+  | 'issue'
 
 function normalizePath(pathname: string): string {
   const trimmed: string = pathname.replace(/\/+$/, '')
@@ -71,6 +72,9 @@ export function pathToRoute(pathname: string): AppRoute {
   if (pathname === '/statistik' || pathname.startsWith('/statistik/')) {
     return 'stats'
   }
+  if (pathname === '/erstellen' || pathname.startsWith('/erstellen/')) {
+    return 'issue'
+  }
   return 'landing'
 }
 
@@ -110,6 +114,9 @@ export function routeToPath(route: AppRoute): string {
   }
   if (route === 'stats') {
     return '/statistik'
+  }
+  if (route === 'issue') {
+    return '/erstellen'
   }
   return '/'
 }

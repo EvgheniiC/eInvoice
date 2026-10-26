@@ -57,6 +57,9 @@ export function PageNav({
       <AppLink href="/upload" className="page-nav__link">
         Rechnung hochladen
       </AppLink>
+      <AppLink href="/erstellen" className="page-nav__link">
+        E-Rechnung erstellen
+      </AppLink>
     </nav>
   )
 }

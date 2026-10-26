@@ -1925,3 +1925,65 @@ html.has-consent-banner body {
   }
 }
 
+.issue-note,
+.issue-warnings,
+.issue-hints {
+  max-width: 46rem;
+}
+
+.issue-form {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0 0 1.5rem;
+}
+
+.issue-form label,
+.issue-form legend {
+  font-weight: 600;
+}
+
+.issue-form input,
+.issue-form select {
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #8a9a90;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.issue-form fieldset {
+  margin: 0;
+  padding: 0.75rem 1rem 1rem;
+  border: 1px solid #d5dcd7;
+  border-radius: 10px;
+}
+
+.issue-columns {
+  display: grid;
+  gap: 1rem;
+}
+
+.issue-line {
+  display: grid;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.issue-artifacts {
+  display: grid;
+  gap: 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 800px) {
+  .issue-columns {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .issue-line {
+    grid-template-columns: 2fr 0.7fr 1fr 1fr 0.7fr;
+    align-items: end;
+  }
+}
+
