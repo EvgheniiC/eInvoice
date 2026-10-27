@@ -18,6 +18,7 @@ import type { MeResponse, ValidationIssue } from '../types/invoice'
 type IssuePageProps = {
   onNavigate: (route: AppRoute) => void
   session: MeResponse | null
+  sessionReady: boolean
   onLogout: () => void
 }
 
@@ -38,7 +39,12 @@ const ARTIFACT_LABELS: Record<IssueArtifact['format'], string> = {
   zugferd_pdf: 'ZUGFeRD PDF',
 }
 
-export function IssuePage({ onNavigate, session, onLogout }: IssuePageProps): JSX.Element {
+export function IssuePage({
+  onNavigate,
+  session,
+  sessionReady,
+  onLogout,
+}: IssuePageProps): JSX.Element {
   const [pdf, setPdf] = useState<File | null>(null)
   const [draft, setDraft] = useState<IssueDraft | null>(null)
   const [hints, setHints] = useState<string[]>([])
@@ -102,6 +108,8 @@ export function IssuePage({ onNavigate, session, onLogout }: IssuePageProps): JS
         </p>
       </header>
 
+      {sessionReady && session?.is_admin ? (
+        <>
       <section className="issue-note" aria-label="Hinweis">
         <p>
           Nur der Rechnungsaussteller darf die erzeugte Datei versenden. Das Auslesen füllt einen
@@ -277,6 +285,25 @@ export function IssuePage({ onNavigate, session, onLogout }: IssuePageProps): JS
       ) : null}
 
       {result ? <BuildResult result={result} /> : null}
+        </>
+      ) : !sessionReady ? (
+        <p className="status status--info" role="status">
+          Wird geladen…
+        </p>
+      ) : !session ? (
+        <>
+          <p className="status status--info" role="status">
+            Bitte anmelden.
+          </p>
+          <button type="button" className="btn btn--primary" onClick={() => onNavigate('login')}>
+            Anmelden
+          </button>
+        </>
+      ) : (
+        <p className="status status--error" role="alert">
+          Kein Zugriff.
+        </p>
+      )}
       <SiteFooter />
     </main>
   )

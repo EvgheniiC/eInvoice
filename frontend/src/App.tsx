@@ -160,6 +160,7 @@ function App(): JSX.Element {
         <IssuePage
           onNavigate={navigate}
           session={session}
+          sessionReady={sessionReady}
           onLogout={() => {
             void handleLogout()
           }}

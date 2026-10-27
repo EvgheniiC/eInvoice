@@ -13,6 +13,9 @@ from xml.etree import ElementTree as ET
 from fastapi.testclient import TestClient
 from reportlab.pdfgen import canvas
 
+from app.core.config import settings
+from app.db.bootstrap import init_account_store
+from app.db.session import dispose_engine
 from app.main import create_app
 from app.schemas.invoice import ValidationStatus
 from app.schemas.issue import (
@@ -225,10 +228,46 @@ class TestIssueBuildGate(unittest.TestCase):
 
 
 class TestIssueApi(unittest.TestCase):
-    def test_draft_endpoint_reads_a_text_pdf(self) -> None:
-        client: TestClient = TestClient(create_app())
+    def setUp(self) -> None:
+        self._patches = [
+            patch.object(settings, "database_url", "sqlite://"),
+            patch.object(settings, "auth_secret_key", "test-secret-key"),
+            patch.object(settings, "environment", "development"),
+            patch.object(settings, "admin_emails", "admin@example.com"),
+        ]
+        for item in self._patches:
+            item.start()
+        dispose_engine()
+        init_account_store()
+        self.client: TestClient = TestClient(create_app())
+
+    def tearDown(self) -> None:
+        self.client.close()
+        dispose_engine()
+        for item in reversed(self._patches):
+            item.stop()
+
+    def test_guest_cannot_create_a_draft(self) -> None:
+        pdf: bytes = _text_pdf(["Rechnungsnummer: RE-9"])
+        response = self.client.post(
+            "/api/issue/draft",
+            files={"file": ("rechnung.pdf", pdf, "application/pdf")},
+        )
+        self.assertEqual(response.status_code, 401)
+
+    def test_signed_in_user_cannot_create_a_draft(self) -> None:
+        self._login("meister@example.com")
+        pdf: bytes = _text_pdf(["Rechnungsnummer: RE-9"])
+        response = self.client.post(
+            "/api/issue/draft",
+            files={"file": ("rechnung.pdf", pdf, "application/pdf")},
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_admin_can_read_a_text_pdf(self) -> None:
+        self._login("admin@example.com")
         pdf: bytes = _text_pdf(["Rechnungsnummer: RE-9", "Rechnungsdatum: 01.02.2026"])
-        response = client.post(
+        response = self.client.post(
             "/api/issue/draft",
             files={"file": ("rechnung.pdf", pdf, "application/pdf")},
         )
@@ -237,9 +276,9 @@ class TestIssueApi(unittest.TestCase):
         self.assertEqual(body.draft.invoice_number, "RE-9")
         self.assertEqual(body.draft.issue_date, "2026-02-01")
 
-    def test_build_endpoint_keeps_download_closed(self) -> None:
-        client: TestClient = TestClient(create_app())
-        response = client.post(
+    def test_admin_build_keeps_download_closed(self) -> None:
+        self._login("admin@example.com")
+        response = self.client.post(
             "/api/issue/build",
             json=IssueBuildRequest(draft=_complete_draft(), confirmed=True).model_dump(mode="json"),
         )
@@ -247,3 +286,22 @@ class TestIssueApi(unittest.TestCase):
         body: IssueBuildResponse = IssueBuildResponse.model_validate(response.json())
         self.assertFalse(body.ready)
         self.assertTrue(all(item.download_allowed is False for item in body.artifacts))
+
+    def _login(self, email: str) -> None:
+        registered = self.client.post(
+            "/api/auth/register",
+            json={
+                "email": email,
+                "password": "sicher-passwort-1",
+                "organization_name": "Muster Handwerk",
+            },
+        )
+        self.assertEqual(registered.status_code, 200, registered.text)
+        token: str = str(registered.json()["verification_token"])
+        verified = self.client.post("/api/auth/verify-email", json={"token": token})
+        self.assertEqual(verified.status_code, 200, verified.text)
+        logged_in = self.client.post(
+            "/api/auth/login",
+            json={"email": email, "password": "sicher-passwort-1"},
+        )
+        self.assertEqual(logged_in.status_code, 200, logged_in.text)

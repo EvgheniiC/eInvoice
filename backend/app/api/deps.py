@@ -82,7 +82,7 @@ def require_org_role(context: OrgContext, allowed_roles: Collection[str]) -> Org
 
 
 def require_admin_user(context: OrgContext = Depends(get_current_org)) -> OrgContext:
-    """Allow the statistics page only for emails listed in server settings."""
+    """Allow the action only for emails listed in server settings."""
     if not is_admin_email(context.email):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Kein Zugriff.")
     return context

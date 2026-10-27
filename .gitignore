@@ -196,6 +196,7 @@ backend/*.db
 # Local invoice test fixtures (keep on disk; do not commit)
 backend/tests/xml_files/
 backend/tests/pdf_files/
+backend/tests/issue_pdfs/
 *.pdf
 *.xml
 !frontend/public/sitemap.xml

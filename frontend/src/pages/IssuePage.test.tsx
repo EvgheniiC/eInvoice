@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import type { UserEvent } from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { buildIssue, createIssueDraft } from '../api/client'
+import { buildSession } from '../test/fixtures'
 import type { IssueBuildResponse, IssueDraftResponse } from '../types/issue'
 import { IssuePage } from './IssuePage'
 
@@ -86,7 +87,14 @@ describe('IssuePage', (): void => {
     const user: UserEvent = userEvent.setup()
     vi.mocked(createIssueDraft).mockResolvedValue(DRAFT)
     vi.mocked(buildIssue).mockResolvedValue(BLOCKED)
-    render(<IssuePage onNavigate={() => undefined} session={null} onLogout={() => undefined} />)
+    render(
+      <IssuePage
+        onNavigate={() => undefined}
+        session={buildSession({ is_admin: true })}
+        sessionReady
+        onLogout={() => undefined}
+      />,
+    )
 
     expect(screen.getByRole('heading', { name: 'E-Rechnung aus PDF erstellen' })).toBeInTheDocument()
     expect(screen.getByText(/Maßgeblich ist die XML/)).toBeInTheDocument()
@@ -103,5 +111,18 @@ describe('IssuePage', (): void => {
     expect(await screen.findByText('Download geschlossen.')).toBeInTheDocument()
     expect(screen.getByText('Pflichtfeld fehlt: Rechnungsnummer (BT-1).')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /herunterladen/ })).not.toBeInTheDocument()
+  })
+
+  it('hides the form from anyone who is not an administrator', (): void => {
+    render(
+      <IssuePage
+        onNavigate={() => undefined}
+        session={buildSession({ is_admin: false })}
+        sessionReady
+        onLogout={() => undefined}
+      />,
+    )
+    expect(screen.getByRole('alert')).toHaveTextContent('Kein Zugriff.')
+    expect(screen.queryByLabelText('Eigene PDF-Rechnung')).not.toBeInTheDocument()
   })
 })
