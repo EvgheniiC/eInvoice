@@ -58,7 +58,7 @@ export function LandingPage({
             </AppLink>
           </div>
           {session?.is_admin ? (
-            <p className="landing-hero__note">
+            <p className="landing-hero__issue">
               Eigene PDF-Rechnung als E-Rechnung vorbereiten:{' '}
               <AppLink href="/erstellen">E-Rechnung erstellen</AppLink>
             </p>
