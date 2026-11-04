@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type JSX, type RefObject } from 'react'
-import { checkHealth, createInvoiceBatch, downloadBatchAccountantPackage, downloadBatchViewPdfs, fetchBatchJob, fetchCapabilities, fetchViewPdf, parseInvoice, recordFunnel } from '../api/client'
+import { checkHealth, createInvoiceBatch, downloadBatchAccountantPackage, downloadBatchViewPdfs, fetchBatchEmbeddedDocument, fetchBatchJob, fetchCapabilities, fetchViewPdf, parseInvoice, recordFunnel } from '../api/client'
 import { BatchSummary } from '../components/BatchSummary'
 import { FileUpload } from '../components/FileUpload'
 import { InvoiceView } from '../components/InvoiceView'
@@ -341,6 +341,16 @@ export function UploadPage({
         ? 'page page--workspace'
         : 'page'
 
+  function loadEmbeddedDocument(index: number): Promise<Blob> {
+    if (batchJob === null || selectedBatchItemId === null) {
+      return Promise.reject(new Error('Angehängte Datei nicht verfügbar.'))
+    }
+    return fetchBatchEmbeddedDocument(batchJob.id, selectedBatchItemId, index)
+  }
+
+  const embeddedDocumentLoader: ((index: number) => Promise<Blob>) | undefined =
+    batchJob !== null && selectedBatchItemId !== null ? loadEmbeddedDocument : undefined
+
   function renderInvoicePanel(): JSX.Element | null {
     if (result === null) {
       return null
@@ -383,6 +393,7 @@ export function UploadPage({
             <InvoiceView
               invoice={result}
               sourceFile={uploadedFile}
+              loadEmbeddedDocument={embeddedDocumentLoader}
               onUpgrade={canUpgradePlan ? () => onNavigate('pricing') : undefined}
             />
           </div>
@@ -394,6 +405,7 @@ export function UploadPage({
         <InvoiceView
           invoice={result}
           sourceFile={uploadedFile}
+          loadEmbeddedDocument={embeddedDocumentLoader}
           onUpgrade={canUpgradePlan ? () => onNavigate('pricing') : undefined}
         />
       </div>

@@ -88,6 +88,7 @@ export function buildInvoice(
     line_items: overrides.line_items ?? [...DEFAULT_LINE_ITEMS],
     validation_issues: overrides.validation_issues ?? [],
     next_steps: overrides.next_steps ?? [...DEFAULT_NEXT_STEPS],
+    embedded_documents: overrides.embedded_documents ?? [],
   }
 }
 

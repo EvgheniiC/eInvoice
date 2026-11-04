@@ -2,7 +2,14 @@ import unittest
 from typing import Optional
 
 from app.helper_functions.einvoice_helper import read_xml_file_to_str
-from app.invoice_handler.xml_pdf_extraction import get_pdf_file
+from unittest.mock import patch
+
+from app.invoice_handler.xml_pdf_extraction import (
+    MAX_EMBEDDED_DOCUMENT_BYTES,
+    ExtractedEmbeddedFile,
+    extract_embedded_files,
+    get_pdf_file,
+)
 
 # CII / XRechnung (CrossIndustryInvoice) stores supporting PDFs as
 # ram:AdditionalReferencedDocument / ram:AttachmentBinaryObject — not the UBL
@@ -69,6 +76,75 @@ class TestXmlPdfExtraction(unittest.TestCase):
         self.assertIn("file_type", first)
         self.assertTrue(first["attachment"])
         self.assertEqual(first["file_type"], "pdf")
+
+    def test_extracts_pdf_and_png_from_one_invoice(self) -> None:
+        xml_text: str = """<?xml version="1.0" encoding="UTF-8"?>
+<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
+ xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
+ xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
+  <cbc:ID>RE-1</cbc:ID>
+  <cac:AdditionalDocumentReference>
+    <cbc:ID>att-1</cbc:ID>
+    <cac:Attachment>
+      <cbc:EmbeddedDocumentBinaryObject mimeCode="application/pdf" filename="rechnung.pdf">JVBERi0xLjQKdGVzdA==</cbc:EmbeddedDocumentBinaryObject>
+    </cac:Attachment>
+  </cac:AdditionalDocumentReference>
+  <cac:AdditionalDocumentReference>
+    <cbc:ID>att-2</cbc:ID>
+    <cac:Attachment>
+      <cbc:EmbeddedDocumentBinaryObject mimeCode="image/png" filename="foto.png">iVBORw0KGgo=</cbc:EmbeddedDocumentBinaryObject>
+    </cac:Attachment>
+  </cac:AdditionalDocumentReference>
+</Invoice>
+"""
+        files: list[ExtractedEmbeddedFile] = extract_embedded_files(xml_text)
+        self.assertEqual(len(files), 2)
+        self.assertEqual(files[0].filename, "rechnung.pdf")
+        self.assertEqual(files[0].media_type, "application/pdf")
+        self.assertEqual(files[0].content_base64, "JVBERi0xLjQKdGVzdA==")
+        self.assertGreater(files[0].size_bytes, 0)
+        self.assertEqual(files[1].filename, "foto.png")
+        self.assertEqual(files[1].media_type, "image/png")
+        self.assertEqual(files[1].content_base64, "iVBORw0KGgo=")
+
+    def test_credit_note_attachment_is_read(self) -> None:
+        xml_text: str = """<?xml version="1.0" encoding="UTF-8"?>
+<CreditNote xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
+ xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
+  <cac:AdditionalDocumentReference>
+    <cac:Attachment>
+      <cbc:EmbeddedDocumentBinaryObject mimeCode="text/csv" filename="liste.csv">QQ==</cbc:EmbeddedDocumentBinaryObject>
+    </cac:Attachment>
+  </cac:AdditionalDocumentReference>
+</CreditNote>
+"""
+        files: list[ExtractedEmbeddedFile] = extract_embedded_files(xml_text)
+        self.assertEqual(len(files), 1)
+        self.assertEqual(files[0].filename, "liste.csv")
+        self.assertEqual(files[0].media_type, "text/csv")
+        self.assertEqual(files[0].content_base64, "QQ==")
+
+    def test_oversized_attachment_keeps_metadata_without_bytes(self) -> None:
+        xml_text: str = """<?xml version="1.0" encoding="UTF-8"?>
+<Invoice xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
+ xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
+  <cac:AdditionalDocumentReference>
+    <cac:Attachment>
+      <cbc:EmbeddedDocumentBinaryObject mimeCode="application/pdf" filename="gross.pdf">JVBERi0xLjQKdGVzdA==</cbc:EmbeddedDocumentBinaryObject>
+    </cac:Attachment>
+  </cac:AdditionalDocumentReference>
+</Invoice>
+"""
+        with patch(
+            "app.invoice_handler.xml_pdf_extraction.MAX_EMBEDDED_DOCUMENT_BYTES",
+            4,
+        ):
+            files: list[ExtractedEmbeddedFile] = extract_embedded_files(xml_text)
+        self.assertEqual(len(files), 1)
+        self.assertIsNone(files[0].content_base64)
+        self.assertGreater(files[0].size_bytes, 4)
+        self.assertEqual(files[0].filename, "gross.pdf")
+        self.assertLess(files[0].size_bytes, MAX_EMBEDDED_DOCUMENT_BYTES)
 
     def test_no_attachment_returns_empty_or_none(self) -> None:
         xml_text: str = read_xml_file_to_str("xml_files/xml_text_from_zugpferd.xml")

@@ -127,6 +127,19 @@ class MismatchField(ApiModel):
 DuplicateMatchKind = Literal["file", "content"]
 
 
+class EmbeddedDocument(ApiModel):
+    """Supplier file embedded in the invoice XML.
+
+    content_base64 is present on the live parse response only.
+    Stored history and batch snapshots keep the name, type, and size.
+    """
+
+    filename: str
+    media_type: str
+    size_bytes: int
+    content_base64: Optional[str] = None
+
+
 class DuplicateMatch(ApiModel):
     """Prior processing of the same file or the same invoice key."""
 
@@ -161,4 +174,5 @@ class InvoiceParseResponse(ApiModel):
     mismatch_warnings: List[str] = Field(default_factory=list)
     mismatch_fields: List[MismatchField] = Field(default_factory=list)
     next_steps: List[str] = Field(default_factory=list)
+    embedded_documents: List[EmbeddedDocument] = Field(default_factory=list)
     duplicate: Optional[DuplicateMatch] = None

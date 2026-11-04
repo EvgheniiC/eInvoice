@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import base64
 import logging
+import re
 import shutil
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -18,6 +20,7 @@ from app.core.clock import as_utc, utc_now
 from app.core.config import settings
 from app.core.error_events import log_event, safe_filename
 from app.db.models import BatchItem, BatchJob
+from app.helper_functions.filenames import safe_filename_stem
 from app.helper_functions.safe_zip import ZipIngestError, extract_invoice_files_from_zip
 from app.schemas.batch import (
     BatchItemResponse,
@@ -25,12 +28,21 @@ from app.schemas.batch import (
     BatchJobResponse,
     BatchJobStatus,
 )
-from app.schemas.invoice import InvoiceParseResponse, ParseStatus, ValidationStatus
+from app.schemas.invoice import (
+    EmbeddedDocument,
+    InvoiceParseResponse,
+    ParseStatus,
+    ValidationStatus,
+)
 from app.services.auth_service import OrgContext, load_organization_profile
 from app.services.export_service import (
     BatchPackageEntry,
     ExportService,
     invoice_is_exportable,
+)
+from app.services.embedded_documents import (
+    embedded_documents_from_upload,
+    without_embedded_content,
 )
 from app.services.invoice_service import InvoiceService
 from app.services.plan_limits import PlanLimits
@@ -52,6 +64,7 @@ ORIGINALS_GONE_DETAIL: str = (
 )
 NO_EXPORTABLE_DETAIL: str = "Keine exportierbare Rechnung in diesem Auftrag."
 NO_VIEWABLE_DETAIL: str = "Keine lesbare Rechnung in diesem Auftrag."
+_DOWNLOAD_SUFFIX: re.Pattern[str] = re.compile(r"^\.[a-z0-9]{1,8}$")
 TERMINAL_ITEM_STATUSES: frozenset[str] = frozenset(
     {
         BatchItemStatus.GUELTIG.value,
@@ -127,6 +140,62 @@ def get_batch(
     if job is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Auftrag nicht gefunden.")
     return to_response(job)
+
+
+def read_batch_embedded_document(
+    session: Session,
+    org_context: OrgContext,
+    job_id: UUID,
+    item_id: UUID,
+    index: int,
+) -> tuple[bytes, str, str]:
+    """Return one supplier attachment from the stored original, while that file still exists."""
+    require_batch_plan(org_context)
+    purge_expired_originals(session)
+    job: Optional[BatchJob] = session.scalar(
+        select(BatchJob)
+        .where(BatchJob.id == job_id, BatchJob.organization_id == org_context.organization_id)
+        .options(selectinload(BatchJob.items))
+    )
+    if job is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Auftrag nicht gefunden.")
+    item: Optional[BatchItem] = next((row for row in job.items if row.id == item_id), None)
+    if item is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Auftrag nicht gefunden.")
+    if not item.storage_path or not Path(item.storage_path).is_file():
+        raise HTTPException(status_code=status.HTTP_410_GONE, detail=ORIGINALS_GONE_DETAIL)
+
+    documents: list[EmbeddedDocument] = embedded_documents_from_upload(
+        item.filename, Path(item.storage_path).read_bytes()
+    )
+    if index < 0 or index >= len(documents):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Eingebettete Datei nicht gefunden.",
+        )
+    document: EmbeddedDocument = documents[index]
+    if not document.content_base64:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Eingebettete Datei ist zu groß für die Ansicht.",
+        )
+    try:
+        payload: bytes = base64.b64decode(document.content_base64, validate=True)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Eingebettete Datei nicht gefunden.",
+        ) from exc
+    return payload, document.media_type, attachment_download_name(document.filename)
+
+
+def attachment_download_name(filename: str) -> str:
+    """ASCII download name safe for a Content-Disposition header."""
+    suffix: str = Path(filename).suffix.lower()
+    if not _DOWNLOAD_SUFFIX.fullmatch(suffix):
+        suffix = ""
+    stem: str = safe_filename_stem(Path(filename).stem) or "anhang"
+    return f"{stem}{suffix}"
 
 
 def build_batch_accountant_package(
@@ -549,7 +618,7 @@ def _apply_parse_result(item: BatchItem, response: InvoiceParseResponse) -> None
         item.gross_amount = str(response.totals.gross)
         item.currency = response.totals.currency
     item.message = response.message
-    item.result_json = response.model_dump(mode="json")
+    item.result_json = without_embedded_content(response).model_dump(mode="json")
     item.finished_at = utc_now()
 
 

@@ -97,6 +97,43 @@ describe('InvoiceView', (): void => {
     expect(screen.queryByRole('columnheader', { name: 'Rabatt' })).not.toBeInTheDocument()
   })
 
+  it('offers every supplier attachment and keeps the working-copy PDF separate', async (): Promise<void> => {
+    const user: UserEvent = userEvent.setup()
+    const openSpy: ReturnType<typeof vi.spyOn> = vi.spyOn(window, 'open').mockReturnValue({} as Window)
+    const invoice: InvoiceParseResponse = buildInvoice({
+      embedded_documents: [
+        {
+          filename: 'rechnung.pdf',
+          media_type: 'application/pdf',
+          size_bytes: 12,
+          content_base64: 'JVBERi0xLjQKdGVzdA==',
+        },
+        {
+          filename: 'foto.png',
+          media_type: 'image/png',
+          size_bytes: 8,
+          content_base64: 'iVBORw0KGgo=',
+        },
+      ],
+    })
+    render(<InvoiceView invoice={invoice} />)
+
+    expect(screen.getByText('Datei vom Aussteller')).toBeInTheDocument()
+    expect(screen.getByText('rechnung.pdf')).toBeInTheDocument()
+    expect(screen.getByText('foto.png')).toBeInTheDocument()
+    expect(screen.getByText(/Vom Aussteller beigefügt/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Lesbare PDF herunterladen' })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'rechnung.pdf öffnen' }))
+    expect(openSpy).toHaveBeenCalled()
+    openSpy.mockRestore()
+  })
+
+  it('hides the supplier-file block when the invoice has no attachment', (): void => {
+    render(<InvoiceView invoice={buildInvoice()} />)
+    expect(screen.queryByText('Datei vom Aussteller')).not.toBeInTheDocument()
+  })
+
   it('shows line discount next to the unit price', (): void => {
     const invoice: InvoiceParseResponse = buildInvoice({
       line_items: [

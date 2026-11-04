@@ -113,6 +113,18 @@ export interface components {
       match: "file" | "content";
       history_id: string;
     };
+    "EmbeddedDocument-Input": {
+      filename: string;
+      media_type: string;
+      size_bytes: number;
+      content_base64?: string | null;
+    };
+    "EmbeddedDocument-Output": {
+      filename: string;
+      media_type: string;
+      size_bytes: number;
+      content_base64: string | null;
+    };
     ExportFormat: "csv" | "excel" | "datev";
     ExportMappingDoc: {
       format: components["schemas"]["ExportFormat"];
@@ -209,6 +221,7 @@ export interface components {
       mismatch_warnings?: string[];
       mismatch_fields?: components["schemas"]["MismatchField-Input"][];
       next_steps?: string[];
+      embedded_documents?: components["schemas"]["EmbeddedDocument-Input"][];
       duplicate?: components["schemas"]["DuplicateMatch"] | null;
     };
     "InvoiceParseResponse-Output": {
@@ -231,6 +244,7 @@ export interface components {
       mismatch_warnings: string[];
       mismatch_fields: components["schemas"]["MismatchField-Output"][];
       next_steps: string[];
+      embedded_documents: components["schemas"]["EmbeddedDocument-Output"][];
       duplicate: components["schemas"]["DuplicateMatch"] | null;
     };
     "InvoiceTotals-Input": {

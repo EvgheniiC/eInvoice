@@ -27,6 +27,7 @@ from app.services.batch_service import (
     build_batch_view_pdf_package,
     enqueue_batch,
     get_batch,
+    read_batch_embedded_document,
     require_batch_plan,
 )
 from app.services.history_service import (
@@ -258,6 +259,39 @@ def get_invoice_batch(
             detail=AUTH_UNAVAILABLE,
         )
     return get_batch(db, context, job_id)
+
+
+@router.get("/batch/{job_id}/items/{item_id}/attachments/{index}")
+def download_batch_embedded_document(
+    job_id: UUID,
+    item_id: UUID,
+    index: int,
+    org_context: Optional[OrgContext] = Depends(get_optional_org_context),
+    db: Optional[Session] = Depends(get_optional_db),
+) -> Response:
+    """Supplier file embedded in one batch invoice, while the original is still on disk."""
+    context: OrgContext = require_batch_plan(org_context)
+    if db is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=AUTH_UNAVAILABLE,
+        )
+    if index < 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Eingebettete Datei nicht gefunden.",
+        )
+    content: bytes
+    media_type: str
+    filename: str
+    content, media_type, filename = read_batch_embedded_document(
+        db, context, job_id, item_id, index
+    )
+    return Response(
+        content=content,
+        media_type=media_type,
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 @router.post("/batch/{job_id}/accountant-package")

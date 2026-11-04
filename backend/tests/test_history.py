@@ -13,12 +13,21 @@ from typing import Optional
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
+from sqlalchemy import select
+from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.config import settings
 from app.db.bootstrap import init_account_store
-from app.db.session import dispose_engine
+from app.db.models import InvoiceHistory
+from app.db.session import dispose_engine, get_session_factory
 from app.main import create_app
-from app.schemas.invoice import InvoiceParseResponse, InvoiceTotals, PartyInfo, ParseStatus
+from app.schemas.invoice import (
+    EmbeddedDocument,
+    InvoiceParseResponse,
+    InvoiceTotals,
+    PartyInfo,
+    ParseStatus,
+)
 from app.services.batch_service import drain_queue
 from app.services.history_service import (
     HISTORY_FORBIDDEN_DETAIL,
@@ -159,6 +168,42 @@ class TestInvoiceHistory(unittest.TestCase):
             self.assertFalse(expired.json()["items"][0]["original_available"])
             gone = self.client.post(f"/api/invoices/history/{row['id']}/accountant-package")
             self.assertEqual(gone.status_code, 410)
+
+    def test_stored_history_keeps_attachment_metadata_without_bytes(self) -> None:
+        self._register_plus("plus-attach@example.com")
+        self.client.patch(
+            "/api/org",
+            json={"history_enabled": True, "store_originals_enabled": True},
+        )
+        with patch(
+            "app.api.routes.invoices.invoice_service.parse_upload",
+            side_effect=_parsed_invoice_with_attachment,
+        ):
+            parsed = self.client.post(
+                "/api/invoices/parse",
+                files={"file": ("pack.xml", b"<Invoice/>", "application/xml")},
+            )
+        self.assertEqual(parsed.status_code, 200)
+        self.assertEqual(
+            parsed.json()["embedded_documents"][0]["content_base64"],
+            "JVBERi0xLjQ=",
+        )
+        factory: sessionmaker[Session] | None = get_session_factory()
+        self.assertIsNotNone(factory)
+        assert factory is not None
+        session: Session = factory()
+        try:
+            row: InvoiceHistory | None = session.scalar(select(InvoiceHistory))
+            self.assertIsNotNone(row)
+            assert row is not None
+            stored: dict[str, object] = row.result_json or {}
+            documents: list[dict[str, object]] = stored["embedded_documents"]  # type: ignore[assignment]
+            self.assertEqual(documents[0]["filename"], "rechnung.pdf")
+            self.assertEqual(documents[0]["media_type"], "application/pdf")
+            self.assertEqual(documents[0]["size_bytes"], 8)
+            self.assertIsNone(documents[0]["content_base64"])
+        finally:
+            session.close()
 
     def test_guest_parse_still_writes_nothing(self) -> None:
         self._register_plus("plus-guest@example.com")
@@ -384,6 +429,23 @@ class TestInvoiceHistory(unittest.TestCase):
             json={"email": email, "plan_code": "plus"},
         )
         self.assertEqual(plus.status_code, 200)
+
+
+def _parsed_invoice_with_attachment(
+    filename: str,
+    content: bytes,
+    request_id: Optional[str] = None,
+) -> InvoiceParseResponse:
+    invoice: InvoiceParseResponse = _parsed_invoice(filename, content, request_id)
+    invoice.embedded_documents = [
+        EmbeddedDocument(
+            filename="rechnung.pdf",
+            media_type="application/pdf",
+            size_bytes=8,
+            content_base64="JVBERi0xLjQ=",
+        )
+    ]
+    return invoice
 
 
 def _parsed_invoice(filename: str, content: bytes, request_id: Optional[str] = None) -> InvoiceParseResponse:

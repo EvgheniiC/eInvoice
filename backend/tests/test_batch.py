@@ -289,6 +289,53 @@ class TestBatchQueue(unittest.TestCase):
         hidden_pdfs = self.client.post(f"/api/invoices/batch/{job_id}/view-pdfs")
         self.assertEqual(hidden_pdfs.status_code, 404)
 
+    def test_batch_attachment_is_served_from_the_original(self) -> None:
+        self._register_plus("attach-batch@example.com")
+        xml_text: str = """<?xml version="1.0" encoding="UTF-8"?>
+<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
+ xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
+ xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
+  <cbc:ID>RE-ATT</cbc:ID>
+  <cac:AdditionalDocumentReference>
+    <cac:Attachment>
+      <cbc:EmbeddedDocumentBinaryObject mimeCode="application/pdf" filename="rechnung.pdf">JVBERi0xLjQKdGVzdA==</cbc:EmbeddedDocumentBinaryObject>
+    </cac:Attachment>
+  </cac:AdditionalDocumentReference>
+  <cac:AdditionalDocumentReference>
+    <cac:Attachment>
+      <cbc:EmbeddedDocumentBinaryObject mimeCode="image/png" filename="foto.png">iVBORw0KGgo=</cbc:EmbeddedDocumentBinaryObject>
+    </cac:Attachment>
+  </cac:AdditionalDocumentReference>
+</Invoice>
+"""
+        created = self.client.post(
+            "/api/invoices/batch",
+            files=[("files", ("with-attachment.xml", xml_text.encode("utf-8"), "application/xml"))],
+        )
+        self.assertEqual(created.status_code, 202)
+        job_id: str = str(created.json()["id"])
+        drain_queue()
+        job = self.client.get(f"/api/invoices/batch/{job_id}")
+        self.assertEqual(job.status_code, 200)
+        item: dict[str, object] = job.json()["items"][0]
+        invoice: dict[str, object] = item["invoice"]  # type: ignore[assignment]
+        documents: list[dict[str, object]] = invoice["embedded_documents"]  # type: ignore[assignment]
+        self.assertEqual(documents[0]["filename"], "rechnung.pdf")
+        self.assertIsNone(documents[0]["content_base64"])
+        self.assertEqual(documents[1]["media_type"], "image/png")
+        item_id: str = str(item["id"])
+        downloaded = self.client.get(
+            f"/api/invoices/batch/{job_id}/items/{item_id}/attachments/0"
+        )
+        self.assertEqual(downloaded.status_code, 200)
+        self.assertEqual(downloaded.headers["content-type"], "application/pdf")
+        self.assertTrue(downloaded.content.startswith(b"%PDF-"))
+        second = self.client.get(
+            f"/api/invoices/batch/{job_id}/items/{item_id}/attachments/1"
+        )
+        self.assertEqual(second.status_code, 200)
+        self.assertEqual(second.headers["content-type"], "image/png")
+
     def test_incomplete_job_rejects_package(self) -> None:
         self._register_plus("queued-pack@example.com")
         created = self.client.post(

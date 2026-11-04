@@ -7,6 +7,7 @@ import {
 } from '../api/client'
 import type {
   DecimalValue,
+  EmbeddedDocument,
   ExportFormat,
   InvoiceParseResponse,
   LineItem,
@@ -26,6 +27,54 @@ interface InvoiceViewProps {
   invoice: InvoiceParseResponse
   sourceFile?: File | null
   onUpgrade?: () => void
+  loadEmbeddedDocument?: (index: number) => Promise<Blob>
+}
+
+const INLINE_MEDIA: ReadonlySet<string> = new Set<string>([
+  'application/pdf',
+  'image/png',
+  'image/jpeg',
+  'image/gif',
+  'image/webp',
+])
+
+function formatFileSize(sizeBytes: number): string {
+  if (sizeBytes < 1024) {
+    return `${String(sizeBytes)} B`
+  }
+  if (sizeBytes < 1024 * 1024) {
+    return `${(sizeBytes / 1024).toLocaleString('de-DE', { maximumFractionDigits: 0 })} KB`
+  }
+  return `${(sizeBytes / (1024 * 1024)).toLocaleString('de-DE', { maximumFractionDigits: 1 })} MB`
+}
+
+function bytesFromBase64(value: string): Uint8Array<ArrayBuffer> {
+  const binary: string = atob(value)
+  const bytes: Uint8Array<ArrayBuffer> = new Uint8Array(binary.length)
+  for (let index: number = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index)
+  }
+  return bytes
+}
+
+function openOrDownloadBlob(blob: Blob, filename: string, mode: 'open' | 'download'): void {
+  const url: string = URL.createObjectURL(blob)
+  if (mode === 'open' && INLINE_MEDIA.has(blob.type)) {
+    const opened: Window | null = window.open(url, '_blank', 'noopener,noreferrer')
+    window.setTimeout((): void => {
+      URL.revokeObjectURL(url)
+    }, 60_000)
+    if (opened !== null) {
+      return
+    }
+  }
+  const anchor: HTMLAnchorElement = document.createElement('a')
+  anchor.href = url
+  anchor.download = filename
+  document.body.appendChild(anchor)
+  anchor.click()
+  anchor.remove()
+  URL.revokeObjectURL(url)
 }
 
 function formatAmount(value: DecimalValue | null | undefined, currency: string | null): string {
@@ -370,13 +419,41 @@ export function InvoiceView({
   invoice,
   sourceFile = null,
   onUpgrade,
+  loadEmbeddedDocument,
 }: InvoiceViewProps): JSX.Element {
   const currency: string | null = invoice.totals?.currency ?? null
   const showLineDiscount: boolean = invoice.line_items.some(lineHasDiscount)
   const [exportError, setExportError] = useState<string | null>(null)
   const [exporting, setExporting] = useState<ExportAction | null>(null)
   const [exportConfirmed, setExportConfirmed] = useState<boolean>(false)
+  const [embeddedError, setEmbeddedError] = useState<string | null>(null)
   const exportingRef: RefObject<boolean> = useRef<boolean>(false)
+
+  async function handleEmbedded(index: number, mode: 'open' | 'download'): Promise<void> {
+    const document: EmbeddedDocument | undefined = invoice.embedded_documents[index]
+    if (!document) {
+      return
+    }
+    setEmbeddedError(null)
+    try {
+      let blob: Blob
+      if (document.content_base64) {
+        blob = new Blob([bytesFromBase64(document.content_base64)], {
+          type: document.media_type,
+        })
+      } else if (loadEmbeddedDocument) {
+        blob = await loadEmbeddedDocument(index)
+      } else {
+        setEmbeddedError('Diese Datei kann hier nicht geöffnet werden.')
+        return
+      }
+      openOrDownloadBlob(blob, document.filename, mode)
+    } catch (err: unknown) {
+      const message: string =
+        err instanceof Error ? err.message : 'Angehängte Datei nicht verfügbar.'
+      setEmbeddedError(message)
+    }
+  }
   const outcome: UserOutcome = userOutcome(invoice)
   const outcomeClass: string = `outcome outcome--${outcome}`
   const hasMismatch: boolean = hasPdfXmlMismatch(invoice)
@@ -577,6 +654,62 @@ export function InvoiceView({
               <li key={`step-${index}`}>{step}</li>
             ))}
           </ol>
+        </div>
+      )}
+
+      {invoice.embedded_documents.length > 0 && (
+        <div className="embedded-docs" aria-labelledby="embedded-docs-label">
+          <p className="embedded-docs__label" id="embedded-docs-label">
+            Datei vom Aussteller
+          </p>
+          <ul className="embedded-docs__list">
+            {invoice.embedded_documents.map((document: EmbeddedDocument, index: number) => {
+              const available: boolean =
+                Boolean(document.content_base64) || loadEmbeddedDocument !== undefined
+              const canOpen: boolean = available && INLINE_MEDIA.has(document.media_type)
+              return (
+                <li className="embedded-docs__item" key={`${document.filename}-${index}`}>
+                  <p className="embedded-docs__name">{document.filename}</p>
+                  <p className="embedded-docs__meta">
+                    {formatFileSize(document.size_bytes)} · {document.media_type}
+                  </p>
+                  {available ? (
+                    <div className="embedded-docs__actions">
+                      {canOpen && (
+                        <button
+                          type="button"
+                          aria-label={`${document.filename} öffnen`}
+                          onClick={() => void handleEmbedded(index, 'open')}
+                        >
+                          Öffnen
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        aria-label={`${document.filename} herunterladen`}
+                        onClick={() => void handleEmbedded(index, 'download')}
+                      >
+                        Herunterladen
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="embedded-docs__missing">
+                      Diese Datei kann hier nicht geöffnet werden.
+                    </p>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
+          {embeddedError && (
+            <p className="embedded-docs__error" role="alert">
+              {embeddedError}
+            </p>
+          )}
+          <p className="embedded-docs__hint">
+            Vom Aussteller beigefügt. Summen, Prüfung und das Buchhaltungspaket stammen aus dem
+            XML.
+          </p>
         </div>
       )}
 

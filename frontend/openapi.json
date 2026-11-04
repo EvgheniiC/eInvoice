@@ -1287,6 +1287,67 @@
         }
       }
     },
+    "/api/invoices/batch/{job_id}/items/{item_id}/attachments/{index}": {
+      "get": {
+        "tags": [
+          "invoices"
+        ],
+        "summary": "Download Batch Embedded Document",
+        "description": "Supplier file embedded in one batch invoice, while the original is still on disk.",
+        "operationId": "download_batch_embedded_document_api_invoices_batch__job_id__items__item_id__attachments__index__get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Job Id"
+            }
+          },
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Item Id"
+            }
+          },
+          {
+            "name": "index",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Index"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/invoices/batch/{job_id}/accountant-package": {
       "post": {
         "tags": [
@@ -1377,7 +1438,7 @@
           "issue"
         ],
         "summary": "Create Issue Draft",
-        "description": "Read a plain PDF into an editable draft. Guest uploads are not persisted.",
+        "description": "Read a plain PDF into an editable draft. Only an administrator may call this.",
         "operationId": "create_issue_draft_api_issue_draft_post",
         "requestBody": {
           "content": {
@@ -2293,6 +2354,77 @@
         "title": "DuplicateMatch",
         "description": "Prior processing of the same file or the same invoice key."
       },
+      "EmbeddedDocument-Input": {
+        "properties": {
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "media_type": {
+            "type": "string",
+            "title": "Media Type"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "title": "Size Bytes"
+          },
+          "content_base64": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Base64"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filename",
+          "media_type",
+          "size_bytes"
+        ],
+        "title": "EmbeddedDocument",
+        "description": "Supplier file embedded in the invoice XML.\n\ncontent_base64 is present on the live parse response only.\nStored history and batch snapshots keep the name, type, and size."
+      },
+      "EmbeddedDocument-Output": {
+        "properties": {
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "media_type": {
+            "type": "string",
+            "title": "Media Type"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "title": "Size Bytes"
+          },
+          "content_base64": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Base64"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filename",
+          "media_type",
+          "size_bytes",
+          "content_base64"
+        ],
+        "title": "EmbeddedDocument",
+        "description": "Supplier file embedded in the invoice XML.\n\ncontent_base64 is present on the live parse response only.\nStored history and batch snapshots keep the name, type, and size."
+      },
       "ExportFormat": {
         "type": "string",
         "enum": [
@@ -2915,6 +3047,13 @@
             "type": "array",
             "title": "Next Steps"
           },
+          "embedded_documents": {
+            "items": {
+              "$ref": "#/components/schemas/EmbeddedDocument-Input"
+            },
+            "type": "array",
+            "title": "Embedded Documents"
+          },
           "duplicate": {
             "anyOf": [
               {
@@ -3091,6 +3230,13 @@
             "type": "array",
             "title": "Next Steps"
           },
+          "embedded_documents": {
+            "items": {
+              "$ref": "#/components/schemas/EmbeddedDocument-Output"
+            },
+            "type": "array",
+            "title": "Embedded Documents"
+          },
           "duplicate": {
             "anyOf": [
               {
@@ -3123,6 +3269,7 @@
           "mismatch_warnings",
           "mismatch_fields",
           "next_steps",
+          "embedded_documents",
           "duplicate"
         ],
         "title": "InvoiceParseResponse",

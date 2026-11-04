@@ -22,6 +22,7 @@ from app.schemas.invoice import (
     ValidationMeta,
     ValidationStatus,
 )
+from app.services.embedded_documents import embedded_documents_from_xml
 from app.services.en16931_validator import ValidationResult, validate_invoice
 from app.services.invoice_mapper import build_next_steps, map_to_parse_response
 from app.services.validation_messages import enrich_issue
@@ -236,7 +237,7 @@ class InvoiceService:
                 enrich_issue(issue) for issue in response.validation_issues
             ]
             response.next_steps = build_next_steps(response)
-            return response
+            return self._with_embedded_documents(response, xml_text)
 
         validation: ValidationResult = validate_invoice(
             xml_text=xml_text,
@@ -272,6 +273,14 @@ class InvoiceService:
         ]
         response = self._refresh_status_message(response)
         response.next_steps = build_next_steps(response)
+        return self._with_embedded_documents(response, xml_text)
+
+    def _with_embedded_documents(
+        self,
+        response: InvoiceParseResponse,
+        xml_text: str,
+    ) -> InvoiceParseResponse:
+        response.embedded_documents = embedded_documents_from_xml(xml_text)
         return response
 
     def _validate_xml_input(

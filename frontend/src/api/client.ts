@@ -87,6 +87,21 @@ export async function createInvoiceBatch(files: File[]): Promise<BatchJobRespons
   return response.json() as Promise<BatchJobResponse>
 }
 
+export async function fetchBatchEmbeddedDocument(
+  jobId: string,
+  itemId: string,
+  index: number,
+): Promise<Blob> {
+  const response: Response = await fetch(
+    `${API_BASE}/invoices/batch/${jobId}/items/${itemId}/attachments/${index}`,
+    withRequestId({ method: 'GET' }),
+  )
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response, 'Angehängte Datei nicht verfügbar.'))
+  }
+  return response.blob()
+}
+
 export async function fetchBatchJob(jobId: string): Promise<BatchJobResponse> {
   const response: Response = await fetch(
     `${API_BASE}/invoices/batch/${jobId}`,
@@ -124,7 +139,7 @@ export async function exportInvoice(
   invoice: InvoiceParseResponse,
   format: ExportFormat,
 ): Promise<void> {
-  const body: ExportRequest = { format, invoice }
+  const body: ExportRequest = { format, invoice: invoiceForTransport(invoice) }
   const response: Response = await fetch(
     `${API_BASE}/invoices/export`,
     withRequestId({
@@ -142,7 +157,7 @@ export async function exportInvoice(
 }
 
 export async function fetchViewPdf(invoice: InvoiceParseResponse): Promise<File> {
-  const body: ViewPdfRequest = { invoice }
+  const body: ViewPdfRequest = { invoice: invoiceForTransport(invoice) }
   const response: Response = await fetch(
     `${API_BASE}/invoices/export/view-pdf`,
     withRequestId({
@@ -169,7 +184,7 @@ export async function downloadViewPdf(invoice: InvoiceParseResponse): Promise<vo
 export async function downloadValidationReport(
   invoice: InvoiceParseResponse,
 ): Promise<void> {
-  const body: ValidationReportRequest = { invoice }
+  const body: ValidationReportRequest = { invoice: invoiceForTransport(invoice) }
   const response: Response = await fetch(
     `${API_BASE}/invoices/export/validation-report`,
     withRequestId({
@@ -193,7 +208,7 @@ export async function downloadAccountantPackage(
   invoice: InvoiceParseResponse,
   sourceFile?: File | null,
 ): Promise<void> {
-  const body: AccountantPackageRequest = { invoice }
+  const body: AccountantPackageRequest = { invoice: invoiceForTransport(invoice) }
 
   if (sourceFile && isPdfFile(sourceFile)) {
     body.pdf_base64 = await fileToBase64(sourceFile)
@@ -706,6 +721,19 @@ function parseFilename(disposition: string | null): string | null {
   }
   const match: RegExpMatchArray | null = /filename="([^"]+)"/i.exec(disposition)
   return match?.[1] ?? null
+}
+
+function invoiceForTransport(invoice: InvoiceParseResponse): InvoiceParseResponse {
+  if (invoice.embedded_documents.length === 0) {
+    return invoice
+  }
+  return {
+    ...invoice,
+    embedded_documents: invoice.embedded_documents.map((document) => ({
+      ...document,
+      content_base64: null,
+    })),
+  }
 }
 
 function defaultFilename(invoice: InvoiceParseResponse, format: ExportFormat): string {

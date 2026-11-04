@@ -28,6 +28,7 @@ from app.schemas.invoice import (
     ValidationStatus,
 )
 from app.services.auth_service import OrgContext, load_organization_profile
+from app.services.embedded_documents import without_embedded_content
 from app.services.export_service import ExportService, invoice_is_exportable
 
 HISTORY_FORBIDDEN_DETAIL: str = (
@@ -338,7 +339,7 @@ def _store_original(
         return
     record.original_storage_path = str(path)
     record.original_expires_at = utc_now() + timedelta(days=settings.history_original_retention_days)
-    record.result_json = response.model_dump(mode="json")
+    record.result_json = without_embedded_content(response).model_dump(mode="json")
 
 
 def _clear_original(row: InvoiceHistory) -> None:

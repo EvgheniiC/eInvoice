@@ -1314,6 +1314,71 @@
   border-bottom: 1px solid #d5dcd7;
 }
 
+.embedded-docs {
+  margin: 0 0 1.25rem;
+  padding: 0.9rem 0;
+  border-bottom: 1px solid #d5dcd7;
+}
+
+.embedded-docs__label {
+  margin: 0 0 0.5rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.embedded-docs__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.embedded-docs__item {
+  margin: 0 0 0.75rem;
+}
+
+.embedded-docs__name {
+  margin: 0;
+  font-weight: 600;
+}
+
+.embedded-docs__meta,
+.embedded-docs__hint,
+.embedded-docs__missing {
+  margin: 0.2rem 0 0;
+  color: var(--color-muted);
+  font-size: 0.85rem;
+}
+
+.embedded-docs__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.45rem;
+}
+
+.embedded-docs__actions button {
+  border: 1px solid #2f6b4f;
+  background: transparent;
+  color: #2f6b4f;
+  border-radius: 8px;
+  padding: 0.4rem 0.85rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.embedded-docs__actions button:hover {
+  background: #e8f0ec;
+}
+
+.embedded-docs__error {
+  margin: 0.45rem 0 0;
+  color: #8a3b2a;
+}
+
+.embedded-docs__hint {
+  margin-top: 0.55rem;
+}
+
 .pdf-toggle {
   margin-top: 1.25rem;
 }
