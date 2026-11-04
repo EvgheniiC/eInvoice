@@ -4,8 +4,8 @@
     "./Invoice/AccountingSupplierParty/Party/PartyTaxScheme/CompanyID"
   ],
   "tags_to_search_tax_id_billing": [
-    "./AccountingCustomerParty/Party/PartyLegalEntity/CompanyID",
-    "./AccountingCustomerParty/Party/PartyTaxScheme/CompanyID"
+    "./AccountingCustomerParty/Party/PartyTaxScheme/CompanyID",
+    "./AccountingCustomerParty/Party/PartyLegalEntity/CompanyID"
   ],
   "tags_to_search_client_name": [
     "./AccountingSupplierParty/Party/PartyName/Name",
@@ -70,6 +70,7 @@
   ],
   "tags_to_search_country_delivery": [
     "./ApplicableHeaderTradeDelivery/ShipToTradeParty/PostalTradeAddress/CountryID",
+    "Delivery/DeliveryLocation/Address/Country/IdentificationCode",
     "Delivery/DeliveryLocation/Country/IdentificationCode"
   ],
   "tags_to_search_iban": [
@@ -227,6 +228,7 @@
   "tags_to_search_country_billing": [
     "./ApplicableHeaderTradeSettlement/InvoiceeTradeParty/PostalTradeAddress/CountryID",
     "./ApplicableHeaderTradeAgreement/BuyerTradeParty/PostalTradeAddress/CountryID",
+    "./AccountingCustomerParty/Party/PostalAddress/Country/IdentificationCode",
     "./AccountingCustomerParty/Party/Country/IdentificationCode"
   ],
   "tags_to_search_line_extension_amount": [
@@ -260,6 +262,7 @@
     "./AccountingSupplierParty/Party/EndpointID"
   ],
   "tags_to_search_client_number": [
-    ".//IncludedNote/Content"
+    ".//IncludedNote/Content",
+    "./Note"
   ]
 }

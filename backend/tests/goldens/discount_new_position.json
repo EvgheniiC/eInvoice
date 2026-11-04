@@ -1,9 +1,9 @@
 {
   "buyer": {
-    "address": "Kouterveldstraat 6c, 1831 Machelen",
+    "address": "Kouterveldstraat 6c, 1831 Machelen, BE",
     "iban": null,
     "name": "SimplerInvoicing",
-    "vat_id": "0465341266"
+    "vat_id": "BE0465341266"
   },
   "document_type": "invoice",
   "due_date": "2026-03-02",
