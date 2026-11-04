@@ -1,5 +1,5 @@
 import re
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from typing import Optional, Tuple
 from xml.etree.ElementTree import Element
 
@@ -10,6 +10,7 @@ from ..helper_functions import (
     get_tags_from_json,
     decimal_non_negative,
     parse_decimal,
+    quantize_money,
     build_description_from_item,
     is_ubl_placeholder_text,
     document_charge_description,
@@ -20,6 +21,9 @@ from ..helper_functions import (
     LineAllowanceDiscount,
     _is_gu_document,
 )
+
+# Unit prices that do not divide evenly into cents keep four decimal places.
+_UNIT_PRICE_QUANTUM: Decimal = Decimal("0.0001")
 from ..services.logger_adapter import InvoiceLogger
 
 
@@ -106,6 +110,8 @@ def get_xml_positions(
         quantity: Decimal = parse_decimal(quantity_raw) or Decimal("1")
         single_raw: Optional[str] = find_data_within_element(position, tags_to_search_single_net_price)
         total_raw: Optional[str] = find_data_within_element(position, tags_to_search_total_net_price)
+        single_net_price: Optional[Decimal]
+        total_net_price: Optional[Decimal]
         if is_gu_document:
             single_net_price = decimal_non_negative(single_raw)
             total_net_price = decimal_non_negative(total_raw)
@@ -116,6 +122,14 @@ def get_xml_positions(
             position, tags_to_search_order_line_reference
         )
         line_discount: LineAllowanceDiscount = get_line_allowance_discount(position)
+        # BT-131 is already net of the line allowance. Issuers such as Autohaus
+        # Babelsberg still put the undiscounted basis price in BT-146.
+        single_net_price = _single_net_including_line_discount(
+            unit_price=single_net_price,
+            line_net=total_net_price,
+            quantity=quantity,
+            discount_amount=line_discount.amount,
+        )
 
         article_number: str = ""
         try:
@@ -253,6 +267,22 @@ def get_xml_positions(
         )
 
     return xml_invoice_data
+
+
+def _single_net_including_line_discount(
+    unit_price: Optional[Decimal],
+    line_net: Optional[Decimal],
+    quantity: Decimal,
+    discount_amount: Optional[Decimal],
+) -> Optional[Decimal]:
+    """Return the discounted unit net so quantity times this price is the line net."""
+    if discount_amount is None or discount_amount <= 0 or line_net is None or quantity == 0:
+        return unit_price
+    net_unit: Decimal = line_net / quantity
+    net_unit_cents: Decimal = quantize_money(net_unit)
+    if net_unit_cents * quantity == line_net:
+        return net_unit_cents
+    return net_unit.quantize(_UNIT_PRICE_QUANTUM, rounding=ROUND_HALF_UP)
 
 
 def _find_quantity(position: Element, tags: list[str]) -> Tuple[Optional[str], Optional[str]]:

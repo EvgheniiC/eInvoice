@@ -221,25 +221,25 @@ def _cii_invoice_xml(
 
 
 class TestUblLineAllowances(unittest.TestCase):
-    def test_four_positions_keep_prices_and_store_discount(self) -> None:
+    def test_four_positions_include_discount_in_single_net(self) -> None:
         data: XmlInvoiceHeader = _parse(_babelsberg_ubl_xml())
         positions: List[dict] = data.get_positions_map()
         self.assertEqual(len(positions), 4)
-        expected: List[tuple[str, Decimal, Decimal, Decimal, Decimal]] = [
-            ("TUER", Decimal("706.27"), Decimal("575.61"), Decimal("130.66"), Decimal("18.50")),
-            ("DICHTUNG", Decimal("15.06"), Decimal("13.18"), Decimal("1.88"), Decimal("12.50")),
-            ("DICHTUNG", Decimal("101.16"), Decimal("88.52"), Decimal("12.64"), Decimal("12.50")),
-            ("DAEMPFUNG", Decimal("23.58"), Decimal("13.32"), Decimal("10.26"), Decimal("43.50")),
+        expected: List[tuple[str, Decimal, Decimal, Decimal]] = [
+            ("TUER", Decimal("575.61"), Decimal("130.66"), Decimal("18.50")),
+            ("DICHTUNG", Decimal("13.18"), Decimal("1.88"), Decimal("12.50")),
+            ("DICHTUNG", Decimal("88.52"), Decimal("12.64"), Decimal("12.50")),
+            ("DAEMPFUNG", Decimal("13.32"), Decimal("10.26"), Decimal("43.50")),
         ]
-        for position, (name, unit, line_net, amount, percent) in zip(positions, expected):
+        for position, (name, line_net, amount, percent) in zip(positions, expected):
             self.assertIn(name, position["position_text"])
             self.assertEqual(position["quantity"], Decimal("1.0000"))
-            self.assertEqual(position["single_net_price"], unit)
+            self.assertEqual(position["single_net_price"], line_net)
             self.assertEqual(position["total_net_price"], line_net)
             self.assertEqual(position["discount_amount"], amount)
             self.assertEqual(position["discount_percent"], percent)
 
-    def test_api_line_item_keeps_unit_price_and_exposes_discount(self) -> None:
+    def test_api_line_item_unit_price_is_discounted_net(self) -> None:
         header: XmlInvoiceHeader = _parse(_babelsberg_ubl_xml())
         line: LineItem = map_to_parse_response(
             filename="discount.xml",
@@ -247,7 +247,7 @@ class TestUblLineAllowances(unittest.TestCase):
             header=header,
             vendor_data={},
         ).line_items[0]
-        self.assertEqual(line.unit_price, Decimal("706.27"))
+        self.assertEqual(line.unit_price, Decimal("575.61"))
         self.assertEqual(line.net_amount, Decimal("575.61"))
         self.assertEqual(line.discount_amount, Decimal("130.66"))
         self.assertEqual(line.discount_percent, Decimal("18.50"))
@@ -300,8 +300,39 @@ class TestUblLineAllowances(unittest.TestCase):
         position: dict = _parse(xml_text).get_positions_map()[0]
         self.assertEqual(position["discount_amount"], Decimal("15.00"))
         self.assertIsNone(position["discount_percent"])
-        self.assertEqual(position["single_net_price"], Decimal("100.00"))
+        self.assertEqual(position["single_net_price"], Decimal("85.00"))
         self.assertEqual(position["total_net_price"], Decimal("85.00"))
+
+    def test_quantity_above_one_uses_discounted_line_net_per_unit(self) -> None:
+        xml_text: str = _ubl_invoice_xml(
+            _ubl_line_xml(
+                line_id="1",
+                name="PART",
+                quantity="2",
+                unit_price="100.00",
+                line_net="180.00",
+                allowances_xml=_ubl_allowance_xml(amount="20.00", percent="10.00"),
+            )
+        )
+        position: dict = _parse(xml_text).get_positions_map()[0]
+        self.assertEqual(position["single_net_price"], Decimal("90.00"))
+        self.assertEqual(position["total_net_price"], Decimal("180.00"))
+        self.assertEqual(position["discount_amount"], Decimal("20.00"))
+
+    def test_already_net_unit_price_is_not_reduced_again(self) -> None:
+        xml_text: str = _ubl_invoice_xml(
+            _ubl_line_xml(
+                line_id="1",
+                name="TUER",
+                quantity="1",
+                unit_price="575.61",
+                line_net="575.61",
+                allowances_xml=_ubl_allowance_xml(amount="130.66", percent="18.50"),
+            )
+        )
+        position: dict = _parse(xml_text).get_positions_map()[0]
+        self.assertEqual(position["single_net_price"], Decimal("575.61"))
+        self.assertEqual(position["discount_amount"], Decimal("130.66"))
 
     def test_header_allowance_is_not_copied_onto_the_line(self) -> None:
         xml_text: str = _ubl_invoice_xml(
@@ -366,7 +397,7 @@ class TestCiiLineAllowances(unittest.TestCase):
             )
         )
         position: dict = _parse(xml_text).get_positions_map()[0]
-        self.assertEqual(position["single_net_price"], Decimal("706.27"))
+        self.assertEqual(position["single_net_price"], Decimal("575.61"))
         self.assertEqual(position["total_net_price"], Decimal("575.61"))
         self.assertEqual(position["discount_amount"], Decimal("130.66"))
         self.assertEqual(position["discount_percent"], Decimal("18.50"))
@@ -386,6 +417,8 @@ class TestCiiLineAllowances(unittest.TestCase):
             )
         )
         position: dict = _parse(xml_text).get_positions_map()[0]
+        self.assertEqual(position["single_net_price"], Decimal("575.61"))
+        self.assertEqual(position["total_net_price"], Decimal("575.61"))
         self.assertEqual(position["discount_amount"], Decimal("130.66"))
         self.assertEqual(position["discount_percent"], Decimal("18.50"))
 
