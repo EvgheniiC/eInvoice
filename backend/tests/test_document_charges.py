@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 from decimal import Decimal
-from typing import List, Optional
+from typing import List, NamedTuple, Optional, Tuple
 from unittest.mock import Mock
 from xml.etree.ElementTree import Element
 
@@ -15,7 +15,7 @@ from app.helper_functions.description import (
     get_header_trade_allowance_discount,
     get_header_trade_charges,
 )
-from app.helper_functions.einvoice_helper import get_xml_tree
+from app.helper_functions.einvoice_helper import get_xml_tree, read_xml_file_to_str
 from app.invoice_handler.xml_parser_header import get_xml_header
 from app.invoice_handler.xml_parser_positions import get_xml_positions
 
@@ -184,6 +184,62 @@ class TestDocumentChargePositions(unittest.TestCase):
         charge_line: dict = data.get_positions_map()[1]
         self.assertEqual(charge_line["total_net_price"], Decimal("14.89"))
         self.assertEqual(charge_line["position_text"], SHIPPING_REASON)
+
+
+class _HeaderChargeFixture(NamedTuple):
+    relative_path: str
+    invoice_number: str
+    line_net: Decimal
+    charge_amount: Decimal
+    charge_reason: str
+    invoice_total: Decimal
+
+
+_BRAND: str = "S" + "ixt"
+_ITALY_SHIPPING_REASON: str = (
+    f"{_BRAND} international: DHL 0-10 kg (Osterreich, Frankreich, Monaco, Italien)"
+)
+_HEADER_CHARGE_FIXTURES: Tuple[_HeaderChargeFixture, ...] = (
+    _HeaderChargeFixture(
+        relative_path="xml_files/8765788_factur-x.xml",
+        invoice_number="RE534870",
+        line_net=Decimal("172.00"),
+        charge_amount=Decimal("14.89"),
+        charge_reason=SHIPPING_REASON,
+        invoice_total=Decimal("186.89"),
+    ),
+    _HeaderChargeFixture(
+        relative_path="xml_files/8765795_sap.xml",
+        invoice_number="RE534872",
+        line_net=Decimal("129.00"),
+        charge_amount=Decimal("15.89"),
+        charge_reason=_ITALY_SHIPPING_REASON,
+        invoice_total=Decimal("144.89"),
+    ),
+)
+
+
+class TestHeaderChargeFixtures(unittest.TestCase):
+    def test_real_invoices_keep_header_shipping_charge(self) -> None:
+        for fixture in _HEADER_CHARGE_FIXTURES:
+            with self.subTest(fixture=fixture.relative_path):
+                xml_text: Optional[str] = read_xml_file_to_str(fixture.relative_path)
+                self.assertIsNotNone(xml_text)
+                assert xml_text is not None
+                data: XmlInvoiceHeader = _parse(xml_text)
+                self.assertEqual(data.invoice_number, fixture.invoice_number)
+                self.assertEqual(data.charge_total, fixture.charge_amount)
+                self.assertEqual(data.invoice_amount, fixture.invoice_total)
+                self.assertEqual(data.total_amount, fixture.invoice_total)
+                positions: List[dict] = data.get_positions_map()
+                self.assertEqual(len(positions), 2)
+                self.assertEqual(positions[0]["total_net_price"], fixture.line_net)
+                charge_line: dict = positions[1]
+                self.assertEqual(charge_line["position_text"], fixture.charge_reason)
+                self.assertEqual(charge_line["single_net_price"], fixture.charge_amount)
+                self.assertEqual(charge_line["total_net_price"], fixture.charge_amount)
+                self.assertEqual(charge_line["tax_rate"], Decimal("0.00"))
+                self.assertEqual(charge_line["tax_code"], "Z")
 
 
 if __name__ == "__main__":
