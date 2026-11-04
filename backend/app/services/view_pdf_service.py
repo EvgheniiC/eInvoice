@@ -330,7 +330,11 @@ def _mismatch_banner(invoice: InvoiceParseResponse) -> Optional[Flowable]:
 def _tax_table(invoice: InvoiceParseResponse) -> Table:
     currency: Optional[str] = invoice.totals.currency if invoice.totals else None
     tax_rows: list[list[Paragraph]] = [
-        [_p("Steuersatz", _TH_STYLE), _p("Steuerbetrag", _TH_STYLE)],
+        [
+            _p("Steuersatz", _TH_STYLE),
+            _p("Netto", _TH_STYLE),
+            _p("Steuerbetrag", _TH_STYLE),
+        ],
     ]
     breakdown: list[TaxBreakdown] = invoice.totals.tax_breakdown if invoice.totals else []
     if breakdown:
@@ -338,18 +342,28 @@ def _tax_table(invoice: InvoiceParseResponse) -> Table:
             tax_rows.append(
                 [
                     _p(_format_percent(item.rate), _TD_STYLE),
+                    _p(_format_amount(item.net, currency), _TD_RIGHT_STYLE),
                     _p(_format_amount(item.amount, currency), _TD_RIGHT_STYLE),
                 ]
             )
     else:
-        tax_rows.append([_p(MISSING, _TD_STYLE), _p(MISSING, _TD_RIGHT_STYLE)])
+        tax_rows.append(
+            [_p(MISSING, _TD_STYLE), _p(MISSING, _TD_RIGHT_STYLE), _p(MISSING, _TD_RIGHT_STYLE)]
+        )
     tax_rows.append(
         [
             _p("MwSt gesamt", _LABEL_STYLE),
-            _p(_format_amount(invoice.totals.tax if invoice.totals else None, currency), _TD_RIGHT_STYLE),
+            _p("", _TD_RIGHT_STYLE),
+            _p(
+                _format_amount(invoice.totals.tax if invoice.totals else None, currency),
+                _TD_RIGHT_STYLE,
+            ),
         ]
     )
-    return _grid_table(tax_rows, [USABLE_WIDTH * 0.22, USABLE_WIDTH * 0.26])
+    return _grid_table(
+        tax_rows,
+        [USABLE_WIDTH * 0.18, USABLE_WIDTH * 0.22, USABLE_WIDTH * 0.22],
+    )
 
 
 def _line_has_discount(item: LineItem) -> bool:

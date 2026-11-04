@@ -271,9 +271,10 @@ def _map_tax_breakdown(header: XmlInvoiceHeader) -> List[TaxBreakdown]:
     for index in range(1, 6):
         rate: Optional[Decimal] = _as_decimal(getattr(header, f"tax_rate{index}"))
         amount: Optional[Decimal] = _as_decimal(getattr(header, f"tax_amount{index}"))
+        net: Optional[Decimal] = _as_decimal(getattr(header, f"tax_basis{index}"))
         if rate is None:
             continue
-        breakdown.append(TaxBreakdown(rate=rate, amount=amount))
+        breakdown.append(TaxBreakdown(rate=rate, amount=amount, net=net))
     return breakdown
 
 

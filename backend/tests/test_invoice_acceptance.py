@@ -3,6 +3,7 @@ from __future__ import annotations
 import unittest
 from decimal import Decimal
 from pathlib import Path
+from typing import Optional
 from unittest.mock import patch
 
 from app.helper_functions.pdf_security import UnsafePdfError, assert_pdf_safe
@@ -43,6 +44,74 @@ UBL_INVOICE: str = """<?xml version="1.0" encoding="UTF-8"?>
       <cac:ClassifiedTaxCategory><cbc:Percent>10</cbc:Percent></cac:ClassifiedTaxCategory>
     </cac:Item>
     <cac:Price><cbc:PriceAmount currencyID="EUR">0.10</cbc:PriceAmount></cac:Price>
+  </cac:InvoiceLine>
+</Invoice>
+"""
+
+# Same VAT breakdown as xml_files/2602801-965782.xml. Category O omits Percent.
+UBL_CATEGORY_O: str = """<?xml version="1.0" encoding="UTF-8"?>
+<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
+ xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2"
+ xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2">
+  <cbc:ID>2602801-965782</cbc:ID>
+  <cbc:IssueDate>2026-09-30</cbc:IssueDate>
+  <cbc:InvoiceTypeCode>380</cbc:InvoiceTypeCode>
+  <cbc:DocumentCurrencyCode>EUR</cbc:DocumentCurrencyCode>
+  <cac:AccountingSupplierParty><cac:Party><cac:PartyLegalEntity>
+    <cbc:RegistrationName>ELIS EN ESSONNE</cbc:RegistrationName>
+  </cac:PartyLegalEntity></cac:Party></cac:AccountingSupplierParty>
+  <cac:AccountingCustomerParty><cac:Party><cac:PartyLegalEntity>
+    <cbc:RegistrationName>SIXT SAS (MONTPARNASSE)</cbc:RegistrationName>
+  </cac:PartyLegalEntity></cac:Party></cac:AccountingCustomerParty>
+  <cac:TaxTotal><cbc:TaxAmount currencyID="EUR">5.46</cbc:TaxAmount>
+    <cac:TaxSubtotal>
+      <cbc:TaxableAmount currencyID="EUR">1.35</cbc:TaxableAmount>
+      <cbc:TaxAmount currencyID="EUR">0.00</cbc:TaxAmount>
+      <cac:TaxCategory><cbc:ID>O</cbc:ID></cac:TaxCategory>
+    </cac:TaxSubtotal>
+    <cac:TaxSubtotal>
+      <cbc:TaxableAmount currencyID="EUR">28.99</cbc:TaxableAmount>
+      <cbc:TaxAmount currencyID="EUR">1.59</cbc:TaxAmount>
+      <cac:TaxCategory><cbc:ID>S</cbc:ID><cbc:Percent>5.50</cbc:Percent></cac:TaxCategory>
+    </cac:TaxSubtotal>
+    <cac:TaxSubtotal>
+      <cbc:TaxableAmount currencyID="EUR">19.35</cbc:TaxableAmount>
+      <cbc:TaxAmount currencyID="EUR">3.87</cbc:TaxAmount>
+      <cac:TaxCategory><cbc:ID>S</cbc:ID><cbc:Percent>20.00</cbc:Percent></cac:TaxCategory>
+    </cac:TaxSubtotal>
+  </cac:TaxTotal>
+  <cac:LegalMonetaryTotal>
+    <cbc:LineExtensionAmount currencyID="EUR">49.69</cbc:LineExtensionAmount>
+    <cbc:TaxExclusiveAmount currencyID="EUR">49.69</cbc:TaxExclusiveAmount>
+    <cbc:TaxInclusiveAmount currencyID="EUR">55.15</cbc:TaxInclusiveAmount>
+    <cbc:PayableAmount currencyID="EUR">55.15</cbc:PayableAmount>
+  </cac:LegalMonetaryTotal>
+  <cac:InvoiceLine>
+    <cbc:ID>1</cbc:ID>
+    <cbc:InvoicedQuantity unitCode="EA">1</cbc:InvoicedQuantity>
+    <cbc:LineExtensionAmount currencyID="EUR">1.35</cbc:LineExtensionAmount>
+    <cac:Item><cbc:Name>Autre</cbc:Name>
+      <cac:ClassifiedTaxCategory><cbc:ID>O</cbc:ID></cac:ClassifiedTaxCategory>
+    </cac:Item>
+    <cac:Price><cbc:PriceAmount currencyID="EUR">1.350</cbc:PriceAmount></cac:Price>
+  </cac:InvoiceLine>
+  <cac:InvoiceLine>
+    <cbc:ID>2</cbc:ID>
+    <cbc:InvoicedQuantity unitCode="EA">5</cbc:InvoicedQuantity>
+    <cbc:LineExtensionAmount currencyID="EUR">19.35</cbc:LineExtensionAmount>
+    <cac:Item><cbc:Name>Gobelet carton</cbc:Name>
+      <cac:ClassifiedTaxCategory><cbc:ID>S</cbc:ID><cbc:Percent>20.00</cbc:Percent></cac:ClassifiedTaxCategory>
+    </cac:Item>
+    <cac:Price><cbc:PriceAmount currencyID="EUR">3.870</cbc:PriceAmount></cac:Price>
+  </cac:InvoiceLine>
+  <cac:InvoiceLine>
+    <cbc:ID>3</cbc:ID>
+    <cbc:InvoicedQuantity unitCode="EA">3</cbc:InvoicedQuantity>
+    <cbc:LineExtensionAmount currencyID="EUR">28.99</cbc:LineExtensionAmount>
+    <cac:Item><cbc:Name>Bonbonne d'eau</cbc:Name>
+      <cac:ClassifiedTaxCategory><cbc:ID>S</cbc:ID><cbc:Percent>5.50</cbc:Percent></cac:ClassifiedTaxCategory>
+    </cac:Item>
+    <cac:Price><cbc:PriceAmount currencyID="EUR">9.662</cbc:PriceAmount></cac:Price>
   </cac:InvoiceLine>
 </Invoice>
 """
@@ -131,6 +200,59 @@ class TestInvoiceAcceptance(unittest.TestCase):
         self.assertEqual(result.line_items, [])
         self.assertTrue(
             any(issue.code == "BG-25_MISSING" for issue in result.validation_issues)
+        )
+
+    def test_category_o_without_percent_stays_with_its_net(self) -> None:
+        result: InvoiceParseResponse = self.service.parse_upload(
+            "2602801-965782.xml", UBL_CATEGORY_O.encode("utf-8")
+        )
+        self._assert_elis_vat_breakdown(result)
+
+    def test_ubl_category_o_keeps_rate_with_net_and_vat(self) -> None:
+        """Category O has no Percent; rate, taxable net and VAT must stay paired."""
+        xml_path: Path = Path(__file__).parent / "xml_files" / "2602801-965782.xml"
+        if not xml_path.is_file():
+            self.skipTest("missing local fixture 2602801-965782.xml")
+
+        result: InvoiceParseResponse = self.service.parse_upload(
+            xml_path.name, xml_path.read_bytes()
+        )
+        self._assert_elis_vat_breakdown(result)
+
+    def _assert_elis_vat_breakdown(self, result: InvoiceParseResponse) -> None:
+        self.assertIn(result.status, (ParseStatus.SUCCESS, ParseStatus.PARTIAL))
+        self.assertEqual(result.invoice_number, "2602801-965782")
+        self.assertIsNotNone(result.totals)
+        assert result.totals is not None
+        self.assertEqual(result.totals.net, Decimal("49.69"))
+        self.assertEqual(result.totals.tax, Decimal("5.46"))
+        self.assertEqual(result.totals.gross, Decimal("55.15"))
+        self.assertEqual(result.totals.currency, "EUR")
+
+        expected: list[tuple[Decimal, Decimal, Decimal]] = [
+            (Decimal("0.00"), Decimal("1.35"), Decimal("0.00")),
+            (Decimal("5.50"), Decimal("28.99"), Decimal("1.59")),
+            (Decimal("20.00"), Decimal("19.35"), Decimal("3.87")),
+        ]
+        actual: list[tuple[Optional[Decimal], Optional[Decimal], Optional[Decimal]]] = [
+            (item.rate, item.net, item.amount) for item in result.totals.tax_breakdown
+        ]
+        self.assertEqual(len(actual), len(expected))
+        for got, want in zip(actual, expected):
+            self.assertEqual(got[0], want[0])
+            self.assertEqual(got[1], want[1])
+            self.assertEqual(got[2], want[2])
+
+        line_nets: list[tuple[Optional[Decimal], Optional[Decimal]]] = [
+            (item.tax_rate, item.net_amount) for item in result.line_items
+        ]
+        self.assertEqual(
+            line_nets,
+            [
+                (Decimal("0"), Decimal("1.35")),
+                (Decimal("20.00"), Decimal("19.35")),
+                (Decimal("5.50"), Decimal("28.99")),
+            ],
         )
 
 

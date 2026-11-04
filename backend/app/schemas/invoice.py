@@ -60,10 +60,14 @@ class LineItem(ApiModel):
 
 
 class TaxBreakdown(ApiModel):
-    """Tax amount grouped by VAT rate."""
+    """VAT rate with its taxable net amount and VAT amount."""
 
     rate: Decimal
     amount: Optional[Decimal] = None
+    net: Optional[Decimal] = Field(
+        default=None,
+        description="Taxable amount for this VAT rate (BT-116).",
+    )
 
 
 class InvoiceTotals(ApiModel):

@@ -119,6 +119,7 @@ def snapshot_parse_response(response: InvoiceParseResponse) -> Dict[str, Any]:
             "tax_breakdown": [
                 {
                     "rate": _round_money(item.rate),
+                    "net": _round_money(item.net),
                     "amount": _round_money(item.amount),
                 }
                 for item in response.totals.tax_breakdown

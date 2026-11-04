@@ -526,10 +526,12 @@ export interface components {
     "TaxBreakdown-Input": {
       rate: number | string;
       amount?: number | string | null;
+      net?: number | string | null;
     };
     "TaxBreakdown-Output": {
       rate: string;
       amount: string | null;
+      net: string | null;
     };
     TokenRequest: {
       token: string;

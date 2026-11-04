@@ -5422,6 +5422,22 @@
               }
             ],
             "title": "Amount"
+          },
+          "net": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Net",
+            "description": "Taxable amount for this VAT rate (BT-116)."
           }
         },
         "type": "object",
@@ -5429,7 +5445,7 @@
           "rate"
         ],
         "title": "TaxBreakdown",
-        "description": "Tax amount grouped by VAT rate."
+        "description": "VAT rate with its taxable net amount and VAT amount."
       },
       "TaxBreakdown-Output": {
         "properties": {
@@ -5449,15 +5465,29 @@
               }
             ],
             "title": "Amount"
+          },
+          "net": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Net",
+            "description": "Taxable amount for this VAT rate (BT-116)."
           }
         },
         "type": "object",
         "required": [
           "rate",
-          "amount"
+          "amount",
+          "net"
         ],
         "title": "TaxBreakdown",
-        "description": "Tax amount grouped by VAT rate."
+        "description": "VAT rate with its taxable net amount and VAT amount."
       },
       "TokenRequest": {
         "properties": {

@@ -39,6 +39,11 @@ class XmlInvoiceHeader:
     tax_amount4: Optional[Decimal] = None
     tax_rate5: Optional[Decimal] = None
     tax_amount5: Optional[Decimal] = None
+    tax_basis1: Optional[Decimal] = None
+    tax_basis2: Optional[Decimal] = None
+    tax_basis3: Optional[Decimal] = None
+    tax_basis4: Optional[Decimal] = None
+    tax_basis5: Optional[Decimal] = None
     currency: Optional[str] = None
     receiver: Optional[str] = None
     contract_start: Optional[datetime] = None

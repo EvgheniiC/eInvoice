@@ -19,7 +19,7 @@
       "quantity": 10.0,
       "tax_rate": 25.0,
       "unit": "C62",
-      "unit_price": 410.0
+      "unit_price": 400.0
     },
     {
       "description": "item name AdditionalItemName AdditionalItemValue\nitem name\n97iugug876",
@@ -39,7 +39,7 @@
       "quantity": 10.0,
       "tax_rate": 25.0,
       "unit": "C62",
-      "unit_price": 100.0
+      "unit_price": 90.0
     },
     {
       "description": "Cleaning",
@@ -50,6 +50,16 @@
       "tax_rate": 25.0,
       "unit": null,
       "unit_price": 200.0
+    },
+    {
+      "description": "Discount",
+      "gross_amount": -250.0,
+      "net_amount": -200.0,
+      "position": 5,
+      "quantity": 1.0,
+      "tax_rate": 25.0,
+      "unit": null,
+      "unit_price": -200.0
     }
   ],
   "mismatch_fields": [],
@@ -71,10 +81,12 @@
     "tax_breakdown": [
       {
         "amount": 1225.0,
+        "net": 4900.0,
         "rate": 25.0
       },
       {
         "amount": 0.0,
+        "net": 1000.0,
         "rate": 0.0
       }
     ]

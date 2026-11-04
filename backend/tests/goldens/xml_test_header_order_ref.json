@@ -131,6 +131,7 @@
     "tax_breakdown": [
       {
         "amount": 77.43,
+        "net": 407.53,
         "rate": 19.0
       }
     ]

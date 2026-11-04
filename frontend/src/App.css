@@ -1044,6 +1044,12 @@
   font-weight: 600;
 }
 
+.invoice__tax th:not(:first-child),
+.invoice__tax td:not(:first-child) {
+  text-align: right;
+  white-space: nowrap;
+}
+
 .invoice__desc {
   white-space: pre-wrap;
   max-width: 18rem;

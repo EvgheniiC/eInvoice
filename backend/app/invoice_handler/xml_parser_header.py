@@ -13,6 +13,8 @@ from ..helper_functions import (
     get_xml_tree,
     get_tags_from_json,
     find_tax_data,
+    find_header_tax_subtotals,
+    HeaderTaxSubtotal,
     get_field_value,
     find_attribute_within_element,
     normalize_header_amount,
@@ -292,6 +294,11 @@ def _parse_amounts(
 
 
 def _parse_taxes(header: XmlInvoiceHeader, xml_tree: Element, tags: HeaderTagSet) -> None:
+    subtotals: List[HeaderTaxSubtotal] = find_header_tax_subtotals(xml_tree)
+    if subtotals:
+        _apply_aligned_tax_subtotals(header, subtotals)
+        return
+
     tax_amount: Dict[str, Optional[str]] = find_tax_data(
         xml_tree, tags.tax_amount1, "tax_amount"
     )
@@ -307,6 +314,25 @@ def _parse_taxes(header: XmlInvoiceHeader, xml_tree: Element, tags: HeaderTagSet
     header.tax_rate3 = optional_string_to_decimal(tax_rate["tax_rate3"])
     header.tax_rate4 = optional_string_to_decimal(tax_rate["tax_rate4"])
     header.tax_rate5 = optional_string_to_decimal(tax_rate["tax_rate5"])
+
+
+def _apply_aligned_tax_subtotals(
+    header: XmlInvoiceHeader, subtotals: List[HeaderTaxSubtotal]
+) -> None:
+    """Store each VAT row in the matching header slot, including its taxable net."""
+    slot_count: int = 5
+    for index in range(1, slot_count + 1):
+        rate: Optional[Decimal] = None
+        amount: Optional[Decimal] = None
+        basis: Optional[Decimal] = None
+        if index <= len(subtotals):
+            item: HeaderTaxSubtotal = subtotals[index - 1]
+            rate = optional_string_to_decimal(item.rate)
+            amount = normalize_header_amount(item.tax_amount)
+            basis = normalize_header_amount(item.taxable_amount)
+        setattr(header, f"tax_rate{index}", rate)
+        setattr(header, f"tax_amount{index}", amount)
+        setattr(header, f"tax_basis{index}", basis)
 
 
 def _parse_parties(

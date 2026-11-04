@@ -30,7 +30,7 @@ const DEFAULT_TOTALS: InvoiceTotals = {
   currency: 'EUR',
   allowance: null,
   charge: null,
-  tax_breakdown: [{ rate: '19', amount: '43.23' }],
+  tax_breakdown: [{ rate: '19', net: '227.50', amount: '43.23' }],
 }
 
 const DEFAULT_META: ValidationMeta = {

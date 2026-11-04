@@ -942,13 +942,27 @@ export function InvoiceView({
       {invoice.totals && invoice.totals.tax_breakdown.length > 0 && (
         <div className="invoice__tax-breakdown">
           <h3>MwSt-Aufschlüsselung</h3>
-          <ul>
-            {invoice.totals.tax_breakdown.map((tax: TaxBreakdown, index: number) => (
-              <li key={`${String(tax.rate)}-${index}`}>
-                {String(tax.rate)} %: {formatAmount(tax.amount, currency)}
-              </li>
-            ))}
-          </ul>
+          <div className="table-scroll">
+            <table className="invoice__lines invoice__tax">
+              <caption className="visually-hidden">Mehrwertsteuer nach Steuersatz</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Steuersatz</th>
+                  <th scope="col">Netto</th>
+                  <th scope="col">MwSt</th>
+                </tr>
+              </thead>
+              <tbody>
+                {invoice.totals.tax_breakdown.map((tax: TaxBreakdown, index: number) => (
+                  <tr key={`${String(tax.rate)}-${index}`}>
+                    <td>{String(tax.rate)} %</td>
+                    <td>{formatAmount(tax.net, currency)}</td>
+                    <td>{formatAmount(tax.amount, currency)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 

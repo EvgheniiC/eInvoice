@@ -31,7 +31,7 @@ from .party_extract import (
 )
 from .pdf_utils import is_zugpferd_pdf
 from .tags_config import get_tags_from_json
-from .tax import find_tax_data
+from .tax import HeaderTaxSubtotal, find_header_tax_subtotals, find_tax_data
 from .xml_query import (
     _xml_root_local_name,
     delete_all_prefills,
@@ -55,6 +55,8 @@ __all__ = [
     "read_xml_file_to_str",
     "get_tags_from_json",
     "find_tax_data",
+    "find_header_tax_subtotals",
+    "HeaderTaxSubtotal",
     "get_field_value",
     "string_to_float_negative",
     "string_to_float",
