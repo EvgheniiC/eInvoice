@@ -165,6 +165,53 @@ class TestHeaderTradeCharges(unittest.TestCase):
         self.assertEqual(charges[0].tax_rate, Decimal("19.00"))
         self.assertEqual(charges[0].tax_category, "S")
 
+    def test_ubl_header_charge_needs_only_free_text_reason(self) -> None:
+        xml_tree: Element = get_xml_tree(
+            """<?xml version="1.0" encoding="UTF-8"?>
+<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
+ xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2"
+ xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2">
+  <cbc:ID>1001113267</cbc:ID>
+  <cbc:InvoiceTypeCode>380</cbc:InvoiceTypeCode>
+  <cac:AllowanceCharge>
+    <cbc:ChargeIndicator>false</cbc:ChargeIndicator>
+    <cbc:AllowanceChargeReason>PC RT Remise Base</cbc:AllowanceChargeReason>
+    <cbc:MultiplierFactorNumeric>19.00</cbc:MultiplierFactorNumeric>
+    <cbc:Amount currencyID="EUR">28506.52</cbc:Amount>
+    <cbc:BaseAmount currencyID="EUR">150034.33</cbc:BaseAmount>
+    <cac:TaxCategory>
+      <cbc:ID>S</cbc:ID>
+      <cbc:Percent>20.00</cbc:Percent>
+    </cac:TaxCategory>
+  </cac:AllowanceCharge>
+  <cac:AllowanceCharge>
+    <cbc:ChargeIndicator>true</cbc:ChargeIndicator>
+    <cbc:AllowanceChargeReason>Coût de Transport</cbc:AllowanceChargeReason>
+    <cbc:Amount currencyID="EUR">125.00</cbc:Amount>
+    <cac:TaxCategory>
+      <cbc:ID>S</cbc:ID>
+      <cbc:Percent>20.00</cbc:Percent>
+    </cac:TaxCategory>
+  </cac:AllowanceCharge>
+</Invoice>
+"""
+        )
+        charges: List[HeaderTradeAdjustment] = get_document_level_charges(xml_tree)
+        self.assertEqual(len(charges), 1)
+        self.assertEqual(charges[0].amount, Decimal("125.00"))
+        self.assertEqual(charges[0].description, "Coût de Transport")
+        self.assertEqual(charges[0].tax_rate, Decimal("20.00"))
+        self.assertEqual(charges[0].tax_category, "S")
+        allowance: Optional[HeaderTradeAdjustment] = get_header_trade_allowance_discount(
+            xml_tree
+        )
+        self.assertIsNotNone(allowance)
+        assert allowance is not None
+        self.assertEqual(allowance.amount, Decimal("28506.52"))
+        self.assertEqual(allowance.description, "PC RT Remise Base")
+        self.assertEqual(allowance.tax_rate, Decimal("20.00"))
+        self.assertEqual(allowance.tax_category, "S")
+
 
 class TestDocumentChargePositions(unittest.TestCase):
     def test_cii_shipping_becomes_line_with_zero_vat(self) -> None:
@@ -240,6 +287,43 @@ class TestHeaderChargeFixtures(unittest.TestCase):
                 self.assertEqual(charge_line["total_net_price"], fixture.charge_amount)
                 self.assertEqual(charge_line["tax_rate"], Decimal("0.00"))
                 self.assertEqual(charge_line["tax_code"], "Z")
+
+
+class TestMercedesHeaderAdjustments(unittest.TestCase):
+    def test_transport_charge_without_multiplier_is_a_position(self) -> None:
+        fixture: str = "xml_files/9041269_sap.xml"
+        xml_text: Optional[str] = read_xml_file_to_str(fixture)
+        self.assertIsNotNone(xml_text)
+        assert xml_text is not None
+        data: XmlInvoiceHeader = _parse(xml_text)
+        self.assertEqual(data.invoice_number, "1001113267")
+        self.assertEqual(data.charge_total, Decimal("125.00"))
+        self.assertEqual(data.discount, Decimal("28506.52"))
+        self.assertEqual(data.invoice_amount, Decimal("121652.81"))
+        self.assertEqual(data.total_amount, Decimal("145983.37"))
+
+        positions: List[dict] = data.get_positions_map()
+        charge_lines: List[dict] = [
+            position
+            for position in positions
+            if position["position_text"] == "Coût de Transport"
+        ]
+        self.assertEqual(len(charge_lines), 1)
+        charge_line: dict = charge_lines[0]
+        self.assertEqual(charge_line["single_net_price"], Decimal("125.00"))
+        self.assertEqual(charge_line["total_net_price"], Decimal("125.00"))
+        self.assertEqual(charge_line["tax_rate"], Decimal("20.00"))
+        self.assertEqual(charge_line["tax_code"], "S")
+
+        allowance_lines: List[dict] = [
+            position
+            for position in positions
+            if position["position_text"] == "PC RT Remise Base"
+        ]
+        self.assertEqual(len(allowance_lines), 1)
+        allowance_line: dict = allowance_lines[0]
+        self.assertEqual(allowance_line["total_net_price"], Decimal("-28506.52"))
+        self.assertEqual(allowance_line["tax_rate"], Decimal("20.00"))
 
 
 if __name__ == "__main__":

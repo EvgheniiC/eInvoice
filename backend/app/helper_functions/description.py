@@ -217,11 +217,15 @@ def _collect_header_trade_adjustments(
     return items
 
 
-def _collect_ubl_document_charges(xml_tree: Element) -> List[HeaderTradeAdjustment]:
+def _collect_ubl_header_adjustments(
+    xml_tree: Element, *, is_charge: bool
+) -> List[HeaderTradeAdjustment]:
+    """Header AllowanceCharge only. Multiplier, base amount, and reason code are optional."""
+    default_description: str = "Document charge" if is_charge else "Discount"
     items: List[HeaderTradeAdjustment] = []
     for path in ("./AllowanceCharge", "./Invoice/AllowanceCharge"):
         for ac in xml_tree.findall(path):
-            if _charge_indicator_is_charge(ac) is not True:
+            if _charge_indicator_is_charge(ac) is not is_charge:
                 continue
             amount_el: Optional[Element] = ac.find("Amount")
             if amount_el is None or not amount_el.text:
@@ -235,7 +239,9 @@ def _collect_ubl_document_charges(xml_tree: Element) -> List[HeaderTradeAdjustme
             items.append(
                 HeaderTradeAdjustment(
                     amount=amount,
-                    description=_adjustment_reason(ac, default_description="Document charge"),
+                    description=_adjustment_reason(
+                        ac, default_description=default_description
+                    ),
                     tax_rate=tax_rate,
                     tax_category=tax_category,
                 )
@@ -264,19 +270,22 @@ def get_document_level_charges(xml_tree: Element) -> List[HeaderTradeAdjustment]
     cii_charges: List[HeaderTradeAdjustment] = get_header_trade_charges(xml_tree)
     if cii_charges:
         return cii_charges
-    return _collect_ubl_document_charges(xml_tree)
+    return _collect_ubl_header_adjustments(xml_tree, is_charge=True)
 
 
 def get_header_trade_allowance_discount(
     xml_tree: Element,
 ) -> Optional[HeaderTradeAdjustment]:
     """
-    ZUGFeRD / Factur-X: sum document-level allowances (ChargeIndicator false).
+    Sum document-level allowances (ChargeIndicator false).
+    CII SpecifiedTradeAllowanceCharge first, then UBL header AllowanceCharge.
     Returns the combined adjustment or None.
     """
     items: List[HeaderTradeAdjustment] = _collect_header_trade_adjustments(
         xml_tree, is_charge=False
     )
+    if not items:
+        items = _collect_ubl_header_adjustments(xml_tree, is_charge=False)
     if not items:
         return None
     total_amount: Decimal = sum((item.amount for item in items), Decimal("0"))
