@@ -35,8 +35,9 @@ from app.services.issue_xml import XRECHNUNG_GUIDELINE, render_cii
 
 _NS: dict[str, str] = {
     "ram": "urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100",
-    "rsm": "urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100",
-}
+        "rsm": "urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100",
+        "udt": "urn:un:unece:uncefact:data:standard:UnqualifiedDataType:100",
+    }
 
 
 def _party(**kwargs: str) -> IssueParty:
@@ -79,6 +80,7 @@ def _complete_draft() -> IssueDraft:
             line="Markt 2",
             postcode="80331",
             city="München",
+            email="buyer@beispiel.example",
         ),
         lines=[
             IssueLineInput(
@@ -193,6 +195,19 @@ class TestIssueDraft(unittest.TestCase):
         self.assertEqual(root.findtext(".//ram:GrandTotalAmount", namespaces=_NS), "23.80")
         self.assertEqual(root.findtext(".//ram:DuePayableAmount", namespaces=_NS), "23.80")
         self.assertEqual(root.findtext(".//ram:IBANID", namespaces=_NS), "DE89370400440532013000")
+        self.assertEqual(
+            root.findtext(".//ram:DueDateDateTime/udt:DateTimeString", namespaces=_NS),
+            "20261026",
+        )
+        self.assertEqual(
+            root.findtext(".//ram:OccurrenceDateTime/udt:DateTimeString", namespaces=_NS),
+            "20261026",
+        )
+        endpoints: list[str] = [
+            node.text or ""
+            for node in root.findall(".//ram:URIUniversalCommunication/ram:URIID", namespaces=_NS)
+        ]
+        self.assertIn("buyer@beispiel.example", endpoints)
 
     def test_missing_buyer_reference_blocks_only_xrechnung(self) -> None:
         draft: IssueDraft = _complete_draft()
@@ -200,6 +215,13 @@ class TestIssueDraft(unittest.TestCase):
         prepared = prepare_invoice(draft, confirmed=True)
         self.assertIsNotNone(prepared.invoice)
         self.assertTrue(any(issue.code == "BT-10_MISSING" for issue in prepared.xrechnung_gaps))
+
+    def test_missing_buyer_email_blocks_only_xrechnung(self) -> None:
+        draft: IssueDraft = _complete_draft()
+        draft.buyer.email = None
+        prepared = prepare_invoice(draft, confirmed=True)
+        self.assertIsNotNone(prepared.invoice)
+        self.assertTrue(any(issue.code == "BT-49_MISSING" for issue in prepared.xrechnung_gaps))
 
 
 class TestIssueBuildGate(unittest.TestCase):

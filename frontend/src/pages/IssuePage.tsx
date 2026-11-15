@@ -245,6 +245,29 @@ export function IssuePage({
                 }}
               />
               <TextField
+                id="due-date"
+                label="Fälligkeitsdatum"
+                type="date"
+                value={draft.due_date ?? null}
+                invalid={invalidFields.has('due_date')}
+                onChange={(value: string) => {
+                  dismissField('due_date')
+                  setDraft({ ...draft, due_date: emptyToNull(value) })
+                }}
+              />
+              <TextField
+                id="delivery-date"
+                label="Liefer-/Leistungsdatum"
+                type="date"
+                value={draft.delivery_date ?? null}
+                invalid={invalidFields.has('delivery_date')}
+                onChange={(value: string) => {
+                  dismissField('delivery_date')
+                  setDraft({ ...draft, delivery_date: emptyToNull(value) })
+                }}
+              />
+              <p className="issue-form__hint">Leer gelassen gilt das Rechnungsdatum.</p>
+              <TextField
                 id="buyer-reference"
                 label="Käuferreferenz / Leitweg-ID"
                 maxLength={FIELD_LIMITS.buyerReference}
@@ -270,6 +293,7 @@ export function IssuePage({
               idPrefix="buyer"
               party={draft.buyer}
               showPayment={false}
+              showEmail
               invalidFields={invalidFields}
               onEdit={dismissField}
               onChange={(party: IssueParty) => setDraft({ ...draft, buyer: party })}
@@ -481,6 +505,7 @@ function PartyFields({
   idPrefix,
   party,
   showPayment,
+  showEmail = false,
   invalidFields,
   onEdit,
   onChange,
@@ -489,6 +514,7 @@ function PartyFields({
   idPrefix: string
   party: IssueParty
   showPayment: boolean
+  showEmail?: boolean
   invalidFields: ReadonlySet<string>
   onEdit: (field: string) => void
   onChange: (party: IssueParty) => void
@@ -591,6 +617,15 @@ function PartyFields({
             onChange={(value: string) => setField('email', value)}
           />
         </>
+      ) : showEmail ? (
+        <TextField
+          id={`${idPrefix}-email`}
+          label="E-Mail"
+          maxLength={FIELD_LIMITS.email}
+          value={party.email}
+          invalid={invalidFields.has(`${idPrefix}.email`)}
+          onChange={(value: string) => setField('email', value)}
+        />
       ) : null}
     </fieldset>
   )

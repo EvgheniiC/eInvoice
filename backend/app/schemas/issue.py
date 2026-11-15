@@ -47,6 +47,8 @@ class IssueDraft(ApiModel):
 
     invoice_number: Optional[str] = None
     issue_date: Optional[str] = None
+    due_date: Optional[str] = None
+    delivery_date: Optional[str] = None
     currency: str = "EUR"
     buyer_reference: Optional[str] = None
     seller: IssueParty = Field(default_factory=IssueParty)

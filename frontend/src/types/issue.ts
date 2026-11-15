@@ -30,6 +30,8 @@ export type IssueLineInput = {
 export type IssueDraft = {
   invoice_number: string | null
   issue_date: string | null
+  due_date?: string | null
+  delivery_date?: string | null
   currency: string
   buyer_reference: string | null
   seller: IssueParty

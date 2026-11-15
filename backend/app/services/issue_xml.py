@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from datetime import date
 from decimal import Decimal
 from typing import Final, Literal
 from xml.etree import ElementTree as ET
@@ -39,7 +40,7 @@ def render_cii(invoice: ReadyInvoice, profile: CiiProfile) -> str:
     for line in invoice.lines:
         _write_line(transaction, line)
     _write_agreement(transaction, invoice)
-    ET.SubElement(transaction, _q(NS_RAM, "ApplicableHeaderTradeDelivery"))
+    _write_delivery(transaction, invoice)
     _write_settlement(transaction, invoice)
 
     xml_bytes: bytes = ET.tostring(root, encoding="utf-8", xml_declaration=True)
@@ -121,10 +122,7 @@ def _write_agreement(parent: ET.Element, invoice: ReadyInvoice) -> None:
         country=invoice.seller_country,
     )
     if invoice.seller_email:
-        endpoint: ET.Element = ET.SubElement(seller, _q(NS_RAM, "URIUniversalCommunication"))
-        uri: ET.Element = ET.SubElement(endpoint, _q(NS_RAM, "URIID"))
-        uri.set("schemeID", "EM")
-        uri.text = invoice.seller_email
+        _write_endpoint(seller, invoice.seller_email)
     registration: ET.Element = ET.SubElement(seller, _q(NS_RAM, "SpecifiedTaxRegistration"))
     vat: ET.Element = ET.SubElement(registration, _q(NS_RAM, "ID"))
     vat.set("schemeID", "VA")
@@ -139,6 +137,8 @@ def _write_agreement(parent: ET.Element, invoice: ReadyInvoice) -> None:
         city=invoice.buyer_city,
         country=invoice.buyer_country,
     )
+    if invoice.buyer_email:
+        _write_endpoint(buyer, invoice.buyer_email)
 
 
 def _write_contact(seller: ET.Element, invoice: ReadyInvoice) -> None:
@@ -153,6 +153,19 @@ def _write_contact(seller: ET.Element, invoice: ReadyInvoice) -> None:
     if invoice.seller_email:
         email: ET.Element = ET.SubElement(contact, _q(NS_RAM, "EmailURIUniversalCommunication"))
         ET.SubElement(email, _q(NS_RAM, "URIID")).text = invoice.seller_email
+
+
+def _write_endpoint(party: ET.Element, email: str) -> None:
+    endpoint: ET.Element = ET.SubElement(party, _q(NS_RAM, "URIUniversalCommunication"))
+    uri: ET.Element = ET.SubElement(endpoint, _q(NS_RAM, "URIID"))
+    uri.set("schemeID", "EM")
+    uri.text = email
+
+
+def _write_delivery(parent: ET.Element, invoice: ReadyInvoice) -> None:
+    delivery: ET.Element = ET.SubElement(parent, _q(NS_RAM, "ApplicableHeaderTradeDelivery"))
+    event: ET.Element = ET.SubElement(delivery, _q(NS_RAM, "ActualDeliverySupplyChainEvent"))
+    _write_date(event, "OccurrenceDateTime", invoice.delivery_date)
 
 
 def _write_address(
@@ -179,6 +192,8 @@ def _write_settlement(parent: ET.Element, invoice: ReadyInvoice) -> None:
     ET.SubElement(account, _q(NS_RAM, "IBANID")).text = invoice.seller_iban
     for group in invoice.tax_groups:
         _write_tax(settlement, group)
+    terms: ET.Element = ET.SubElement(settlement, _q(NS_RAM, "SpecifiedTradePaymentTerms"))
+    _write_date(terms, "DueDateDateTime", invoice.due_date)
     summation: ET.Element = ET.SubElement(
         settlement,
         _q(NS_RAM, "SpecifiedTradeSettlementHeaderMonetarySummation"),
@@ -199,6 +214,13 @@ def _write_tax(parent: ET.Element, group: TaxGroup) -> None:
     ET.SubElement(tax, _q(NS_RAM, "BasisAmount")).text = _money(group.basis)
     ET.SubElement(tax, _q(NS_RAM, "CategoryCode")).text = STANDARD_CATEGORY
     ET.SubElement(tax, _q(NS_RAM, "RateApplicablePercent")).text = _money(group.rate)
+
+
+def _write_date(parent: ET.Element, tag: str, value: date) -> None:
+    wrapper: ET.Element = ET.SubElement(parent, _q(NS_RAM, tag))
+    stamp: ET.Element = ET.SubElement(wrapper, _q(NS_UDT, "DateTimeString"))
+    stamp.set("format", "102")
+    stamp.text = value.strftime("%Y%m%d")
 
 
 def _money(value: Decimal) -> str:

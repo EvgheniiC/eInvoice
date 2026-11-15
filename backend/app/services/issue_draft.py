@@ -138,6 +138,8 @@ class ReadyInvoice:
     invoice_number: str
     issue_date: date
     currency: str
+    due_date: date
+    delivery_date: date
     buyer_reference: str
     seller_name: str
     seller_street: str
@@ -154,6 +156,7 @@ class ReadyInvoice:
     buyer_postcode: str
     buyer_city: str
     buyer_country: str
+    buyer_email: str
     lines: tuple[ReadyLine, ...]
     tax_groups: tuple[TaxGroup, ...]
     line_total: Decimal
@@ -237,7 +240,12 @@ def prepare_invoice(draft: IssueDraft, *, confirmed: bool) -> PreparedIssue:
     buyer_postcode: str = _clean(draft.buyer.address.postcode, max_length=20)
     buyer_city: str = _clean(draft.buyer.address.city, max_length=80)
     buyer_country: str = _country(draft.buyer.address.country)
+    buyer_email: str = _clean(draft.buyer.email, max_length=254)
     buyer_reference: str = _clean(draft.buyer_reference, max_length=50)
+    due_date: Optional[date] = _parse_iso_date(draft.due_date) if _clean(draft.due_date, max_length=10) else None
+    delivery_date: Optional[date] = (
+        _parse_iso_date(draft.delivery_date) if _clean(draft.delivery_date, max_length=10) else None
+    )
 
     _require(blocking, seller_name, "BT-27_MISSING", "Pflichtfeld fehlt: Name des Verkäufers (BT-27).", "seller.name")
     _require(blocking, seller_street, "BT-35_MISSING", "Pflichtfeld fehlt: Straße des Verkäufers (BT-35).", "seller.address.line")
@@ -258,6 +266,14 @@ def prepare_invoice(draft: IssueDraft, *, confirmed: bool) -> PreparedIssue:
         blocking.append(_issue("BT-84_INVALID", "IBAN hat kein erkennbares Format.", field="seller.iban"))
     if seller_email and not _EMAIL_RE.fullmatch(seller_email):
         blocking.append(_issue("BT-43_INVALID", "E-Mail des Verkäufers ist ungültig.", field="seller.email"))
+    if buyer_email and not _EMAIL_RE.fullmatch(buyer_email):
+        blocking.append(_issue("BT-49_INVALID", "E-Mail des Käufers ist ungültig.", field="buyer.email"))
+    if _clean(draft.due_date, max_length=10) and due_date is None:
+        blocking.append(_issue("BT-9_INVALID", "Fälligkeitsdatum ist ungültig.", field="due_date"))
+    if _clean(draft.delivery_date, max_length=10) and delivery_date is None:
+        blocking.append(
+            _issue("BT-72_INVALID", "Liefer-/Leistungsdatum ist ungültig.", field="delivery_date")
+        )
     if seller_country and len(seller_country) != 2:
         blocking.append(_issue("BT-40_INVALID", "Land des Verkäufers muss ein zweistelliger Code sein, z. B. DE.", field="seller.address.country"))
     if buyer_country and len(buyer_country) != 2:
@@ -276,6 +292,8 @@ def prepare_invoice(draft: IssueDraft, *, confirmed: bool) -> PreparedIssue:
     invoice: ReadyInvoice = ReadyInvoice(
         invoice_number=invoice_number,
         issue_date=issue_date,
+        due_date=due_date or issue_date,
+        delivery_date=delivery_date or issue_date,
         currency=currency,
         buyer_reference=buyer_reference,
         seller_name=seller_name,
@@ -293,6 +311,7 @@ def prepare_invoice(draft: IssueDraft, *, confirmed: bool) -> PreparedIssue:
         buyer_postcode=buyer_postcode,
         buyer_city=buyer_city,
         buyer_country=buyer_country,
+        buyer_email=buyer_email,
         lines=tuple(lines),
         tax_groups=tax_groups,
         line_total=line_total.quantize(MONEY_QUANT),
@@ -503,6 +522,14 @@ def _xrechnung_gaps(invoice: ReadyInvoice) -> List[ValidationIssue]:
                 "BT-43_MISSING",
                 "XRechnung braucht eine E-Mail des Verkäufers (BT-43).",
                 field="seller.email",
+            )
+        )
+    if not invoice.buyer_email:
+        gaps.append(
+            _issue(
+                "BT-49_MISSING",
+                "XRechnung braucht eine E-Mail des Käufers als elektronische Adresse (BT-49).",
+                field="buyer.email",
             )
         )
     return gaps
