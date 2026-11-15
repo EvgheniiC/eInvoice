@@ -2064,11 +2064,19 @@ html.has-consent-banner body {
   margin-bottom: 1rem;
 }
 
-.issue-artifacts {
-  display: grid;
-  gap: 1rem;
-  padding: 0;
-  list-style: none;
+.issue-downloads {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.issue-downloads .btn {
+  gap: 0.45rem;
+}
+
+.issue-downloads__icon {
+  flex: 0 0 auto;
 }
 
 @media (min-width: 800px) {

@@ -91,9 +91,57 @@ const BLOCKED: IssueBuildResponse = {
   ],
 }
 
+const READY: IssueBuildResponse = {
+  ready: true,
+  message: 'KoSIT hat die Datei als gültig abgeschlossen.',
+  blocking_issues: [],
+  artifacts: [
+    {
+      format: 'xrechnung',
+      filename: 'RE-1-xrechnung.xml',
+      media_type: 'application/xml',
+      content_base64: btoa('<xml/>'),
+      download_allowed: true,
+      validation_status: 'valid',
+      validation_issues: [],
+    },
+    {
+      format: 'zugferd_pdf',
+      filename: 'RE-1-zugferd.pdf',
+      media_type: 'application/pdf',
+      content_base64: btoa('%PDF'),
+      download_allowed: true,
+      validation_status: 'valid',
+      validation_issues: [],
+    },
+  ],
+}
+
+async function fillRequired(user: UserEvent): Promise<void> {
+  const streets: HTMLElement[] = screen.getAllByLabelText('Straße')
+  const postcodes: HTMLElement[] = screen.getAllByLabelText('PLZ')
+  const cities: HTMLElement[] = screen.getAllByLabelText('Ort')
+  const names: HTMLElement[] = screen.getAllByLabelText('Name')
+  await user.type(streets[0], 'Hauptstr. 1')
+  await user.type(postcodes[0], '80331')
+  await user.type(cities[0], 'München')
+  await user.type(screen.getByLabelText('USt-IdNr.'), 'DE123456789')
+  await user.type(screen.getByLabelText('IBAN'), 'DE89370400440532013000')
+  await user.type(names[1], 'Kunde GmbH')
+  await user.type(streets[1], 'Nebenstr. 2')
+  await user.type(postcodes[1], '10115')
+  await user.type(cities[1], 'Berlin')
+  await user.type(screen.getByLabelText('Position 1'), 'Beratung')
+  await user.type(screen.getByLabelText('Menge'), '1')
+  await user.type(screen.getByLabelText('Einzelpreis netto'), '10')
+}
+
 describe('IssuePage', (): void => {
   it('keeps the download closed until the build explicitly allows it', async (): Promise<void> => {
     const user: UserEvent = userEvent.setup()
+    const createObjectURL: ReturnType<typeof vi.spyOn> = vi
+      .spyOn(URL, 'createObjectURL')
+      .mockReturnValue('blob:test')
     vi.mocked(createIssueDraft).mockResolvedValue(DRAFT)
     vi.mocked(buildIssue).mockResolvedValue(BLOCKED)
     render(
@@ -107,31 +155,54 @@ describe('IssuePage', (): void => {
 
     expect(screen.getByRole('heading', { name: 'E-Rechnung aus PDF erstellen' })).toBeInTheDocument()
     expect(screen.getByText(/Maßgeblich ist die XML/)).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /herunterladen/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Download als ZUGFeRD PDF' })).not.toBeInTheDocument()
 
     const file: File = new File(['%PDF'], 'rechnung.pdf', { type: 'application/pdf' })
     await user.upload(screen.getByLabelText('Eigene PDF-Rechnung'), file)
     await user.click(screen.getByRole('button', { name: 'Entwurf lesen' }))
     expect(await screen.findByDisplayValue('RE-1')).toBeInTheDocument()
-    expect(screen.getByLabelText('Rechnungsnummer')).not.toHaveAttribute('aria-invalid')
-    expect(screen.getByLabelText('Position 1')).toHaveAttribute('aria-invalid', 'true')
-    expect(screen.getByLabelText('Menge')).toHaveAttribute('aria-invalid', 'true')
-    expect(screen.getAllByLabelText('Straße')[0]).toHaveAttribute('aria-invalid', 'true')
+    expect(screen.getByRole('button', { name: 'Download als ZUGFeRD PDF' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Download als XRechnung (XML)' })).toBeDisabled()
 
+    await fillRequired(user)
+    expect(screen.getByRole('button', { name: 'Download als ZUGFeRD PDF' })).toBeDisabled()
     await user.click(screen.getByLabelText(/Ich bin der Rechnungsaussteller/))
-    await user.click(screen.getByRole('button', { name: 'E-Rechnung prüfen' }))
+    await user.click(screen.getByRole('button', { name: 'Download als ZUGFeRD PDF' }))
 
-    expect(await screen.findByText('Download geschlossen.')).toBeInTheDocument()
-    expect(screen.getByText('Pflichtfeld fehlt: Rechnungsnummer (BT-1).')).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /herunterladen/ })).not.toBeInTheDocument()
+    expect(await screen.findByText('Pflichtfeld fehlt: Rechnungsnummer (BT-1).')).toBeInTheDocument()
+    expect(createObjectURL).not.toHaveBeenCalled()
     expect(screen.getByLabelText('Rechnungsnummer')).toHaveAttribute('aria-invalid', 'true')
-    expect(screen.getByLabelText('Menge')).toHaveAttribute('aria-invalid', 'true')
-    expect(screen.getByLabelText('Rechnungsnummer')).toHaveClass('issue-form__input--error')
-    expect(screen.getAllByLabelText('Straße')[0]).toHaveAttribute('aria-invalid', 'true')
+    createObjectURL.mockRestore()
+  })
 
-    await user.type(screen.getByLabelText('Rechnungsnummer'), 'X')
-    expect(screen.getByLabelText('Rechnungsnummer')).not.toHaveAttribute('aria-invalid')
-    expect(screen.getByLabelText('Menge')).toHaveAttribute('aria-invalid', 'true')
+  it('downloads the chosen format after a valid build', async (): Promise<void> => {
+    const user: UserEvent = userEvent.setup()
+    const createObjectURL: ReturnType<typeof vi.spyOn> = vi
+      .spyOn(URL, 'createObjectURL')
+      .mockReturnValue('blob:test')
+    vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined)
+    vi.mocked(createIssueDraft).mockResolvedValue(DRAFT)
+    vi.mocked(buildIssue).mockResolvedValue(READY)
+    render(
+      <IssuePage
+        onNavigate={() => undefined}
+        session={buildSession({ is_admin: true })}
+        sessionReady
+        onLogout={() => undefined}
+      />,
+    )
+
+    const file: File = new File(['%PDF'], 'rechnung.pdf', { type: 'application/pdf' })
+    await user.upload(screen.getByLabelText('Eigene PDF-Rechnung'), file)
+    await user.click(screen.getByRole('button', { name: 'Entwurf lesen' }))
+    await screen.findByDisplayValue('RE-1')
+    await fillRequired(user)
+    await user.click(screen.getByLabelText(/Ich bin der Rechnungsaussteller/))
+    await user.click(screen.getByRole('button', { name: 'Download als XRechnung (XML)' }))
+
+    expect(await screen.findByText('KoSIT hat die Datei als gültig abgeschlossen.')).toBeInTheDocument()
+    expect(createObjectURL).toHaveBeenCalledTimes(1)
+    createObjectURL.mockRestore()
   })
 
   it('hides the form from anyone who is not an administrator', (): void => {

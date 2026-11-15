@@ -33,11 +33,10 @@ const UNIT_OPTIONS: readonly { code: string; label: string }[] = [
   { code: 'MON', label: 'Monat (MON)' },
 ]
 
-const ARTIFACT_LABELS: Record<IssueArtifact['format'], string> = {
-  xrechnung: 'XRechnung XML',
-  zugferd_xml: 'ZUGFeRD XML',
-  zugferd_pdf: 'ZUGFeRD PDF',
-}
+const DOWNLOADS: readonly { format: 'zugferd_pdf' | 'xrechnung'; label: string }[] = [
+  { format: 'zugferd_pdf', label: 'Download als ZUGFeRD PDF' },
+  { format: 'xrechnung', label: 'Download als XRechnung (XML)' },
+]
 
 export function IssuePage({
   onNavigate,
@@ -89,9 +88,11 @@ export function IssuePage({
     }
   }
 
-  async function onBuild(event: FormEvent<HTMLFormElement>): Promise<void> {
-    event.preventDefault()
-    if (draft === null || pdf === null || loading) {
+  async function onDownload(format: 'zugferd_pdf' | 'xrechnung'): Promise<void> {
+    if (draft === null || pdf === null || loading || !confirmed) {
+      return
+    }
+    if (missingRequiredFields(draft).size > 0) {
       return
     }
     setLoading(true)
@@ -100,6 +101,12 @@ export function IssuePage({
       const response: IssueBuildResponse = await buildIssue(draft, pdf, confirmed)
       setDismissedFields(new Set())
       setResult(response)
+      const artifact: IssueArtifact | undefined = response.artifacts.find(
+        (item: IssueArtifact): boolean => item.format === format,
+      )
+      if (artifact !== undefined && artifact.download_allowed && artifact.content_base64 !== null) {
+        saveArtifact(artifact)
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'E-Rechnung konnte nicht erzeugt werden.')
     } finally {
@@ -158,7 +165,10 @@ export function IssuePage({
       ) : null}
 
       {draft ? (
-        <form className="issue-form" onSubmit={(event) => void onBuild(event)}>
+        <form
+          className="issue-form"
+          onSubmit={(event: FormEvent<HTMLFormElement>) => event.preventDefault()}
+        >
           {warnings.length > 0 ? (
             <ul className="issue-warnings">
               {warnings.map((warning: string) => (
@@ -327,10 +337,19 @@ export function IssuePage({
             />
             Ich bin der Rechnungsaussteller und bestätige, dass diese Angaben stimmen.
           </label>
-          <div className="auth-form__actions">
-            <button className="btn btn--primary" type="submit" disabled={loading || !confirmed}>
-              E-Rechnung prüfen
-            </button>
+          <div className="issue-downloads">
+            {DOWNLOADS.map((item) => (
+              <button
+                key={item.format}
+                className="btn btn--primary"
+                type="button"
+                disabled={loading || !confirmed || missingRequiredFields(draft).size > 0}
+                onClick={() => void onDownload(item.format)}
+              >
+                <DownloadIcon />
+                {item.label}
+              </button>
+            ))}
           </div>
         </form>
       ) : null}
@@ -365,26 +384,21 @@ function BuildResult({ result }: { result: IssueBuildResponse }): JSX.Element {
     <section aria-live="polite">
       <p>{result.message}</p>
       <IssueList issues={result.blocking_issues} />
-      <ul className="issue-artifacts">
-        {result.artifacts.map((artifact: IssueArtifact) => (
-          <li key={artifact.format}>
-            <strong>{ARTIFACT_LABELS[artifact.format]}</strong>
-            {artifact.download_allowed && artifact.content_base64 ? (
-              <button
-                className="btn btn--primary"
-                type="button"
-                onClick={() => saveArtifact(artifact)}
-              >
-                {artifact.filename} herunterladen
-              </button>
-            ) : (
-              <p>Download geschlossen.</p>
-            )}
-            <IssueList issues={artifact.validation_issues} />
-          </li>
-        ))}
-      </ul>
+      {result.artifacts.map((artifact: IssueArtifact) => (
+        <IssueList key={artifact.format} issues={artifact.validation_issues} />
+      ))}
     </section>
+  )
+}
+
+function DownloadIcon(): JSX.Element {
+  return (
+    <svg className="issue-downloads__icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M12 3a1 1 0 0 1 1 1v9.59l2.3-2.3a1 1 0 1 1 1.4 1.42l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 1.4-1.42l2.3 2.3V4a1 1 0 0 1 1-1zm-7 16a1 1 0 0 1 1-1h12a1 1 0 1 1 0 2H6a1 1 0 0 1-1-1z"
+      />
+    </svg>
   )
 }
 
