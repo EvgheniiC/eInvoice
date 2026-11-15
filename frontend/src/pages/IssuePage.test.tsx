@@ -68,6 +68,15 @@ const BLOCKED: IssueBuildResponse = {
       bt_code: null,
       field: 'invoice_number',
     },
+    {
+      level: 'error',
+      category: 'business',
+      code: 'BT-129_MISSING',
+      message: 'Position 1: Menge fehlt oder ist ungültig.',
+      explanation: null,
+      bt_code: null,
+      field: 'lines.1.quantity',
+    },
   ],
   artifacts: [
     {
@@ -111,6 +120,14 @@ describe('IssuePage', (): void => {
     expect(await screen.findByText('Download geschlossen.')).toBeInTheDocument()
     expect(screen.getByText('Pflichtfeld fehlt: Rechnungsnummer (BT-1).')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /herunterladen/ })).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Rechnungsnummer')).toHaveAttribute('aria-invalid', 'true')
+    expect(screen.getByLabelText('Menge')).toHaveAttribute('aria-invalid', 'true')
+    expect(screen.getByLabelText('Rechnungsnummer')).toHaveClass('issue-form__input--error')
+    expect(screen.getAllByLabelText('Straße')[0]).not.toHaveAttribute('aria-invalid')
+
+    await user.type(screen.getByLabelText('Rechnungsnummer'), 'X')
+    expect(screen.getByLabelText('Rechnungsnummer')).not.toHaveAttribute('aria-invalid')
+    expect(screen.getByLabelText('Menge')).toHaveAttribute('aria-invalid', 'true')
   })
 
   it('hides the form from anyone who is not an administrator', (): void => {

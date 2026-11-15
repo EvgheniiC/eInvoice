@@ -53,6 +53,19 @@ export function IssuePage({
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<IssueBuildResponse | null>(null)
+  const [dismissedFields, setDismissedFields] = useState<ReadonlySet<string>>(new Set())
+  const invalidFields: ReadonlySet<string> = highlightedFields(result, dismissedFields)
+
+  function dismissField(field: string): void {
+    setDismissedFields((current: ReadonlySet<string>): ReadonlySet<string> => {
+      if (current.has(field)) {
+        return current
+      }
+      const next: Set<string> = new Set(current)
+      next.add(field)
+      return next
+    })
+  }
 
   async function onReadPdf(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault()
@@ -62,6 +75,7 @@ export function IssuePage({
     setLoading(true)
     setError(null)
     setResult(null)
+    setDismissedFields(new Set())
     try {
       const response: IssueDraftResponse = await createIssueDraft(pdf)
       setDraft(response.draft)
@@ -84,6 +98,7 @@ export function IssuePage({
     setError(null)
     try {
       const response: IssueBuildResponse = await buildIssue(draft, pdf, confirmed)
+      setDismissedFields(new Set())
       setResult(response)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'E-Rechnung konnte nicht erzeugt werden.')
@@ -166,20 +181,32 @@ export function IssuePage({
                 id="invoice-number"
                 label="Rechnungsnummer"
                 value={draft.invoice_number}
-                onChange={(value: string) => setDraft({ ...draft, invoice_number: emptyToNull(value) })}
+                invalid={invalidFields.has('invoice_number')}
+                onChange={(value: string) => {
+                  dismissField('invoice_number')
+                  setDraft({ ...draft, invoice_number: emptyToNull(value) })
+                }}
               />
               <TextField
                 id="issue-date"
                 label="Rechnungsdatum"
                 type="date"
                 value={draft.issue_date}
-                onChange={(value: string) => setDraft({ ...draft, issue_date: emptyToNull(value) })}
+                invalid={invalidFields.has('issue_date')}
+                onChange={(value: string) => {
+                  dismissField('issue_date')
+                  setDraft({ ...draft, issue_date: emptyToNull(value) })
+                }}
               />
               <TextField
                 id="buyer-reference"
                 label="Käuferreferenz / Leitweg-ID"
                 value={draft.buyer_reference}
-                onChange={(value: string) => setDraft({ ...draft, buyer_reference: emptyToNull(value) })}
+                invalid={invalidFields.has('buyer_reference')}
+                onChange={(value: string) => {
+                  dismissField('buyer_reference')
+                  setDraft({ ...draft, buyer_reference: emptyToNull(value) })
+                }}
               />
             </fieldset>
             <PartyFields
@@ -187,6 +214,8 @@ export function IssuePage({
               idPrefix="seller"
               party={draft.seller}
               showPayment
+              invalidFields={invalidFields}
+              onEdit={dismissField}
               onChange={(party: IssueParty) => setDraft({ ...draft, seller: party })}
             />
             <PartyFields
@@ -194,6 +223,8 @@ export function IssuePage({
               idPrefix="buyer"
               party={draft.buyer}
               showPayment={false}
+              invalidFields={invalidFields}
+              onEdit={dismissField}
               onChange={(party: IssueParty) => setDraft({ ...draft, buyer: party })}
             />
           </div>
@@ -206,21 +237,31 @@ export function IssuePage({
                   id={`line-${index}-description`}
                   label={`Position ${index + 1}`}
                   value={line.description}
-                  onChange={(value: string) => setDraft(updateLine(draft, index, 'description', value))}
+                  invalid={invalidFields.has(lineField(index, 'description'))}
+                  onChange={(value: string) => {
+                    dismissField(lineField(index, 'description'))
+                    setDraft(updateLine(draft, index, 'description', value))
+                  }}
                 />
                 <TextField
                   id={`line-${index}-quantity`}
                   label="Menge"
                   value={textValue(line.quantity)}
-                  onChange={(value: string) => setDraft(updateLine(draft, index, 'quantity', value))}
+                  invalid={invalidFields.has(lineField(index, 'quantity'))}
+                  onChange={(value: string) => {
+                    dismissField(lineField(index, 'quantity'))
+                    setDraft(updateLine(draft, index, 'quantity', value))
+                  }}
                 />
                 <label htmlFor={`line-${index}-unit`}>Einheit</label>
                 <select
                   id={`line-${index}-unit`}
                   value={line.unit_code ?? 'C62'}
-                  onChange={(event: ChangeEvent<HTMLSelectElement>) =>
+                  {...invalidInputProps(invalidFields.has(lineField(index, 'unit_code')))}
+                  onChange={(event: ChangeEvent<HTMLSelectElement>) => {
+                    dismissField(lineField(index, 'unit_code'))
                     setDraft(updateLine(draft, index, 'unit_code', event.target.value))
-                  }
+                  }}
                 >
                   {UNIT_OPTIONS.map((option) => (
                     <option key={option.code} value={option.code}>
@@ -232,15 +273,21 @@ export function IssuePage({
                   id={`line-${index}-price`}
                   label="Einzelpreis netto"
                   value={textValue(line.unit_price)}
-                  onChange={(value: string) => setDraft(updateLine(draft, index, 'unit_price', value))}
+                  invalid={invalidFields.has(lineField(index, 'unit_price'))}
+                  onChange={(value: string) => {
+                    dismissField(lineField(index, 'unit_price'))
+                    setDraft(updateLine(draft, index, 'unit_price', value))
+                  }}
                 />
                 <label htmlFor={`line-${index}-tax`}>MwSt. %</label>
                 <select
                   id={`line-${index}-tax`}
                   value={normalizeRate(line.tax_rate)}
-                  onChange={(event: ChangeEvent<HTMLSelectElement>) =>
+                  {...invalidInputProps(invalidFields.has(lineField(index, 'tax_rate')))}
+                  onChange={(event: ChangeEvent<HTMLSelectElement>) => {
+                    dismissField(lineField(index, 'tax_rate'))
                     setDraft(updateLine(draft, index, 'tax_rate', event.target.value))
-                  }
+                  }}
                 >
                   <option value="19">19</option>
                   <option value="7">7</option>
@@ -272,7 +319,11 @@ export function IssuePage({
               id="issue-confirmed"
               type="checkbox"
               checked={confirmed}
-              onChange={(event: ChangeEvent<HTMLInputElement>) => setConfirmed(event.target.checked)}
+              {...invalidInputProps(invalidFields.has('confirmed'))}
+              onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                dismissField('confirmed')
+                setConfirmed(event.target.checked)
+              }}
             />
             Ich bin der Rechnungsaussteller und bestätige, dass diese Angaben stimmen.
           </label>
@@ -355,49 +406,65 @@ function PartyFields({
   idPrefix,
   party,
   showPayment,
+  invalidFields,
+  onEdit,
   onChange,
 }: {
   title: string
   idPrefix: string
   party: IssueParty
   showPayment: boolean
+  invalidFields: ReadonlySet<string>
+  onEdit: (field: string) => void
   onChange: (party: IssueParty) => void
 }): JSX.Element {
   function setField(key: keyof IssueParty, value: string): void {
+    onEdit(`${idPrefix}.${key}`)
     onChange({ ...party, [key]: emptyToNull(value) })
   }
 
   function setAddress(key: keyof IssueAddress, value: string): void {
+    onEdit(`${idPrefix}.address.${key}`)
     onChange({ ...party, address: { ...party.address, [key]: emptyToNull(value) } })
   }
 
   return (
     <fieldset>
       <legend>{title}</legend>
-      <TextField id={`${idPrefix}-name`} label="Name" value={party.name} onChange={(value) => setField('name', value)} />
+      <TextField
+        id={`${idPrefix}-name`}
+        label="Name"
+        value={party.name}
+        invalid={invalidFields.has(`${idPrefix}.name`)}
+        onChange={(value: string) => setField('name', value)}
+      />
       <TextField
         id={`${idPrefix}-line`}
         label="Straße"
         value={party.address.line}
-        onChange={(value) => setAddress('line', value)}
+        invalid={invalidFields.has(`${idPrefix}.address.line`)}
+        onChange={(value: string) => setAddress('line', value)}
       />
       <TextField
         id={`${idPrefix}-postcode`}
         label="PLZ"
         value={party.address.postcode}
-        onChange={(value) => setAddress('postcode', value)}
+        invalid={invalidFields.has(`${idPrefix}.address.postcode`)}
+        onChange={(value: string) => setAddress('postcode', value)}
       />
       <TextField
         id={`${idPrefix}-city`}
         label="Ort"
         value={party.address.city}
-        onChange={(value) => setAddress('city', value)}
+        invalid={invalidFields.has(`${idPrefix}.address.city`)}
+        onChange={(value: string) => setAddress('city', value)}
       />
       <TextField
         id={`${idPrefix}-country`}
         label="Land"
         value={party.address.country}
-        onChange={(value) => setAddress('country', value)}
+        invalid={invalidFields.has(`${idPrefix}.address.country`)}
+        onChange={(value: string) => setAddress('country', value)}
       />
       {showPayment ? (
         <>
@@ -405,31 +472,36 @@ function PartyFields({
             id={`${idPrefix}-vat`}
             label="USt-IdNr."
             value={party.vat_id}
-            onChange={(value) => setField('vat_id', value)}
+            invalid={invalidFields.has(`${idPrefix}.vat_id`)}
+            onChange={(value: string) => setField('vat_id', value)}
           />
           <TextField
             id={`${idPrefix}-iban`}
             label="IBAN"
             value={party.iban}
-            onChange={(value) => setField('iban', value)}
+            invalid={invalidFields.has(`${idPrefix}.iban`)}
+            onChange={(value: string) => setField('iban', value)}
           />
           <TextField
             id={`${idPrefix}-contact`}
             label="Ansprechpartner"
             value={party.contact_name}
-            onChange={(value) => setField('contact_name', value)}
+            invalid={invalidFields.has(`${idPrefix}.contact_name`)}
+            onChange={(value: string) => setField('contact_name', value)}
           />
           <TextField
             id={`${idPrefix}-phone`}
             label="Telefon"
             value={party.phone}
-            onChange={(value) => setField('phone', value)}
+            invalid={invalidFields.has(`${idPrefix}.phone`)}
+            onChange={(value: string) => setField('phone', value)}
           />
           <TextField
             id={`${idPrefix}-email`}
             label="E-Mail"
             value={party.email}
-            onChange={(value) => setField('email', value)}
+            invalid={invalidFields.has(`${idPrefix}.email`)}
+            onChange={(value: string) => setField('email', value)}
           />
         </>
       ) : null}
@@ -443,20 +515,77 @@ function TextField({
   value,
   onChange,
   type = 'text',
+  invalid = false,
 }: {
   id: string
   label: string
   value: string | null
   onChange: (value: string) => void
   type?: 'text' | 'date'
+  invalid?: boolean
 }): JSX.Element {
   return (
     <>
       <label htmlFor={id}>{label}</label>
-      <input id={id} type={type} value={value ?? ''} onChange={(event) => onChange(event.target.value)} />
+      <input
+        id={id}
+        type={type}
+        value={value ?? ''}
+        {...invalidInputProps(invalid)}
+        onChange={(event: ChangeEvent<HTMLInputElement>) => onChange(event.target.value)}
+      />
     </>
   )
 }
+
+function invalidInputProps(invalid: boolean): {
+  className?: string
+  'aria-invalid'?: true
+} {
+  if (!invalid) {
+    return {}
+  }
+  return { className: 'issue-form__input--error', 'aria-invalid': true }
+}
+
+function lineField(index: number, key: keyof IssueLineInput): string {
+  return `lines.${index + 1}.${key}`
+}
+
+function highlightedFields(
+  result: IssueBuildResponse | null,
+  dismissed: ReadonlySet<string>,
+): ReadonlySet<string> {
+  if (result === null) {
+    return EMPTY_INVALID_FIELDS
+  }
+  const active: Set<string> = new Set()
+  for (const field of issueErrorFields(result)) {
+    if (!dismissed.has(field)) {
+      active.add(field)
+    }
+  }
+  return active
+}
+
+function issueErrorFields(result: IssueBuildResponse): Set<string> {
+  const fields: Set<string> = new Set()
+  collectErrorFields(result.blocking_issues, fields)
+  for (const artifact of result.artifacts) {
+    collectErrorFields(artifact.validation_issues, fields)
+  }
+  return fields
+}
+
+function collectErrorFields(issues: ValidationIssue[], fields: Set<string>): void {
+  for (const issue of issues) {
+    if (issue.level === 'error' && issue.field) {
+      fields.add(issue.field)
+    }
+  }
+}
+
+const EMPTY_INVALID_FIELDS: ReadonlySet<string> = new Set()
 
 function emptyToNull(value: string): string | null {
   const trimmed: string = value.trim()

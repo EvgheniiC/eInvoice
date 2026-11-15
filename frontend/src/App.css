@@ -2034,6 +2034,18 @@ html.has-consent-banner body {
   font: inherit;
 }
 
+.issue-form input.issue-form__input--error,
+.issue-form select.issue-form__input--error {
+  border-color: var(--color-danger);
+  background: var(--color-danger-bg);
+}
+
+.issue-form input.issue-form__input--error:focus,
+.issue-form select.issue-form__input--error:focus {
+  outline: 2px solid var(--color-danger);
+  outline-offset: 1px;
+}
+
 .issue-form fieldset {
   margin: 0;
   padding: 0.75rem 1rem 1rem;
