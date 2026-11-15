@@ -59,6 +59,8 @@ def parse_kosit_report(xml_text: str) -> KositReport:
                 report.issues.append(
                     _issue_from_assert(element, default_level=_level_from_flag(flag))
                 )
+        elif local == "message" and _is_rule_message(element):
+            report.issues.append(_issue_from_report_message(element))
         elif local in {"xmlSchema", "schema"}:
             report.issues.extend(_schema_messages(element))
         elif local == "accept":
@@ -80,6 +82,7 @@ def parse_kosit_report(xml_text: str) -> KositReport:
                 )
             )
 
+    report.issues = _dedupe_issues(report.issues)
     return report
 
 
@@ -159,10 +162,35 @@ def _issue_from_assert(element: Element, *, default_level: str) -> ValidationIss
     )
 
 
+def _is_rule_message(element: Element) -> bool:
+    """KoSIT 1.6 writes rule and schema findings as rep:message with code or level."""
+    return bool(element.get("level") or element.get("code") or element.get("id"))
+
+
+def _issue_from_report_message(element: Element) -> ValidationIssue:
+    code: str = (element.get("code") or element.get("id") or "").strip() or "KOSIT_RULE"
+    flag: Optional[str] = element.get("level")
+    message: str = _assert_text(element)
+    if not message:
+        message = f"KoSIT-Regel {code} verletzt."
+    bt_code: Optional[str] = extract_bt_code(code, message)
+    category: str = "business"
+    if code == "generic-error" or message.startswith("cvc-"):
+        category = "schema"
+    return ValidationIssue(
+        level=_level_from_flag(flag) if flag else "error",
+        category=category,
+        code=code,
+        message=message[:500],
+        bt_code=bt_code,
+        field=None,
+    )
+
+
 def _schema_messages(schema_element: Element) -> List[ValidationIssue]:
     issues: List[ValidationIssue] = []
     for child in schema_element.iter():
-        if _local_name(child.tag) != "message" or not child.text:
+        if _local_name(child.tag) != "message" or _is_rule_message(child) or not child.text:
             continue
         text: str = child.text.strip()
         if not text:
@@ -197,6 +225,18 @@ def _level_from_flag(flag: Optional[str]) -> str:
     if normalized in {"warning", "warn"}:
         return "warning"
     return "info"
+
+
+def _dedupe_issues(issues: List[ValidationIssue]) -> List[ValidationIssue]:
+    seen: set[tuple[str, str, str]] = set()
+    unique: List[ValidationIssue] = []
+    for issue in issues:
+        key: tuple[str, str, str] = (issue.code or "", issue.level, issue.message)
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(issue)
+    return unique
 
 
 def _local_name(tag: str) -> str:

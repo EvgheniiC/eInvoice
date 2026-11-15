@@ -65,6 +65,36 @@ class TestKositReport(unittest.TestCase):
         )
         self.assertEqual(warning.level, "warning")
 
+    def test_reads_validator_1_6_rule_messages(self) -> None:
+        report: KositReport = parse_kosit_report(
+            """<?xml version="1.0" encoding="UTF-8"?>
+<rep:report xmlns:rep="http://www.xoev.de/de/validator/varl/1"
+            xmlns:svrl="http://purl.oclc.org/dsdl/svrl">
+  <rep:validationStepResult id="val-xsd" valid="false">
+    <rep:message level="error" code="generic-error">cvc-complex-type.2.4.a: Invalid content.</rep:message>
+  </rep:validationStepResult>
+  <rep:validationStepResult id="val-sch" valid="false">
+    <rep:message level="error" code="BR-DE-2">
+      <rep:text>[BR-DE-2] Seller contact (BG-6) must be transmitted.</rep:text>
+    </rep:message>
+    <svrl:failed-assert id="BR-DE-2" flag="fatal">
+      <svrl:text>[BR-DE-2] Seller contact (BG-6) must be transmitted.</svrl:text>
+    </svrl:failed-assert>
+  </rep:validationStepResult>
+  <rep:assessment><rep:reject/></rep:assessment>
+</rep:report>
+"""
+        )
+        self.assertIs(report.accepted, False)
+        codes: list[str] = [issue.code or "" for issue in report.issues]
+        self.assertEqual(codes.count("BR-DE-2"), 1)
+        self.assertIn("generic-error", codes)
+        schema_issue: ValidationIssue = next(
+            item for item in report.issues if item.code == "generic-error"
+        )
+        self.assertEqual(schema_issue.category, "schema")
+        self.assertEqual(schema_issue.level, "error")
+
     def test_jar_filename_version(self) -> None:
         self.assertEqual(
             engine_version_from_jar("/opt/kosit/validationtool-1.5.0-standalone.jar"),

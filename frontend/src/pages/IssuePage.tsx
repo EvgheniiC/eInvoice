@@ -7,6 +7,7 @@ import type { AppRoute } from '../routing'
 import type {
   IssueAddress,
   IssueArtifact,
+  IssueArtifactFormat,
   IssueBuildResponse,
   IssueDraft,
   IssueDraftResponse,
@@ -421,13 +422,31 @@ export function IssuePage({
   )
 }
 
+const RESULT_FORMATS: readonly IssueArtifactFormat[] = ['xrechnung', 'zugferd_pdf']
+
+function artifactTitle(format: IssueArtifactFormat): string {
+  if (format === 'xrechnung') {
+    return 'XRechnung'
+  }
+  return 'ZUGFeRD PDF'
+}
+
 function BuildResult({ result }: { result: IssueBuildResponse }): JSX.Element {
+  const visible: IssueArtifact[] = result.artifacts.filter(
+    (artifact: IssueArtifact): boolean =>
+      RESULT_FORMATS.includes(artifact.format) && artifact.validation_issues.length > 0,
+  )
   return (
     <section aria-live="polite">
       <p>{result.message}</p>
       <IssueList issues={result.blocking_issues} />
-      {result.artifacts.map((artifact: IssueArtifact) => (
-        <IssueList key={artifact.format} issues={artifact.validation_issues} />
+      {visible.map((artifact: IssueArtifact) => (
+        <div key={artifact.format}>
+          <p>
+            <strong>{artifactTitle(artifact.format)}</strong>
+          </p>
+          <IssueList issues={artifact.validation_issues} />
+        </div>
       ))}
     </section>
   )
