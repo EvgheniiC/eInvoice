@@ -38,6 +38,40 @@ const DOWNLOADS: readonly { format: 'zugferd_pdf' | 'xrechnung'; label: string }
   { format: 'xrechnung', label: 'Download als XRechnung (XML)' },
 ]
 
+const FIELD_LIMITS: {
+  invoiceNumber: number
+  buyerReference: number
+  name: number
+  street: number
+  postcode: number
+  city: number
+  country: number
+  vatId: number
+  iban: number
+  contactName: number
+  phone: number
+  email: number
+  lineDescription: number
+  quantity: number
+  unitPrice: number
+} = {
+  invoiceNumber: 50,
+  buyerReference: 50,
+  name: 200,
+  street: 200,
+  postcode: 20,
+  city: 80,
+  country: 2,
+  vatId: 16,
+  iban: 42,
+  contactName: 200,
+  phone: 40,
+  email: 254,
+  lineDescription: 200,
+  quantity: 16,
+  unitPrice: 16,
+}
+
 export function IssuePage({
   onNavigate,
   session,
@@ -190,6 +224,7 @@ export function IssuePage({
               <TextField
                 id="invoice-number"
                 label="Rechnungsnummer"
+                maxLength={FIELD_LIMITS.invoiceNumber}
                 value={draft.invoice_number}
                 invalid={invalidFields.has('invoice_number')}
                 onChange={(value: string) => {
@@ -211,6 +246,7 @@ export function IssuePage({
               <TextField
                 id="buyer-reference"
                 label="Käuferreferenz / Leitweg-ID"
+                maxLength={FIELD_LIMITS.buyerReference}
                 value={draft.buyer_reference}
                 invalid={invalidFields.has('buyer_reference')}
                 onChange={(value: string) => {
@@ -246,6 +282,7 @@ export function IssuePage({
                 <TextField
                   id={`line-${index}-description`}
                   label={`Position ${index + 1}`}
+                  maxLength={FIELD_LIMITS.lineDescription}
                   value={line.description}
                   invalid={invalidFields.has(lineField(index, 'description'))}
                   onChange={(value: string) => {
@@ -256,6 +293,7 @@ export function IssuePage({
                 <TextField
                   id={`line-${index}-quantity`}
                   label="Menge"
+                  maxLength={FIELD_LIMITS.quantity}
                   value={textValue(line.quantity)}
                   invalid={invalidFields.has(lineField(index, 'quantity'))}
                   onChange={(value: string) => {
@@ -282,6 +320,7 @@ export function IssuePage({
                 <TextField
                   id={`line-${index}-price`}
                   label="Einzelpreis netto"
+                  maxLength={FIELD_LIMITS.unitPrice}
                   value={textValue(line.unit_price)}
                   invalid={invalidFields.has(lineField(index, 'unit_price'))}
                   onChange={(value: string) => {
@@ -451,6 +490,8 @@ function PartyFields({
       <TextField
         id={`${idPrefix}-name`}
         label="Name"
+        maxLength={FIELD_LIMITS.name}
+        spellCheck={false}
         value={party.name}
         invalid={invalidFields.has(`${idPrefix}.name`)}
         onChange={(value: string) => setField('name', value)}
@@ -458,6 +499,7 @@ function PartyFields({
       <TextField
         id={`${idPrefix}-line`}
         label="Straße"
+        maxLength={FIELD_LIMITS.street}
         value={party.address.line}
         invalid={invalidFields.has(`${idPrefix}.address.line`)}
         onChange={(value: string) => setAddress('line', value)}
@@ -465,6 +507,7 @@ function PartyFields({
       <TextField
         id={`${idPrefix}-postcode`}
         label="PLZ"
+        maxLength={FIELD_LIMITS.postcode}
         value={party.address.postcode}
         invalid={invalidFields.has(`${idPrefix}.address.postcode`)}
         onChange={(value: string) => setAddress('postcode', value)}
@@ -472,6 +515,7 @@ function PartyFields({
       <TextField
         id={`${idPrefix}-city`}
         label="Ort"
+        maxLength={FIELD_LIMITS.city}
         value={party.address.city}
         invalid={invalidFields.has(`${idPrefix}.address.city`)}
         onChange={(value: string) => setAddress('city', value)}
@@ -479,6 +523,7 @@ function PartyFields({
       <TextField
         id={`${idPrefix}-country`}
         label="Land"
+        maxLength={FIELD_LIMITS.country}
         value={party.address.country}
         invalid={invalidFields.has(`${idPrefix}.address.country`)}
         onChange={(value: string) => setAddress('country', value)}
@@ -488,6 +533,7 @@ function PartyFields({
           <TextField
             id={`${idPrefix}-vat`}
             label="USt-IdNr."
+            maxLength={FIELD_LIMITS.vatId}
             value={party.vat_id}
             invalid={invalidFields.has(`${idPrefix}.vat_id`)}
             onChange={(value: string) => setField('vat_id', value)}
@@ -495,6 +541,7 @@ function PartyFields({
           <TextField
             id={`${idPrefix}-iban`}
             label="IBAN"
+            maxLength={FIELD_LIMITS.iban}
             value={party.iban}
             invalid={invalidFields.has(`${idPrefix}.iban`)}
             onChange={(value: string) => setField('iban', value)}
@@ -502,6 +549,8 @@ function PartyFields({
           <TextField
             id={`${idPrefix}-contact`}
             label="Ansprechpartner"
+            maxLength={FIELD_LIMITS.contactName}
+            spellCheck={false}
             value={party.contact_name}
             invalid={invalidFields.has(`${idPrefix}.contact_name`)}
             onChange={(value: string) => setField('contact_name', value)}
@@ -509,6 +558,7 @@ function PartyFields({
           <TextField
             id={`${idPrefix}-phone`}
             label="Telefon"
+            maxLength={FIELD_LIMITS.phone}
             value={party.phone}
             invalid={invalidFields.has(`${idPrefix}.phone`)}
             onChange={(value: string) => setField('phone', value)}
@@ -516,6 +566,7 @@ function PartyFields({
           <TextField
             id={`${idPrefix}-email`}
             label="E-Mail"
+            maxLength={FIELD_LIMITS.email}
             value={party.email}
             invalid={invalidFields.has(`${idPrefix}.email`)}
             onChange={(value: string) => setField('email', value)}
@@ -533,6 +584,8 @@ function TextField({
   onChange,
   type = 'text',
   invalid = false,
+  maxLength,
+  spellCheck,
 }: {
   id: string
   label: string
@@ -540,6 +593,8 @@ function TextField({
   onChange: (value: string) => void
   type?: 'text' | 'date'
   invalid?: boolean
+  maxLength?: number
+  spellCheck?: boolean
 }): JSX.Element {
   return (
     <>
@@ -548,6 +603,8 @@ function TextField({
         id={id}
         type={type}
         value={value ?? ''}
+        maxLength={maxLength}
+        spellCheck={spellCheck}
         {...invalidInputProps(invalid)}
         onChange={(event: ChangeEvent<HTMLInputElement>) => onChange(event.target.value)}
       />
@@ -670,8 +727,10 @@ function collectErrorFields(issues: ValidationIssue[], fields: Set<string>): voi
 }
 
 function emptyToNull(value: string): string | null {
-  const trimmed: string = value.trim()
-  return trimmed === '' ? null : trimmed
+  if (value.trim() === '') {
+    return null
+  }
+  return value
 }
 
 function textValue(value: string | number | null): string | null {

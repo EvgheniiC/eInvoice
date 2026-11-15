@@ -138,7 +138,7 @@ async function fillRequired(user: UserEvent): Promise<void> {
 
 describe('IssuePage', (): void => {
   it('keeps the download closed until the build explicitly allows it', async (): Promise<void> => {
-    const user: UserEvent = userEvent.setup()
+    const user: UserEvent = userEvent.setup({ delay: null })
     const createObjectURL: ReturnType<typeof vi.spyOn> = vi
       .spyOn(URL, 'createObjectURL')
       .mockReturnValue('blob:test')
@@ -161,6 +161,9 @@ describe('IssuePage', (): void => {
     await user.upload(screen.getByLabelText('Eigene PDF-Rechnung'), file)
     await user.click(screen.getByRole('button', { name: 'Entwurf lesen' }))
     expect(await screen.findByDisplayValue('RE-1')).toBeInTheDocument()
+    await user.type(screen.getByLabelText('Ansprechpartner'), 'Anna Schmidt')
+    expect(screen.getByLabelText('Ansprechpartner')).toHaveValue('Anna Schmidt')
+    expect(screen.getByLabelText('Ansprechpartner')).toHaveAttribute('maxLength', '200')
     expect(screen.getByRole('button', { name: 'Download als ZUGFeRD PDF' })).toBeDisabled()
     expect(screen.getByRole('button', { name: 'Download als XRechnung (XML)' })).toBeDisabled()
 
@@ -183,7 +186,7 @@ describe('IssuePage', (): void => {
   })
 
   it('downloads the chosen format after a valid build', async (): Promise<void> => {
-    const user: UserEvent = userEvent.setup()
+    const user: UserEvent = userEvent.setup({ delay: null })
     const createObjectURL: ReturnType<typeof vi.spyOn> = vi
       .spyOn(URL, 'createObjectURL')
       .mockReturnValue('blob:test')
