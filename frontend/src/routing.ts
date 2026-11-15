@@ -3,6 +3,7 @@ import { publicPageByPath } from './content/publicPages'
 export type AppRoute =
   | 'landing'
   | 'upload'
+  | 'validate'
   | 'legal'
   | 'help'
   | 'topic'
@@ -23,6 +24,9 @@ function normalizePath(pathname: string): string {
 }
 
 export function pathToRoute(pathname: string): AppRoute {
+  if (pathname === '/erechnung-validation' || pathname.startsWith('/erechnung-validation/')) {
+    return 'validate'
+  }
   if (publicPageByPath(normalizePath(pathname))?.kind === 'topic') {
     return 'topic'
   }
@@ -81,6 +85,9 @@ export function pathToRoute(pathname: string): AppRoute {
 export function routeToPath(route: AppRoute): string {
   if (route === 'upload') {
     return '/upload'
+  }
+  if (route === 'validate') {
+    return '/erechnung-validation'
   }
   if (route === 'legal') {
     return '/impressum'

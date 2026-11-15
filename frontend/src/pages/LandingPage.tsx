@@ -56,6 +56,9 @@ export function LandingPage({
             <AppLink href="/upload" className="btn btn--primary">
               Rechnung hochladen
             </AppLink>
+            <AppLink href="/erechnung-validation" className="btn btn--secondary">
+              Validierung
+            </AppLink>
           </div>
           {session?.is_admin ? (
             <p className="landing-hero__issue">

@@ -98,6 +98,22 @@
       ]
     },
     {
+      "path": "/erechnung-validation",
+      "kind": "topic",
+      "h1": "eRechnung validation",
+      "title": "eRechnung validation | eInvoice",
+      "description": "eRechnung validation: eine Datei hochladen und prüfen, ob es eine E-Rechnung (XRechnung oder ZUGFeRD) ist.",
+      "paragraphs": [
+        "eRechnung validation prüft eine einzelne Datei: Ist das eine E-Rechnung oder ein normales PDF bzw. ein anderes XML?",
+        "XRechnung (UBL oder CII) und ZUGFeRD/Factur-X mit eingebettetem XML gelten als E-Rechnung. Ein PDF ohne dieses XML ist keine E-Rechnung.",
+        "Die Datei wird nur für diese Anfrage gelesen und danach gelöscht."
+      ],
+      "links": [
+        { "href": "/upload", "label": "Rechnung vollständig öffnen" },
+        { "href": "/xrechnung-zugferd-pruefen", "label": "XRechnung und ZUGFeRD prüfen" }
+      ]
+    },
+    {
       "path": "/xrechnung-zugferd-pruefen",
       "kind": "topic",
       "h1": "XRechnung und ZUGFeRD prüfen",

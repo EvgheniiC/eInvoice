@@ -21,6 +21,7 @@ describe('pathToRoute', (): void => {
     expect(pathToRoute('/tarife')).toBe('pricing')
     expect(pathToRoute('/statistik')).toBe('stats')
     expect(pathToRoute('/erstellen')).toBe('issue')
+    expect(pathToRoute('/erechnung-validation')).toBe('validate')
   })
 
   it('maps unknown paths to landing', (): void => {
@@ -32,6 +33,7 @@ describe('pathToRoute', (): void => {
 describe('routeToPath', (): void => {
   it('returns canonical paths', (): void => {
     expect(routeToPath('upload')).toBe('/upload')
+    expect(routeToPath('validate')).toBe('/erechnung-validation')
     expect(routeToPath('legal')).toBe('/impressum')
     expect(routeToPath('help')).toBe('/hilfe')
     expect(routeToPath('login')).toBe('/anmelden')

@@ -28,6 +28,7 @@ function replaceOnce(html, pattern, replacement, label) {
 
 function navHtml() {
   const links = [
+    ['/erechnung-validation', 'Validierung'],
     ['/upload', 'Rechnung hochladen'],
     ['/tarife', 'Tarife'],
     ['/hilfe', 'Hilfe'],

@@ -37,6 +37,13 @@ describe('seoForPath', (): void => {
     expect(seoForPath('/hilfe/was-ist-xml').title).toBe('Was ist eine XML-Rechnung? | eInvoice')
     expect(seoForPath('/hilfe/was-ist-xml').canonicalPath).toBe('/hilfe/was-ist-xml')
     expect(seoForPath('/steuerberater-export').canonicalPath).toBe('/steuerberater-export')
+    expect(seoForPath('/erechnung-validation')).toEqual({
+      title: 'eRechnung validation | eInvoice',
+      description:
+        'eRechnung validation: eine Datei hochladen und prüfen, ob es eine E-Rechnung (XRechnung oder ZUGFeRD) ist.',
+      canonicalPath: '/erechnung-validation',
+      robots: 'index,follow',
+    })
   })
 
   it('keeps account pages out of the index', (): void => {

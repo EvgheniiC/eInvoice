@@ -42,5 +42,10 @@ describe('LandingPage', (): void => {
     expect(
       screen.queryByText(/Eigene PDF-Rechnung als E-Rechnung vorbereiten/),
     ).not.toBeInTheDocument()
+    const validationLinks: HTMLElement[] = screen.getAllByRole('link', { name: 'Validierung' })
+    expect(validationLinks.length).toBeGreaterThan(0)
+    for (const link of validationLinks) {
+      expect(link).toHaveAttribute('href', '/erechnung-validation')
+    }
   })
 })

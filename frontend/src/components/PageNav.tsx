@@ -59,6 +59,9 @@ export function PageNav({
           Anmelden
         </button>
       )}
+      <AppLink href="/erechnung-validation" className="page-nav__link">
+        Validierung
+      </AppLink>
       <AppLink href="/upload" className="page-nav__link">
         Rechnung hochladen
       </AppLink>

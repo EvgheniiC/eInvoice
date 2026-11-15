@@ -14,6 +14,7 @@ import { RegisterPage, type RegisterSuccess } from './pages/RegisterPage'
 import { ResetPasswordPage } from './pages/ResetPasswordPage'
 import { TopicPage } from './pages/TopicPage'
 import { UploadPage } from './pages/UploadPage'
+import { ValidationPage } from './pages/ValidationPage'
 import { IssuePage } from './pages/IssuePage'
 import { FollowPathProvider } from './navigation'
 import { VerifyPage } from './pages/VerifyPage'
@@ -150,6 +151,14 @@ function App(): JSX.Element {
       {route === 'upload' ? (
         <UploadPage
           onNavigateHome={() => navigate('landing')}
+          onNavigate={navigate}
+          session={session}
+          onLogout={() => {
+            void handleLogout()
+          }}
+        />
+      ) : route === 'validate' ? (
+        <ValidationPage
           onNavigate={navigate}
           session={session}
           onLogout={() => {
