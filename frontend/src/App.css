@@ -2025,6 +2025,15 @@ html.has-consent-banner body {
   font-weight: 600;
 }
 
+.issue-columns label {
+  display: block;
+  margin: 0.85rem 0 0.4rem;
+}
+
+.issue-columns fieldset label:first-of-type {
+  margin-top: 0.1rem;
+}
+
 .issue-form input,
 .issue-form select {
   width: 100%;

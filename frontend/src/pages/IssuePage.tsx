@@ -605,6 +605,7 @@ function TextField({
         value={value ?? ''}
         maxLength={maxLength}
         spellCheck={spellCheck}
+        autoComplete="off"
         {...invalidInputProps(invalid)}
         onChange={(event: ChangeEvent<HTMLInputElement>) => onChange(event.target.value)}
       />
