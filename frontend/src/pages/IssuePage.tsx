@@ -324,18 +324,21 @@ export function IssuePage({
             </div>
           </fieldset>
 
-          <label className="auth-form__check" htmlFor="issue-confirmed">
+          <label
+            className={confirmed ? 'issue-confirm issue-confirm--done' : 'issue-confirm'}
+            htmlFor="issue-confirmed"
+          >
             <input
               id="issue-confirmed"
               type="checkbox"
               checked={confirmed}
-              {...invalidInputProps(invalidFields.has('confirmed'))}
+              aria-invalid={confirmed ? undefined : true}
               onChange={(event: ChangeEvent<HTMLInputElement>) => {
                 dismissField('confirmed')
                 setConfirmed(event.target.checked)
               }}
             />
-            Ich bin der Rechnungsaussteller und bestätige, dass diese Angaben stimmen.
+            <span>Ich bin der Rechnungsaussteller und bestätige, dass diese Angaben stimmen.</span>
           </label>
           <div className="issue-downloads">
             {DOWNLOADS.map((item) => (

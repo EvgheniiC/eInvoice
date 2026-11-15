@@ -166,7 +166,14 @@ describe('IssuePage', (): void => {
 
     await fillRequired(user)
     expect(screen.getByRole('button', { name: 'Download als ZUGFeRD PDF' })).toBeDisabled()
+    expect(screen.getByRole('checkbox', { name: /Ich bin der Rechnungsaussteller/ })).toHaveAttribute(
+      'aria-invalid',
+      'true',
+    )
     await user.click(screen.getByLabelText(/Ich bin der Rechnungsaussteller/))
+    expect(screen.getByRole('checkbox', { name: /Ich bin der Rechnungsaussteller/ })).not.toHaveAttribute(
+      'aria-invalid',
+    )
     await user.click(screen.getByRole('button', { name: 'Download als ZUGFeRD PDF' }))
 
     expect(await screen.findByText('Pflichtfeld fehlt: Rechnungsnummer (BT-1).')).toBeInTheDocument()
