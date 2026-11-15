@@ -113,6 +113,10 @@ describe('IssuePage', (): void => {
     await user.upload(screen.getByLabelText('Eigene PDF-Rechnung'), file)
     await user.click(screen.getByRole('button', { name: 'Entwurf lesen' }))
     expect(await screen.findByDisplayValue('RE-1')).toBeInTheDocument()
+    expect(screen.getByLabelText('Rechnungsnummer')).not.toHaveAttribute('aria-invalid')
+    expect(screen.getByLabelText('Position 1')).toHaveAttribute('aria-invalid', 'true')
+    expect(screen.getByLabelText('Menge')).toHaveAttribute('aria-invalid', 'true')
+    expect(screen.getAllByLabelText('Straße')[0]).toHaveAttribute('aria-invalid', 'true')
 
     await user.click(screen.getByLabelText(/Ich bin der Rechnungsaussteller/))
     await user.click(screen.getByRole('button', { name: 'E-Rechnung prüfen' }))
@@ -123,7 +127,7 @@ describe('IssuePage', (): void => {
     expect(screen.getByLabelText('Rechnungsnummer')).toHaveAttribute('aria-invalid', 'true')
     expect(screen.getByLabelText('Menge')).toHaveAttribute('aria-invalid', 'true')
     expect(screen.getByLabelText('Rechnungsnummer')).toHaveClass('issue-form__input--error')
-    expect(screen.getAllByLabelText('Straße')[0]).not.toHaveAttribute('aria-invalid')
+    expect(screen.getAllByLabelText('Straße')[0]).toHaveAttribute('aria-invalid', 'true')
 
     await user.type(screen.getByLabelText('Rechnungsnummer'), 'X')
     expect(screen.getByLabelText('Rechnungsnummer')).not.toHaveAttribute('aria-invalid')

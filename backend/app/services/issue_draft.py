@@ -59,6 +59,30 @@ _BUYER_REFERENCE_RE: Final[re.Pattern[str]] = re.compile(
 _AMOUNT_RE: Final[re.Pattern[str]] = re.compile(
     r"([0-9]{1,3}(?:\.[0-9]{3})*,\d{2}|[0-9]+,\d{2})"
 )
+_SKIP_LINE_RE: Final[re.Pattern[str]] = re.compile(
+    r"(Summe|Gesamt|Nettobetrag|Brutto|Zwischensumme|Endbetrag|Endsumme|"
+    r"Übertrag|Uebertrag|Rechnungsbetrag|Versandkosten|Rabatt)",
+    re.IGNORECASE,
+)
+_DOC_TAX_RE: Final[re.Pattern[str]] = re.compile(
+    r"(?:MwSt-Satz|MwSt\.?|Umsatzsteuer|USt\.?)\s*[:.]?\s*(\d{1,2})(?:[.,]\d{1,2})?\s*%",
+    re.IGNORECASE,
+)
+_MONEY_TOKEN: Final[str] = r"(?:\d{1,3}(?:\.\d{3})*,\d{2}|\d+,\d{2})"
+_PARTS_LINE_RE: Final[re.Pattern[str]] = re.compile(
+    rf"^(?P<article>\d{{5,}})\s+(?P<desc>.+?)\s+(?P<qty>\d+(?:,\d+)?)\s+"
+    rf"(?P<list>{_MONEY_TOKEN})(?P<discount>\d{{1,2}},\d+)%(?P<net>{_MONEY_TOKEN})\*?$"
+)
+_STUECK_LINE_RE: Final[re.Pattern[str]] = re.compile(
+    rf"(?P<desc>[A-Za-zÄÖÜäöüß][A-Za-zÄÖÜäöüß0-9 ./\-]{{1,80}}?)\s+"
+    rf"(?P<list>{_MONEY_TOKEN})\s+(?P<qty>\d+,\d{{2}})\s+(?:Stück|Stk\.?)\s+"
+    rf"\d+,\d{{2}}%\s+\S+\s+(?P<net>{_MONEY_TOKEN})$",
+    re.IGNORECASE,
+)
+_QTY_DESC_LINE_RE: Final[re.Pattern[str]] = re.compile(
+    rf"^(?P<qty>\d+(?:,\d+)?)\s+(?P<desc>[A-Za-zÄÖÜäöüß].{{2,120}}?)\s+"
+    rf"(?P<price>{_MONEY_TOKEN})\s+(?P<total>{_MONEY_TOKEN})$"
+)
 _LABELED_AMOUNT: Final[dict[str, re.Pattern[str]]] = {
     "Netto": re.compile(
         r"(?:Netto(?:betrag)?|Zwischensumme)\s*[:.]?\s*" + _AMOUNT_RE.pattern,
@@ -319,9 +343,15 @@ def _draft_from_text(
     amount_note: Optional[str] = _amount_note(text)
     if amount_note:
         warnings.append(amount_note)
-    warnings.append(
-        "Positionen werden nicht automatisch übernommen. Bitte Menge, Preis und Steuersatz eintragen."
-    )
+    lines: List[IssueLineInput] = _lines_from_text(text)
+    if lines:
+        warnings.append("Positionen aus dem PDF-Text. Bitte Menge, Preis und Steuersatz prüfen.")
+        hints.append(FieldHint(field="lines", source="pdf", message="Positionen aus dem PDF-Text."))
+    else:
+        warnings.append(
+            "Positionen werden nicht automatisch übernommen. Bitte Menge, Preis und Steuersatz eintragen."
+        )
+        lines = [IssueLineInput(unit_code="C62", tax_rate=Decimal("19"))]
     return IssueDraft(
         invoice_number=invoice_number,
         issue_date=issue_date,
@@ -329,7 +359,7 @@ def _draft_from_text(
         buyer_reference=buyer_reference,
         seller=seller_party,
         buyer=IssueParty(address=IssueAddress(country="DE")),
-        lines=[IssueLineInput(unit_code="C62", tax_rate=Decimal("19"))],
+        lines=lines,
     )
 
 
@@ -489,6 +519,109 @@ def _read_pdf_text(content: bytes) -> tuple[str, Optional[str]]:
         return "\n".join(parts), None
     except Exception:
         return "", "PDF-Text konnte nicht gelesen werden."
+
+
+def _lines_from_text(text: str) -> List[IssueLineInput]:
+    tax_rate: Decimal = _document_tax_rate(text)
+    found: List[IssueLineInput] = []
+    for raw_line in text.splitlines():
+        line: str = " ".join(raw_line.split())
+        if not line or _SKIP_LINE_RE.search(line):
+            continue
+        parsed: Optional[IssueLineInput] = (
+            _parts_line(line, tax_rate) or _stueck_line(line, tax_rate) or _qty_desc_line(line, tax_rate)
+        )
+        if parsed is None:
+            continue
+        found.append(parsed)
+        if len(found) >= MAX_LINES:
+            break
+    return found
+
+
+def _document_tax_rate(text: str) -> Decimal:
+    for match in _DOC_TAX_RE.finditer(text):
+        rate: Decimal = Decimal(match.group(1)).quantize(Decimal("1.00"))
+        if rate in STANDARD_TAX_RATES:
+            return rate
+    return Decimal("19.00")
+
+
+def _parts_line(line: str, tax_rate: Decimal) -> Optional[IssueLineInput]:
+    match: Optional[re.Match[str]] = _PARTS_LINE_RE.match(line)
+    if match is None:
+        return None
+    priced: Optional[tuple[Decimal, Decimal]] = _price_from_net(match.group("net"), match.group("qty"))
+    if priced is None:
+        return None
+    quantity, unit_price = priced
+    description: str = _clean(match.group("desc"), max_length=200)
+    if not description:
+        return None
+    return _line(description, quantity, unit_price, tax_rate)
+
+
+def _stueck_line(line: str, tax_rate: Decimal) -> Optional[IssueLineInput]:
+    match: Optional[re.Match[str]] = _STUECK_LINE_RE.search(line)
+    if match is None:
+        return None
+    priced: Optional[tuple[Decimal, Decimal]] = _price_from_net(match.group("net"), match.group("qty"))
+    if priced is None:
+        return None
+    quantity, unit_price = priced
+    description: str = _clean(match.group("desc"), max_length=200)
+    if not description:
+        return None
+    return _line(description, quantity, unit_price, tax_rate)
+
+
+def _qty_desc_line(line: str, tax_rate: Decimal) -> Optional[IssueLineInput]:
+    match: Optional[re.Match[str]] = _QTY_DESC_LINE_RE.match(line)
+    if match is None:
+        return None
+    quantity: Optional[Decimal] = _parse_de_quantity(match.group("qty"))
+    unit_price: Optional[Decimal] = _parse_de_amount(match.group("price"))
+    total: Optional[Decimal] = _parse_de_amount(match.group("total"))
+    if quantity is None or unit_price is None or total is None:
+        return None
+    if (unit_price * quantity).quantize(MONEY_QUANT) != total:
+        return None
+    description: str = _clean(match.group("desc"), max_length=200)
+    if not description:
+        return None
+    return _line(description, quantity, unit_price, tax_rate)
+
+
+def _line(description: str, quantity: Decimal, unit_price: Decimal, tax_rate: Decimal) -> IssueLineInput:
+    return IssueLineInput(
+        description=description,
+        quantity=quantity,
+        unit_code="C62",
+        unit_price=unit_price,
+        tax_rate=tax_rate,
+    )
+
+
+def _price_from_net(net_raw: str, qty_raw: str) -> Optional[tuple[Decimal, Decimal]]:
+    net: Optional[Decimal] = _parse_de_amount(net_raw)
+    quantity: Optional[Decimal] = _parse_de_quantity(qty_raw)
+    if net is None or quantity is None:
+        return None
+    unit_price: Decimal = (net / quantity).quantize(MONEY_QUANT)
+    if (unit_price * quantity).quantize(MONEY_QUANT) != net:
+        return None
+    return quantity, unit_price
+
+
+def _parse_de_quantity(raw: str) -> Optional[Decimal]:
+    cleaned: str = raw.strip().replace(".", "").replace(",", ".")
+    try:
+        parsed: Decimal = Decimal(cleaned)
+    except InvalidOperation:
+        return None
+    if parsed <= 0:
+        return None
+    return parsed
 
 
 def _iso_from_german_date(text: str) -> Optional[str]:

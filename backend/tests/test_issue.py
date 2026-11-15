@@ -128,6 +128,27 @@ class TestIssueDraft(unittest.TestCase):
         self.assertEqual(result.draft.seller.email, "billing@muster.example")
         self.assertIsNone(result.draft.lines[0].description)
         self.assertTrue(any("100,00" in warning for warning in result.warnings))
+        self.assertTrue(any("nicht automatisch" in warning for warning in result.warnings))
+
+    def test_reads_discounted_part_lines_and_ignores_the_total(self) -> None:
+        pdf: bytes = _text_pdf(
+            [
+                "Teile-Nummer Bezeichnung Menge E-Preis",
+                "0009806541980 LAGERUNG 1 30,476,5%28,49",
+                "0009852176580 RADSKASTEN 1 133,449,5%120,76",
+                "Summe Ersatzteile: 149,25",
+                "MwSt-Satz: 19,00%",
+            ]
+        )
+        result: IssueDraftResponse = extract_draft_from_pdf(pdf, "teile.pdf")
+        self.assertEqual(len(result.draft.lines), 2)
+        self.assertEqual(result.draft.lines[0].description, "LAGERUNG")
+        self.assertEqual(result.draft.lines[0].quantity, Decimal("1"))
+        self.assertEqual(result.draft.lines[0].unit_price, Decimal("28.49"))
+        self.assertEqual(result.draft.lines[0].tax_rate, Decimal("19.00"))
+        self.assertEqual(result.draft.lines[1].description, "RADSKASTEN")
+        self.assertEqual(result.draft.lines[1].unit_price, Decimal("120.76"))
+        self.assertTrue(any("Positionen aus dem PDF-Text" in warning for warning in result.warnings))
 
     def test_organization_seller_wins_over_a_different_pdf_iban(self) -> None:
         pdf: bytes = _text_pdf(

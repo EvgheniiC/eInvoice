@@ -54,7 +54,7 @@ export function IssuePage({
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<IssueBuildResponse | null>(null)
   const [dismissedFields, setDismissedFields] = useState<ReadonlySet<string>>(new Set())
-  const invalidFields: ReadonlySet<string> = highlightedFields(result, dismissedFields)
+  const invalidFields: ReadonlySet<string> = highlightedFields(draft, result, dismissedFields)
 
   function dismissField(field: string): void {
     setDismissedFields((current: ReadonlySet<string>): ReadonlySet<string> => {
@@ -553,19 +553,86 @@ function lineField(index: number, key: keyof IssueLineInput): string {
 }
 
 function highlightedFields(
+  draft: IssueDraft | null,
   result: IssueBuildResponse | null,
   dismissed: ReadonlySet<string>,
 ): ReadonlySet<string> {
-  if (result === null) {
-    return EMPTY_INVALID_FIELDS
-  }
-  const active: Set<string> = new Set()
-  for (const field of issueErrorFields(result)) {
-    if (!dismissed.has(field)) {
+  const active: Set<string> = missingRequiredFields(draft)
+  if (result !== null) {
+    for (const field of issueErrorFields(result)) {
       active.add(field)
     }
   }
+  for (const field of dismissed) {
+    active.delete(field)
+  }
   return active
+}
+
+function missingRequiredFields(draft: IssueDraft | null): Set<string> {
+  const fields: Set<string> = new Set()
+  if (draft === null) {
+    return fields
+  }
+  if (!hasText(draft.invoice_number)) {
+    fields.add('invoice_number')
+  }
+  if (!hasText(draft.issue_date)) {
+    fields.add('issue_date')
+  }
+  addPartyGaps(fields, 'seller', draft.seller, true)
+  addPartyGaps(fields, 'buyer', draft.buyer, false)
+  draft.lines.forEach((line: IssueLineInput, index: number): void => {
+    const prefix: string = `lines.${index + 1}`
+    if (!hasText(line.description)) {
+      fields.add(`${prefix}.description`)
+    }
+    if (!hasAmount(line.quantity)) {
+      fields.add(`${prefix}.quantity`)
+    }
+    if (!hasAmount(line.unit_price)) {
+      fields.add(`${prefix}.unit_price`)
+    }
+  })
+  return fields
+}
+
+function addPartyGaps(fields: Set<string>, prefix: string, party: IssueParty, seller: boolean): void {
+  if (!hasText(party.name)) {
+    fields.add(`${prefix}.name`)
+  }
+  if (!hasText(party.address.line)) {
+    fields.add(`${prefix}.address.line`)
+  }
+  if (!hasText(party.address.postcode)) {
+    fields.add(`${prefix}.address.postcode`)
+  }
+  if (!hasText(party.address.city)) {
+    fields.add(`${prefix}.address.city`)
+  }
+  if (!hasText(party.address.country)) {
+    fields.add(`${prefix}.address.country`)
+  }
+  if (!seller) {
+    return
+  }
+  if (!hasText(party.vat_id)) {
+    fields.add(`${prefix}.vat_id`)
+  }
+  if (!hasText(party.iban)) {
+    fields.add(`${prefix}.iban`)
+  }
+}
+
+function hasText(value: string | null): boolean {
+  return value !== null && value.trim() !== ''
+}
+
+function hasAmount(value: string | number | null): boolean {
+  if (value === null) {
+    return false
+  }
+  return String(value).trim() !== ''
 }
 
 function issueErrorFields(result: IssueBuildResponse): Set<string> {
@@ -584,8 +651,6 @@ function collectErrorFields(issues: ValidationIssue[], fields: Set<string>): voi
     }
   }
 }
-
-const EMPTY_INVALID_FIELDS: ReadonlySet<string> = new Set()
 
 function emptyToNull(value: string): string | null {
   const trimmed: string = value.trim()
