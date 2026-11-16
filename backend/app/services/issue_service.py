@@ -36,6 +36,11 @@ _READY: str = (
     "KoSIT hat die Datei als gültig abgeschlossen. "
     "Maßgeblich ist die XML, nicht das sichtbare PDF."
 )
+_ZUGFERD_FROM_XRECHNUNG: str = (
+    "ZUGFeRD-PDF wurde erzeugt. KoSIT hat dieselbe Rechnung als XRechnung akzeptiert. "
+    "Das installierte Regelwerk enthält kein Factur-X-Szenario."
+)
+_NO_FACTURX_SCENARIO: str = "KOSIT_NO_SCENARIO"
 
 
 def draft_from_pdf(
@@ -54,25 +59,35 @@ def build_issue(request: IssueBuildRequest, pdf_bytes: Optional[bytes]) -> Issue
         return IssueBuildResponse(ready=False, message=_NOT_READY, blocking_issues=prepared.blocking)
 
     invoice: ReadyInvoice = prepared.invoice
+    xrechnung: IssueArtifact = _xml_artifact(
+        invoice=invoice,
+        profile="xrechnung",
+        artifact_format="xrechnung",
+        media_type="application/xml",
+        suffix="-xrechnung.xml",
+        gaps=prepared.xrechnung_gaps,
+    )
+    if request.target == "xrechnung":
+        return IssueBuildResponse(
+            ready=xrechnung.download_allowed,
+            message=_READY if xrechnung.download_allowed else _NOT_READY,
+            blocking_issues=[],
+            artifacts=[xrechnung],
+        )
+
+    facturx: IssueArtifact = _xml_artifact(
+        invoice=invoice,
+        profile="facturx",
+        artifact_format="zugferd_xml",
+        media_type="application/xml",
+        suffix="-zugferd.xml",
+        gaps=[],
+    )
     artifacts: List[IssueArtifact] = [
-        _xml_artifact(
-            invoice=invoice,
-            profile="xrechnung",
-            artifact_format="xrechnung",
-            media_type="application/xml",
-            suffix="-xrechnung.xml",
-            gaps=prepared.xrechnung_gaps,
-        ),
-        _xml_artifact(
-            invoice=invoice,
-            profile="facturx",
-            artifact_format="zugferd_xml",
-            media_type="application/xml",
-            suffix="-zugferd.xml",
-            gaps=[],
-        ),
+        xrechnung,
+        facturx,
+        _zugferd_pdf_artifact(invoice, pdf_bytes, facturx, xrechnung),
     ]
-    artifacts.append(_zugferd_pdf_artifact(invoice, pdf_bytes, artifacts[1]))
     ready: bool = any(item.download_allowed for item in artifacts)
     return IssueBuildResponse(
         ready=ready,
@@ -124,6 +139,7 @@ def _zugferd_pdf_artifact(
     invoice: ReadyInvoice,
     pdf_bytes: Optional[bytes],
     xml_artifact: IssueArtifact,
+    xrechnung: IssueArtifact,
 ) -> IssueArtifact:
     filename: str = safe_invoice_filename(invoice.invoice_number, "-zugferd.pdf")
     if pdf_bytes is None:
@@ -144,7 +160,17 @@ def _zugferd_pdf_artifact(
                 )
             ],
         )
-    if not xml_artifact.download_allowed or not xml_artifact.content_base64:
+    xml_base64: Optional[str] = xml_artifact.content_base64
+    notice: Optional[ValidationIssue] = None
+    if xml_base64 is None and xrechnung.download_allowed and _only_missing_facturx_scenario(xml_artifact):
+        xml_base64 = base64.b64encode(render_cii(invoice, "facturx").encode("utf-8")).decode("ascii")
+        notice = ValidationIssue(
+            level="info",
+            category="info",
+            code="ZUGFERD_CHECKED_AS_XRECHNUNG",
+            message=_ZUGFERD_FROM_XRECHNUNG,
+        )
+    if xml_base64 is None:
         return IssueArtifact(
             format="zugferd_pdf",
             filename=filename,
@@ -154,7 +180,7 @@ def _zugferd_pdf_artifact(
             validation_status=xml_artifact.validation_status,
             validation_issues=xml_artifact.validation_issues,
         )
-    xml_bytes: bytes = base64.b64decode(xml_artifact.content_base64)
+    xml_bytes: bytes = base64.b64decode(xml_base64)
     try:
         embedded: bytes = embed_facturx(pdf_bytes, xml_bytes)
     except IssueEmbedError as exc:
@@ -182,8 +208,14 @@ def _zugferd_pdf_artifact(
         content_base64=base64.b64encode(embedded).decode("ascii"),
         download_allowed=True,
         validation_status=ValidationStatus.VALID,
-        validation_issues=[],
+        validation_issues=[notice] if notice is not None else [],
     )
+
+
+def _only_missing_facturx_scenario(artifact: IssueArtifact) -> bool:
+    """True when KoSIT rejected Factur-X only because this ruleset has no such scenario."""
+    errors: List[ValidationIssue] = [issue for issue in artifact.validation_issues if issue.level == "error"]
+    return len(errors) > 0 and all(issue.code == _NO_FACTURX_SCENARIO for issue in errors)
 
 
 def _parsed_view(invoice: ReadyInvoice) -> InvoiceParseResponse:

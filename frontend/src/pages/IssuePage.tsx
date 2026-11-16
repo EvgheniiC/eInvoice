@@ -84,7 +84,8 @@ export function IssuePage({
   const [hints, setHints] = useState<string[]>([])
   const [warnings, setWarnings] = useState<string[]>([])
   const [confirmed, setConfirmed] = useState<boolean>(false)
-  const [loading, setLoading] = useState<boolean>(false)
+  const [pending, setPending] = useState<null | 'read' | 'xrechnung' | 'zugferd_pdf'>(null)
+  const loading: boolean = pending !== null
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<IssueBuildResponse | null>(null)
   const [dismissedFields, setDismissedFields] = useState<ReadonlySet<string>>(new Set())
@@ -106,7 +107,7 @@ export function IssuePage({
     if (pdf === null || loading) {
       return
     }
-    setLoading(true)
+    setPending('read')
     setError(null)
     setResult(null)
     setDismissedFields(new Set())
@@ -119,7 +120,7 @@ export function IssuePage({
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'PDF konnte nicht gelesen werden.')
     } finally {
-      setLoading(false)
+      setPending(null)
     }
   }
 
@@ -130,10 +131,10 @@ export function IssuePage({
     if (missingRequiredFields(draft).size > 0) {
       return
     }
-    setLoading(true)
+    setPending(format)
     setError(null)
     try {
-      const response: IssueBuildResponse = await buildIssue(draft, pdf, confirmed)
+      const response: IssueBuildResponse = await buildIssue(draft, pdf, confirmed, format)
       setDismissedFields(new Set())
       setResult(response)
       const artifact: IssueArtifact | undefined = response.artifacts.find(
@@ -145,7 +146,7 @@ export function IssuePage({
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'E-Rechnung konnte nicht erzeugt werden.')
     } finally {
-      setLoading(false)
+      setPending(null)
     }
   }
 
@@ -188,7 +189,7 @@ export function IssuePage({
         />
         <div className="auth-form__actions">
           <button className="btn btn--secondary" type="submit" disabled={pdf === null || loading}>
-            Entwurf lesen
+            {pending === 'read' ? 'Wird gelesen…' : 'Entwurf lesen'}
           </button>
         </div>
       </form>
@@ -405,16 +406,22 @@ export function IssuePage({
             <span>Ich bin der Rechnungsaussteller und bestätige, dass diese Angaben stimmen.</span>
           </label>
           <div className="issue-downloads">
+            {pending === 'xrechnung' || pending === 'zugferd_pdf' ? (
+              <p className="status status--info" role="status">
+                Die Rechnung wird geprüft. Das kann einen Moment dauern.
+              </p>
+            ) : null}
             {DOWNLOADS.map((item) => (
               <button
                 key={item.format}
                 className="btn btn--primary"
                 type="button"
                 disabled={loading || !confirmed || missingRequiredFields(draft).size > 0}
+                aria-busy={pending === item.format}
                 onClick={() => void onDownload(item.format)}
               >
                 <DownloadIcon />
-                {item.label}
+                {pending === item.format ? 'Wird geprüft…' : item.label}
               </button>
             ))}
           </div>

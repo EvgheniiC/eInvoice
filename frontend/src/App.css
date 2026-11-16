@@ -2116,6 +2116,11 @@ html.has-consent-banner body {
   margin-top: 0.75rem;
 }
 
+.issue-downloads .status {
+  flex-basis: 100%;
+  margin: 0;
+}
+
 .issue-downloads .btn {
   gap: 0.45rem;
 }

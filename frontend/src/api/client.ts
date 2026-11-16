@@ -672,6 +672,7 @@ export async function buildIssue(
   draft: IssueDraft,
   pdf: File,
   confirmed: boolean,
+  target: 'xrechnung' | 'zugferd_pdf',
 ): Promise<IssueBuildResponse> {
   const pdfBase64: string = await fileToBase64(pdf)
   const response: Response = await fetch(
@@ -679,7 +680,7 @@ export async function buildIssue(
     withRequestId({
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ draft, pdf_base64: pdfBase64, confirmed }),
+      body: JSON.stringify({ draft, pdf_base64: pdfBase64, confirmed, target }),
     }),
   )
   if (!response.ok) {

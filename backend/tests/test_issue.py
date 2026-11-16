@@ -17,9 +17,10 @@ from app.core.config import settings
 from app.db.bootstrap import init_account_store
 from app.db.session import dispose_engine
 from app.main import create_app
-from app.schemas.invoice import ValidationStatus
+from app.schemas.invoice import ValidationIssue, ValidationStatus
 from app.schemas.issue import (
     IssueAddress,
+    IssueArtifact,
     IssueBuildRequest,
     IssueBuildResponse,
     IssueDraft,
@@ -259,6 +260,38 @@ class TestIssueBuildGate(unittest.TestCase):
         self.assertIn("23.80", by_format["xrechnung"])
         self.assertIn("urn:factur-x.eu:1p0:en16931", by_format["zugferd_xml"])
         self.assertTrue(by_format["zugferd_pdf"].startswith("%PDF-"))
+
+    def test_zugferd_pdf_is_created_when_only_facturx_scenario_is_missing(self) -> None:
+        valid: ValidationResult = ValidationResult(
+            status=ValidationStatus.VALID,
+            full_check_completed=True,
+            engine="kosit",
+        )
+        no_scenario: ValidationResult = ValidationResult(
+            status=ValidationStatus.INVALID,
+            full_check_completed=True,
+            engine="kosit",
+            issues=[
+                ValidationIssue(
+                    level="error",
+                    category="schema",
+                    code="KOSIT_NO_SCENARIO",
+                    message="KoSIT hat kein passendes Validierungsszenario gefunden.",
+                )
+            ],
+        )
+        with (
+            patch("app.services.issue_service.validate_invoice", side_effect=[valid, no_scenario]),
+            patch("app.services.issue_service.embed_facturx", return_value=b"%PDF-1.7 embedded"),
+        ):
+            response: IssueBuildResponse = build_issue(
+                IssueBuildRequest(draft=_complete_draft(), confirmed=True, target="zugferd_pdf"),
+                pdf_bytes=b"%PDF-1.7",
+            )
+        pdf: IssueArtifact = next(item for item in response.artifacts if item.format == "zugferd_pdf")
+        self.assertTrue(pdf.download_allowed)
+        self.assertIsNotNone(pdf.content_base64)
+        self.assertTrue(any(issue.code == "ZUGFERD_CHECKED_AS_XRECHNUNG" for issue in pdf.validation_issues))
 
     def test_facturx_library_embeds_xml_into_the_pdf(self) -> None:
         prepared = prepare_invoice(_complete_draft(), confirmed=True)

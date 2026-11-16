@@ -80,6 +80,7 @@ class IssueBuildRequest(ApiModel):
     draft: IssueDraft
     pdf_base64: Optional[str] = None
     confirmed: bool = False
+    target: Optional[Literal["xrechnung", "zugferd_pdf"]] = None
 
 
 class IssueArtifact(ApiModel):

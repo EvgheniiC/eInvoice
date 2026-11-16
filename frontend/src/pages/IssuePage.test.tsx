@@ -215,6 +215,43 @@ describe('IssuePage', (): void => {
     createObjectURL.mockRestore()
   })
 
+  it('shows that the check is running while the download request is open', async (): Promise<void> => {
+    const user: UserEvent = userEvent.setup({ delay: null })
+    let resolveBuild: (value: IssueBuildResponse) => void = (): void => undefined
+    vi.mocked(createIssueDraft).mockResolvedValue(DRAFT)
+    vi.mocked(buildIssue).mockImplementation(
+      (): Promise<IssueBuildResponse> =>
+        new Promise((resolve: (value: IssueBuildResponse) => void): void => {
+          resolveBuild = resolve
+        }),
+    )
+    vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:test')
+    vi.spyOn(URL, 'revokeObjectURL').mockImplementation((): void => undefined)
+    render(
+      <IssuePage
+        onNavigate={() => undefined}
+        session={buildSession({ is_admin: true })}
+        sessionReady
+        onLogout={() => undefined}
+      />,
+    )
+
+    const file: File = new File(['%PDF'], 'rechnung.pdf', { type: 'application/pdf' })
+    await user.upload(screen.getByLabelText('Eigene PDF-Rechnung'), file)
+    await user.click(screen.getByRole('button', { name: 'Entwurf lesen' }))
+    await screen.findByDisplayValue('RE-1')
+    await fillRequired(user)
+    await user.click(screen.getByLabelText(/Ich bin der Rechnungsaussteller/))
+    await user.click(screen.getByRole('button', { name: 'Download als XRechnung (XML)' }))
+
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      'Die Rechnung wird geprüft. Das kann einen Moment dauern.',
+    )
+    expect(screen.getByRole('button', { name: 'Wird geprüft…' })).toBeDisabled()
+    resolveBuild(READY)
+    expect(await screen.findByText('KoSIT hat die Datei als gültig abgeschlossen.')).toBeInTheDocument()
+  })
+
   it('hides the form from anyone who is not an administrator', (): void => {
     render(
       <IssuePage
