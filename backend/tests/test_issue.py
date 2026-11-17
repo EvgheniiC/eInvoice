@@ -106,6 +106,30 @@ def _text_pdf(lines: List[str]) -> bytes:
     return buffer.getvalue()
 
 
+def _column_pdf() -> bytes:
+    """Draw each column top to bottom, the order that smashes a table into separate lines."""
+    buffer: BytesIO = BytesIO()
+    pdf: canvas.Canvas = canvas.Canvas(buffer)
+    pdf.drawString(50, 760, "Rechnung")
+    pdf.drawString(220, 760, "0426478731")
+    pdf.drawString(50, 740, "Leistungsdatum")
+    pdf.drawString(220, 740, "09.10.26")
+    rows: List[tuple[int, str, str, str, str]] = [
+        (700, "LAGERUNG", "1", "28,49", "28,49"),
+        (680, "RADSKASTEN", "1", "120,76", "120,76"),
+    ]
+    for y_position, description, _qty, _price, _total in rows:
+        pdf.drawString(50, y_position, description)
+    for y_position, _description, quantity, _price, _total in rows:
+        pdf.drawString(220, y_position, quantity)
+    for y_position, _description, _qty, price, _total in rows:
+        pdf.drawString(280, y_position, price)
+    for y_position, _description, _qty, _price, total in rows:
+        pdf.drawString(360, y_position, total)
+    pdf.save()
+    return buffer.getvalue()
+
+
 class TestIssueDraft(unittest.TestCase):
     def test_reads_labeled_fields_and_keeps_header_amounts_out_of_lines(self) -> None:
         pdf: bytes = _text_pdf(
@@ -152,6 +176,34 @@ class TestIssueDraft(unittest.TestCase):
         self.assertEqual(result.draft.lines[1].description, "RADSKASTEN")
         self.assertEqual(result.draft.lines[1].unit_price, Decimal("120.76"))
         self.assertTrue(any("Positionen aus dem PDF-Text" in warning for warning in result.warnings))
+
+    def test_reads_a_short_rechnung_label_and_a_two_digit_service_date(self) -> None:
+        pdf: bytes = _text_pdf(
+            [
+                "Rechnung 0426478731",
+                "Leistungsdatum 09.10.26",
+            ]
+        )
+        result: IssueDraftResponse = extract_draft_from_pdf(pdf, "rechnung.pdf")
+        self.assertEqual(result.draft.invoice_number, "0426478731")
+        self.assertEqual(result.draft.delivery_date, "2026-10-09")
+        self.assertIsNone(result.draft.issue_date)
+
+    def test_rebuilds_a_table_row_from_word_positions(self) -> None:
+        result: IssueDraftResponse = extract_draft_from_pdf(_column_pdf(), "spalten.pdf")
+        self.assertEqual(result.draft.invoice_number, "0426478731")
+        self.assertEqual(result.draft.delivery_date, "2026-10-09")
+        self.assertEqual(
+            [line.description for line in result.draft.lines],
+            ["LAGERUNG", "RADSKASTEN"],
+        )
+        self.assertEqual(result.draft.lines[0].unit_price, Decimal("28.49"))
+        self.assertEqual(result.draft.lines[1].unit_price, Decimal("120.76"))
+
+    def test_skips_a_row_when_price_times_quantity_is_not_the_total(self) -> None:
+        pdf: bytes = _text_pdf(["LAGERUNG 1 28,49 99,00"])
+        result: IssueDraftResponse = extract_draft_from_pdf(pdf, "falsch.pdf")
+        self.assertIsNone(result.draft.lines[0].description)
 
     def test_organization_seller_wins_over_a_different_pdf_iban(self) -> None:
         pdf: bytes = _text_pdf(

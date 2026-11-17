@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 from io import BytesIO
-from typing import Final, List, Optional
+from typing import Any, Final, List, Optional
 
 import PyPDF2
 
@@ -31,12 +31,18 @@ STANDARD_TAX_RATES: Final[frozenset[Decimal]] = frozenset(
 )
 
 _INVOICE_NUMBER_RE: Final[re.Pattern[str]] = re.compile(
-    r"(?:Rechnungs?(?:nummer|nr\.?|-Nr\.?)|Invoice\s*(?:No\.?|Number))"
+    r"(?:Rechnungs?(?:nummer|nr\.?|-Nr\.?)|(?<![A-Za-zÄÖÜäöüß])Rechnung(?!s)|"
+    r"Invoice\s*(?:No\.?|Number))"
     r"\s*[:.]?\s*([A-Z0-9][A-Z0-9./\-]{1,40})",
     re.IGNORECASE,
 )
 _DATE_RE: Final[re.Pattern[str]] = re.compile(
-    r"(?:Rechnungsdatum|Datum)\s*[:.]?\s*(\d{2})\.(\d{2})\.(\d{4})",
+    r"(?<![A-Za-zÄÖÜäöüß])(?:Rechnungsdatum|Datum)\s*[:.]?\s*"
+    r"(\d{2})\.(\d{2})\.(\d{2}(?:\d{2})?)",
+    re.IGNORECASE,
+)
+_SERVICE_DATE_RE: Final[re.Pattern[str]] = re.compile(
+    r"(?:Leistungsdatum|Lieferdatum)\s*[:.]?\s*(\d{2})\.(\d{2})\.(\d{2}(?:\d{2})?)",
     re.IGNORECASE,
 )
 _VAT_RE: Final[re.Pattern[str]] = re.compile(
@@ -83,6 +89,13 @@ _QTY_DESC_LINE_RE: Final[re.Pattern[str]] = re.compile(
     rf"^(?P<qty>\d+(?:,\d+)?)\s+(?P<desc>[A-Za-zÄÖÜäöüß].{{2,120}}?)\s+"
     rf"(?P<price>{_MONEY_TOKEN})\s+(?P<total>{_MONEY_TOKEN})$"
 )
+_DESC_QTY_LINE_RE: Final[re.Pattern[str]] = re.compile(
+    rf"^(?P<desc>[A-Za-zÄÖÜäöüß][A-Za-zÄÖÜäöüß0-9 ./\-]{{1,80}}?)\s+"
+    rf"(?P<qty>\d+(?:,\d+)?)\s+(?P<price>{_MONEY_TOKEN})\s+(?P<total>{_MONEY_TOKEN})$"
+)
+_LINE_Y_TOLERANCE: Final[float] = 3.0
+_CHAR_WIDTH_EM: Final[float] = 0.5
+_TWO_DIGIT_YEAR_PIVOT: Final[int] = 70
 _LABELED_AMOUNT: Final[dict[str, re.Pattern[str]]] = {
     "Netto": re.compile(
         r"(?:Netto(?:betrag)?|Zwischensumme)\s*[:.]?\s*" + _AMOUNT_RE.pattern,
@@ -98,6 +111,16 @@ _LABELED_AMOUNT: Final[dict[str, re.Pattern[str]]] = {
         re.IGNORECASE,
     ),
 }
+
+
+@dataclass(frozen=True)
+class _TextPiece:
+    """One text run with its baseline position on the page."""
+
+    text: str
+    x: float
+    y: float
+    font_size: float
 
 
 @dataclass(frozen=True)
@@ -340,6 +363,11 @@ def _draft_from_text(
     issue_date: Optional[str] = _iso_from_german_date(text)
     if issue_date:
         hints.append(FieldHint(field="issue_date", source="pdf", message="Rechnungsdatum aus dem PDF-Text."))
+    delivery_date: Optional[str] = _iso_from_service_date(text)
+    if delivery_date:
+        hints.append(
+            FieldHint(field="delivery_date", source="pdf", message="Leistungsdatum aus dem PDF-Text.")
+        )
 
     buyer_match: Optional[re.Match[str]] = _BUYER_REFERENCE_RE.search(text)
     buyer_reference: Optional[str] = buyer_match.group(1) if buyer_match else None
@@ -374,6 +402,7 @@ def _draft_from_text(
     return IssueDraft(
         invoice_number=invoice_number,
         issue_date=issue_date,
+        delivery_date=delivery_date,
         currency="EUR",
         buyer_reference=buyer_reference,
         seller=seller_party,
@@ -540,12 +569,94 @@ def _read_pdf_text(content: bytes) -> tuple[str, Optional[str]]:
         reader: PyPDF2.PdfReader = PyPDF2.PdfReader(BytesIO(content))
         parts: List[str] = []
         for page in reader.pages:
+            laid_out: str = _layout_text(page)
+            if laid_out:
+                parts.append(laid_out)
+                continue
             extracted: Optional[str] = page.extract_text()
             if extracted:
                 parts.append(extracted)
         return "\n".join(parts), None
     except Exception:
         return "", "PDF-Text konnte nicht gelesen werden."
+
+
+def _layout_text(page: PyPDF2.PageObject) -> str:
+    """Rebuild lines from text positions so table columns stay on one row."""
+    pieces: List[_TextPiece] = []
+
+    def _remember(text: Any, cm: Any, tm: Any, font_dict: Any, font_size: Any) -> None:
+        del font_dict
+        if not isinstance(text, str):
+            return
+        # A text run often ends with the line break from the content stream.
+        token: str = " ".join(text.split())
+        if not token:
+            return
+        if not isinstance(tm, (list, tuple)) or len(tm) < 6:
+            return
+        transform: tuple[float, ...] = _matrix(cm)
+        x: float = transform[0] * float(tm[4]) + transform[2] * float(tm[5]) + transform[4]
+        y: float = transform[1] * float(tm[4]) + transform[3] * float(tm[5]) + transform[5]
+        size: float = float(font_size) if isinstance(font_size, (int, float)) and font_size else 10.0
+        piece: _TextPiece = _TextPiece(text=token, x=x, y=y, font_size=size)
+        if pieces and _same_run(pieces[-1], piece):
+            return
+        pieces.append(piece)
+
+    page.extract_text(visitor_text=_remember)
+    if not pieces:
+        return ""
+    return "\n".join(_join_line(line) for line in _group_lines(pieces))
+
+
+def _matrix(cm: Any) -> tuple[float, float, float, float, float, float]:
+    if isinstance(cm, (list, tuple)) and len(cm) >= 6:
+        return (
+            float(cm[0]),
+            float(cm[1]),
+            float(cm[2]),
+            float(cm[3]),
+            float(cm[4]),
+            float(cm[5]),
+        )
+    return (1.0, 0.0, 0.0, 1.0, 0.0, 0.0)
+
+
+def _same_run(previous: _TextPiece, piece: _TextPiece) -> bool:
+    return (
+        previous.text == piece.text
+        and abs(previous.x - piece.x) < 0.5
+        and abs(previous.y - piece.y) < 0.5
+    )
+
+
+def _group_lines(pieces: List[_TextPiece]) -> List[List[_TextPiece]]:
+    ordered: List[_TextPiece] = sorted(pieces, key=lambda piece: (-piece.y, piece.x))
+    lines: List[List[_TextPiece]] = []
+    for piece in ordered:
+        if lines and abs(lines[-1][0].y - piece.y) <= _LINE_Y_TOLERANCE:
+            lines[-1].append(piece)
+            continue
+        lines.append([piece])
+    for line in lines:
+        line.sort(key=lambda piece: piece.x)
+    return lines
+
+
+def _join_line(pieces: List[_TextPiece]) -> str:
+    parts: List[str] = [pieces[0].text]
+    end: float = _run_end(pieces[0])
+    for piece in pieces[1:]:
+        if piece.x - end > piece.font_size * 0.25:
+            parts.append(" ")
+        parts.append(piece.text)
+        end = max(end, _run_end(piece))
+    return "".join(parts).strip()
+
+
+def _run_end(piece: _TextPiece) -> float:
+    return piece.x + max(len(piece.text), 1) * piece.font_size * _CHAR_WIDTH_EM
 
 
 def _lines_from_text(text: str) -> List[IssueLineInput]:
@@ -556,7 +667,10 @@ def _lines_from_text(text: str) -> List[IssueLineInput]:
         if not line or _SKIP_LINE_RE.search(line):
             continue
         parsed: Optional[IssueLineInput] = (
-            _parts_line(line, tax_rate) or _stueck_line(line, tax_rate) or _qty_desc_line(line, tax_rate)
+            _parts_line(line, tax_rate)
+            or _stueck_line(line, tax_rate)
+            or _qty_desc_line(line, tax_rate)
+            or _desc_qty_line(line, tax_rate)
         )
         if parsed is None:
             continue
@@ -602,18 +716,47 @@ def _stueck_line(line: str, tax_rate: Decimal) -> Optional[IssueLineInput]:
     return _line(description, quantity, unit_price, tax_rate)
 
 
+def _desc_qty_line(line: str, tax_rate: Decimal) -> Optional[IssueLineInput]:
+    match: Optional[re.Match[str]] = _DESC_QTY_LINE_RE.match(line)
+    if match is None:
+        return None
+    return _priced_line(
+        match.group("desc"),
+        match.group("qty"),
+        match.group("price"),
+        match.group("total"),
+        tax_rate,
+    )
+
+
 def _qty_desc_line(line: str, tax_rate: Decimal) -> Optional[IssueLineInput]:
     match: Optional[re.Match[str]] = _QTY_DESC_LINE_RE.match(line)
     if match is None:
         return None
-    quantity: Optional[Decimal] = _parse_de_quantity(match.group("qty"))
-    unit_price: Optional[Decimal] = _parse_de_amount(match.group("price"))
-    total: Optional[Decimal] = _parse_de_amount(match.group("total"))
+    return _priced_line(
+        match.group("desc"),
+        match.group("qty"),
+        match.group("price"),
+        match.group("total"),
+        tax_rate,
+    )
+
+
+def _priced_line(
+    description_raw: str,
+    qty_raw: str,
+    price_raw: str,
+    total_raw: str,
+    tax_rate: Decimal,
+) -> Optional[IssueLineInput]:
+    quantity: Optional[Decimal] = _parse_de_quantity(qty_raw)
+    unit_price: Optional[Decimal] = _parse_de_amount(price_raw)
+    total: Optional[Decimal] = _parse_de_amount(total_raw)
     if quantity is None or unit_price is None or total is None:
         return None
     if (unit_price * quantity).quantize(MONEY_QUANT) != total:
         return None
-    description: str = _clean(match.group("desc"), max_length=200)
+    description: str = _clean(description_raw, max_length=200)
     if not description:
         return None
     return _line(description, quantity, unit_price, tax_rate)
@@ -655,14 +798,24 @@ def _iso_from_german_date(text: str) -> Optional[str]:
     match: Optional[re.Match[str]] = _DATE_RE.search(text)
     if match is None:
         return None
+    return _iso_from_date_parts(match.group(1), match.group(2), match.group(3))
+
+
+def _iso_from_service_date(text: str) -> Optional[str]:
+    match: Optional[re.Match[str]] = _SERVICE_DATE_RE.search(text)
+    if match is None:
+        return None
+    return _iso_from_date_parts(match.group(1), match.group(2), match.group(3))
+
+
+def _iso_from_date_parts(day: str, month: str, year: str) -> Optional[str]:
+    year_number: int = int(year)
+    if len(year) == 2:
+        year_number = 2000 + year_number if year_number < _TWO_DIGIT_YEAR_PIVOT else 1900 + year_number
     try:
-        parsed: datetime = datetime.strptime(
-            f"{match.group(1)}.{match.group(2)}.{match.group(3)}",
-            "%d.%m.%Y",
-        )
+        return date(year_number, int(month), int(day)).isoformat()
     except ValueError:
         return None
-    return parsed.date().isoformat()
 
 
 def _labeled_vat(text: str) -> Optional[str]:
