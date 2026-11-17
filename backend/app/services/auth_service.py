@@ -16,7 +16,14 @@ from app.core.config import settings
 from app.core.error_events import log_event
 from app.core.passwords import hash_password, hash_token, new_token, normalize_email, verify_password
 from app.db.models import AuthSession, EmailToken, Membership, Organization, Plan, UsageCounter, User
-from app.schemas.auth import validated_accountant_email, validated_iban, validated_vat_id
+from app.schemas.auth import (
+    validated_accountant_email,
+    validated_buyer_email,
+    validated_iban,
+    validated_invoice_email,
+    validated_phone,
+    validated_vat_id,
+)
 from app.schemas.export import OrgProfile
 from app.services.email_service import send_auth_email
 from app.services.plan_limits import PlanLimits, merge_plan_row
@@ -296,15 +303,33 @@ def update_organization(
     vat_id: Optional[str] = None,
     iban: Optional[str] = None,
     accountant_email: Optional[str] = None,
+    invoice_contact_name: Optional[str] = None,
+    invoice_phone: Optional[str] = None,
+    invoice_email: Optional[str] = None,
+    default_buyer_email: Optional[str] = None,
+    default_buyer_reference: Optional[str] = None,
     update_tax_number: bool = False,
     update_vat_id: bool = False,
     update_iban: bool = False,
     update_accountant_email: bool = False,
+    update_invoice_contact_name: bool = False,
+    update_invoice_phone: bool = False,
+    update_invoice_email: bool = False,
+    update_default_buyer_email: bool = False,
+    update_default_buyer_reference: bool = False,
 ) -> Organization:
     if role != ROLE_INHABER:
         raise AuthError("Nur der Inhaber kann die Organisation ändern.")
     profile_touch: bool = (
-        update_tax_number or update_vat_id or update_iban or update_accountant_email
+        update_tax_number
+        or update_vat_id
+        or update_iban
+        or update_accountant_email
+        or update_invoice_contact_name
+        or update_invoice_phone
+        or update_invoice_email
+        or update_default_buyer_email
+        or update_default_buyer_reference
     )
     if (
         name is None
@@ -352,6 +377,16 @@ def update_organization(
         organization.iban = validated_iban(iban)
     if update_accountant_email:
         organization.accountant_email = validated_accountant_email(accountant_email)
+    if update_invoice_contact_name:
+        organization.invoice_contact_name = invoice_contact_name
+    if update_invoice_phone:
+        organization.invoice_phone = validated_phone(invoice_phone)
+    if update_invoice_email:
+        organization.invoice_email = validated_invoice_email(invoice_email)
+    if update_default_buyer_email:
+        organization.default_buyer_email = validated_buyer_email(default_buyer_email)
+    if update_default_buyer_reference:
+        organization.default_buyer_reference = default_buyer_reference
     session.commit()
     return organization
 

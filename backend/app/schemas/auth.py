@@ -50,12 +50,41 @@ def validated_iban(value: Optional[str]) -> Optional[str]:
 
 
 def validated_accountant_email(value: Optional[str]) -> Optional[str]:
+    return _validated_email(value, "E-Mail des Steuerberaters ist ungültig.")
+
+
+def validated_invoice_email(value: Optional[str]) -> Optional[str]:
+    return _validated_email(value, "E-Mail des Verkäufers ist ungültig.")
+
+
+def validated_buyer_email(value: Optional[str]) -> Optional[str]:
+    return _validated_email(value, "E-Mail des Käufers ist ungültig.")
+
+
+def validated_phone(value: Optional[str]) -> Optional[str]:
+    if value is None:
+        return None
+    if not re.fullmatch(r"\+?[0-9][0-9 /\-()]{5,30}", value):
+        raise ValueError("Telefonnummer ist ungültig.")
+    return value
+
+
+def _validated_email(value: Optional[str], message: str) -> Optional[str]:
     if value is None:
         return None
     try:
         return str(_EMAIL_ADAPTER.validate_python(value))
     except Exception as exc:
-        raise ValueError("E-Mail des Steuerberaters ist ungültig.") from exc
+        raise ValueError(message) from exc
+
+
+def _empty_to_none(value: object) -> object:
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        return value
+    stripped: str = " ".join(value.split())
+    return stripped or None
 
 
 MembershipRole = Literal["inhaber", "buero", "export_only"]
@@ -147,6 +176,11 @@ class OrgUpdateRequest(ApiModel):
     vat_id: Optional[str] = Field(default=None, max_length=16)
     iban: Optional[str] = Field(default=None, max_length=42)
     accountant_email: Optional[str] = Field(default=None, max_length=254)
+    invoice_contact_name: Optional[str] = Field(default=None, max_length=200)
+    invoice_phone: Optional[str] = Field(default=None, max_length=40)
+    invoice_email: Optional[str] = Field(default=None, max_length=254)
+    default_buyer_email: Optional[str] = Field(default=None, max_length=254)
+    default_buyer_reference: Optional[str] = Field(default=None, max_length=50)
 
     @field_validator("tax_number", mode="before")
     @classmethod
@@ -168,15 +202,18 @@ class OrgUpdateRequest(ApiModel):
     def normalize_iban(cls, value: object) -> object:
         return _compact_alnum(value)
 
-    @field_validator("accountant_email", mode="before")
+    @field_validator(
+        "accountant_email",
+        "invoice_contact_name",
+        "invoice_phone",
+        "invoice_email",
+        "default_buyer_email",
+        "default_buyer_reference",
+        mode="before",
+    )
     @classmethod
-    def normalize_accountant_email(cls, value: object) -> object:
-        if value is None:
-            return None
-        if not isinstance(value, str):
-            return value
-        stripped: str = value.strip()
-        return stripped or None
+    def normalize_optional_text(cls, value: object) -> object:
+        return _empty_to_none(value)
 
 
 class OrgResponse(ApiModel):
@@ -191,6 +228,11 @@ class OrgResponse(ApiModel):
     vat_id: Optional[str] = None
     iban: Optional[str] = None
     accountant_email: Optional[str] = None
+    invoice_contact_name: Optional[str] = None
+    invoice_phone: Optional[str] = None
+    invoice_email: Optional[str] = None
+    default_buyer_email: Optional[str] = None
+    default_buyer_reference: Optional[str] = None
 
 
 class SetPlanRequest(ApiModel):

@@ -31,6 +31,11 @@ function orgResponse(overrides: Partial<OrgResponse> = {}): OrgResponse {
     vat_id: null,
     iban: null,
     accountant_email: null,
+    invoice_contact_name: null,
+    invoice_phone: null,
+    invoice_email: null,
+    default_buyer_email: null,
+    default_buyer_reference: null,
     ...overrides,
   }
 }
@@ -98,6 +103,11 @@ describe('OrgSettingsPage', (): void => {
         vat_id: 'DE123456789',
         iban: 'DE89370400440532013000',
         accountant_email: 'sb@kanzlei.de',
+        invoice_contact_name: '',
+        invoice_phone: '',
+        invoice_email: '',
+        default_buyer_email: '',
+        default_buyer_reference: '',
       })
     })
     expect(onSession).toHaveBeenCalled()

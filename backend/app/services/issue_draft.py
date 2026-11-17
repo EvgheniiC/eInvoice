@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 from io import BytesIO
-from typing import Any, Final, List, Optional
+from typing import Any, Callable, Final, List, Optional
 
 import PyPDF2
 
@@ -75,6 +75,7 @@ _DOC_TAX_RE: Final[re.Pattern[str]] = re.compile(
     re.IGNORECASE,
 )
 _MONEY_TOKEN: Final[str] = r"(?:\d{1,3}(?:\.\d{3})*,\d{2}|\d+,\d{2})"
+_RATE_TOKEN: Final[str] = r"\d{1,2}(?:[.,]\d{1,2})?\s*%"
 _PARTS_LINE_RE: Final[re.Pattern[str]] = re.compile(
     rf"^(?P<article>\d{{5,}})\s+(?P<desc>.+?)\s+(?P<qty>\d+(?:,\d+)?)\s+"
     rf"(?P<list>{_MONEY_TOKEN})(?P<discount>\d{{1,2}},\d+)%(?P<net>{_MONEY_TOKEN})\*?$"
@@ -87,11 +88,13 @@ _STUECK_LINE_RE: Final[re.Pattern[str]] = re.compile(
 )
 _QTY_DESC_LINE_RE: Final[re.Pattern[str]] = re.compile(
     rf"^(?P<qty>\d+(?:,\d+)?)\s+(?P<desc>[A-Za-zÄÖÜäöüß].{{2,120}}?)\s+"
-    rf"(?P<price>{_MONEY_TOKEN})\s+(?P<total>{_MONEY_TOKEN})$"
+    rf"(?P<price>{_MONEY_TOKEN})\s+(?:{_RATE_TOKEN}\s+)?"
+    rf"(?P<total>{_MONEY_TOKEN})(?:\s+{_RATE_TOKEN})?$"
 )
 _DESC_QTY_LINE_RE: Final[re.Pattern[str]] = re.compile(
     rf"^(?P<desc>[A-Za-zÄÖÜäöüß][A-Za-zÄÖÜäöüß0-9 ./\-]{{1,80}}?)\s+"
-    rf"(?P<qty>\d+(?:,\d+)?)\s+(?P<price>{_MONEY_TOKEN})\s+(?P<total>{_MONEY_TOKEN})$"
+    rf"(?P<qty>\d+(?:,\d+)?)\s+(?P<price>{_MONEY_TOKEN})\s+"
+    rf"(?:{_RATE_TOKEN}\s+)?(?P<total>{_MONEY_TOKEN})(?:\s+{_RATE_TOKEN})?$"
 )
 _LINE_Y_TOLERANCE: Final[float] = 3.0
 _CHAR_WIDTH_EM: Final[float] = 0.5
@@ -111,6 +114,42 @@ _LABELED_AMOUNT: Final[dict[str, re.Pattern[str]]] = {
         re.IGNORECASE,
     ),
 }
+_STANDARD_RATE_RE: Final[re.Pattern[str]] = re.compile(
+    r"(?<![\d.,])(\d{1,2})(?:[.,]0{1,2})?\s*%"
+)
+_POSTAL_RE: Final[re.Pattern[str]] = re.compile(
+    r"^(?P<postcode>\d{5})\s+(?P<city>[A-ZÄÖÜ][A-Za-zÄÖÜäöüß.\-]*(?:\s+[A-Za-zÄÖÜäöüß.\-]+){0,3})$"
+)
+_INLINE_ADDRESS_RE: Final[re.Pattern[str]] = re.compile(
+    r"^(?P<name>[^·|]{2,80}?)\s*[·|]\s*(?P<street>[^·|]{2,80}?)\s*[·|]\s*"
+    r"(?P<postcode>\d{5})\s+(?P<city>[A-ZÄÖÜ][A-Za-zÄÖÜäöüß.\-]*(?:\s+[A-Za-zÄÖÜäöüß.\-]+){0,3})$"
+)
+_STREET_HINT_RE: Final[re.Pattern[str]] = re.compile(
+    r"(?:straße|strasse|str\.|weg|platz|allee|gasse|ring|damm|ufer|markt|hof|\d)",
+    re.IGNORECASE,
+)
+_BUYER_LABEL_RE: Final[re.Pattern[str]] = re.compile(
+    r"^(?:Rechnungsempfänger|Auftraggeber|Leistungsempfänger|Rechnung\s+an|"
+    r"Lieferadresse|Käufer|Kunde|Empfänger)\s*[:.]?\s*$",
+    re.IGNORECASE,
+)
+_SELLER_LABEL_RE: Final[re.Pattern[str]] = re.compile(
+    r"^(?:Rechnungssteller|Verkäufer|Absender|Leistungserbringer)\s*[:.]?\s*$",
+    re.IGNORECASE,
+)
+_NAME_REJECT_RE: Final[re.Pattern[str]] = re.compile(
+    r"^(?:Rechnung|Rechnungsnummer|Rechnungsdatum|Datum|Leistungsdatum|MwSt|Umsatzsteuer|"
+    r"USt|IBAN|Summe|Gesamt|Netto|Brutto|Position|Menge|Seite|Tel|Telefon|E-Mail|Email|Leitweg)\b",
+    re.IGNORECASE,
+)
+_PHONE_RE: Final[re.Pattern[str]] = re.compile(
+    r"(?:Tel\.?|Telefon|Phone)\s*[:.]?\s*(\+?\d[\d() /\-]{5,24}\d)",
+    re.IGNORECASE,
+)
+_CONTACT_RE: Final[re.Pattern[str]] = re.compile(
+    r"(?:Ansprechpartner|Sachbearbeiter|Kontakt)\s*[:.]?\s*"
+    r"([A-ZÄÖÜ][A-Za-zÄÖÜäöüß.\-]+(?:\s+[A-ZÄÖÜ][A-Za-zÄÖÜäöüß.\-]+){0,3})",
+)
 
 
 @dataclass(frozen=True)
@@ -125,11 +164,38 @@ class _TextPiece:
 
 @dataclass(frozen=True)
 class SellerSeed:
-    """Seller fields copied from the signed-in organization. Never taken from the PDF."""
+    """Issuer defaults from the organization. Name, VAT, IBAN and seller contact win over the PDF."""
 
     name: Optional[str] = None
     vat_id: Optional[str] = None
     iban: Optional[str] = None
+    contact_name: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    buyer_email: Optional[str] = None
+    buyer_reference: Optional[str] = None
+
+
+@dataclass(frozen=True)
+class _FoundAddress:
+    """One postal block read from the PDF text."""
+
+    name: str
+    street: str
+    postcode: str
+    city: str
+    role: Optional[str]
+    line_index: int
+
+
+@dataclass(frozen=True)
+class _PdfContacts:
+    """Contact details found near the parties, before profile defaults are applied."""
+
+    seller_email: Optional[str]
+    buyer_email: Optional[str]
+    phone: Optional[str]
+    contact_name: Optional[str]
 
 
 @dataclass(frozen=True)
@@ -369,13 +435,24 @@ def _draft_from_text(
             FieldHint(field="delivery_date", source="pdf", message="Leistungsdatum aus dem PDF-Text.")
         )
 
-    buyer_match: Optional[re.Match[str]] = _BUYER_REFERENCE_RE.search(text)
-    buyer_reference: Optional[str] = buyer_match.group(1) if buyer_match else None
-    if buyer_reference:
-        hints.append(FieldHint(field="buyer_reference", source="pdf", message="Käuferreferenz aus dem PDF-Text."))
+    text_lines: List[str] = text.splitlines()
+    seller_name: Optional[str] = seller.name if seller and seller.name else None
+    seller_block, buyer_block = _assign_party_addresses(_address_blocks(text_lines), seller_name)
+    contacts: _PdfContacts = _pdf_contacts(text_lines, None if buyer_block is None else buyer_block.line_index)
 
-    email_match: Optional[re.Match[str]] = _EMAIL_RE.search(text)
-    email: Optional[str] = email_match.group(0) if email_match else None
+    pdf_reference: Optional[str] = None
+    buyer_match: Optional[re.Match[str]] = _BUYER_REFERENCE_RE.search(text)
+    if buyer_match is not None:
+        pdf_reference = buyer_match.group(1)
+    profile_reference: Optional[str] = seller.buyer_reference if seller else None
+    buyer_reference: Optional[str] = _prefer_pdf(
+        pdf_reference,
+        profile_reference,
+        field="buyer_reference",
+        pdf_message="Käuferreferenz aus dem PDF-Text.",
+        profile_message="Käuferreferenz aus dem Organisationsprofil.",
+        hints=hints,
+    )
 
     pdf_vat: Optional[str] = _labeled_vat(text)
     pdf_iban: Optional[str] = _first_iban(text)
@@ -383,9 +460,26 @@ def _draft_from_text(
         seller=seller,
         pdf_vat=pdf_vat,
         pdf_iban=pdf_iban,
-        email=email,
+        pdf_email=contacts.seller_email,
+        pdf_phone=contacts.phone,
+        pdf_contact=contacts.contact_name,
+        address=_address_from_block(seller_block),
         hints=hints,
         warnings=warnings,
+    )
+    if seller_block is not None and not seller_party.name:
+        seller_party.name = seller_block.name
+        hints.append(FieldHint(field="seller.name", source="pdf", message="Verkäufername aus dem PDF-Text."))
+    if seller_block is not None:
+        hints.append(
+            FieldHint(field="seller.address.line", source="pdf", message="Adresse des Verkäufers aus dem PDF-Text.")
+        )
+
+    buyer_party: IssueParty = _buyer_party(
+        block=buyer_block,
+        pdf_email=contacts.buyer_email,
+        profile_email=seller.buyer_email if seller else None,
+        hints=hints,
     )
     amount_note: Optional[str] = _amount_note(text)
     if amount_note:
@@ -394,6 +488,8 @@ def _draft_from_text(
     if lines:
         warnings.append("Positionen aus dem PDF-Text. Bitte Menge, Preis und Steuersatz prüfen.")
         hints.append(FieldHint(field="lines", source="pdf", message="Positionen aus dem PDF-Text."))
+        if any(line.tax_rate is None for line in lines) and len(_document_tax_rates(text)) > 1:
+            warnings.append("Im PDF stehen mehrere MwSt-Sätze. Positionen ohne eigenen Satz bitte ergänzen.")
     else:
         warnings.append(
             "Positionen werden nicht automatisch übernommen. Bitte Menge, Preis und Steuersatz eintragen."
@@ -406,7 +502,7 @@ def _draft_from_text(
         currency="EUR",
         buyer_reference=buyer_reference,
         seller=seller_party,
-        buyer=IssueParty(address=IssueAddress(country="DE")),
+        buyer=buyer_party,
         lines=lines,
     )
 
@@ -416,7 +512,10 @@ def _seller_party(
     seller: Optional[SellerSeed],
     pdf_vat: Optional[str],
     pdf_iban: Optional[str],
-    email: Optional[str],
+    pdf_email: Optional[str],
+    pdf_phone: Optional[str],
+    pdf_contact: Optional[str],
+    address: IssueAddress,
     hints: List[FieldHint],
     warnings: List[str],
 ) -> IssueParty:
@@ -424,32 +523,347 @@ def _seller_party(
     if name:
         hints.append(FieldHint(field="seller.name", source="organization", message="Verkäufername aus der Organisation."))
 
-    vat_id: Optional[str] = seller.vat_id if seller and seller.vat_id else pdf_vat
-    if seller and seller.vat_id:
-        hints.append(FieldHint(field="seller.vat_id", source="organization", message="USt-IdNr. aus der Organisation."))
-        if pdf_vat and _compact_upper(pdf_vat) != _compact_upper(seller.vat_id):
-            warnings.append("USt-IdNr. im PDF weicht vom Organisationsprofil ab. Das Profil bleibt eingetragen.")
-    elif pdf_vat:
-        hints.append(FieldHint(field="seller.vat_id", source="pdf", message="USt-IdNr. aus dem PDF-Text."))
-
-    iban: Optional[str] = seller.iban if seller and seller.iban else pdf_iban
-    if seller and seller.iban:
-        hints.append(FieldHint(field="seller.iban", source="organization", message="IBAN aus der Organisation."))
-        if pdf_iban and _compact_upper(pdf_iban) != _compact_upper(seller.iban):
-            warnings.append("IBAN im PDF weicht vom Organisationsprofil ab. Das Profil bleibt eingetragen.")
-    elif pdf_iban:
-        hints.append(FieldHint(field="seller.iban", source="pdf", message="IBAN aus dem PDF-Text."))
-
-    if email:
-        hints.append(FieldHint(field="seller.email", source="pdf", message="E-Mail aus dem PDF-Text. Bitte prüfen."))
-
+    vat_id: Optional[str] = _prefer_profile(
+        seller.vat_id if seller else None,
+        pdf_vat,
+        field="seller.vat_id",
+        profile_message="USt-IdNr. aus der Organisation.",
+        pdf_message="USt-IdNr. aus dem PDF-Text.",
+        differ_message="USt-IdNr. im PDF weicht vom Organisationsprofil ab. Das Profil bleibt eingetragen.",
+        hints=hints,
+        warnings=warnings,
+        same=_same_compact,
+    )
+    iban: Optional[str] = _prefer_profile(
+        seller.iban if seller else None,
+        pdf_iban,
+        field="seller.iban",
+        profile_message="IBAN aus der Organisation.",
+        pdf_message="IBAN aus dem PDF-Text.",
+        differ_message="IBAN im PDF weicht vom Organisationsprofil ab. Das Profil bleibt eingetragen.",
+        hints=hints,
+        warnings=warnings,
+        same=_same_compact,
+    )
+    email: Optional[str] = _prefer_profile(
+        seller.email if seller else None,
+        pdf_email,
+        field="seller.email",
+        profile_message="E-Mail des Verkäufers aus der Organisation.",
+        pdf_message="E-Mail aus dem PDF-Text. Bitte prüfen.",
+        differ_message="E-Mail im PDF weicht vom Organisationsprofil ab. Das Profil bleibt eingetragen.",
+        hints=hints,
+        warnings=warnings,
+        same=_same_text,
+    )
+    phone: Optional[str] = _prefer_profile(
+        seller.phone if seller else None,
+        pdf_phone,
+        field="seller.phone",
+        profile_message="Telefon aus der Organisation.",
+        pdf_message="Telefon aus dem PDF-Text.",
+        differ_message="Telefon im PDF weicht vom Organisationsprofil ab. Das Profil bleibt eingetragen.",
+        hints=hints,
+        warnings=warnings,
+        same=_same_text,
+    )
+    contact_name: Optional[str] = _prefer_profile(
+        seller.contact_name if seller else None,
+        pdf_contact,
+        field="seller.contact_name",
+        profile_message="Ansprechpartner aus der Organisation.",
+        pdf_message="Ansprechpartner aus dem PDF-Text.",
+        differ_message="Ansprechpartner im PDF weicht vom Organisationsprofil ab. Das Profil bleibt eingetragen.",
+        hints=hints,
+        warnings=warnings,
+        same=_same_text,
+    )
     return IssueParty(
         name=name,
-        address=IssueAddress(country="DE"),
+        address=address,
         vat_id=vat_id,
         email=email,
+        contact_name=contact_name,
+        phone=phone,
         iban=iban,
     )
+
+
+def _buyer_party(
+    *,
+    block: Optional[_FoundAddress],
+    pdf_email: Optional[str],
+    profile_email: Optional[str],
+    hints: List[FieldHint],
+) -> IssueParty:
+    address: IssueAddress = _address_from_block(block)
+    name: Optional[str] = None if block is None else block.name
+    if name:
+        hints.append(FieldHint(field="buyer.name", source="pdf", message="Name des Käufers aus dem PDF-Text."))
+    if block is not None:
+        hints.append(FieldHint(field="buyer.address.line", source="pdf", message="Adresse des Käufers aus dem PDF-Text."))
+    email: Optional[str] = _prefer_pdf(
+        pdf_email,
+        profile_email,
+        field="buyer.email",
+        pdf_message="E-Mail des Käufers aus dem PDF-Text.",
+        profile_message="E-Mail des Käufers aus dem Organisationsprofil.",
+        hints=hints,
+    )
+    return IssueParty(name=name, address=address, email=email)
+
+
+def _prefer_profile(
+    profile_value: Optional[str],
+    pdf_value: Optional[str],
+    *,
+    field: str,
+    profile_message: str,
+    pdf_message: str,
+    differ_message: str,
+    hints: List[FieldHint],
+    warnings: List[str],
+    same: Callable[[str, str], bool],
+) -> Optional[str]:
+    """Organization value wins. The PDF fills the field only when the profile is empty."""
+    chosen: Optional[str] = _clean(profile_value, max_length=254) or None
+    if chosen:
+        hints.append(FieldHint(field=field, source="organization", message=profile_message))
+        if pdf_value and not same(pdf_value, chosen):
+            warnings.append(differ_message)
+        return chosen
+    if pdf_value:
+        hints.append(FieldHint(field=field, source="pdf", message=pdf_message))
+        return pdf_value
+    return None
+
+
+def _prefer_pdf(
+    pdf_value: Optional[str],
+    profile_value: Optional[str],
+    *,
+    field: str,
+    pdf_message: str,
+    profile_message: str,
+    hints: List[FieldHint],
+) -> Optional[str]:
+    """A value printed on this invoice wins. The profile is only the fallback."""
+    if pdf_value:
+        hints.append(FieldHint(field=field, source="pdf", message=pdf_message))
+        return pdf_value
+    chosen: Optional[str] = _clean(profile_value, max_length=254) or None
+    if chosen:
+        hints.append(FieldHint(field=field, source="organization", message=profile_message))
+        return chosen
+    return None
+
+
+def _address_from_block(block: Optional[_FoundAddress]) -> IssueAddress:
+    if block is None:
+        return IssueAddress(country="DE")
+    return IssueAddress(
+        line=_clean(block.street, max_length=200),
+        postcode=_clean(block.postcode, max_length=20),
+        city=_clean(block.city, max_length=80),
+        country="DE",
+    )
+
+
+def _address_blocks(lines: List[str]) -> List[_FoundAddress]:
+    """Letterhead and window addresses. A 5-digit postcode line anchors each block."""
+    found: List[_FoundAddress] = []
+    consumed: set[int] = set()
+    for index, raw_line in enumerate(lines):
+        line: str = " ".join(raw_line.split())
+        if not line or index in consumed or _AMOUNT_RE.search(line):
+            continue
+        inline: Optional[re.Match[str]] = _INLINE_ADDRESS_RE.match(line)
+        if inline is not None:
+            block: Optional[_FoundAddress] = _make_address(
+                name=inline.group("name"),
+                street=inline.group("street"),
+                postcode=inline.group("postcode"),
+                city=inline.group("city"),
+                role=_role_before(lines, index),
+                line_index=index,
+            )
+            if block is not None:
+                found.append(block)
+                consumed.add(index)
+            continue
+        postal: Optional[re.Match[str]] = _POSTAL_RE.match(line)
+        if postal is None:
+            continue
+        street_at: Optional[tuple[int, str]] = _previous_content(lines, index, consumed)
+        if street_at is None or not _STREET_HINT_RE.search(street_at[1]):
+            continue
+        name_at: Optional[tuple[int, str]] = _previous_content(lines, street_at[0], consumed)
+        if name_at is None:
+            continue
+        block = _make_address(
+            name=name_at[1],
+            street=street_at[1],
+            postcode=postal.group("postcode"),
+            city=postal.group("city"),
+            role=_role_before(lines, name_at[0]),
+            line_index=name_at[0],
+        )
+        if block is None:
+            continue
+        found.append(block)
+        consumed.update({name_at[0], street_at[0], index})
+    return found
+
+
+def _make_address(
+    *,
+    name: str,
+    street: str,
+    postcode: str,
+    city: str,
+    role: Optional[str],
+    line_index: int,
+) -> Optional[_FoundAddress]:
+    cleaned_name: str = _clean(name, max_length=200)
+    cleaned_street: str = _clean(street, max_length=200)
+    if not cleaned_name or not cleaned_street or _NAME_REJECT_RE.match(cleaned_name):
+        return None
+    return _FoundAddress(
+        name=cleaned_name,
+        street=cleaned_street,
+        postcode=postcode,
+        city=_clean(city, max_length=80),
+        role=role,
+        line_index=line_index,
+    )
+
+
+def _previous_content(
+    lines: List[str],
+    index: int,
+    consumed: set[int],
+) -> Optional[tuple[int, str]]:
+    cursor: int = index - 1
+    while cursor >= 0:
+        if cursor not in consumed:
+            text: str = " ".join(lines[cursor].split())
+            if text and not _is_role_label(text):
+                return cursor, text
+        cursor -= 1
+    return None
+
+
+def _is_role_label(text: str) -> bool:
+    return _BUYER_LABEL_RE.match(text) is not None or _SELLER_LABEL_RE.match(text) is not None
+
+
+def _role_before(lines: List[str], name_index: int) -> Optional[str]:
+    cursor: int = name_index - 1
+    steps: int = 0
+    while cursor >= 0 and steps < 4:
+        text: str = " ".join(lines[cursor].split())
+        if text:
+            if _BUYER_LABEL_RE.match(text):
+                return "buyer"
+            if _SELLER_LABEL_RE.match(text):
+                return "seller"
+            steps += 1
+        cursor -= 1
+    return None
+
+
+def _assign_party_addresses(
+    blocks: List[_FoundAddress],
+    seller_name: Optional[str],
+) -> tuple[Optional[_FoundAddress], Optional[_FoundAddress]]:
+    """Seller is the named or first letterhead block. The other block is the buyer."""
+    seller: Optional[_FoundAddress] = _first_role(blocks, "seller")
+    buyer: Optional[_FoundAddress] = _first_role(blocks, "buyer")
+    named: Optional[_FoundAddress] = _block_matching_name(blocks, seller_name)
+    if named is not None:
+        seller = named
+    used: set[int] = set()
+    if seller is not None:
+        used.add(seller.line_index)
+    if buyer is not None and buyer.line_index in used:
+        buyer = None
+    if buyer is not None:
+        used.add(buyer.line_index)
+    remaining: List[_FoundAddress] = [block for block in blocks if block.line_index not in used]
+    if seller is None and not seller_name and remaining:
+        seller = remaining.pop(0)
+    if buyer is None and remaining:
+        buyer = remaining[0]
+    return seller, buyer
+
+
+def _first_role(blocks: List[_FoundAddress], role: str) -> Optional[_FoundAddress]:
+    for block in blocks:
+        if block.role == role:
+            return block
+    return None
+
+
+def _block_matching_name(blocks: List[_FoundAddress], seller_name: Optional[str]) -> Optional[_FoundAddress]:
+    if not seller_name:
+        return None
+    for block in blocks:
+        if _name_matches(block.name, seller_name):
+            return block
+    return None
+
+
+def _name_matches(block_name: str, seller_name: str) -> bool:
+    left: str = " ".join(block_name.casefold().split())
+    right: str = " ".join(seller_name.casefold().split())
+    if len(left) < 4 or len(right) < 4:
+        return left == right
+    return left in right or right in left
+
+
+def _pdf_contacts(lines: List[str], buyer_index: Optional[int]) -> _PdfContacts:
+    buyer_emails: List[str] = []
+    other_emails: List[str] = []
+    buyer_end: int = -1 if buyer_index is None else buyer_index + 8
+    for index, line in enumerate(lines):
+        emails: List[str] = _EMAIL_RE.findall(line)
+        target: List[str] = buyer_emails if buyer_index is not None and buyer_index <= index < buyer_end else other_emails
+        for email in emails:
+            if email not in target and email not in buyer_emails and email not in other_emails:
+                target.append(email)
+    joined: str = "\n".join(lines)
+    buyer_email: Optional[str] = buyer_emails[0] if buyer_emails else None
+    seller_email: Optional[str] = other_emails[0] if other_emails else None
+    if buyer_email and seller_email and _same_text(buyer_email, seller_email):
+        buyer_email = None
+    return _PdfContacts(
+        seller_email=seller_email,
+        buyer_email=buyer_email,
+        phone=_labeled_phone(joined),
+        contact_name=_labeled_contact(joined),
+    )
+
+
+def _labeled_phone(text: str) -> Optional[str]:
+    match: Optional[re.Match[str]] = _PHONE_RE.search(text)
+    if match is None:
+        return None
+    return _clean(match.group(1), max_length=40) or None
+
+
+def _labeled_contact(text: str) -> Optional[str]:
+    match: Optional[re.Match[str]] = _CONTACT_RE.search(text)
+    if match is None:
+        return None
+    return _clean(match.group(1), max_length=200) or None
+
+
+def _same_text(left: str, right: str) -> bool:
+    return " ".join(left.casefold().split()) == " ".join(right.casefold().split())
+
+
+def _same_compact(left: str, right: str) -> bool:
+    return _compact_upper(left) == _compact_upper(right)
 
 
 def _ready_lines(lines: List[IssueLineInput]) -> tuple[List[ReadyLine], List[ValidationIssue]]:
@@ -660,35 +1074,63 @@ def _run_end(piece: _TextPiece) -> float:
 
 
 def _lines_from_text(text: str) -> List[IssueLineInput]:
-    tax_rate: Decimal = _document_tax_rate(text)
+    document_rates: List[Decimal] = _document_tax_rates(text)
+    fallback: Optional[Decimal] = document_rates[0] if len(document_rates) == 1 else None
     found: List[IssueLineInput] = []
     for raw_line in text.splitlines():
         line: str = " ".join(raw_line.split())
         if not line or _SKIP_LINE_RE.search(line):
             continue
         parsed: Optional[IssueLineInput] = (
-            _parts_line(line, tax_rate)
-            or _stueck_line(line, tax_rate)
-            or _qty_desc_line(line, tax_rate)
-            or _desc_qty_line(line, tax_rate)
+            _parts_line(line)
+            or _stueck_line(line)
+            or _qty_desc_line(line)
+            or _desc_qty_line(line)
         )
         if parsed is None:
             continue
+        parsed.tax_rate = _tax_for_line(line, fallback)
         found.append(parsed)
         if len(found) >= MAX_LINES:
             break
     return found
 
 
-def _document_tax_rate(text: str) -> Decimal:
+def _document_tax_rates(text: str) -> List[Decimal]:
+    found: List[Decimal] = []
     for match in _DOC_TAX_RE.finditer(text):
-        rate: Decimal = Decimal(match.group(1)).quantize(Decimal("1.00"))
-        if rate in STANDARD_TAX_RATES:
-            return rate
-    return Decimal("19.00")
+        rate: Optional[Decimal] = _standard_rate(match.group(1))
+        if rate is not None and rate not in found:
+            found.append(rate)
+    return found
 
 
-def _parts_line(line: str, tax_rate: Decimal) -> Optional[IssueLineInput]:
+def _tax_for_line(line: str, fallback: Optional[Decimal]) -> Optional[Decimal]:
+    on_line: Optional[Decimal] = _standard_rate_on_line(line)
+    if on_line is not None:
+        return on_line
+    return fallback
+
+
+def _standard_rate_on_line(line: str) -> Optional[Decimal]:
+    found: List[Decimal] = []
+    for match in _STANDARD_RATE_RE.finditer(line):
+        rate: Optional[Decimal] = _standard_rate(match.group(1))
+        if rate is not None and rate not in found:
+            found.append(rate)
+    if len(found) == 1:
+        return found[0]
+    return None
+
+
+def _standard_rate(raw: str) -> Optional[Decimal]:
+    rate: Decimal = Decimal(raw).quantize(Decimal("1.00"))
+    if rate in STANDARD_TAX_RATES:
+        return rate
+    return None
+
+
+def _parts_line(line: str) -> Optional[IssueLineInput]:
     match: Optional[re.Match[str]] = _PARTS_LINE_RE.match(line)
     if match is None:
         return None
@@ -699,10 +1141,10 @@ def _parts_line(line: str, tax_rate: Decimal) -> Optional[IssueLineInput]:
     description: str = _clean(match.group("desc"), max_length=200)
     if not description:
         return None
-    return _line(description, quantity, unit_price, tax_rate)
+    return _line(description, quantity, unit_price)
 
 
-def _stueck_line(line: str, tax_rate: Decimal) -> Optional[IssueLineInput]:
+def _stueck_line(line: str) -> Optional[IssueLineInput]:
     match: Optional[re.Match[str]] = _STUECK_LINE_RE.search(line)
     if match is None:
         return None
@@ -713,10 +1155,10 @@ def _stueck_line(line: str, tax_rate: Decimal) -> Optional[IssueLineInput]:
     description: str = _clean(match.group("desc"), max_length=200)
     if not description:
         return None
-    return _line(description, quantity, unit_price, tax_rate)
+    return _line(description, quantity, unit_price)
 
 
-def _desc_qty_line(line: str, tax_rate: Decimal) -> Optional[IssueLineInput]:
+def _desc_qty_line(line: str) -> Optional[IssueLineInput]:
     match: Optional[re.Match[str]] = _DESC_QTY_LINE_RE.match(line)
     if match is None:
         return None
@@ -725,11 +1167,10 @@ def _desc_qty_line(line: str, tax_rate: Decimal) -> Optional[IssueLineInput]:
         match.group("qty"),
         match.group("price"),
         match.group("total"),
-        tax_rate,
     )
 
 
-def _qty_desc_line(line: str, tax_rate: Decimal) -> Optional[IssueLineInput]:
+def _qty_desc_line(line: str) -> Optional[IssueLineInput]:
     match: Optional[re.Match[str]] = _QTY_DESC_LINE_RE.match(line)
     if match is None:
         return None
@@ -738,7 +1179,6 @@ def _qty_desc_line(line: str, tax_rate: Decimal) -> Optional[IssueLineInput]:
         match.group("qty"),
         match.group("price"),
         match.group("total"),
-        tax_rate,
     )
 
 
@@ -747,7 +1187,6 @@ def _priced_line(
     qty_raw: str,
     price_raw: str,
     total_raw: str,
-    tax_rate: Decimal,
 ) -> Optional[IssueLineInput]:
     quantity: Optional[Decimal] = _parse_de_quantity(qty_raw)
     unit_price: Optional[Decimal] = _parse_de_amount(price_raw)
@@ -759,16 +1198,16 @@ def _priced_line(
     description: str = _clean(description_raw, max_length=200)
     if not description:
         return None
-    return _line(description, quantity, unit_price, tax_rate)
+    return _line(description, quantity, unit_price)
 
 
-def _line(description: str, quantity: Decimal, unit_price: Decimal, tax_rate: Decimal) -> IssueLineInput:
+def _line(description: str, quantity: Decimal, unit_price: Decimal) -> IssueLineInput:
     return IssueLineInput(
         description=description,
         quantity=quantity,
         unit_code="C62",
         unit_price=unit_price,
-        tax_rate=tax_rate,
+        tax_rate=None,
     )
 
 

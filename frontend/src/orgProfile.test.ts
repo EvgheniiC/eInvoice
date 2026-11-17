@@ -16,6 +16,11 @@ describe('orgProfile validation', (): void => {
         vatId: '',
         iban: '',
         accountantEmail: '',
+        invoiceContact: '',
+        invoicePhone: '',
+        invoiceEmail: '',
+        buyerEmail: '',
+        buyerReference: '',
       }),
     ).toEqual({})
   })
@@ -27,10 +32,17 @@ describe('orgProfile validation', (): void => {
       vatId: '123',
       iban: 'TEST12345',
       accountantEmail: '',
+      invoiceContact: '',
+      invoicePhone: 'abc',
+      invoiceEmail: 'keine-mail',
+      buyerEmail: '',
+      buyerReference: '',
     })
     expect(errors.vatId).toMatch(/USt-IdNr/)
     expect(errors.iban).toMatch(/IBAN/)
     expect(errors.taxNumber).toBeUndefined()
+    expect(errors.invoicePhone).toMatch(/Telefon/)
+    expect(errors.invoiceEmail).toMatch(/Verkäufers/)
   })
 
   it('accepts a checksum-valid German IBAN with spaces', (): void => {
@@ -43,6 +55,11 @@ describe('orgProfile validation', (): void => {
         vatId: 'DE123456789',
         iban: 'DE89 3704 0044 0532 0130 00',
         accountantEmail: 'sb@kanzlei.de',
+        invoiceContact: 'Ada Meister',
+        invoicePhone: '+49 30 123456',
+        invoiceEmail: 'ada@werkstatt.example',
+        buyerEmail: 'kasse@stadt.example',
+        buyerReference: '04011000-1234512345-06',
       }),
     ).toEqual({})
   })

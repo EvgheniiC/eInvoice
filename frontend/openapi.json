@@ -3655,6 +3655,21 @@
             "type": "boolean",
             "title": "Confirmed",
             "default": false
+          },
+          "target": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "xrechnung",
+                  "zugferd_pdf"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target"
           }
         },
         "type": "object",
@@ -3723,6 +3738,28 @@
             ],
             "title": "Issue Date"
           },
+          "due_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due Date"
+          },
+          "delivery_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delivery Date"
+          },
           "currency": {
             "type": "string",
             "title": "Currency",
@@ -3781,6 +3818,28 @@
             ],
             "title": "Issue Date"
           },
+          "due_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due Date"
+          },
+          "delivery_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delivery Date"
+          },
           "currency": {
             "type": "string",
             "title": "Currency",
@@ -3815,6 +3874,8 @@
         "required": [
           "invoice_number",
           "issue_date",
+          "due_date",
+          "delivery_date",
           "currency",
           "buyer_reference",
           "seller",
@@ -4794,6 +4855,61 @@
               }
             ],
             "title": "Accountant Email"
+          },
+          "invoice_contact_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invoice Contact Name"
+          },
+          "invoice_phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invoice Phone"
+          },
+          "invoice_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invoice Email"
+          },
+          "default_buyer_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default Buyer Email"
+          },
+          "default_buyer_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default Buyer Reference"
           }
         },
         "type": "object",
@@ -4808,7 +4924,12 @@
           "tax_number",
           "vat_id",
           "iban",
-          "accountant_email"
+          "accountant_email",
+          "invoice_contact_name",
+          "invoice_phone",
+          "invoice_email",
+          "default_buyer_email",
+          "default_buyer_reference"
         ],
         "title": "OrgResponse"
       },
@@ -4896,6 +5017,66 @@
               }
             ],
             "title": "Accountant Email"
+          },
+          "invoice_contact_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invoice Contact Name"
+          },
+          "invoice_phone": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invoice Phone"
+          },
+          "invoice_email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 254
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invoice Email"
+          },
+          "default_buyer_email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 254
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default Buyer Email"
+          },
+          "default_buyer_reference": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 50
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default Buyer Reference"
           }
         },
         "type": "object",

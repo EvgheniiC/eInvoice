@@ -39,6 +39,11 @@ def _response(db: Session, organization: Organization, role: str = "inhaber") ->
         vat_id=organization.vat_id,
         iban=organization.iban,
         accountant_email=organization.accountant_email,
+        invoice_contact_name=organization.invoice_contact_name,
+        invoice_phone=organization.invoice_phone,
+        invoice_email=organization.invoice_email,
+        default_buyer_email=organization.default_buyer_email,
+        default_buyer_reference=organization.default_buyer_reference,
     )
 
 

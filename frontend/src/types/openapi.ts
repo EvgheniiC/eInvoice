@@ -290,6 +290,7 @@ export interface components {
       draft: components["schemas"]["IssueDraft-Input"];
       pdf_base64?: string | null;
       confirmed?: boolean;
+      target?: "xrechnung" | "zugferd_pdf" | null;
     };
     IssueBuildResponse: {
       ready: boolean;
@@ -300,6 +301,8 @@ export interface components {
     "IssueDraft-Input": {
       invoice_number?: string | null;
       issue_date?: string | null;
+      due_date?: string | null;
+      delivery_date?: string | null;
       currency?: string;
       buyer_reference?: string | null;
       seller?: components["schemas"]["IssueParty-Input"];
@@ -309,6 +312,8 @@ export interface components {
     "IssueDraft-Output": {
       invoice_number: string | null;
       issue_date: string | null;
+      due_date: string | null;
+      delivery_date: string | null;
       currency: string;
       buyer_reference: string | null;
       seller: components["schemas"]["IssueParty-Output"];
@@ -437,6 +442,11 @@ export interface components {
       vat_id: string | null;
       iban: string | null;
       accountant_email: string | null;
+      invoice_contact_name: string | null;
+      invoice_phone: string | null;
+      invoice_email: string | null;
+      default_buyer_email: string | null;
+      default_buyer_reference: string | null;
     };
     OrgUpdateRequest: {
       name?: string | null;
@@ -446,6 +456,11 @@ export interface components {
       vat_id?: string | null;
       iban?: string | null;
       accountant_email?: string | null;
+      invoice_contact_name?: string | null;
+      invoice_phone?: string | null;
+      invoice_email?: string | null;
+      default_buyer_email?: string | null;
+      default_buyer_reference?: string | null;
     };
     ParseStatus: "success" | "partial" | "error" | "not_implemented";
     "PartyInfo-Input": {

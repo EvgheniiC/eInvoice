@@ -89,6 +89,11 @@ class Organization(Base):
     vat_id: Mapped[Optional[str]] = mapped_column(String(16), nullable=True)
     iban: Mapped[Optional[str]] = mapped_column(String(34), nullable=True)
     accountant_email: Mapped[Optional[str]] = mapped_column(String(254), nullable=True)
+    invoice_contact_name: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
+    invoice_phone: Mapped[Optional[str]] = mapped_column(String(40), nullable=True)
+    invoice_email: Mapped[Optional[str]] = mapped_column(String(254), nullable=True)
+    default_buyer_email: Mapped[Optional[str]] = mapped_column(String(254), nullable=True)
+    default_buyer_reference: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     stripe_customer_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, unique=True)
     stripe_subscription_id: Mapped[Optional[str]] = mapped_column(
         String(255), nullable=True, unique=True

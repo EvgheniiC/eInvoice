@@ -68,6 +68,29 @@ class TestOrgProfile(unittest.TestCase):
         self.assertEqual(body["iban"], VALID_IBAN)
         self.assertEqual(body["accountant_email"], "kanzlei@example.de")
 
+        contact = self.client.patch(
+            "/api/org",
+            json={
+                "invoice_contact_name": "Ada Meister",
+                "invoice_phone": "+49 30 123456",
+                "invoice_email": "ada@werkstatt.example",
+                "default_buyer_email": "kasse@stadt.example",
+                "default_buyer_reference": "04011000-1234512345-06",
+            },
+        )
+        self.assertEqual(contact.status_code, 200)
+        stored: dict[str, object] = contact.json()
+        self.assertEqual(stored["invoice_contact_name"], "Ada Meister")
+        self.assertEqual(stored["invoice_phone"], "+49 30 123456")
+        self.assertEqual(stored["invoice_email"], "ada@werkstatt.example")
+        self.assertEqual(stored["default_buyer_email"], "kasse@stadt.example")
+        self.assertEqual(stored["default_buyer_reference"], "04011000-1234512345-06")
+        self.assertEqual(stored["vat_id"], "DE123456789")
+
+        bad_phone = self.client.patch("/api/org", json={"invoice_phone": "keine-nummer"})
+        self.assertEqual(bad_phone.status_code, 400)
+        self.assertEqual(bad_phone.json()["detail"], "Telefonnummer ist ungültig.")
+
         loaded = self.client.get("/api/org")
         self.assertEqual(loaded.status_code, 200)
         self.assertEqual(loaded.json()["iban"], VALID_IBAN)

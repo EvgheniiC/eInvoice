@@ -489,6 +489,11 @@ export type OrgUpdatePayload = {
   vat_id?: string | null
   iban?: string | null
   accountant_email?: string | null
+  invoice_contact_name?: string | null
+  invoice_phone?: string | null
+  invoice_email?: string | null
+  default_buyer_email?: string | null
+  default_buyer_reference?: string | null
 }
 
 export async function updateOrganization(body: OrgUpdatePayload): Promise<OrgResponse> {

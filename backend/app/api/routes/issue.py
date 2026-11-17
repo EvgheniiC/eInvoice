@@ -47,6 +47,11 @@ def _seller_seed(db: Session, org_context: OrgContext) -> Optional[SellerSeed]:
         name=organization.name,
         vat_id=organization.vat_id,
         iban=organization.iban,
+        contact_name=organization.invoice_contact_name,
+        phone=organization.invoice_phone,
+        email=organization.invoice_email,
+        buyer_email=organization.default_buyer_email,
+        buyer_reference=organization.default_buyer_reference,
     )
 
 

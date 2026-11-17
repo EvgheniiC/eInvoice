@@ -59,6 +59,11 @@ export function OrgSettingsPage({
   const [vatId, setVatId] = useState<string>('')
   const [iban, setIban] = useState<string>('')
   const [accountantEmail, setAccountantEmail] = useState<string>('')
+  const [invoiceContact, setInvoiceContact] = useState<string>('')
+  const [invoicePhone, setInvoicePhone] = useState<string>('')
+  const [invoiceEmail, setInvoiceEmail] = useState<string>('')
+  const [buyerEmail, setBuyerEmail] = useState<string>('')
+  const [buyerReference, setBuyerReference] = useState<string>('')
   const [historyEnabled, setHistoryEnabled] = useState<boolean>(session?.history_enabled ?? false)
   const [storeOriginals, setStoreOriginals] = useState<boolean>(
     session?.store_originals_enabled ?? false,
@@ -82,6 +87,11 @@ export function OrgSettingsPage({
         setVatId(org.vat_id ?? '')
         setIban(org.iban ?? '')
         setAccountantEmail(org.accountant_email ?? '')
+        setInvoiceContact(org.invoice_contact_name ?? '')
+        setInvoicePhone(org.invoice_phone ?? '')
+        setInvoiceEmail(org.invoice_email ?? '')
+        setBuyerEmail(org.default_buyer_email ?? '')
+        setBuyerReference(org.default_buyer_reference ?? '')
         setHistoryEnabled(org.history_enabled)
         setStoreOriginals(org.store_originals_enabled)
       })
@@ -125,6 +135,11 @@ export function OrgSettingsPage({
       vatId,
       iban,
       accountantEmail,
+      invoiceContact,
+      invoicePhone,
+      invoiceEmail,
+      buyerEmail,
+      buyerReference,
     })
     if (Object.keys(nextErrors).length > 0) {
       setFieldErrors(nextErrors)
@@ -143,6 +158,11 @@ export function OrgSettingsPage({
         vat_id: vatId,
         iban,
         accountant_email: accountantEmail,
+        invoice_contact_name: invoiceContact,
+        invoice_phone: invoicePhone,
+        invoice_email: invoiceEmail,
+        default_buyer_email: buyerEmail,
+        default_buyer_reference: buyerReference,
       })
       onSession({ ...session, organization_name: updated.name })
       setName(updated.name)
@@ -150,6 +170,11 @@ export function OrgSettingsPage({
       setVatId(updated.vat_id ?? '')
       setIban(updated.iban ?? '')
       setAccountantEmail(updated.accountant_email ?? '')
+      setInvoiceContact(updated.invoice_contact_name ?? '')
+      setInvoicePhone(updated.invoice_phone ?? '')
+      setInvoiceEmail(updated.invoice_email ?? '')
+      setBuyerEmail(updated.default_buyer_email ?? '')
+      setBuyerReference(updated.default_buyer_reference ?? '')
       setInfo('Firmenprofil gespeichert. Es erscheint im Steuerberater-Paket.')
     } catch (err: unknown) {
       const message: string =
@@ -448,6 +473,111 @@ export function OrgSettingsPage({
           }}
         />
         <FieldError id="org-accountant-email-error" message={fieldErrors.accountantEmail} />
+        <h3>E-Rechnung</h3>
+        <p className="auth-form__hint">
+          Ansprechpartner, Telefon und E-Mail des Verkäufers füllen jeden Entwurf aus dem Profil.
+          Käuferreferenz und E-Mail des Käufers gelten nur, wenn die PDF sie nicht enthält.
+        </p>
+        <label htmlFor="org-invoice-contact">
+          Ansprechpartner <span className="auth-form__optional">(Optional)</span>
+        </label>
+        <input
+          id="org-invoice-contact"
+          name="invoice_contact_name"
+          type="text"
+          maxLength={200}
+          autoComplete="name"
+          value={invoiceContact}
+          disabled={saving || session.role !== 'inhaber'}
+          className={fieldErrors.invoiceContact ? 'auth-form__input--error' : undefined}
+          aria-invalid={fieldErrors.invoiceContact ? true : undefined}
+          aria-describedby={fieldErrors.invoiceContact ? 'org-invoice-contact-error' : undefined}
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            setInvoiceContact(event.target.value)
+            clearFieldError('invoiceContact')
+          }}
+        />
+        <FieldError id="org-invoice-contact-error" message={fieldErrors.invoiceContact} />
+        <label htmlFor="org-invoice-phone">
+          Telefon <span className="auth-form__optional">(Optional)</span>
+        </label>
+        <input
+          id="org-invoice-phone"
+          name="invoice_phone"
+          type="tel"
+          maxLength={40}
+          autoComplete="tel"
+          value={invoicePhone}
+          disabled={saving || session.role !== 'inhaber'}
+          className={fieldErrors.invoicePhone ? 'auth-form__input--error' : undefined}
+          aria-invalid={fieldErrors.invoicePhone ? true : undefined}
+          aria-describedby={fieldErrors.invoicePhone ? 'org-invoice-phone-error' : undefined}
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            setInvoicePhone(event.target.value)
+            clearFieldError('invoicePhone')
+          }}
+        />
+        <FieldError id="org-invoice-phone-error" message={fieldErrors.invoicePhone} />
+        <label htmlFor="org-invoice-email">
+          E-Mail des Verkäufers <span className="auth-form__optional">(Optional)</span>
+        </label>
+        <input
+          id="org-invoice-email"
+          name="invoice_email"
+          type="email"
+          maxLength={254}
+          autoComplete="email"
+          value={invoiceEmail}
+          disabled={saving || session.role !== 'inhaber'}
+          className={fieldErrors.invoiceEmail ? 'auth-form__input--error' : undefined}
+          aria-invalid={fieldErrors.invoiceEmail ? true : undefined}
+          aria-describedby={fieldErrors.invoiceEmail ? 'org-invoice-email-error' : undefined}
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            setInvoiceEmail(event.target.value)
+            clearFieldError('invoiceEmail')
+          }}
+        />
+        <FieldError id="org-invoice-email-error" message={fieldErrors.invoiceEmail} />
+        <label htmlFor="org-buyer-email">
+          E-Mail des Käufers <span className="auth-form__optional">(Optional)</span>
+        </label>
+        <input
+          id="org-buyer-email"
+          name="default_buyer_email"
+          type="email"
+          maxLength={254}
+          autoComplete="off"
+          value={buyerEmail}
+          disabled={saving || session.role !== 'inhaber'}
+          className={fieldErrors.buyerEmail ? 'auth-form__input--error' : undefined}
+          aria-invalid={fieldErrors.buyerEmail ? true : undefined}
+          aria-describedby={fieldErrors.buyerEmail ? 'org-buyer-email-error' : undefined}
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            setBuyerEmail(event.target.value)
+            clearFieldError('buyerEmail')
+          }}
+        />
+        <FieldError id="org-buyer-email-error" message={fieldErrors.buyerEmail} />
+        <label htmlFor="org-buyer-reference">
+          Käuferreferenz <span className="auth-form__optional">(Optional)</span>
+        </label>
+        <input
+          id="org-buyer-reference"
+          name="default_buyer_reference"
+          type="text"
+          maxLength={50}
+          autoComplete="off"
+          value={buyerReference}
+          disabled={saving || session.role !== 'inhaber'}
+          className={fieldErrors.buyerReference ? 'auth-form__input--error' : undefined}
+          aria-invalid={fieldErrors.buyerReference ? true : undefined}
+          aria-describedby={fieldErrors.buyerReference ? 'org-buyer-reference-error' : undefined}
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            setBuyerReference(event.target.value)
+            clearFieldError('buyerReference')
+          }}
+        />
+        <FieldError id="org-buyer-reference-error" message={fieldErrors.buyerReference} />
         <button type="submit" className="btn btn--primary" disabled={saving || session.role !== 'inhaber'}>
           Profil speichern
         </button>

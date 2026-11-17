@@ -221,6 +221,112 @@ class TestIssueDraft(unittest.TestCase):
         self.assertEqual(result.draft.seller.iban, "DE44500105175407324931")
         self.assertTrue(any("IBAN" in warning for warning in result.warnings))
 
+    def test_reads_seller_and_buyer_addresses(self) -> None:
+        pdf: bytes = _text_pdf(
+            [
+                "Werkstatt GmbH",
+                "Hauptstraße 12",
+                "50667 Köln",
+                "Kunde AG",
+                "Marktplatz 4",
+                "80331 München",
+                "buyer@kunde.example",
+            ]
+        )
+        result: IssueDraftResponse = extract_draft_from_pdf(pdf, "adresse.pdf")
+        self.assertEqual(result.draft.seller.name, "Werkstatt GmbH")
+        self.assertEqual(result.draft.seller.address.line, "Hauptstraße 12")
+        self.assertEqual(result.draft.seller.address.postcode, "50667")
+        self.assertEqual(result.draft.seller.address.city, "Köln")
+        self.assertEqual(result.draft.buyer.name, "Kunde AG")
+        self.assertEqual(result.draft.buyer.address.line, "Marktplatz 4")
+        self.assertEqual(result.draft.buyer.address.postcode, "80331")
+        self.assertEqual(result.draft.buyer.address.city, "München")
+        self.assertEqual(result.draft.buyer.email, "buyer@kunde.example")
+
+    def test_labeled_buyer_block_is_not_the_seller(self) -> None:
+        pdf: bytes = _text_pdf(
+            [
+                "Rechnungsempfänger",
+                "Stadtwerke Berlin",
+                "Holzmarkt 25",
+                "10179 Berlin",
+                "Rechnungssteller",
+                "Werkstatt GmbH",
+                "Hauptstraße 12",
+                "50667 Köln",
+            ]
+        )
+        result: IssueDraftResponse = extract_draft_from_pdf(
+            pdf,
+            "rollen.pdf",
+            seller=SellerSeed(name="Werkstatt GmbH"),
+        )
+        self.assertEqual(result.draft.seller.address.city, "Köln")
+        self.assertEqual(result.draft.buyer.name, "Stadtwerke Berlin")
+        self.assertEqual(result.draft.buyer.address.postcode, "10179")
+
+    def test_known_seller_name_keeps_a_single_other_block_as_buyer(self) -> None:
+        pdf: bytes = _text_pdf(
+            [
+                "Stadtwerke Berlin",
+                "Holzmarkt 25",
+                "10179 Berlin",
+            ]
+        )
+        result: IssueDraftResponse = extract_draft_from_pdf(
+            pdf,
+            "fenster.pdf",
+            seller=SellerSeed(name="Werkstatt GmbH"),
+        )
+        self.assertEqual(result.draft.seller.name, "Werkstatt GmbH")
+        self.assertIsNone(result.draft.seller.address.line)
+        self.assertEqual(result.draft.buyer.name, "Stadtwerke Berlin")
+        self.assertEqual(result.draft.buyer.address.line, "Holzmarkt 25")
+
+    def test_line_keeps_its_own_tax_rate(self) -> None:
+        pdf: bytes = _text_pdf(
+            [
+                "Beratung 1 100,00 19% 100,00",
+                "Brot 2 5,00 7% 10,00",
+                "MwSt 19 %: 19,00",
+                "MwSt 7 %: 0,70",
+            ]
+        )
+        result: IssueDraftResponse = extract_draft_from_pdf(pdf, "steuer.pdf")
+        self.assertEqual(
+            [(line.description, line.tax_rate) for line in result.draft.lines],
+            [("Beratung", Decimal("19.00")), ("Brot", Decimal("7.00"))],
+        )
+
+    def test_profile_fills_xrechnung_contact_without_replacing_a_printed_reference(self) -> None:
+        pdf: bytes = _text_pdf(
+            [
+                "Rechnung RE-9",
+                "Leitweg-ID: 04011000-1234512345-06",
+                "Tel.: +49 221 111111",
+                "Ansprechpartner: Max Pdf",
+                "billing@pdf.example",
+            ]
+        )
+        result: IssueDraftResponse = extract_draft_from_pdf(
+            pdf,
+            "profil.pdf",
+            seller=SellerSeed(
+                contact_name="Ada Meister",
+                phone="+49 30 123456",
+                email="ada@werkstatt.example",
+                buyer_email="kasse@stadt.example",
+                buyer_reference="PROFIL-REF",
+            ),
+        )
+        self.assertEqual(result.draft.seller.contact_name, "Ada Meister")
+        self.assertEqual(result.draft.seller.phone, "+49 30 123456")
+        self.assertEqual(result.draft.seller.email, "ada@werkstatt.example")
+        self.assertEqual(result.draft.buyer.email, "kasse@stadt.example")
+        self.assertEqual(result.draft.buyer_reference, "04011000-1234512345-06")
+        self.assertTrue(any("Telefon" in warning for warning in result.warnings))
+
     def test_confirmation_and_zero_tax_block_generation(self) -> None:
         draft: IssueDraft = _complete_draft()
         unconfirmed = prepare_invoice(draft, confirmed=False)

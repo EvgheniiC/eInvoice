@@ -24,6 +24,11 @@ def _org_payload(db: Session, organization: Organization, context: OrgContext) -
         vat_id=organization.vat_id,
         iban=organization.iban,
         accountant_email=organization.accountant_email,
+        invoice_contact_name=organization.invoice_contact_name,
+        invoice_phone=organization.invoice_phone,
+        invoice_email=organization.invoice_email,
+        default_buyer_email=organization.default_buyer_email,
+        default_buyer_reference=organization.default_buyer_reference,
     )
 
 
@@ -58,10 +63,20 @@ def patch_organization(
             vat_id=body.vat_id,
             iban=body.iban,
             accountant_email=body.accountant_email,
+            invoice_contact_name=body.invoice_contact_name,
+            invoice_phone=body.invoice_phone,
+            invoice_email=body.invoice_email,
+            default_buyer_email=body.default_buyer_email,
+            default_buyer_reference=body.default_buyer_reference,
             update_tax_number="tax_number" in fields_set,
             update_vat_id="vat_id" in fields_set,
             update_iban="iban" in fields_set,
             update_accountant_email="accountant_email" in fields_set,
+            update_invoice_contact_name="invoice_contact_name" in fields_set,
+            update_invoice_phone="invoice_phone" in fields_set,
+            update_invoice_email="invoice_email" in fields_set,
+            update_default_buyer_email="default_buyer_email" in fields_set,
+            update_default_buyer_reference="default_buyer_reference" in fields_set,
         )
     except AuthError as exc:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
