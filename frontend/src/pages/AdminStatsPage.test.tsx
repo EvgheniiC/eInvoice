@@ -56,7 +56,7 @@ describe('AdminStatsPage', (): void => {
     expect(screen.getByRole('cell', { name: '06.10.2026' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Statistik' })).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: '← eInvoice' }))
+    await user.click(screen.getByRole('button', { name: 'Startseite' }))
     expect(onNavigate).toHaveBeenCalledWith('landing')
   })
 

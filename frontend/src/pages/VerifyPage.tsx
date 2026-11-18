@@ -54,7 +54,7 @@ export function VerifyPage({
       <header className="page__header">
         <div className="page__header-row">
           <button type="button" className="page__home" onClick={() => onNavigate('landing')}>
-            ← eInvoice
+            Startseite
           </button>
           <PageNav onNavigate={onNavigate} session={session} onLogout={onLogout} />
         </div>

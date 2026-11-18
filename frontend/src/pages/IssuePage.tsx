@@ -155,7 +155,7 @@ export function IssuePage({
       <header className="page__header">
         <div className="page__header-row">
           <AppLink href="/" className="page__home">
-            ← eInvoice
+            Startseite
           </AppLink>
           <PageNav onNavigate={onNavigate} session={session} onLogout={onLogout} />
         </div>
