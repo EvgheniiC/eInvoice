@@ -265,7 +265,7 @@ describe('IssuePage', (): void => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 
-  it('asks a guest to sign in before creating an invoice', (): void => {
+  it('shows the form to a guest', (): void => {
     render(
       <IssuePage
         onNavigate={() => undefined}
@@ -274,7 +274,8 @@ describe('IssuePage', (): void => {
         onLogout={() => undefined}
       />,
     )
-    expect(screen.getByRole('status')).toHaveTextContent('Bitte anmelden.')
-    expect(screen.queryByLabelText('Eigene PDF-Rechnung')).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Eigene PDF-Rechnung')).toBeInTheDocument()
+    expect(screen.getByText(/Ohne Tarif sind 10 E-Rechnungen pro Tag/)).toBeInTheDocument()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 })

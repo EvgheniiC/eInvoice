@@ -278,7 +278,9 @@ class TestBillingCheckout(unittest.TestCase):
                 headers={"stripe-signature": "t=1,v1=abc"},
             )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(self.client.get("/api/me").json()["plan"]["code"], "team")
+        team_plan: dict[str, object] = self.client.get("/api/me").json()["plan"]
+        self.assertEqual(team_plan["code"], "team")
+        self.assertEqual(team_plan["issue_per_day"], 500)
 
     def test_unknown_session_is_not_found(self) -> None:
         self._register_and_verify("missing@example.com")

@@ -19,6 +19,9 @@ export function PageNav({
   const className: string = overlay ? 'page-nav page-nav--overlay' : 'page-nav'
   return (
     <nav className={className} aria-label="Seiten">
+      <AppLink href="/erstellen" className="page-nav__link">
+        E-Rechnung erstellen
+      </AppLink>
       <AppLink href="/tarife" className="page-nav__link">
         Tarife
       </AppLink>
@@ -35,9 +38,6 @@ export function PageNav({
               Statistik
             </button>
           ) : null}
-          <AppLink href="/erstellen" className="page-nav__link">
-            E-Rechnung erstellen
-          </AppLink>
           {session.plan.allows_history ? (
             <button type="button" className="page-nav__link" onClick={() => onNavigate('history')}>
               Verlauf

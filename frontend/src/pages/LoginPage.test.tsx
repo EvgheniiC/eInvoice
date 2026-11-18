@@ -42,6 +42,8 @@ describe('LoginPage', (): void => {
         quotas_enforced: true,
         parse_used_today: 0,
         export_used_today: 0,
+        issue_per_day: 10,
+        issue_used_today: 0,
       },
       memberships: [],
       history_enabled: false,

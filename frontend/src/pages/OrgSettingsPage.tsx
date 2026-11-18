@@ -261,8 +261,9 @@ export function OrgSettingsPage({
 
   const parseUsed: string = `${String(session.plan.parse_used_today)}/${String(session.plan.parse_per_day)}`
   const exportUsed: string = `${String(session.plan.export_used_today)}/${String(session.plan.export_per_day)}`
+  const issueUsed: string = `${String(session.plan.issue_used_today)}/${String(session.plan.issue_per_day)}`
   const quotaHint: string = session.plan.quotas_enforced
-    ? `Heute: ${parseUsed} Prüfungen, ${exportUsed} Exporte.`
+    ? `Heute: ${parseUsed} Prüfungen, ${exportUsed} Exporte, ${issueUsed} E-Rechnungen.`
     : 'Kontingente sind noch nicht durchgesetzt.'
   const upgradeHint: string =
     session.plan.code === 'free'

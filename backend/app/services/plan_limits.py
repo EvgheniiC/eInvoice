@@ -15,6 +15,7 @@ class PlanLimits:
     name: str
     parse_per_day: int
     export_per_day: int
+    issue_per_day: int
     max_upload_size_mb: int
     max_parallel: int
     allows_batch: bool
@@ -28,6 +29,7 @@ PLAN_CATALOG: dict[str, PlanLimits] = {
         name="Free",
         parse_per_day=10,
         export_per_day=10,
+        issue_per_day=10,
         max_upload_size_mb=10,
         max_parallel=1,
         allows_batch=False,
@@ -39,6 +41,7 @@ PLAN_CATALOG: dict[str, PlanLimits] = {
         name="Plus",
         parse_per_day=100,
         export_per_day=100,
+        issue_per_day=100,
         max_upload_size_mb=25,
         max_parallel=2,
         allows_batch=True,
@@ -50,6 +53,7 @@ PLAN_CATALOG: dict[str, PlanLimits] = {
         name="Team",
         parse_per_day=500,
         export_per_day=500,
+        issue_per_day=500,
         max_upload_size_mb=50,
         max_parallel=4,
         allows_batch=True,
@@ -71,6 +75,7 @@ def guest_limits() -> PlanLimits:
         name="Gast",
         parse_per_day=settings.guest_parse_per_day,
         export_per_day=settings.guest_export_per_day,
+        issue_per_day=settings.guest_issue_per_day,
         max_upload_size_mb=settings.max_upload_size_mb,
         max_parallel=settings.guest_max_parallel,
         allows_batch=False,
@@ -104,6 +109,8 @@ def merge_plan_row(
         allows_batch=allows_batch,
         allows_history=allows_history,
         max_batch_files=catalog.max_batch_files,
+        # Creation quota stays on the catalog so existing plan rows need no new column.
+        issue_per_day=catalog.issue_per_day,
     )
 
 

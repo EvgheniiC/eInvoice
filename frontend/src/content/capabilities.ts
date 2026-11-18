@@ -8,6 +8,7 @@ export const DEFAULT_CAPABILITIES: CapabilitiesResponse = {
   account_rate_limit_per_minute: 60,
   parse_per_day: 10,
   export_per_day: 10,
+  issue_per_day: 10,
   max_parallel: 1,
   stores_invoice_files: false,
   requires_account: false,
@@ -42,7 +43,7 @@ export const DEFAULT_CAPABILITIES: CapabilitiesResponse = {
   ],
   profiles: ['EN 16931:2017', 'XRechnung 3.0.2', 'ZUGFeRD / Factur-X EN 16931'],
   limitations: [
-    'Eine Datei pro Anfrage, maximal 10 MB, bis zu 10 Prüfungen und 10 Exporte pro Tag.',
+    'Eine Datei pro Anfrage, maximal 10 MB, bis zu 10 Prüfungen, 10 Exporte und 10 E-Rechnungen pro Tag.',
     'Gastmodus: die Datei wird nur während der Anfrage verarbeitet und danach gelöscht.',
     'Normale PDFs ohne eingebettetes XML, Scans, openTRANS und andere XML-Formate werden abgelehnt.',
     'Der DATEV-Export ist eine Buchungsstapel-CSV und kein DATEVconnect.',

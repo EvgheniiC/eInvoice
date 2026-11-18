@@ -25,6 +25,7 @@ class CapabilitiesResponse(ApiModel):
     account_rate_limit_per_minute: int
     parse_per_day: int
     export_per_day: int
+    issue_per_day: int
     max_parallel: int
     stores_invoice_files: bool
     requires_account: bool

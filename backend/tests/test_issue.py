@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import base64
 import unittest
+from dataclasses import replace
 from decimal import Decimal
 from io import BytesIO
 from typing import List
@@ -17,6 +18,7 @@ from app.core.config import settings
 from app.db.bootstrap import init_account_store
 from app.db.session import dispose_engine
 from app.main import create_app
+from app.services.plan_limits import PLAN_CATALOG
 from app.schemas.invoice import ValidationIssue, ValidationStatus
 from app.schemas.issue import (
     IssueAddress,
@@ -481,13 +483,52 @@ class TestIssueApi(unittest.TestCase):
         for item in reversed(self._patches):
             item.stop()
 
-    def test_guest_cannot_create_a_draft(self) -> None:
+    def test_guest_can_create_a_draft(self) -> None:
         pdf: bytes = _text_pdf(["Rechnungsnummer: RE-9"])
         response = self.client.post(
             "/api/issue/draft",
             files={"file": ("rechnung.pdf", pdf, "application/pdf")},
         )
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 200, response.text)
+        body: IssueDraftResponse = IssueDraftResponse.model_validate(response.json())
+        self.assertEqual(body.draft.invoice_number, "RE-9")
+        self.assertIsNone(body.draft.seller.name)
+
+    def test_guest_issue_limit_is_separate_from_incoming_checks(self) -> None:
+        pdf: bytes = _text_pdf(["Rechnungsnummer: RE-9"])
+        files: dict[str, tuple[str, bytes, str]] = {
+            "file": ("rechnung.pdf", pdf, "application/pdf"),
+        }
+        with (
+            patch.object(settings, "guest_issue_per_day", 1),
+            patch.object(settings, "guest_parse_per_day", 1),
+        ):
+            first = self.client.post("/api/issue/draft", files=files)
+            blocked = self.client.post("/api/issue/draft", files=files)
+            incoming = self.client.post(
+                "/api/invoices/parse",
+                files={"file": ("a.xml", b"<Invoice/>", "application/xml")},
+            )
+        self.assertEqual(first.status_code, 200, first.text)
+        self.assertEqual(blocked.status_code, 429, blocked.text)
+        self.assertIn("E-Rechnungen", str(blocked.json()["detail"]))
+        self.assertNotEqual(incoming.status_code, 429)
+
+    def test_free_org_issue_limit_does_not_block_a_guest(self) -> None:
+        limited = replace(PLAN_CATALOG["free"], issue_per_day=1)
+        pdf: bytes = _text_pdf(["Rechnungsnummer: RE-9"])
+        files: dict[str, tuple[str, bytes, str]] = {
+            "file": ("rechnung.pdf", pdf, "application/pdf"),
+        }
+        with patch.dict(PLAN_CATALOG, {"free": limited}):
+            self._login("meister@example.com")
+            first = self.client.post("/api/issue/draft", files=files)
+            blocked = self.client.post("/api/issue/draft", files=files)
+            self.client.post("/api/auth/logout")
+            guest = self.client.post("/api/issue/draft", files=files)
+        self.assertEqual(first.status_code, 200, first.text)
+        self.assertEqual(blocked.status_code, 429, blocked.text)
+        self.assertEqual(guest.status_code, 200, guest.text)
 
     def test_signed_in_user_can_create_a_draft(self) -> None:
         self._login("meister@example.com")

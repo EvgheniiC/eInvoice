@@ -138,6 +138,7 @@ class PlanInfo(ApiModel):
     name: str
     parse_per_day: int
     export_per_day: int
+    issue_per_day: int
     max_upload_size_mb: int
     max_parallel: int = 1
     allows_batch: bool
@@ -146,6 +147,7 @@ class PlanInfo(ApiModel):
     quotas_enforced: bool = True
     parse_used_today: int = 0
     export_used_today: int = 0
+    issue_used_today: int = 0
 
 
 class MembershipInfo(ApiModel):

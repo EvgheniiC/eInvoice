@@ -2229,6 +2229,10 @@
             "type": "integer",
             "title": "Export Per Day"
           },
+          "issue_per_day": {
+            "type": "integer",
+            "title": "Issue Per Day"
+          },
           "max_parallel": {
             "type": "integer",
             "title": "Max Parallel"
@@ -2284,6 +2288,7 @@
           "account_rate_limit_per_minute",
           "parse_per_day",
           "export_per_day",
+          "issue_per_day",
           "max_parallel",
           "stores_invoice_files",
           "requires_account",
@@ -5219,6 +5224,10 @@
             "type": "integer",
             "title": "Export Per Day"
           },
+          "issue_per_day": {
+            "type": "integer",
+            "title": "Issue Per Day"
+          },
           "max_upload_size_mb": {
             "type": "integer",
             "title": "Max Upload Size Mb"
@@ -5255,6 +5264,11 @@
             "type": "integer",
             "title": "Export Used Today",
             "default": 0
+          },
+          "issue_used_today": {
+            "type": "integer",
+            "title": "Issue Used Today",
+            "default": 0
           }
         },
         "type": "object",
@@ -5263,6 +5277,7 @@
           "name",
           "parse_per_day",
           "export_per_day",
+          "issue_per_day",
           "max_upload_size_mb",
           "max_parallel",
           "allows_batch",
@@ -5270,7 +5285,8 @@
           "max_batch_files",
           "quotas_enforced",
           "parse_used_today",
-          "export_used_today"
+          "export_used_today",
+          "issue_used_today"
         ],
         "title": "PlanInfo"
       },

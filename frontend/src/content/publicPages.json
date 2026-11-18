@@ -163,7 +163,7 @@
       ],
       "listItems": [
         "Maximale Dateigröße: 10 MB (Gastmodus); Plus und Team höher",
-        "Gastmodus: eine Datei pro Anfrage, begrenzte Prüfungen und Exporte pro Tag",
+        "Gastmodus: eine Datei pro Anfrage, begrenzte Prüfungen, Exporte und E-Rechnungen pro Tag",
         "Nicht unterstützt: Scan-PDF, Foto, openTRANS, andere XML-Formate, verschachtelte ZIP-Archive",
         "DATEV-Export ist eine Buchungsstapel-CSV, kein DATEVconnect"
       ],

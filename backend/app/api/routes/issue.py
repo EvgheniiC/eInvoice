@@ -2,10 +2,10 @@
 
 from typing import Optional
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_org, get_db
+from app.api.deps import get_optional_db, get_optional_org_context
 from app.db.models import Organization
 from app.helper_functions.pdf_security import UnsafePdfError, assert_pdf_safe
 from app.schemas.issue import IssueBuildRequest, IssueBuildResponse, IssueDraftResponse
@@ -13,33 +13,41 @@ from app.services.auth_service import OrgContext
 from app.services.export_service import decode_pdf_base64
 from app.services.issue_draft import SellerSeed
 from app.services.issue_service import build_issue, draft_from_pdf
-from app.services.quota_service import limits_for_context
+from app.services.quota_service import enforce_issue, limits_for_context
 
 router: APIRouter = APIRouter()
 
 
 @router.post("/draft", response_model=IssueDraftResponse)
 async def create_issue_draft(
+    request: Request,
     file: UploadFile = File(...),
-    org_context: OrgContext = Depends(get_current_org),
-    db: Session = Depends(get_db),
+    org_context: Optional[OrgContext] = Depends(get_optional_org_context),
+    db: Optional[Session] = Depends(get_optional_db),
 ) -> IssueDraftResponse:
     """Read a plain PDF into an editable draft. Empty fields stay for the issuer to fill in."""
     content: bytes = await _read_pdf(file, org_context)
-    return draft_from_pdf(content, file.filename or "rechnung.pdf", seller=_seller_seed(db, org_context))
+    with enforce_issue(request, db, org_context):
+        return draft_from_pdf(
+            content,
+            file.filename or "rechnung.pdf",
+            seller=_seller_seed(db, org_context),
+        )
 
 
 @router.post("/build", response_model=IssueBuildResponse)
 def create_issue_files(
     body: IssueBuildRequest,
-    org_context: OrgContext = Depends(get_current_org),
+    org_context: Optional[OrgContext] = Depends(get_optional_org_context),
 ) -> IssueBuildResponse:
     """Build XRechnung and ZUGFeRD from a confirmed draft. Download stays closed until KoSIT is valid."""
     pdf_bytes: Optional[bytes] = _optional_pdf(body.pdf_base64, org_context)
     return build_issue(body, pdf_bytes)
 
 
-def _seller_seed(db: Session, org_context: OrgContext) -> Optional[SellerSeed]:
+def _seller_seed(db: Optional[Session], org_context: Optional[OrgContext]) -> Optional[SellerSeed]:
+    if db is None or org_context is None:
+        return None
     organization: Organization | None = db.get(Organization, org_context.organization_id)
     if organization is None:
         return None
@@ -55,7 +63,7 @@ def _seller_seed(db: Session, org_context: OrgContext) -> Optional[SellerSeed]:
     )
 
 
-async def _read_pdf(file: UploadFile, org_context: OrgContext) -> bytes:
+async def _read_pdf(file: UploadFile, org_context: Optional[OrgContext]) -> bytes:
     filename: str = file.filename or ""
     if not filename.lower().endswith(".pdf"):
         raise HTTPException(
@@ -73,7 +81,7 @@ async def _read_pdf(file: UploadFile, org_context: OrgContext) -> bytes:
     return content
 
 
-def _optional_pdf(pdf_base64: Optional[str], org_context: OrgContext) -> Optional[bytes]:
+def _optional_pdf(pdf_base64: Optional[str], org_context: Optional[OrgContext]) -> Optional[bytes]:
     if not pdf_base64:
         return None
     try:

@@ -53,6 +53,8 @@ function plusSession(): MeResponse {
       quotas_enforced: true,
       parse_used_today: 0,
       export_used_today: 0,
+      issue_per_day: 100,
+      issue_used_today: 0,
     },
   })
 }
@@ -122,6 +124,9 @@ describe('PricingPage', (): void => {
       />,
     )
 
+    expect(screen.getByText('10 E-Rechnungen aus PDF pro Tag')).toBeInTheDocument()
+    expect(screen.getByText('100 E-Rechnungen aus PDF pro Tag')).toBeInTheDocument()
+    expect(screen.getByText('500 E-Rechnungen aus PDF pro Tag')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Kostenlos prüfen' })).toBeInTheDocument()
     await user.click(screen.getAllByRole('button', { name: 'Konto erstellen' })[0])
     expect(onNavigate).toHaveBeenCalledWith('register')

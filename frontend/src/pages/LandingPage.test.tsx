@@ -36,12 +36,12 @@ describe('LandingPage', (): void => {
     ).toBeTruthy()
   })
 
-  it('hides the issue hint for a guest', (): void => {
+  it('shows the issue hint for a guest', (): void => {
     render(<LandingPage onNavigate={vi.fn()} session={null} onLogout={vi.fn()} />)
 
     expect(
-      screen.queryByText(/Eigene PDF-Rechnung als E-Rechnung vorbereiten/),
-    ).not.toBeInTheDocument()
+      screen.getByText(/Eigene PDF-Rechnung als E-Rechnung vorbereiten/),
+    ).toBeInTheDocument()
     const validationLinks: HTMLElement[] = screen.getAllByRole('link', { name: 'Validierung' })
     expect(validationLinks.length).toBeGreaterThan(0)
     for (const link of validationLinks) {

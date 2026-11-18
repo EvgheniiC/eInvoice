@@ -48,6 +48,7 @@ class Settings(BaseSettings):
     account_rate_limit_per_minute: int = 60
     guest_parse_per_day: int = 10
     guest_export_per_day: int = 10
+    guest_issue_per_day: int = 10
     guest_max_parallel: int = 1
     request_timeout_seconds: int = 90
     kosit_java_max_heap_mb: int = 512

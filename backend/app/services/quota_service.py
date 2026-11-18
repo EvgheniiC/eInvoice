@@ -1,4 +1,4 @@
-"""Daily parse/export quotas, upload size, and parse parallelism."""
+"""Daily parse, export, and e-invoice creation quotas."""
 
 from __future__ import annotations
 
@@ -32,6 +32,7 @@ from app.services.plan_limits import (
 
 ACTION_PARSE: str = "parse"
 ACTION_EXPORT: str = "export"
+ACTION_ISSUE: str = "issue"
 SUBJECT_GUEST: str = "guest"
 SUBJECT_ORG: str = "org"
 PARALLEL_RETRY_AFTER_SECONDS: int = 10
@@ -133,6 +134,22 @@ def enforce_export(
         raise quota_http_exception(exc) from exc
 
 
+@contextmanager
+def enforce_issue(
+    request: Request,
+    db: Optional[Session],
+    org_context: Optional[OrgContext],
+) -> Iterator[None]:
+    """Consume one daily e-invoice. A later download of the same draft does not."""
+    limits: PlanLimits = limits_for_context(org_context)
+    subject_type, subject_key = subject_for(request, org_context)
+    try:
+        _consume(db, subject_type, subject_key, ACTION_ISSUE, limits)
+        yield
+    except QuotaExceededError as exc:
+        raise quota_http_exception(exc) from exc
+
+
 def consume_parse_count(
     db: Session,
     org_context: OrgContext,
@@ -175,9 +192,17 @@ def build_plan_info(db: Optional[Session], context: OrgContext) -> PlanInfo:
     limits: PlanLimits = limits_for_context(context)
     used_parse: int = 0
     used_export: int = 0
+    used_issue: int = 0
     if db is not None:
-        used_parse, used_export = read_usage(db, SUBJECT_ORG, str(context.organization_id))
-    return _plan_info(limits, used_parse=used_parse, used_export=used_export)
+        used_parse, used_export, used_issue = read_usage(
+            db, SUBJECT_ORG, str(context.organization_id)
+        )
+    return _plan_info(
+        limits,
+        used_parse=used_parse,
+        used_export=used_export,
+        used_issue=used_issue,
+    )
 
 
 def build_plan_info_for_org(db: Session, organization_id: UUID, plan: Plan) -> PlanInfo:
@@ -191,11 +216,16 @@ def build_plan_info_for_org(db: Session, organization_id: UUID, plan: Plan) -> P
         allows_batch=plan.allows_batch,
         allows_history=plan.allows_history,
     )
-    used_parse, used_export = read_usage(db, SUBJECT_ORG, str(organization_id))
-    return _plan_info(limits, used_parse=used_parse, used_export=used_export)
+    used_parse, used_export, used_issue = read_usage(db, SUBJECT_ORG, str(organization_id))
+    return _plan_info(
+        limits,
+        used_parse=used_parse,
+        used_export=used_export,
+        used_issue=used_issue,
+    )
 
 
-def read_usage(db: Session, subject_type: str, subject_key: str) -> tuple[int, int]:
+def read_usage(db: Session, subject_type: str, subject_key: str) -> tuple[int, int, int]:
     today: date = usage_date_today()
     rows: list[UsageCounter] = list(
         db.scalars(
@@ -208,20 +238,30 @@ def read_usage(db: Session, subject_type: str, subject_key: str) -> tuple[int, i
     )
     used_parse: int = 0
     used_export: int = 0
+    used_issue: int = 0
     for row in rows:
         if row.action == ACTION_PARSE:
             used_parse = row.count
         elif row.action == ACTION_EXPORT:
             used_export = row.count
-    return used_parse, used_export
+        elif row.action == ACTION_ISSUE:
+            used_issue = row.count
+    return used_parse, used_export, used_issue
 
 
-def _plan_info(limits: PlanLimits, *, used_parse: int, used_export: int) -> PlanInfo:
+def _plan_info(
+    limits: PlanLimits,
+    *,
+    used_parse: int,
+    used_export: int,
+    used_issue: int,
+) -> PlanInfo:
     return PlanInfo(
         code=limits.code,
         name=limits.name,
         parse_per_day=limits.parse_per_day,
         export_per_day=limits.export_per_day,
+        issue_per_day=limits.issue_per_day,
         max_upload_size_mb=limits.max_upload_size_mb,
         max_parallel=limits.max_parallel,
         allows_batch=limits.allows_batch,
@@ -230,6 +270,7 @@ def _plan_info(limits: PlanLimits, *, used_parse: int, used_export: int) -> Plan
         quotas_enforced=True,
         parse_used_today=used_parse,
         export_used_today=used_export,
+        issue_used_today=used_issue,
     )
 
 
@@ -243,7 +284,7 @@ def _consume(
 ) -> None:
     if amount <= 0:
         return
-    limit: int = limits.parse_per_day if action == ACTION_PARSE else limits.export_per_day
+    limit, noun = _quota_for(action, limits)
     if limit <= 0:
         return
     today: date = usage_date_today()
@@ -257,7 +298,6 @@ def _consume(
         _db_add(db, subject_type, subject_key, action, today, -amount)
     else:
         _memory_add(subject_type, subject_key, action, today, -amount)
-    noun: str = "Prüfungen" if action == ACTION_PARSE else "Exporte"
     detail: str = (
         f"Tageslimit für {noun} erreicht ({limit} pro Tag)." + upgrade_cta(limits.code)
     )
@@ -276,6 +316,14 @@ def _consume(
         retry_after=_seconds_until_next_usage_day(),
         event="quota_exceeded",
     )
+
+
+def _quota_for(action: str, limits: PlanLimits) -> tuple[int, str]:
+    if action == ACTION_PARSE:
+        return limits.parse_per_day, "Prüfungen"
+    if action == ACTION_EXPORT:
+        return limits.export_per_day, "Exporte"
+    return limits.issue_per_day, "E-Rechnungen"
 
 
 @contextmanager

@@ -53,6 +53,7 @@ class TestCapabilities(unittest.TestCase):
         self.assertEqual(payload["max_upload_size_mb"], settings.max_upload_size_mb)
         self.assertEqual(payload["parse_per_day"], settings.guest_parse_per_day)
         self.assertEqual(payload["export_per_day"], settings.guest_export_per_day)
+        self.assertEqual(payload["issue_per_day"], settings.guest_issue_per_day)
         self.assertEqual(payload["max_parallel"], settings.guest_max_parallel)
         self.assertEqual(payload["account_rate_limit_per_minute"], settings.account_rate_limit_per_minute)
         self.assertIn(".xml", payload["allowed_extensions"])

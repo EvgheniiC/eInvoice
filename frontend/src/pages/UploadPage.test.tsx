@@ -63,6 +63,8 @@ describe('UploadPage', (): void => {
         quotas_enforced: true,
         parse_used_today: 0,
         export_used_today: 0,
+        issue_per_day: 100,
+        issue_used_today: 0,
       },
     })
   }

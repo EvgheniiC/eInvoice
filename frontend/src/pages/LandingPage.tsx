@@ -60,12 +60,10 @@ export function LandingPage({
               Validierung
             </AppLink>
           </div>
-          {session ? (
-            <p className="landing-hero__issue">
-              Eigene PDF-Rechnung als E-Rechnung vorbereiten:{' '}
-              <AppLink href="/erstellen">E-Rechnung erstellen</AppLink>
-            </p>
-          ) : null}
+          <p className="landing-hero__issue">
+            Eigene PDF-Rechnung als E-Rechnung vorbereiten:{' '}
+            <AppLink href="/erstellen">E-Rechnung erstellen</AppLink>
+          </p>
         </div>
         <InvoiceHeroVisual />
       </section>

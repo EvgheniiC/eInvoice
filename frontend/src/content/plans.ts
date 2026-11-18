@@ -17,6 +17,7 @@ export const PUBLIC_PLANS: readonly PublicPlan[] = [
     summary: 'Für einzelne Rechnungen ohne Registrierung oder Vertragsbindung.',
     features: [
       '10 Prüfungen und Exporte pro Tag',
+      '10 E-Rechnungen aus PDF pro Tag',
       'Eine Datei pro Vorgang, bis 10 MB',
       'XRechnung und ZUGFeRD prüfen',
       'Excel, DATEV-CSV und Steuerberater-Paket',
@@ -30,6 +31,7 @@ export const PUBLIC_PLANS: readonly PublicPlan[] = [
     summary: 'Für Handwerk und kleine Büros mit regelmäßigem Rechnungseingang.',
     features: [
       '100 Prüfungen und Exporte pro Tag',
+      '100 E-Rechnungen aus PDF pro Tag',
       'Batch mit bis zu 20 Dateien, je 25 MB',
       'Verlauf mit ausdrücklicher Zustimmung',
       'Duplikate und ein ZIP für die Kanzlei',
@@ -43,6 +45,7 @@ export const PUBLIC_PLANS: readonly PublicPlan[] = [
     summary: 'Für Firmen mit höherem Volumen und größeren Stapeln.',
     features: [
       '500 Prüfungen und Exporte pro Tag',
+      '500 E-Rechnungen aus PDF pro Tag',
       'Batch mit bis zu 50 Dateien, je 50 MB',
       'Alle Funktionen aus Plus',
       'Höhere parallele Verarbeitung',

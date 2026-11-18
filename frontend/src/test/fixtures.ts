@@ -97,6 +97,7 @@ const DEFAULT_PLAN: PlanInfo = {
   name: 'Free',
   parse_per_day: 10,
   export_per_day: 10,
+  issue_per_day: 10,
   max_upload_size_mb: 10,
   max_parallel: 1,
   allows_batch: false,
@@ -105,6 +106,7 @@ const DEFAULT_PLAN: PlanInfo = {
   quotas_enforced: true,
   parse_used_today: 0,
   export_used_today: 0,
+  issue_used_today: 0,
 }
 
 export function buildSession(overrides: Partial<MeResponse> = {}): MeResponse {

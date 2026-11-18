@@ -159,8 +159,9 @@ export function PricingPage({
         </div>
         <h1 tabIndex={-1}>Tarife</h1>
         <p className="page__lead">
-          Free prüft bis zu 10 Rechnungen pro Tag, eine Datei nach der anderen. Plus hebt das auf 100
-          Prüfungen und 20 Dateien, Team auf 500 Prüfungen und 50 Dateien.
+          Free prüft bis zu 10 Rechnungen pro Tag und erstellt bis zu 10 E-Rechnungen aus PDF, eine
+          Datei nach der anderen. Plus hebt das auf 100 Prüfungen, 100 E-Rechnungen und 20 Dateien,
+          Team auf 500 Prüfungen, 500 E-Rechnungen und 50 Dateien.
         </p>
       </header>
 

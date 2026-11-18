@@ -166,14 +166,17 @@ export function IssuePage({
         </p>
       </header>
 
-      {sessionReady && session ? (
+      {sessionReady ? (
         <>
       <section className="issue-note" aria-label="Hinweis">
         <p>
           Nur der Rechnungsaussteller darf die erzeugte Datei versenden. Das Auslesen füllt einen
           Entwurf; es garantiert keine steuerliche oder rechtliche Konformität. Maßgeblich ist die
           XML, nicht das sichtbare PDF. Ein Download gibt es erst, wenn KoSIT die Datei als gültig
-          abgeschlossen hat. Die PDF wird danach nicht gespeichert.
+          abgeschlossen hat. Die PDF wird danach nicht gespeichert. Ohne Tarif sind 10 E-Rechnungen
+          pro Tag möglich, mit Plus 100 und mit Team 500. Jede gelesene PDF zählt einmal; der
+          Download derselben Rechnung zählt nicht erneut. Leere Felder füllt der Aussteller selbst.
+          Ohne Konto bleiben die eigenen Angaben leer.
         </p>
       </section>
 
@@ -430,19 +433,10 @@ export function IssuePage({
 
       {result ? <BuildResult result={result} /> : null}
         </>
-      ) : !sessionReady ? (
+      ) : (
         <p className="status status--info" role="status">
           Wird geladen…
         </p>
-      ) : (
-        <>
-          <p className="status status--info" role="status">
-            Bitte anmelden.
-          </p>
-          <button type="button" className="btn btn--primary" onClick={() => onNavigate('login')}>
-            Anmelden
-          </button>
-        </>
       )}
       <SiteFooter />
     </main>

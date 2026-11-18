@@ -20,6 +20,7 @@ def build_capabilities() -> CapabilitiesResponse:
         account_rate_limit_per_minute=settings.account_rate_limit_per_minute,
         parse_per_day=limits.parse_per_day,
         export_per_day=limits.export_per_day,
+        issue_per_day=limits.issue_per_day,
         max_parallel=limits.max_parallel,
         stores_invoice_files=False,
         requires_account=False,
@@ -69,7 +70,8 @@ def _limitations(limits: PlanLimits) -> List[str]:
     return [
         (
             f"Eine Datei pro Anfrage, maximal {limits.max_upload_size_mb} MB, "
-            f"bis zu {limits.parse_per_day} Prüfungen und {limits.export_per_day} Exporte pro Tag."
+            f"bis zu {limits.parse_per_day} Prüfungen, {limits.export_per_day} Exporte "
+            f"und {limits.issue_per_day} E-Rechnungen pro Tag."
         ),
         "Gastmodus: die Datei wird nur während der Anfrage verarbeitet und danach gelöscht.",
         "Normale PDFs ohne eingebettetes XML, Scans, openTRANS und andere XML-Formate werden abgelehnt.",
