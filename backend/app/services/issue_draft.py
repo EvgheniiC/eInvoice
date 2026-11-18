@@ -30,14 +30,32 @@ STANDARD_TAX_RATES: Final[frozenset[Decimal]] = frozenset(
     {Decimal("7.00"), Decimal("19.00")}
 )
 
-_INVOICE_NUMBER_RE: Final[re.Pattern[str]] = re.compile(
-    r"(?:Rechnungs?(?:nummer|nr\.?|-Nr\.?)|(?<![A-Za-zÄÖÜäöüß])Rechnung(?!s)|"
+_LABELED_INVOICE_NUMBER_RE: Final[re.Pattern[str]] = re.compile(
+    r"(?:Rechnungs?(?:nummer|-?\s*Nr\.?)|Rechn?\.-Nr\.?|Re\.?-Nr\.?|Belegnummer|Beleg-Nr\.?|"
     r"Invoice\s*(?:No\.?|Number))"
     r"\s*[:.]?\s*([A-Z0-9][A-Z0-9./\-]{1,40})",
     re.IGNORECASE,
 )
+_BARE_INVOICE_NUMBER_RE: Final[re.Pattern[str]] = re.compile(
+    r"(?<![A-Za-zÄÖÜäöüß])Rechnung(?!s)\s*[:.]?\s*([A-Z0-9][A-Z0-9./\-]{1,40})",
+    re.IGNORECASE,
+)
+_COLUMN_INVOICE_HEADER_RE: Final[re.Pattern[str]] = re.compile(
+    r"^(?:Rechn?\.-Nr\.?|Rechnungs?-?Nr\.?)$",
+    re.IGNORECASE,
+)
+_GLUED_CUSTOMER_INVOICE_RE: Final[re.Pattern[str]] = re.compile(r"^(\d{6})(\d{10})$")
 _DATE_RE: Final[re.Pattern[str]] = re.compile(
-    r"(?<![A-Za-zÄÖÜäöüß])(?:Rechnungsdatum|Datum)\s*[:.]?\s*"
+    r"(?<![A-Za-zÄÖÜäöüß])(?:Rechnungsdatum|Belegdatum|Datum)\s*[:.]?\s*"
+    r"(\d{2})\.(\d{2})\.(\d{2}(?:\d{2})?)",
+    re.IGNORECASE,
+)
+_DATE_HEADER_RE: Final[re.Pattern[str]] = re.compile(
+    r"^(?:Rechnungsdatum|Rechn\.-Datum|Belegdatum):?$",
+    re.IGNORECASE,
+)
+_DUE_DATE_RE: Final[re.Pattern[str]] = re.compile(
+    r"(?:Fälligkeit(?:sdatum)?|Zahlbar\s+bis(?:\s+zum)?)\s*[:.]?\s*"
     r"(\d{2})\.(\d{2})\.(\d{2}(?:\d{2})?)",
     re.IGNORECASE,
 )
@@ -58,7 +76,8 @@ _EMAIL_RE: Final[re.Pattern[str]] = re.compile(
     re.IGNORECASE,
 )
 _BUYER_REFERENCE_RE: Final[re.Pattern[str]] = re.compile(
-    r"(?:Leitweg[-\s]?ID|Käuferreferenz|Buyer reference|Bestellnummer)"
+    r"(?:Leitweg[-\s]?ID|Käuferreferenz|Buyer reference|Bestell(?:nummer|-Nr\.?)|"
+    r"Auftrags(?:nummer|-Nr\.?)|Ihre\s+Auftragsnr\.?)"
     r"\s*[:.]?\s*([A-Z0-9][A-Z0-9./\-]{1,40})",
     re.IGNORECASE,
 )
@@ -67,14 +86,17 @@ _AMOUNT_RE: Final[re.Pattern[str]] = re.compile(
 )
 _SKIP_LINE_RE: Final[re.Pattern[str]] = re.compile(
     r"(Summe|Gesamt|Nettobetrag|Brutto|Zwischensumme|Endbetrag|Endsumme|"
-    r"Übertrag|Uebertrag|Rechnungsbetrag|Versandkosten|Rabatt)",
+    r"Übertrag|Uebertrag|Rechnungsbetrag|Rabatt)",
     re.IGNORECASE,
 )
 _DOC_TAX_RE: Final[re.Pattern[str]] = re.compile(
-    r"(?:MwSt-Satz|MwSt\.?|Umsatzsteuer|USt\.?)\s*[:.]?\s*(\d{1,2})(?:[.,]\d{1,2})?\s*%",
+    r"(?:MwSt(?:-Satz)?|Umsatzsteuer|USt|Steuersatz)[^0-9%]{0,12}(\d{1,2})(?:[.,]\d{1,2})?\s*%"
+    r"|(\d{1,2})(?:[.,]\d{1,2})?\s*%[^A-Za-zÄÖÜäöüß%]{0,10}(?:MwSt|USt|Umsatzsteuer)",
     re.IGNORECASE,
 )
-_MONEY_TOKEN: Final[str] = r"(?:\d{1,3}(?:\.\d{3})*,\d{2}|\d+,\d{2})"
+_MONEY_TOKEN: Final[str] = (
+    r"(?:\d{1,3}(?:\.\d{3})+,\d{2}|\d+,\d{2,4}|\d+\.\d{2})(?:\s*(?:€|EUR))?"
+)
 _RATE_TOKEN: Final[str] = r"\d{1,2}(?:[.,]\d{1,2})?\s*%"
 _PARTS_LINE_RE: Final[re.Pattern[str]] = re.compile(
     rf"^(?P<article>\d{{5,}})\s+(?P<desc>.+?)\s+(?P<qty>\d+(?:,\d+)?)\s+"
@@ -96,8 +118,152 @@ _DESC_QTY_LINE_RE: Final[re.Pattern[str]] = re.compile(
     rf"(?P<qty>\d+(?:,\d+)?)\s+(?P<price>{_MONEY_TOKEN})\s+"
     rf"(?:{_RATE_TOKEN}\s+)?(?P<total>{_MONEY_TOKEN})(?:\s+{_RATE_TOKEN})?$"
 )
+_INDEXED_TOTAL_RE: Final[re.Pattern[str]] = re.compile(
+    rf"^\d+\s+\d{{5,}}\s+(?P<desc>.+?)\s+(?:#\d+\s+)?(?P<net>{_MONEY_TOKEN})$"
+)
+_AW_LINE_RE: Final[re.Pattern[str]] = re.compile(
+    rf"^(?:\d+\s+)?(?:\d{{5,}}\s+)?(?P<desc>[A-Za-zÄÖÜäöüß].+?)\s+\d+,\d{{2}}\s+AW\s+"
+    rf"(?P<qty>\d+(?:,\d+)?)\s+(?P<net>{_MONEY_TOKEN})$",
+    re.IGNORECASE,
+)
+_UNIT_PRICE_LINE_RE: Final[re.Pattern[str]] = re.compile(
+    rf"^(?P<desc>.+?)\s+(?P<qty>\d+(?:,\d+)?)\s+(?P<unit>Stk\.?|Stück|ST|Jahr|Monate|Monat)\s+"
+    rf"(?:\d+\s+)?(?P<price>{_MONEY_TOKEN})\s+(?P<total>{_MONEY_TOKEN})$",
+    re.IGNORECASE,
+)
+_UNIT_AFTER_RE: Final[re.Pattern[str]] = re.compile(
+    rf"^(?P<desc>.+?)\s+(?P<unit>Jahr|Monate|Monat|Stück|Stk\.?|ST)\s+"
+    rf"(?P<qty>\d+(?:,\d+)?)\s+(?P<price>{_MONEY_TOKEN})\s+(?P<total>{_MONEY_TOKEN})$",
+    re.IGNORECASE,
+)
+_DATED_ITEM_RE: Final[re.Pattern[str]] = re.compile(
+    rf"^(?P<desc>.+?)\s+(?P<qty>\d+,\d{{2}})\s+\d+\s+(?P<price>{_MONEY_TOKEN})\s+"
+    rf"(?P<total>{_MONEY_TOKEN})\s+\d{{2}}\.\d{{2}}\.\d{{2}}\s+(?P<tax>7|19)\b"
+)
+_EUR_ITEM_RE: Final[re.Pattern[str]] = re.compile(
+    rf"^(?P<desc>.+?)\s+(?P<price>{_MONEY_TOKEN})\s+EUR\s+EUR\s+\S+\s+"
+    rf"(?P<total>{_MONEY_TOKEN})\s+(?P<qty>\d+)\s*$",
+    re.IGNORECASE,
+)
+_QTY_DESC_PREFIX_RE: Final[re.Pattern[str]] = re.compile(
+    rf"^(?P<qty>\d+(?:,\d+)?)\s+(?P<desc>[A-Za-zÄÖÜäöüß].{{2,160}}?)\s+"
+    rf"(?P<price>{_MONEY_TOKEN})\s+(?:{_RATE_TOKEN}\s+)?"
+    rf"(?P<total>{_MONEY_TOKEN})(?=\s|$)"
+)
+_ARTICLE_FACTOR_RE: Final[re.Pattern[str]] = re.compile(
+    rf"^(?P<qty>\d+)\s+(?P<desc>.+?)\s+\d{{5,}}\s+(?P<price>{_MONEY_TOKEN})\s+"
+    rf"\d+\s+(?P<total>{_MONEY_TOKEN})$"
+)
+_FACTOR_LINE_RE: Final[re.Pattern[str]] = re.compile(
+    rf"^(?P<idx>\d+)\s+(?P<qty>\d+,\d+)\s+x\s+(?P<price>\d+,\d+)\s+(?P<tax>\d+,\d+)\s+"
+    rf"(?P<total>{_MONEY_TOKEN})(?:\s+(?P<desc>.+))?$"
+)
+_SURCHARGE_LINE_RE: Final[re.Pattern[str]] = re.compile(
+    rf"(?P<base>{_MONEY_TOKEN})\s+x\s+(?P<pct>\d+)\s*%\s+(?P<desc>.+?)\s+"
+    rf"\d+,\d+\s+(?P<total>{_MONEY_TOKEN})$",
+    re.IGNORECASE,
+)
+_EQUAL_AMOUNTS_RE: Final[re.Pattern[str]] = re.compile(
+    rf"^(?P<desc>[A-Za-zÄÖÜäöüß].{{2,180}}?)\s+(?P<net>{_MONEY_TOKEN})\s+(?P=net)$"
+)
+_GLUE_LABEL_RE: Final[re.Pattern[str]] = re.compile(
+    r"(?<=[\dA-Za-zÄÖÜäöüß])(Rechnungsdatum|Rechnungsnummer|Kundennummer|Leistungsdatum|"
+    r"Lieferdatum|Belegdatum|Fälligkeitsdatum|Fälligkeit)",
+    re.IGNORECASE,
+)
+_DATE_TOKEN_RE: Final[re.Pattern[str]] = re.compile(r"\d{2}\.\d{2}\.\d{2}(?:\d{2})?")
+_PLZ_CITY_GLUE_RE: Final[re.Pattern[str]] = re.compile(r"(\d{5})([A-ZÄÖÜ])")
+_COUNTRY_GLUE_RE: Final[re.Pattern[str]] = re.compile(r"([A-Za-zÄÖÜäöüß])(Deutschland|Germany)\b")
+_STREET_SUFFIX_RE: Final[str] = (
+    r"(?:straße|strasse|str\.|weg|allee|platz|gasse|ring|damm|ufer|markt)"
+)
+_HOUSE_PLZ_RE: Final[re.Pattern[str]] = re.compile(
+    rf"(?P<head>(?:[A-Za-zÄÖÜäöüß]|-)*(?:{_STREET_SUFFIX_RE}))"
+    rf"\s*(?P<house>\d{{1,4}}[A-Za-z]?)"
+    rf"(?P<postcode>\d{{5}})"
+    rf"(?=\s+[A-ZÄÖÜ])",
+    re.IGNORECASE,
+)
+_CENT_FOOTNOTE_RE: Final[re.Pattern[str]] = re.compile(r"(?<=,\d{2})\d+(?=\s*\(\d{2}\))")
+_FOOTNOTE_RE: Final[re.Pattern[str]] = re.compile(r"\s*\(\d{2}\)")
+_WORD_MONEY_GLUE_RE: Final[re.Pattern[str]] = re.compile(
+    rf"([A-Za-zÄÖÜäöüß]\.?)(?={_MONEY_TOKEN})"
+)
+_LABEL_GLUE_RE: Final[re.Pattern[str]] = re.compile(
+    r"([a-zäöüß])(?=Lieferempfänger|Rechnungsempfänger|Leistungsempfänger|Rechnungs)",
+    re.IGNORECASE,
+)
+_COUNTRY_POSTCODE_RE: Final[re.Pattern[str]] = re.compile(r"\bD-(\d{5})\b")
+_DATE_RATE_RE: Final[re.Pattern[str]] = re.compile(r"\d{2}\.\d{2}\.\d{2}\s+(7|19)\b")
+_PLACE_DATE_RE: Final[re.Pattern[str]] = re.compile(
+    r"[A-ZÄÖÜ][A-Za-zÄÖÜäöüß.\-]{2,},\s*(\d{2})\.(\d{2})\.(\d{4})"
+)
+_STANDALONE_INVOICE_TOKEN_RE: Final[re.Pattern[str]] = re.compile(
+    r"^[A-Z]{1,4}\d{0,4}-?\d{5,}$",
+    re.IGNORECASE,
+)
+_CITY_STOP_RE: Final[re.Pattern[str]] = re.compile(
+    r"Nr\.?|Tel|Fax|Seite|GmbH|@|:|Liefer|Rechnung|Auftrag|Kunde|Betriebs",
+    re.IGNORECASE,
+)
+_CITY_CONNECTORS: Final[frozenset[str]] = frozenset(
+    {"a.", "a", "d.", "d", "am", "im", "an", "der", "den", "auf"}
+)
+_COUNTRY_WORDS: Final[frozenset[str]] = frozenset({"deutschland", "germany"})
+_ARTICLE_HEAD_RE: Final[re.Pattern[str]] = re.compile(r"^\d+\s+\d{5,}\s+\S")
+_FACTOR_HEAD_RE: Final[re.Pattern[str]] = re.compile(r"^\d+\s+\d+,\d+\s+x\s+")
+_QTY_TEXT_HEAD_RE: Final[re.Pattern[str]] = re.compile(r"^\d{1,3}\s+[A-ZÄÖÜ]")
+_GENERIC_NAME_RE: Final[re.Pattern[str]] = re.compile(
+    r"^(?:Reparaturen|Firma|Lieferanschrift|Seite|Deutschland|Rechnung|Kunden)$",
+    re.IGNORECASE,
+)
+_STREET_NOISE_RE: Final[re.Pattern[str]] = re.compile(
+    r"\s+(?:Tel\.?|Telefon|Fax|E-Mail|Email)\b",
+    re.IGNORECASE,
+)
+_RATE_BASIS_RE: Final[re.Pattern[str]] = re.compile(
+    rf"(\d{{1,2}})(?:[.,]0{{1,2}})?\s*%\s+(?:(?:€|EUR)\s+)?({_MONEY_TOKEN})",
+    re.IGNORECASE,
+)
+_COMPANY_RE: Final[re.Pattern[str]] = re.compile(r"GmbH|\bAG\b|\bKG\b|\bUG\b", re.IGNORECASE)
+_DELIVERY_RE: Final[re.Pattern[str]] = re.compile(
+    r"Abholadresse|Lieferadresse|Lieferempfänger",
+    re.IGNORECASE,
+)
+_REJECT_PARTY_RE: Final[re.Pattern[str]] = re.compile(
+    r"^(?:Abholadresse|Lieferadresse|Lieferempfänger|inkl\.|Von\s)",
+    re.IGNORECASE,
+)
+_FRAGMENT_NAME_RE: Final[re.Pattern[str]] = re.compile(
+    r"^(?:KG\b|Co\.\s*KG|GmbH\b|&)|^(?!.*\s)\S{3,}$",
+    re.IGNORECASE,
+)
+_JOB_SITE_RE: Final[re.Pattern[str]] = re.compile(
+    r"Einsatzort|Zielort|Schadennummer|^(?:Auftrag\s+\d)",
+    re.IGNORECASE,
+)
+_QTY_BARE_HEAD_RE: Final[re.Pattern[str]] = re.compile(
+    r"^\d+(?:,\d+)?\s+[A-Za-zÄÖÜäöüß]"
+)
+_TAX_HEAD_RE: Final[re.Pattern[str]] = re.compile(
+    r"^(?:MWSt|Umsatzsteuer|USt)\b",
+    re.IGNORECASE,
+)
+_PACK_GLUE_RE: Final[re.Pattern[str]] = re.compile(r"([a-zäöüß])(?=Inhalt\b)")
+_NAME_LABEL_RE: Final[re.Pattern[str]] = re.compile(
+    r"\s+(?:Auftrags-Nr|Abnehmer-Gruppe|Kunden-Nr|Kd\.-Nr|Betriebs-Nr|Rechnungs-Nr)\b",
+    re.IGNORECASE,
+)
+_SECOND_STREET_RE: Final[re.Pattern[str]] = re.compile(
+    rf"(.+?{_STREET_SUFFIX_RE}\.?\s+\d{{1,4}}[A-Za-z]?)",
+    re.IGNORECASE,
+)
+_LEADING_ROLE_RE: Final[re.Pattern[str]] = re.compile(
+    r"^(?:>+\s*)?(?:Deutschland\s*)?(?:Rechnungs-\s*und\s*)?"
+    r"(?:Leistungsempfänger|Rechnungsempfänger|Lieferempfänger)\s+",
+    re.IGNORECASE,
+)
 _LINE_Y_TOLERANCE: Final[float] = 3.0
-_CHAR_WIDTH_EM: Final[float] = 0.5
 _TWO_DIGIT_YEAR_PIVOT: Final[int] = 70
 _LABELED_AMOUNT: Final[dict[str, re.Pattern[str]]] = {
     "Netto": re.compile(
@@ -421,14 +587,17 @@ def _draft_from_text(
     hints: List[FieldHint],
     warnings: List[str],
 ) -> IssueDraft:
-    number_match: Optional[re.Match[str]] = _INVOICE_NUMBER_RE.search(text)
-    invoice_number: Optional[str] = number_match.group(1) if number_match else None
+    text = _prepare_text(text)
+    invoice_number: Optional[str] = _invoice_number(text)
     if invoice_number:
         hints.append(FieldHint(field="invoice_number", source="pdf", message="Rechnungsnummer aus dem PDF-Text."))
 
     issue_date: Optional[str] = _iso_from_german_date(text)
     if issue_date:
         hints.append(FieldHint(field="issue_date", source="pdf", message="Rechnungsdatum aus dem PDF-Text."))
+    due_date: Optional[str] = _iso_from_due_date(text)
+    if due_date:
+        hints.append(FieldHint(field="due_date", source="pdf", message="Fälligkeitsdatum aus dem PDF-Text."))
     delivery_date: Optional[str] = _iso_from_service_date(text)
     if delivery_date:
         hints.append(
@@ -440,10 +609,7 @@ def _draft_from_text(
     seller_block, buyer_block = _assign_party_addresses(_address_blocks(text_lines), seller_name)
     contacts: _PdfContacts = _pdf_contacts(text_lines, None if buyer_block is None else buyer_block.line_index)
 
-    pdf_reference: Optional[str] = None
-    buyer_match: Optional[re.Match[str]] = _BUYER_REFERENCE_RE.search(text)
-    if buyer_match is not None:
-        pdf_reference = buyer_match.group(1)
+    pdf_reference: Optional[str] = _pdf_buyer_reference(text)
     profile_reference: Optional[str] = seller.buyer_reference if seller else None
     buyer_reference: Optional[str] = _prefer_pdf(
         pdf_reference,
@@ -500,6 +666,7 @@ def _draft_from_text(
         issue_date=issue_date,
         delivery_date=delivery_date,
         currency="EUR",
+        due_date=due_date,
         buyer_reference=buyer_reference,
         seller=seller_party,
         buyer=buyer_party,
@@ -677,42 +844,174 @@ def _address_blocks(lines: List[str]) -> List[_FoundAddress]:
         line: str = " ".join(raw_line.split())
         if not line or index in consumed or _AMOUNT_RE.search(line):
             continue
-        inline: Optional[re.Match[str]] = _INLINE_ADDRESS_RE.match(line)
-        if inline is not None:
-            block: Optional[_FoundAddress] = _make_address(
-                name=inline.group("name"),
-                street=inline.group("street"),
-                postcode=inline.group("postcode"),
-                city=inline.group("city"),
-                role=_role_before(lines, index),
-                line_index=index,
-            )
-            if block is not None:
-                found.append(block)
-                consumed.add(index)
+        inline_block: Optional[_FoundAddress] = _inline_address(line, _role_before(lines, index), index)
+        if inline_block is not None:
+            found.append(inline_block)
+            consumed.add(index)
             continue
-        postal: Optional[re.Match[str]] = _POSTAL_RE.match(line)
+        street_plz: Optional[tuple[str, str, str]] = _street_with_postal(line)
+        if street_plz is not None:
+            name_at: Optional[tuple[int, str]] = _party_name_before(lines, index, consumed)
+            if name_at is not None:
+                street_block: Optional[_FoundAddress] = _make_address(
+                    name=name_at[1],
+                    street=street_plz[0],
+                    postcode=street_plz[1],
+                    city=street_plz[2],
+                    role=_role_before(lines, name_at[0]),
+                    line_index=name_at[0],
+                    source=line,
+                )
+                if street_block is not None:
+                    found.append(street_block)
+                    consumed.update({name_at[0], index})
+                    continue
+        postal: Optional[tuple[str, str]] = _leading_postal(line)
         if postal is None:
             continue
         street_at: Optional[tuple[int, str]] = _previous_content(lines, index, consumed)
-        if street_at is None or not _STREET_HINT_RE.search(street_at[1]):
+        street_text: str = "" if street_at is None else _first_street(_trim_contact_noise(street_at[1]))
+        if street_at is None or not _plausible_street(street_text):
             continue
-        name_at: Optional[tuple[int, str]] = _previous_content(lines, street_at[0], consumed)
-        if name_at is None:
+        named_at: Optional[tuple[int, str]] = _party_name_before(lines, street_at[0], consumed)
+        if named_at is None:
             continue
-        block = _make_address(
-            name=name_at[1],
-            street=street_at[1],
-            postcode=postal.group("postcode"),
-            city=postal.group("city"),
-            role=_role_before(lines, name_at[0]),
-            line_index=name_at[0],
+        block: Optional[_FoundAddress] = _make_address(
+            name=named_at[1],
+            street=street_text,
+            postcode=postal[0],
+            city=postal[1],
+            role=_role_before(lines, named_at[0]),
+            line_index=named_at[0],
+            source=line,
         )
         if block is None:
             continue
         found.append(block)
-        consumed.update({name_at[0], street_at[0], index})
+        consumed.update({named_at[0], street_at[0], index})
     return found
+
+
+def _inline_address(line: str, role: Optional[str], line_index: int) -> Optional[_FoundAddress]:
+    for separator in (" • ", " · ", " | ", " - ", ", ", "•"):
+        parts: List[str] = [part.strip(" -") for part in line.split(separator) if part.strip(" -")]
+        if len(parts) < 3:
+            continue
+        postal: Optional[tuple[str, str]] = _leading_postal(parts[-1])
+        if postal is None:
+            continue
+        name: str = parts[0] if len(parts) == 3 else separator.join(parts[:-2])
+        return _make_address(
+            name=name,
+            street=parts[-2],
+            postcode=postal[0],
+            city=postal[1],
+            role=role,
+            line_index=line_index,
+            source=line,
+        )
+    return None
+
+
+def _trim_contact_noise(value: str) -> str:
+    return _STREET_NOISE_RE.split(value, maxsplit=1)[0].strip(" -•·,")
+
+
+def _plausible_street(street: str) -> bool:
+    if not street or "@" in street or street.startswith("+"):
+        return False
+    if re.search(r"\d{6,}", street):
+        return False
+    return _STREET_HINT_RE.search(street) is not None
+
+
+def _leading_postal(line: str) -> Optional[tuple[str, str]]:
+    """Postcode and city at the start of a line. Trailing labels stay outside the city."""
+    match: Optional[re.Match[str]] = re.match(r"^(\d{5})\s+(\S.*)$", line.strip())
+    if match is None:
+        return None
+    city: Optional[str] = _city_words(match.group(2))
+    if city is None:
+        return None
+    return match.group(1), city
+
+
+def _city_words(tail: str) -> Optional[str]:
+    words: List[str] = []
+    for raw_word in tail.split():
+        word: str = raw_word.strip(",;")
+        if not word or word.casefold() in _COUNTRY_WORDS or _CITY_STOP_RE.search(word):
+            break
+        if re.search(r"\d", word):
+            break
+        if words and word.casefold() not in _CITY_CONNECTORS and not re.match(r"[A-ZÄÖÜ]", word):
+            break
+        if not words and word.casefold() in _CITY_CONNECTORS:
+            break
+        words.append(word)
+        if len(words) == 5:
+            break
+    if not words or not re.match(r"[A-ZÄÖÜ]", words[0]):
+        return None
+    return " ".join(words)
+
+
+def _street_with_postal(line: str) -> Optional[tuple[str, str, str]]:
+    match: Optional[re.Match[str]] = re.match(
+        r"^(?P<street>.+?[A-Za-zÄÖÜäöüß.])\s+(?P<house>\d{1,4}[A-Za-z]?)\s+(?P<rest>\d{5}\s+\S.*)$",
+        line,
+    )
+    if match is None:
+        return None
+    postal: Optional[tuple[str, str]] = _leading_postal(match.group("rest"))
+    if postal is None:
+        return None
+    street: str = _first_street(f"{match.group('street')} {match.group('house')}")
+    return street, postal[0], postal[1]
+
+
+def _first_street(street: str) -> str:
+    """Keep the first house number when two window columns share one line."""
+    match: Optional[re.Match[str]] = _SECOND_STREET_RE.match(street)
+    if match is None:
+        return street
+    remainder: str = street[match.end() :]
+    if not remainder.strip() or re.match(r"\s*[–\-]\s*\d", remainder):
+        return street
+    return match.group(1)
+
+
+def _clean_party_name(name: str) -> str:
+    trimmed: str = _trim_contact_noise(name).lstrip("> ").strip()
+    trimmed = _LEADING_ROLE_RE.sub("", trimmed)
+    trimmed = _NAME_LABEL_RE.split(trimmed, maxsplit=1)[0]
+    return trimmed.strip(" -/|>,")
+
+
+def _party_name_before(
+    lines: List[str],
+    index: int,
+    consumed: set[int],
+) -> Optional[tuple[int, str]]:
+    """Prefer the company line when the line above a street is only a wrapped fragment."""
+    immediate: Optional[tuple[int, str]] = _previous_content(lines, index, consumed)
+    if immediate is None:
+        return None
+    cleaned: str = _clean_party_name(immediate[1])
+    if _COMPANY_RE.search(cleaned) and not _FRAGMENT_NAME_RE.match(cleaned):
+        return immediate[0], cleaned
+    if not _FRAGMENT_NAME_RE.match(cleaned):
+        return immediate[0], cleaned
+    cursor: int = immediate[0]
+    for _step in range(3):
+        earlier: Optional[tuple[int, str]] = _previous_content(lines, cursor, consumed)
+        if earlier is None:
+            break
+        earlier_name: str = _clean_party_name(earlier[1])
+        if _COMPANY_RE.search(earlier_name):
+            return earlier[0], earlier_name
+        cursor = earlier[0]
+    return immediate[0], cleaned
 
 
 def _make_address(
@@ -723,17 +1022,29 @@ def _make_address(
     city: str,
     role: Optional[str],
     line_index: int,
+    source: str = "",
 ) -> Optional[_FoundAddress]:
-    cleaned_name: str = _clean(name, max_length=200)
-    cleaned_street: str = _clean(street, max_length=200)
-    if not cleaned_name or not cleaned_street or _NAME_REJECT_RE.match(cleaned_name):
+    cleaned_name: str = _clean(_clean_party_name(name), max_length=200)
+    cleaned_street: str = _clean(_first_street(_trim_contact_noise(street)), max_length=200)
+    if (
+        not cleaned_name
+        or not _plausible_street(cleaned_street)
+        or _NAME_REJECT_RE.match(cleaned_name)
+        or _GENERIC_NAME_RE.match(cleaned_name)
+        or _REJECT_PARTY_RE.match(cleaned_name)
+        or _JOB_SITE_RE.search(cleaned_name)
+        or _JOB_SITE_RE.search(cleaned_street)
+    ):
         return None
+    chosen_role: Optional[str] = role
+    if chosen_role is None and (_DELIVERY_RE.search(cleaned_name) or _DELIVERY_RE.search(source)):
+        chosen_role = "delivery"
     return _FoundAddress(
         name=cleaned_name,
         street=cleaned_street,
         postcode=postcode,
         city=_clean(city, max_length=80),
-        role=role,
+        role=chosen_role,
         line_index=line_index,
     )
 
@@ -785,15 +1096,22 @@ def _assign_party_addresses(
     used: set[int] = set()
     if seller is not None:
         used.add(seller.line_index)
-    if buyer is not None and buyer.line_index in used:
+    if buyer is not None and (buyer.line_index in used or buyer.role == "delivery"):
         buyer = None
     if buyer is not None:
         used.add(buyer.line_index)
-    remaining: List[_FoundAddress] = [block for block in blocks if block.line_index not in used]
+    remaining: List[_FoundAddress] = [
+        block
+        for block in blocks
+        if block.line_index not in used and block.role != "delivery"
+    ]
     if seller is None and not seller_name and remaining:
         seller = remaining.pop(0)
+    if seller is not None:
+        remaining = [block for block in remaining if not _name_matches(block.name, seller.name)]
     if buyer is None and remaining:
-        buyer = remaining[0]
+        companies: List[_FoundAddress] = [block for block in remaining if _COMPANY_RE.search(block.name)]
+        buyer = companies[0] if companies else remaining[0]
     return seller, buyer
 
 
@@ -1060,47 +1378,55 @@ def _group_lines(pieces: List[_TextPiece]) -> List[List[_TextPiece]]:
 
 def _join_line(pieces: List[_TextPiece]) -> str:
     parts: List[str] = [pieces[0].text]
-    end: float = _run_end(pieces[0])
+    previous: _TextPiece = pieces[0]
     for piece in pieces[1:]:
-        if piece.x - end > piece.font_size * 0.25:
+        # A narrow width estimate keeps a real column gap from being swallowed.
+        min_end: float = previous.x + len(previous.text) * previous.font_size * 0.35
+        if piece.x - min_end > previous.font_size * 0.3:
             parts.append(" ")
         parts.append(piece.text)
-        end = max(end, _run_end(piece))
+        previous = piece
     return "".join(parts).strip()
-
-
-def _run_end(piece: _TextPiece) -> float:
-    return piece.x + max(len(piece.text), 1) * piece.font_size * _CHAR_WIDTH_EM
 
 
 def _lines_from_text(text: str) -> List[IssueLineInput]:
     document_rates: List[Decimal] = _document_tax_rates(text)
     fallback: Optional[Decimal] = document_rates[0] if len(document_rates) == 1 else None
     found: List[IssueLineInput] = []
-    for raw_line in text.splitlines():
-        line: str = " ".join(raw_line.split())
+    for line in _fold_item_lines(text.splitlines()):
         if not line or _SKIP_LINE_RE.search(line):
             continue
-        parsed: Optional[IssueLineInput] = (
-            _parts_line(line)
-            or _stueck_line(line)
-            or _qty_desc_line(line)
-            or _desc_qty_line(line)
-        )
-        if parsed is None:
-            continue
-        parsed.tax_rate = _tax_for_line(line, fallback)
-        found.append(parsed)
-        if len(found) >= MAX_LINES:
-            break
+        parsed_lines: List[IssueLineInput] = _items_on_line(line)
+        for parsed in parsed_lines:
+            parsed.tax_rate = _tax_for_line(line, fallback)
+            found.append(parsed)
+            if len(found) >= MAX_LINES:
+                return found
     return found
 
 
 def _document_tax_rates(text: str) -> List[Decimal]:
     found: List[Decimal] = []
     for match in _DOC_TAX_RE.finditer(text):
-        rate: Optional[Decimal] = _standard_rate(match.group(1))
+        raw: str = match.group(1) or match.group(2)
+        rate: Optional[Decimal] = _standard_rate(raw)
         if rate is not None and rate not in found:
+            found.append(rate)
+    charged: List[Decimal] = _charged_tax_rates(text)
+    if charged:
+        return charged
+    return found
+
+
+def _charged_tax_rates(text: str) -> List[Decimal]:
+    """Keep a rate only when a following amount shows that something was taxed."""
+    found: List[Decimal] = []
+    for match in _RATE_BASIS_RE.finditer(text):
+        rate: Optional[Decimal] = _standard_rate(match.group(1))
+        basis: Optional[Decimal] = _parse_de_decimal(match.group(2))
+        if rate is None or basis is None or basis == 0:
+            continue
+        if rate not in found:
             found.append(rate)
     return found
 
@@ -1118,6 +1444,11 @@ def _standard_rate_on_line(line: str) -> Optional[Decimal]:
         rate: Optional[Decimal] = _standard_rate(match.group(1))
         if rate is not None and rate not in found:
             found.append(rate)
+    dated_rate: Optional[re.Match[str]] = _DATE_RATE_RE.search(line)
+    if dated_rate is not None:
+        from_date: Optional[Decimal] = _standard_rate(dated_rate.group(1))
+        if from_date is not None and from_date not in found:
+            found.append(from_date)
     if len(found) == 1:
         return found[0]
     return None
@@ -1127,6 +1458,270 @@ def _standard_rate(raw: str) -> Optional[Decimal]:
     rate: Decimal = Decimal(raw).quantize(Decimal("1.00"))
     if rate in STANDARD_TAX_RATES:
         return rate
+    return None
+
+
+def _prepare_text(text: str) -> str:
+    """Split labels, dates and postcodes that a PDF drew without a space."""
+    prepared: List[str] = []
+    for raw_line in text.splitlines():
+        line: str = " ".join(raw_line.split())
+        if not line:
+            prepared.append("")
+            continue
+        line = _GLUE_LABEL_RE.sub(r" \1", line)
+        line = _LABEL_GLUE_RE.sub(r"\1 ", line)
+        line = _DATE_TOKEN_RE.sub(lambda match: f" {match.group(0)} ", line)
+        line = _PLZ_CITY_GLUE_RE.sub(r"\1 \2", line)
+        line = _COUNTRY_GLUE_RE.sub(r"\1 \2", line)
+        line = _COUNTRY_POSTCODE_RE.sub(r"\1", line)
+        line = _CENT_FOOTNOTE_RE.sub("", line)
+        line = _FOOTNOTE_RE.sub("", line)
+        line = _PACK_GLUE_RE.sub(r"\1 ", line)
+        line = _WORD_MONEY_GLUE_RE.sub(r"\1 ", line)
+        line = _HOUSE_PLZ_RE.sub(r"\g<head> \g<house> \g<postcode>", line)
+        prepared.append(" ".join(line.split()))
+    return "\n".join(prepared)
+
+
+def _invoice_number(text: str) -> Optional[str]:
+    for match in _LABELED_INVOICE_NUMBER_RE.finditer(text):
+        number: Optional[str] = _clean_invoice_number(match.group(1))
+        if number:
+            return number
+    column: Optional[str] = _column_value(text, _COLUMN_INVOICE_HEADER_RE)
+    if column:
+        number = _clean_invoice_number(column)
+        if number:
+            return number
+    glued: Optional[str] = _glued_customer_invoice(text)
+    if glued:
+        return glued
+    bare_match: re.Match[str]
+    for bare_match in _BARE_INVOICE_NUMBER_RE.finditer(text):
+        bare_number: Optional[str] = _clean_invoice_number(bare_match.group(1))
+        if bare_number:
+            return bare_number
+    return _invoice_token_near_label(text)
+
+
+def _clean_invoice_number(raw: str) -> Optional[str]:
+    token: str = raw.strip(" .-")
+    if len(token) < 2 or not any(char.isdigit() for char in token):
+        return None
+    if _DATE_TOKEN_RE.fullmatch(token):
+        return None
+    return token[:50]
+
+
+def _invoice_token_near_label(text: str) -> Optional[str]:
+    """A number printed on its own line next to the word Rechnung."""
+    rows: List[str] = [row.strip() for row in text.splitlines() if row.strip()]
+    for index, row in enumerate(rows):
+        if not re.fullmatch(r"Rechnung", row, re.IGNORECASE):
+            continue
+        for neighbor_index in (index - 1, index + 1):
+            if neighbor_index < 0 or neighbor_index >= len(rows):
+                continue
+            token: str = rows[neighbor_index].split()[0]
+            if _STANDALONE_INVOICE_TOKEN_RE.fullmatch(token):
+                return token[:50]
+    return None
+
+
+def _pdf_buyer_reference(text: str) -> Optional[str]:
+    for match in _BUYER_REFERENCE_RE.finditer(text):
+        token: str = match.group(1).strip(" .-")
+        if len(token) < 2 or not any(char.isdigit() for char in token):
+            continue
+        return token[:50]
+    return None
+
+
+def _glued_customer_invoice(text: str) -> Optional[str]:
+    """Some repair prints put customer number and invoice number in one digit string."""
+    if not re.search(r"KD-?\s*NR", text, re.IGNORECASE) or not re.search(r"Rechnung", text, re.IGNORECASE):
+        return None
+    for token in text.split():
+        match: Optional[re.Match[str]] = _GLUED_CUSTOMER_INVOICE_RE.match(token)
+        if match is not None:
+            return match.group(2)
+    return None
+
+
+def _column_value(text: str, header_re: re.Pattern[str]) -> Optional[str]:
+    rows: List[str] = [row.strip() for row in text.splitlines() if row.strip()]
+    for index, row in enumerate(rows[:-1]):
+        headers: List[str] = row.split()
+        values: List[str] = rows[index + 1].split()
+        if len(headers) != len(values):
+            continue
+        for column, header in enumerate(headers):
+            if "Kunden" in header or header.upper().startswith("KD"):
+                continue
+            if header_re.search(header):
+                return values[column]
+    return None
+
+
+def _fold_item_lines(lines: List[str]) -> List[str]:
+    """Join a wrapped position with the next line that holds its amount or text."""
+    folded: List[str] = []
+    usable: List[str] = [" ".join(line.split()) for line in lines]
+    index: int = 0
+    while index < len(usable):
+        line: str = usable[index]
+        if not line:
+            index += 1
+            continue
+        if _EUR_ITEM_RE.search(line) and index + 1 < len(usable):
+            followup: Optional[str] = _leading_description(usable[index + 1])
+            if followup:
+                folded.append(f"{followup} {line}".strip())
+                index += 2
+                continue
+        if (
+            _ARTICLE_HEAD_RE.match(line)
+            and not _ends_with_money(line)
+            and index + 1 < len(usable)
+            and _one_item(usable[index + 1]) is None
+        ):
+            folded.append(f"{line} {usable[index + 1]}".strip())
+            index += 2
+            continue
+        if (
+            _QTY_TEXT_HEAD_RE.match(line)
+            and not _contains_money(line)
+            and index + 1 < len(usable)
+            and _contains_money(usable[index + 1])
+            and _one_item(usable[index + 1]) is None
+            and _TAX_HEAD_RE.match(usable[index + 1]) is None
+        ):
+            folded.append(f"{line} {usable[index + 1]}".strip())
+            index += 2
+            continue
+        if (
+            _QTY_BARE_HEAD_RE.match(line)
+            and not _money_after_opening_quantity(line)
+            and index + 1 < len(usable)
+            and _contains_money(usable[index + 1])
+            and _one_item(usable[index + 1]) is None
+            and _TAX_HEAD_RE.match(usable[index + 1]) is None
+            and _SKIP_LINE_RE.search(usable[index + 1]) is None
+        ):
+            folded.append(f"{line} {usable[index + 1]}".strip())
+            index += 2
+            continue
+        if _FACTOR_HEAD_RE.match(line):
+            extras: List[str] = []
+            cursor: int = index + 1
+            while cursor < len(usable) and len(extras) < 3:
+                nxt: str = usable[cursor]
+                if not nxt or _FACTOR_HEAD_RE.match(nxt) or _SKIP_LINE_RE.search(nxt) or _POSTAL_RE.match(nxt):
+                    break
+                if re.search(r"\d{5}", nxt):
+                    break
+                extras.append(nxt)
+                cursor += 1
+            folded.append(" ".join([line, *extras]))
+            index = cursor
+            continue
+        folded.append(line)
+        index += 1
+    return folded
+
+
+def _leading_description(line: str) -> Optional[str]:
+    """Product name in front of a pack size on the line after a scrambled price row."""
+    if not line or _SKIP_LINE_RE.search(line) or re.match(r"Inhalt\b|Gesamt\b", line, re.IGNORECASE):
+        return None
+    head: str = re.split(r"\s+Inhalt\b|\s+\d+[.,]\d", line, maxsplit=1, flags=re.IGNORECASE)[0].strip()
+    if not head or not re.match(r"[A-Za-zÄÖÜäöüß]", head):
+        return None
+    return head
+
+
+def _one_item(line: str) -> Optional[IssueLineInput]:
+    return (
+        _parts_line(line)
+        or _stueck_line(line)
+        or _aw_line(line)
+        or _indexed_total_line(line)
+        or _unit_price_line(line)
+        or _unit_after_line(line)
+        or _dated_item_line(line)
+        or _eur_item_line(line)
+        or _article_factor_line(line)
+        or _factor_line(line)
+        or _surcharge_line(line)
+        or _qty_desc_line(line)
+        or _desc_qty_line(line)
+        or _equal_amounts_line(line)
+    )
+
+
+def _items_on_line(line: str) -> List[IssueLineInput]:
+    """One position, or a position whose price is followed by a second charge on the same line."""
+    prefix: Optional[re.Match[str]] = _QTY_DESC_PREFIX_RE.match(line)
+    if prefix is not None and _contains_money(line[prefix.end() :]):
+        first_split: Optional[IssueLineInput] = _priced_line(
+            prefix.group("desc"),
+            prefix.group("qty"),
+            prefix.group("price"),
+            prefix.group("total"),
+        )
+        if first_split is not None:
+            items: List[IssueLineInput] = [first_split]
+            second_split: Optional[IssueLineInput] = _one_item(line[prefix.end() :].strip())
+            if second_split is not None:
+                items.append(second_split)
+            return items
+    single: Optional[IssueLineInput] = _one_item(line)
+    if single is not None:
+        return [single]
+    if prefix is None:
+        return []
+    first: Optional[IssueLineInput] = _priced_line(
+        prefix.group("desc"),
+        prefix.group("qty"),
+        prefix.group("price"),
+        prefix.group("total"),
+    )
+    if first is None:
+        return []
+    items: List[IssueLineInput] = [first]
+    rest: str = line[prefix.end() :].strip()
+    if not rest:
+        return items
+    second: Optional[IssueLineInput] = _one_item(rest)
+    if second is not None:
+        items.append(second)
+    return items
+
+
+def _ends_with_money(line: str) -> bool:
+    return re.search(rf"{_MONEY_TOKEN}$", line) is not None
+
+
+def _contains_money(line: str) -> bool:
+    return re.search(_MONEY_TOKEN, line) is not None
+
+
+def _money_after_opening_quantity(line: str) -> bool:
+    """A leading 1,00 is a quantity. Money later on the line is a price."""
+    remainder: str = re.sub(r"^\d+(?:,\d+)?\s+", "", line, count=1)
+    return _contains_money(remainder)
+
+
+def _search_at_boundary(pattern: re.Pattern[str], line: str) -> Optional[re.Match[str]]:
+    start: int = 0
+    while start < len(line):
+        match: Optional[re.Match[str]] = pattern.search(line, start)
+        if match is None:
+            return None
+        if match.start() == 0 or not line[match.start() - 1].isalnum():
+            return match
+        start = match.start() + 1
     return None
 
 
@@ -1145,17 +1740,134 @@ def _parts_line(line: str) -> Optional[IssueLineInput]:
 
 
 def _stueck_line(line: str) -> Optional[IssueLineInput]:
-    match: Optional[re.Match[str]] = _STUECK_LINE_RE.search(line)
+    match: Optional[re.Match[str]] = _search_at_boundary(_STUECK_LINE_RE, line)
     if match is None:
         return None
     priced: Optional[tuple[Decimal, Decimal]] = _price_from_net(match.group("net"), match.group("qty"))
     if priced is None:
         return None
     quantity, unit_price = priced
-    description: str = _clean(match.group("desc"), max_length=200)
+    description: str = _clean(re.sub(r"^[A-ZÄÖÜ]\s+", "", match.group("desc")), max_length=200)
     if not description:
         return None
     return _line(description, quantity, unit_price)
+
+
+def _aw_line(line: str) -> Optional[IssueLineInput]:
+    match: Optional[re.Match[str]] = _AW_LINE_RE.match(line)
+    if match is None:
+        return None
+    return _net_line(match.group("desc"), match.group("qty"), match.group("net"))
+
+
+def _indexed_total_line(line: str) -> Optional[IssueLineInput]:
+    match: Optional[re.Match[str]] = _INDEXED_TOTAL_RE.match(line)
+    if match is None:
+        return None
+    return _net_line(match.group("desc"), "1", match.group("net"))
+
+
+def _unit_price_line(line: str) -> Optional[IssueLineInput]:
+    match: Optional[re.Match[str]] = _UNIT_PRICE_LINE_RE.match(line)
+    if match is None:
+        return None
+    return _priced_line(
+        match.group("desc"),
+        match.group("qty"),
+        match.group("price"),
+        match.group("total"),
+        unit_code=_unit_code_for(match.group("unit")),
+    )
+
+
+def _unit_after_line(line: str) -> Optional[IssueLineInput]:
+    match: Optional[re.Match[str]] = _UNIT_AFTER_RE.match(line)
+    if match is None:
+        return None
+    return _priced_line(
+        match.group("desc"),
+        match.group("qty"),
+        match.group("price"),
+        match.group("total"),
+        unit_code=_unit_code_for(match.group("unit")),
+    )
+
+
+def _dated_item_line(line: str) -> Optional[IssueLineInput]:
+    match: Optional[re.Match[str]] = _DATED_ITEM_RE.match(line)
+    if match is None:
+        return None
+    return _priced_line(match.group("desc"), match.group("qty"), match.group("price"), match.group("total"))
+
+
+def _eur_item_line(line: str) -> Optional[IssueLineInput]:
+    match: Optional[re.Match[str]] = _EUR_ITEM_RE.match(line)
+    if match is None:
+        return None
+    description: str = re.sub(
+        r"\s+Pro\s+\d+\s+St\S*(?:\s+\d+)?\s*$",
+        "",
+        match.group("desc"),
+        flags=re.IGNORECASE,
+    )
+    return _priced_line(description, match.group("qty"), match.group("price"), match.group("total"))
+
+
+def _unit_code_for(word: str) -> str:
+    if word.casefold().rstrip(".") in {"jahr", "monat", "monate"}:
+        return "MON"
+    return "C62"
+
+
+def _article_factor_line(line: str) -> Optional[IssueLineInput]:
+    match: Optional[re.Match[str]] = _ARTICLE_FACTOR_RE.match(line)
+    if match is None:
+        return None
+    return _priced_line(match.group("desc"), match.group("qty"), match.group("price"), match.group("total"))
+
+
+def _factor_line(line: str) -> Optional[IssueLineInput]:
+    match: Optional[re.Match[str]] = _FACTOR_LINE_RE.match(line)
+    if match is None:
+        return None
+    description: str = match.group("desc") or "Leistung"
+    return _priced_line(description, match.group("qty"), match.group("price"), match.group("total"))
+
+
+def _surcharge_line(line: str) -> Optional[IssueLineInput]:
+    match: Optional[re.Match[str]] = _SURCHARGE_LINE_RE.search(line)
+    if match is None:
+        return None
+    description: str = f"{match.group('pct')} % {match.group('desc')}"
+    return _net_line(description, "1", match.group("total"))
+
+
+def _equal_amounts_line(line: str) -> Optional[IssueLineInput]:
+    match: Optional[re.Match[str]] = _EQUAL_AMOUNTS_RE.match(line)
+    if match is None:
+        return None
+    return _net_line(match.group("desc"), "1", match.group("net"))
+
+
+def _net_line(description_raw: str, qty_raw: str, net_raw: str) -> Optional[IssueLineInput]:
+    priced: Optional[tuple[Decimal, Decimal]] = _price_from_net(net_raw, qty_raw)
+    if priced is None:
+        return None
+    quantity, unit_price = priced
+    description: str = _clean(_tidy_description(description_raw), max_length=200)
+    if not description:
+        return None
+    return _line(description, quantity, unit_price)
+
+
+def _strip_position_prefix(description: str) -> str:
+    return re.sub(r"^(?:\d+\s+){1,3}", "", description.strip())
+
+
+def _tidy_description(description: str) -> str:
+    text: str = _strip_position_prefix(description)
+    text = re.sub(r"\s+\d+\s*KM\s+\S+\s*$", "", text, flags=re.IGNORECASE)
+    return re.split(r"\s+im Sinne\b", text, maxsplit=1, flags=re.IGNORECASE)[0]
 
 
 def _desc_qty_line(line: str) -> Optional[IssueLineInput]:
@@ -1187,39 +1899,51 @@ def _priced_line(
     qty_raw: str,
     price_raw: str,
     total_raw: str,
+    unit_code: str = "C62",
 ) -> Optional[IssueLineInput]:
     quantity: Optional[Decimal] = _parse_de_quantity(qty_raw)
-    unit_price: Optional[Decimal] = _parse_de_amount(price_raw)
-    total: Optional[Decimal] = _parse_de_amount(total_raw)
+    unit_price: Optional[Decimal] = _parse_de_decimal(price_raw)
+    total: Optional[Decimal] = _parse_de_decimal(total_raw)
     if quantity is None or unit_price is None or total is None:
         return None
-    if (unit_price * quantity).quantize(MONEY_QUANT) != total:
+    if not _amounts_match(unit_price, quantity, total):
         return None
-    description: str = _clean(description_raw, max_length=200)
+    description: str = _clean(_tidy_description(description_raw), max_length=200)
     if not description:
         return None
-    return _line(description, quantity, unit_price)
+    return _line(description, quantity, unit_price, unit_code)
 
 
-def _line(description: str, quantity: Decimal, unit_price: Decimal) -> IssueLineInput:
+def _line(
+    description: str,
+    quantity: Decimal,
+    unit_price: Decimal,
+    unit_code: str = "C62",
+) -> IssueLineInput:
     return IssueLineInput(
         description=description,
         quantity=quantity,
-        unit_code="C62",
+        unit_code=unit_code,
         unit_price=unit_price,
         tax_rate=None,
     )
 
 
 def _price_from_net(net_raw: str, qty_raw: str) -> Optional[tuple[Decimal, Decimal]]:
-    net: Optional[Decimal] = _parse_de_amount(net_raw)
+    net: Optional[Decimal] = _parse_de_decimal(net_raw)
     quantity: Optional[Decimal] = _parse_de_quantity(qty_raw)
     if net is None or quantity is None:
         return None
-    unit_price: Decimal = (net / quantity).quantize(MONEY_QUANT)
-    if (unit_price * quantity).quantize(MONEY_QUANT) != net:
-        return None
-    return quantity, unit_price
+    net_cents: Decimal = net.quantize(MONEY_QUANT)
+    for places in (4, 2):
+        unit_price: Decimal = (net / quantity).quantize(Decimal("1").scaleb(-places))
+        if (unit_price * quantity).quantize(MONEY_QUANT) == net_cents:
+            return quantity, unit_price
+    return None
+
+
+def _amounts_match(unit_price: Decimal, quantity: Decimal, total: Decimal) -> bool:
+    return (unit_price * quantity).quantize(MONEY_QUANT) == total.quantize(MONEY_QUANT)
 
 
 def _parse_de_quantity(raw: str) -> Optional[Decimal]:
@@ -1235,6 +1959,41 @@ def _parse_de_quantity(raw: str) -> Optional[Decimal]:
 
 def _iso_from_german_date(text: str) -> Optional[str]:
     match: Optional[re.Match[str]] = _DATE_RE.search(text)
+    if match is not None:
+        return _iso_from_date_parts(match.group(1), match.group(2), match.group(3))
+    column: Optional[str] = _column_value(text, _DATE_HEADER_RE)
+    if column is not None:
+        parts: Optional[re.Match[str]] = _DATE_TOKEN_RE.fullmatch(column)
+        if parts is not None:
+            day_text: str
+            month_text: str
+            year_text: str
+            day_text, month_text, year_text = column.split(".")
+            return _iso_from_date_parts(day_text, month_text, year_text)
+    beside_number: Optional[str] = _date_after_invoice_number(text)
+    if beside_number is not None:
+        return beside_number
+    placed: Optional[re.Match[str]] = _PLACE_DATE_RE.search(text[:1200])
+    if placed is None:
+        return None
+    return _iso_from_date_parts(placed.group(1), placed.group(2), placed.group(3))
+
+
+def _date_after_invoice_number(text: str) -> Optional[str]:
+    number: Optional[str] = _invoice_number(text)
+    if not number:
+        return None
+    found: Optional[re.Match[str]] = re.search(
+        rf"{re.escape(number)}\s+(\d{{2}})\.(\d{{2}})\.(\d{{2}}(?:\d{{2}})?)",
+        text,
+    )
+    if found is None:
+        return None
+    return _iso_from_date_parts(found.group(1), found.group(2), found.group(3))
+
+
+def _iso_from_due_date(text: str) -> Optional[str]:
+    match: Optional[re.Match[str]] = _DUE_DATE_RE.search(text)
     if match is None:
         return None
     return _iso_from_date_parts(match.group(1), match.group(2), match.group(3))
@@ -1292,12 +2051,25 @@ def _amount_note(text: str) -> Optional[str]:
     )
 
 
-def _parse_de_amount(raw: str) -> Optional[Decimal]:
-    cleaned: str = raw.strip().replace(".", "").replace(",", ".")
+def _parse_de_decimal(raw: str) -> Optional[Decimal]:
+    cleaned: str = raw.strip().replace("€", "").replace("EUR", "").replace("*", "").strip()
+    if not cleaned:
+        return None
+    if "," in cleaned and "." in cleaned:
+        cleaned = cleaned.replace(".", "").replace(",", ".")
+    elif "," in cleaned:
+        cleaned = cleaned.replace(",", ".")
     try:
-        return Decimal(cleaned).quantize(MONEY_QUANT)
+        return Decimal(cleaned)
     except InvalidOperation:
         return None
+
+
+def _parse_de_amount(raw: str) -> Optional[Decimal]:
+    parsed: Optional[Decimal] = _parse_de_decimal(raw)
+    if parsed is None:
+        return None
+    return parsed.quantize(MONEY_QUANT)
 
 
 def _format_de(amount: Decimal) -> str:
