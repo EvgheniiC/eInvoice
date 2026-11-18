@@ -22,6 +22,7 @@ type OrgSettingsPageProps = {
   session: MeResponse | null
   onSession: (session: MeResponse | null) => void
   onLogout: () => void
+  embedded?: boolean
 }
 
 function FieldError({ id, message }: { id: string; message?: string }): JSX.Element | null {
@@ -53,6 +54,7 @@ export function OrgSettingsPage({
   session,
   onSession,
   onLogout,
+  embedded = false,
 }: OrgSettingsPageProps): JSX.Element {
   const [name, setName] = useState<string>(session?.organization_name ?? '')
   const [taxNumber, setTaxNumber] = useState<string>('')
@@ -272,43 +274,8 @@ export function OrgSettingsPage({
         ? 'Mit Team stehen höhere Kontingente zur Verfügung.'
         : 'Rechnungsdateien werden ohne Zustimmung weiterhin nicht archiviert.'
 
-  return (
-    <main id="main-content" className="page" tabIndex={-1}>
-      <header className="page__header">
-        <div className="page__header-row">
-          <button type="button" className="page__home" onClick={() => onNavigate('landing')}>
-            Startseite
-          </button>
-          <PageNav onNavigate={onNavigate} session={session} onLogout={onLogout} />
-        </div>
-        <h1 tabIndex={-1}>Organisation</h1>
-        <p className="page__lead">
-          {session.email} · {roleLabel(session.role)} · Tarif {session.plan.name}
-        </p>
-      </header>
-
-      <section className="legal-section">
-        <h2>Tarif</h2>
-        <ul>
-          <li>Code: {session.plan.code}</li>
-          <li>Batch: {session.plan.allows_batch ? 'ja' : 'nein'}</li>
-          <li>Historie: {session.plan.allows_history ? 'ja' : 'nein'}</li>
-          <li>
-            Dateien pro Auftrag:{' '}
-            {session.plan.allows_batch ? String(session.plan.max_batch_files) : '1'}
-          </li>
-          <li>Max. Dateigröße: {String(session.plan.max_upload_size_mb)} MB</li>
-          <li>Parallele Prüfungen: {String(session.plan.max_parallel)}</li>
-          <li>{quotaHint}</li>
-        </ul>
-        <p className="page__limits">{upgradeHint}</p>
-        {session.plan.code !== 'team' ? (
-          <button type="button" className="btn btn--secondary" onClick={() => onNavigate('pricing')}>
-            Tarife vergleichen
-          </button>
-        ) : null}
-      </section>
-
+  const settingsPanel: JSX.Element = (
+    <>
       {session.plan.allows_history ? (
         <form className="auth-form" onSubmit={onSaveHistory}>
           <h2>Verlauf</h2>
@@ -622,6 +589,51 @@ export function OrgSettingsPage({
           {info}
         </p>
       ) : null}
+    </>
+  )
+
+  if (embedded) {
+    return <div className="account-org">{settingsPanel}</div>
+  }
+
+  return (
+    <main id="main-content" className="page" tabIndex={-1}>
+      <header className="page__header">
+        <div className="page__header-row">
+          <button type="button" className="page__home" onClick={() => onNavigate('landing')}>
+            Startseite
+          </button>
+          <PageNav onNavigate={onNavigate} session={session} onLogout={onLogout} />
+        </div>
+        <h1 tabIndex={-1}>Organisation</h1>
+        <p className="page__lead">
+          {session.email} · {roleLabel(session.role)} · Tarif {session.plan.name}
+        </p>
+      </header>
+
+      <section className="legal-section">
+        <h2>Tarif</h2>
+        <ul>
+          <li>Code: {session.plan.code}</li>
+          <li>Batch: {session.plan.allows_batch ? 'ja' : 'nein'}</li>
+          <li>Historie: {session.plan.allows_history ? 'ja' : 'nein'}</li>
+          <li>
+            Dateien pro Auftrag:{' '}
+            {session.plan.allows_batch ? String(session.plan.max_batch_files) : '1'}
+          </li>
+          <li>Max. Dateigröße: {String(session.plan.max_upload_size_mb)} MB</li>
+          <li>Parallele Prüfungen: {String(session.plan.max_parallel)}</li>
+          <li>{quotaHint}</li>
+        </ul>
+        <p className="page__limits">{upgradeHint}</p>
+        {session.plan.code !== 'team' ? (
+          <button type="button" className="btn btn--secondary" onClick={() => onNavigate('pricing')}>
+            Tarife vergleichen
+          </button>
+        ) : null}
+      </section>
+
+      {settingsPanel}
       <SiteFooter />
     </main>
   )

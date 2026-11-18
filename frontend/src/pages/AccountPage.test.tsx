@@ -7,12 +7,28 @@ import { buildSession } from '../test/fixtures'
 import type { AppRoute } from '../routing'
 import { AccountPage } from './AccountPage'
 
+vi.mock('../api/client', (): {
+  fetchOrganization: ReturnType<typeof vi.fn>
+  updateOrganization: ReturnType<typeof vi.fn>
+  changeAccountPassword: ReturnType<typeof vi.fn>
+  fetchInvoiceHistory: ReturnType<typeof vi.fn>
+  downloadHistoryAccountantPackage: ReturnType<typeof vi.fn>
+} => ({
+  fetchOrganization: vi.fn(() => Promise.reject(new Error('offline'))),
+  updateOrganization: vi.fn(),
+  changeAccountPassword: vi.fn(),
+  fetchInvoiceHistory: vi.fn(),
+  downloadHistoryAccountantPackage: vi.fn(),
+}))
+
 describe('AccountPage', (): void => {
   it('explains registration benefits to a guest', async (): Promise<void> => {
     const user: UserEvent = userEvent.setup()
     const onNavigate: (route: AppRoute) => void = vi.fn()
 
-    render(<AccountPage onNavigate={onNavigate} session={null} onLogout={vi.fn()} />)
+    render(
+      <AccountPage onNavigate={onNavigate} session={null} onSession={vi.fn()} onLogout={vi.fn()} />,
+    )
 
     expect(screen.getByRole('heading', { name: 'Konto' })).toBeInTheDocument()
     expect(screen.getByRole('main')).toHaveClass('page--account')
@@ -49,6 +65,7 @@ describe('AccountPage', (): void => {
             issue_used_today: 0,
           },
         })}
+        onSession={vi.fn()}
         onLogout={vi.fn()}
       />,
     )
@@ -83,9 +100,14 @@ describe('AccountPage', (): void => {
     await user.click(screen.getByRole('button', { name: 'Mein Tarif' }))
     expect(screen.getByRole('heading', { name: 'Mein Tarif' })).toBeInTheDocument()
     expect(screen.getByText(/Mit Plus stehen höhere Tageslimits/)).toBeInTheDocument()
+    expect(screen.getByText('Möchten Sie den Tarif wechseln?')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Alle Tarife ansehen' }))
+    expect(onNavigate).toHaveBeenCalledWith('pricing')
 
     await user.click(screen.getByRole('button', { name: 'Organisation Einstellungen' }))
-    expect(onNavigate).toHaveBeenCalledWith('org')
+    expect(await screen.findByRole('heading', { name: 'Firmenprofil' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Name der Organisation')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Übersicht' })).toBeInTheDocument()
 
     expect(screen.getByRole('button', { name: 'Konto' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Hilfe' })).toBeInTheDocument()

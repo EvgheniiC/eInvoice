@@ -256,6 +256,7 @@ function App(): JSX.Element {
         <AccountPage
           onNavigate={navigate}
           session={session}
+          onSession={setSession}
           onLogout={() => {
             void handleLogout()
           }}

@@ -120,25 +120,27 @@ export function LandingPage({
         </div>
       </section>
 
-      <section className="landing-section" aria-labelledby="account-heading">
-        <h2 id="account-heading" className="landing-section__title">
-          Was die Registrierung bringt
-        </h2>
-        <p className="landing-section__lead">
-          Einzelne Rechnungen bleiben ohne Konto möglich. Ein Konto merkt sich die Firma und zeigt,
-          welcher Schritt als Nächstes kommt.
-        </p>
-        <ul className="landing-benefits">
-          {REGISTRATION_BENEFITS.map((benefit: string) => (
-            <li key={benefit}>{benefit}</li>
-          ))}
-        </ul>
-        <div className="landing-section__cta">
-          <AppLink href="/registrieren" className="btn btn--secondary">
-            Konto erstellen
-          </AppLink>
-        </div>
-      </section>
+      {session === null ? (
+        <section className="landing-section" aria-labelledby="account-heading">
+          <h2 id="account-heading" className="landing-section__title">
+            Was die Registrierung bringt
+          </h2>
+          <p className="landing-section__lead">
+            Einzelne Rechnungen bleiben ohne Konto möglich. Ein Konto merkt sich die Firma und zeigt,
+            welcher Schritt als Nächstes kommt.
+          </p>
+          <ul className="landing-benefits">
+            {REGISTRATION_BENEFITS.map((benefit: string) => (
+              <li key={benefit}>{benefit}</li>
+            ))}
+          </ul>
+          <div className="landing-section__cta">
+            <AppLink href="/registrieren" className="btn btn--secondary">
+              Konto erstellen
+            </AppLink>
+          </div>
+        </section>
+      ) : null}
 
       <section className="landing-section" aria-labelledby="elster-heading">
         <h2 id="elster-heading" className="landing-section__title">

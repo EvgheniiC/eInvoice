@@ -1,6 +1,7 @@
 import { useState, type JSX } from 'react'
 import { HistoryPanel } from '../components/HistoryPanel'
 import { PageNav } from '../components/PageNav'
+import { OrgSettingsPage } from './OrgSettingsPage'
 import { SiteFooter } from '../components/SiteFooter'
 import { REGISTRATION_BENEFITS, REGISTRATION_SUMMARY } from '../content/accountBenefits'
 import { AppLink } from '../navigation'
@@ -10,10 +11,11 @@ import type { MeResponse, PlanInfo } from '../types/invoice'
 type AccountPageProps = {
   onNavigate: (route: AppRoute) => void
   session: MeResponse | null
+  onSession: (session: MeResponse | null) => void
   onLogout: () => void
 }
 
-type AccountSection = 'overview' | 'history' | 'tariff'
+type AccountSection = 'overview' | 'history' | 'organization' | 'tariff'
 
 type AccountAction = {
   href: string
@@ -104,22 +106,21 @@ function TariffSection({
     : 'Kontingente sind noch nicht durchgesetzt.'
 
   return (
-    <section className="legal-section" aria-labelledby="account-tariff">
+    <section className="account-tariff" aria-labelledby="account-tariff">
       <h2 id="account-tariff">Mein Tarif</h2>
-      <ul>
-        <li>Tarif: {plan.name}</li>
+      <p className="account-tariff__name">{plan.name}</p>
+      <ul className="account-tariff__list">
         <li>Batch: {plan.allows_batch ? 'ja' : 'nein'}</li>
         <li>Historie: {plan.allows_history ? 'ja' : 'nein'}</li>
         <li>Dateien pro Auftrag: {plan.allows_batch ? String(plan.max_batch_files) : '1'}</li>
         <li>Max. Dateigröße: {String(plan.max_upload_size_mb)} MB</li>
         <li>Heute: {quotaText}</li>
       </ul>
-      <p className="page__limits">{tariffHint(plan)}</p>
-      {plan.code !== 'team' ? (
-        <button type="button" className="btn btn--secondary" onClick={() => onNavigate('pricing')}>
-          Tarife vergleichen
-        </button>
-      ) : null}
+      <p className="account-tariff__hint">{tariffHint(plan)}</p>
+      <p className="account-tariff__ask">Möchten Sie den Tarif wechseln?</p>
+      <button type="button" className="btn btn--secondary" onClick={() => onNavigate('pricing')}>
+        Alle Tarife ansehen
+      </button>
     </section>
   )
 }
@@ -144,7 +145,12 @@ function tariffHint(plan: PlanInfo): string {
   return 'Rechnungsdateien werden ohne Zustimmung weiterhin nicht archiviert.'
 }
 
-export function AccountPage({ onNavigate, session, onLogout }: AccountPageProps): JSX.Element {
+export function AccountPage({
+  onNavigate,
+  session,
+  onSession,
+  onLogout,
+}: AccountPageProps): JSX.Element {
   const [section, setSection] = useState<AccountSection>('overview')
 
   return (
@@ -206,7 +212,8 @@ export function AccountPage({ onNavigate, session, onLogout }: AccountPageProps)
               <button
                 type="button"
                 className="account-menu__item"
-                onClick={() => onNavigate('org')}
+                aria-current={section === 'organization' ? 'page' : undefined}
+                onClick={() => setSection('organization')}
               >
                 Organisation Einstellungen
               </button>
@@ -230,6 +237,18 @@ export function AccountPage({ onNavigate, session, onLogout }: AccountPageProps)
             <section className="legal-section" aria-labelledby="account-history">
               <h2 id="account-history">Verlauf</h2>
               <HistoryPanel onNavigate={onNavigate} session={session} />
+            </section>
+          ) : null}
+          {section === 'organization' ? (
+            <section className="legal-section" aria-labelledby="account-organization">
+              <h2 id="account-organization">Organisation Einstellungen</h2>
+              <OrgSettingsPage
+                embedded
+                onNavigate={onNavigate}
+                session={session}
+                onSession={onSession}
+                onLogout={onLogout}
+              />
             </section>
           ) : null}
           {section === 'tariff' ? (

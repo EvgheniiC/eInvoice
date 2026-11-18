@@ -37,6 +37,9 @@ describe('LandingPage', (): void => {
     expect(actions).toHaveClass('landing-hero__cta')
     expect(validationButton.parentElement).toBe(actions)
     expect(createButton.parentElement).toBe(actions)
+    expect(
+      screen.queryByRole('heading', { name: 'Was die Registrierung bringt' }),
+    ).not.toBeInTheDocument()
   })
 
   it('shows the create button for a guest', (): void => {
