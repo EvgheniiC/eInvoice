@@ -51,9 +51,19 @@ describe('AccountPage', (): void => {
       />,
     )
 
-    expect(screen.getByText(/Muster Handwerk/)).toBeInTheDocument()
-    expect(screen.getByText(/Tarif Free/)).toBeInTheDocument()
-    expect(screen.getByText('Heute: 2/10 Prüfungen, 1/10 Exporte, 0/10 E-Rechnungen.')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Hallo Muster Handwerk' })).toBeInTheDocument()
+    const facts: HTMLElement = screen.getByRole('complementary', { name: 'Kontodaten' })
+    expect(facts).toHaveTextContent('Organisation')
+    expect(facts).toHaveTextContent('Muster Handwerk')
+    expect(facts).toHaveTextContent('meister@example.com')
+    expect(facts).toHaveTextContent('Inhaber')
+    expect(facts).toHaveTextContent('Free')
+    expect(facts).toHaveTextContent('Prüfungen heute')
+    expect(facts).toHaveTextContent('2/10')
+    expect(facts).toHaveTextContent('Exporte heute')
+    expect(facts).toHaveTextContent('1/10')
+    expect(facts).toHaveTextContent('E-Rechnungen heute')
+    expect(facts).toHaveTextContent('0/10')
     expect(screen.getByRole('link', { name: 'Eingangsrechnung öffnen' })).toHaveAttribute('href', '/upload')
     expect(screen.getByRole('link', { name: 'Validierung öffnen' })).toHaveAttribute(
       'href',

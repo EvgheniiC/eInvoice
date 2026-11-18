@@ -53,15 +53,38 @@ function roleLabel(role: string): string {
   return role
 }
 
-function quotaLine(plan: PlanInfo): string {
+type AccountFact = {
+  label: string
+  value: string
+}
+
+function accountFacts(session: MeResponse): readonly AccountFact[] {
+  const plan: PlanInfo = session.plan
+  const facts: AccountFact[] = [
+    { label: 'Organisation', value: session.organization_name },
+    { label: 'E-Mail', value: session.email },
+    { label: 'Rolle', value: roleLabel(session.role) },
+    { label: 'Tarif', value: plan.name },
+  ]
   if (!plan.quotas_enforced) {
-    return 'Kontingente sind noch nicht durchgesetzt.'
+    facts.push({ label: 'Kontingente', value: 'Noch nicht durchgesetzt.' })
+    return facts
   }
-  return (
-    `Heute: ${String(plan.parse_used_today)}/${String(plan.parse_per_day)} Prüfungen, ` +
-    `${String(plan.export_used_today)}/${String(plan.export_per_day)} Exporte, ` +
-    `${String(plan.issue_used_today)}/${String(plan.issue_per_day)} E-Rechnungen.`
+  facts.push(
+    {
+      label: 'Prüfungen heute',
+      value: `${String(plan.parse_used_today)}/${String(plan.parse_per_day)}`,
+    },
+    {
+      label: 'Exporte heute',
+      value: `${String(plan.export_used_today)}/${String(plan.export_per_day)}`,
+    },
+    {
+      label: 'E-Rechnungen heute',
+      value: `${String(plan.issue_used_today)}/${String(plan.issue_per_day)}`,
+    },
   )
+  return facts
 }
 
 function BenefitList(): JSX.Element {
@@ -84,15 +107,8 @@ export function AccountPage({ onNavigate, session, onLogout }: AccountPageProps)
           </button>
           <PageNav onNavigate={onNavigate} session={session} onLogout={onLogout} />
         </div>
-        <h1 tabIndex={-1}>Konto</h1>
-        {session === null ? (
-          <p className="page__lead">{REGISTRATION_SUMMARY}</p>
-        ) : (
-          <p className="page__lead">
-            {session.organization_name} · {session.email} · {roleLabel(session.role)} · Tarif{' '}
-            {session.plan.name}
-          </p>
-        )}
+        <h1 tabIndex={-1}>{session === null ? 'Konto' : `Hallo ${session.organization_name}`}</h1>
+        {session === null ? <p className="page__lead">{REGISTRATION_SUMMARY}</p> : null}
       </header>
 
       {session === null ? (
@@ -111,8 +127,18 @@ export function AccountPage({ onNavigate, session, onLogout }: AccountPageProps)
           </div>
         </>
       ) : (
-        <>
-          <p className="page__limits">{quotaLine(session.plan)}</p>
+        <div className="account-layout">
+          <aside className="account-facts" aria-label="Kontodaten">
+            <dl>
+              {accountFacts(session).map((fact: AccountFact) => (
+                <div key={fact.label}>
+                  <dt>{fact.label}</dt>
+                  <dd>{fact.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </aside>
+          <div className="account-main">
           {!session.email_verified ? (
             <p className="status status--info" role="status">
               Bitte bestätigen Sie die E-Mail-Adresse. Danach bleibt die Anmeldung auf diesem Konto.
@@ -170,7 +196,8 @@ export function AccountPage({ onNavigate, session, onLogout }: AccountPageProps)
               ) : null}
             </div>
           </section>
-        </>
+          </div>
+        </div>
       )}
       <SiteFooter />
     </main>

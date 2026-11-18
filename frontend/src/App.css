@@ -221,6 +221,42 @@
   margin: 0 0 1.5rem;
 }
 
+.account-layout {
+  display: grid;
+  grid-template-columns: minmax(16rem, 20rem) minmax(0, 1fr);
+  gap: 2rem;
+  align-items: start;
+}
+
+.account-facts dl {
+  margin: 0;
+}
+
+.account-facts div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid #d5dcd7;
+}
+
+.account-facts dt {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.85rem;
+}
+
+.account-facts dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+@media (max-width: 719px) {
+  .account-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
 .stats-table-wrap {
   overflow-x: auto;
 }
