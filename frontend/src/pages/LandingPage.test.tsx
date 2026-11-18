@@ -12,7 +12,7 @@ vi.mock('../api/client', (): {
 }))
 
 describe('LandingPage', (): void => {
-  it('places E-Rechnung erstellen next to the other hero buttons', (): void => {
+  it('places E-Rechnung aus PDF next to the other hero buttons', (): void => {
     render(
       <LandingPage
         onNavigate={vi.fn()}
@@ -28,7 +28,7 @@ describe('LandingPage', (): void => {
 
     const uploadButton: HTMLElement = heroButton('Rechnung hochladen')
     const validationButton: HTMLElement = heroButton('Validierung')
-    const createButton: HTMLElement = heroButton('E-Rechnung erstellen')
+    const createButton: HTMLElement = heroButton('E-Rechnung aus PDF')
     const actions: HTMLElement | null = uploadButton.parentElement
 
     expect(createButton).toHaveClass('btn', 'btn--secondary')
@@ -42,7 +42,7 @@ describe('LandingPage', (): void => {
     render(<LandingPage onNavigate={vi.fn()} session={null} onLogout={vi.fn()} />)
 
     const createLinks: HTMLElement[] = screen.getAllByRole('link', {
-      name: 'E-Rechnung erstellen',
+      name: 'E-Rechnung aus PDF',
     })
     expect(createLinks.some((link: HTMLElement): boolean => link.classList.contains('btn'))).toBe(
       true,

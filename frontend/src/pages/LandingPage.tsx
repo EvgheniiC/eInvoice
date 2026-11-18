@@ -60,7 +60,7 @@ export function LandingPage({
               Validierung
             </AppLink>
             <AppLink href="/erstellen" className="btn btn--secondary">
-              E-Rechnung erstellen
+              E-Rechnung aus PDF
             </AppLink>
           </div>
         </div>
