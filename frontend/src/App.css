@@ -162,6 +162,42 @@
   letter-spacing: -0.03em;
 }
 
+.account-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 1rem;
+  margin: 1rem 0 0;
+}
+
+.account-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 1rem 1.15rem;
+  border: 1px solid #d5dcd7;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.account-card h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.account-card p {
+  flex: 1;
+  margin: 0;
+  color: var(--color-muted);
+}
+
+.account-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 0 0 1.5rem;
+}
+
 .stats-table-wrap {
   overflow-x: auto;
 }

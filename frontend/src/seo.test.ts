@@ -56,6 +56,7 @@ describe('seoForPath', (): void => {
   it('keeps account pages out of the index', (): void => {
     expect(seoForPath('/anmelden').robots).toBe('noindex,nofollow')
     expect(seoForPath('/registrieren').robots).toBe('noindex,nofollow')
+    expect(seoForPath('/konto').robots).toBe('noindex,nofollow')
     expect(seoForPath('/organisation').robots).toBe('noindex,nofollow')
     expect(seoForPath('/verlauf').robots).toBe('noindex,nofollow')
     expect(seoForPath('/statistik').robots).toBe('noindex,nofollow')

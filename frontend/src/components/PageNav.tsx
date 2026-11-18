@@ -33,6 +33,9 @@ export function PageNav({
       </AppLink>
       {session ? (
         <>
+          <button type="button" className="page-nav__link" onClick={() => onNavigate('account')}>
+            Konto
+          </button>
           {session.is_admin ? (
             <button type="button" className="page-nav__link" onClick={() => onNavigate('stats')}>
               Statistik

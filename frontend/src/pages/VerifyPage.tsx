@@ -39,8 +39,8 @@ export function VerifyPage({
         const me: MeResponse =
           kind === 'magic' ? await consumeMagicLink(token) : await verifyEmail(token)
         onLoggedInRef.current(me)
-        setStatus('Konto bestätigt. Sie werden zur Organisation weitergeleitet.')
-        onNavigateRef.current('org')
+        setStatus('Konto bestätigt. Sie werden zum Konto weitergeleitet.')
+        onNavigateRef.current('account')
       } catch (err: unknown) {
         setError(err instanceof Error ? err.message : 'Bestätigung fehlgeschlagen.')
         setStatus('')

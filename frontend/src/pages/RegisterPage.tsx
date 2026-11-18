@@ -3,6 +3,7 @@ import { registerAccount } from '../api/client'
 import { PageNav } from '../components/PageNav'
 import { PasswordField } from '../components/PasswordField'
 import { SiteFooter } from '../components/SiteFooter'
+import { REGISTRATION_BENEFITS, REGISTRATION_SUMMARY } from '../content/accountBenefits'
 import type { AppRoute } from '../routing'
 import type { MeResponse, RegisterResponse } from '../types/invoice'
 
@@ -70,11 +71,20 @@ export function RegisterPage({
         </div>
         <h1 tabIndex={-1}>Konto erstellen</h1>
         <p className="page__lead">
-          E-Mail und Passwort genügen. Den Namen der Organisation können Sie optional angeben.
-          Rechnungen werden nicht als Archiv gespeichert. Bei Plus liegen Originaldateien
-          nur kurz, damit Sie ein ZIP für die Buchhaltung laden können.
+          E-Mail und Passwort genügen. Den Namen der Organisation können Sie optional angeben.{' '}
+          {REGISTRATION_SUMMARY} Rechnungen werden nicht als Archiv gespeichert. Bei Plus liegen
+          Originaldateien nur kurz, damit Sie ein ZIP für die Buchhaltung laden können.
         </p>
       </header>
+
+      <section className="legal-section" aria-labelledby="register-benefits">
+        <h2 id="register-benefits">Was die Registrierung bringt</h2>
+        <ul>
+          {REGISTRATION_BENEFITS.map((benefit: string) => (
+            <li key={benefit}>{benefit}</li>
+          ))}
+        </ul>
+      </section>
 
       <form className="auth-form" onSubmit={onSubmit}>
         <label htmlFor="register-org">

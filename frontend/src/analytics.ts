@@ -16,6 +16,7 @@ const ACCOUNT_PREFIXES: readonly string[] = [
   '/passwort-vergessen',
   '/passwort-zuruecksetzen',
   '/bestaetigen',
+  '/konto',
   '/organisation',
   '/verlauf',
   '/statistik',

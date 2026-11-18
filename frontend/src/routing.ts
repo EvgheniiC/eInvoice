@@ -12,6 +12,7 @@ export type AppRoute =
   | 'forgot'
   | 'reset'
   | 'verify'
+  | 'account'
   | 'org'
   | 'history'
   | 'pricing'
@@ -64,6 +65,9 @@ export function pathToRoute(pathname: string): AppRoute {
   if (pathname === '/bestaetigen' || pathname.startsWith('/bestaetigen/')) {
     return 'verify'
   }
+  if (pathname === '/konto' || pathname.startsWith('/konto/')) {
+    return 'account'
+  }
   if (pathname === '/organisation' || pathname.startsWith('/organisation/')) {
     return 'org'
   }
@@ -109,6 +113,9 @@ export function routeToPath(route: AppRoute): string {
   }
   if (route === 'verify') {
     return '/bestaetigen'
+  }
+  if (route === 'account') {
+    return '/konto'
   }
   if (route === 'org') {
     return '/organisation'

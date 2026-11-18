@@ -47,7 +47,7 @@ export function LoginPage({
     try {
       const me: MeResponse = await loginAccount(email, password)
       onLoggedIn(me)
-      onNavigate('org')
+      onNavigate('account')
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Anmeldung fehlgeschlagen.')
     } finally {
@@ -107,8 +107,8 @@ export function LoginPage({
         </div>
         <h1 tabIndex={-1}>Anmelden</h1>
         <p className="page__lead">
-          Für Verlauf und Sammel-Export. Eine einzelne Rechnung können Sie weiter ohne Konto
-          prüfen.
+          Ein Konto speichert Ihr Firmenprofil und zeigt Tarif, Kontingente und die nächsten
+          Schritte. Eine einzelne Rechnung können Sie weiter ohne Konto prüfen.
         </p>
       </header>
 

@@ -5,6 +5,7 @@ Disallow: /registrieren
 Disallow: /passwort-vergessen
 Disallow: /passwort-zuruecksetzen
 Disallow: /bestaetigen
+Disallow: /konto
 Disallow: /organisation
 Disallow: /verlauf
 Disallow: /statistik

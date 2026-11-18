@@ -74,6 +74,9 @@ export function seoForPath(pathname: string): SeoPage {
   if (path === '/bestaetigen') {
     return noIndexPage('E-Mail bestätigen | eInvoice', '/bestaetigen')
   }
+  if (path === '/konto') {
+    return noIndexPage('Konto | eInvoice', '/konto')
+  }
   if (path === '/organisation') {
     return noIndexPage('Organisation | eInvoice', '/organisation')
   }

@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import { REGISTRATION_BENEFITS } from '../content/accountBenefits'
 import { buildSession } from '../test/fixtures'
 import { LandingPage } from './LandingPage'
 
@@ -48,6 +49,10 @@ describe('LandingPage', (): void => {
       true,
     )
     const validationLinks: HTMLElement[] = screen.getAllByRole('link', { name: 'Validierung' })
+    expect(screen.getByRole('heading', { name: 'Was die Registrierung bringt' })).toBeInTheDocument()
+    for (const benefit of REGISTRATION_BENEFITS) {
+      expect(screen.getByText(benefit)).toBeInTheDocument()
+    }
     expect(validationLinks.length).toBeGreaterThan(0)
     for (const link of validationLinks) {
       expect(link).toHaveAttribute('href', '/erechnung-validation')

@@ -3,6 +3,7 @@ import { fetchCapabilities, recordFunnel } from '../api/client'
 import { InvoiceHeroVisual } from '../components/InvoiceHeroVisual'
 import { PageNav } from '../components/PageNav'
 import { SiteFooter } from '../components/SiteFooter'
+import { REGISTRATION_BENEFITS } from '../content/accountBenefits'
 import { DEFAULT_CAPABILITIES } from '../content/capabilities'
 import { pagesByKind, type PublicPage } from '../content/publicPages'
 import { AppLink } from '../navigation'
@@ -119,6 +120,26 @@ export function LandingPage({
         </div>
       </section>
 
+      <section className="landing-section" aria-labelledby="account-heading">
+        <h2 id="account-heading" className="landing-section__title">
+          Was die Registrierung bringt
+        </h2>
+        <p className="landing-section__lead">
+          Einzelne Rechnungen bleiben ohne Konto möglich. Ein Konto merkt sich die Firma und zeigt,
+          welcher Schritt als Nächstes kommt.
+        </p>
+        <ul className="landing-benefits">
+          {REGISTRATION_BENEFITS.map((benefit: string) => (
+            <li key={benefit}>{benefit}</li>
+          ))}
+        </ul>
+        <div className="landing-section__cta">
+          <AppLink href="/registrieren" className="btn btn--secondary">
+            Konto erstellen
+          </AppLink>
+        </div>
+      </section>
+
       <section className="landing-section" aria-labelledby="elster-heading">
         <h2 id="elster-heading" className="landing-section__title">
           Nicht ELSTER — sondern der lesbare Rechnungseingang
@@ -160,8 +181,9 @@ export function LandingPage({
           Was mit Ihrer Datei passiert
         </h2>
         <p className="landing-section__lead">
-          Die Rechnung wird auf dem Server gelesen und geprüft. Es gibt kein Benutzerkonto und
-          kein Rechnungsarchiv.
+          Die Rechnung wird auf dem Server gelesen und geprüft. Ohne Konto gibt es kein
+          Rechnungsarchiv: die Datei wird nach der Anfrage gelöscht. Ein Konto speichert das
+          Firmenprofil, keine Rechnungen — außer der Verlauf ist in Plus ausdrücklich eingeschaltet.
         </p>
         <ul className="landing-benefits">
           <li>Verarbeitung nur während der Anfrage, im Arbeitsspeicher und in temporären Dateien</li>

@@ -23,6 +23,7 @@ describe('analytics consent', (): void => {
     expect(isTrackableLocation('/upload', '')).toBe(true)
     expect(isTrackableLocation('/hilfe/datei', '')).toBe(true)
     expect(isTrackableLocation('/statistik', '')).toBe(false)
+    expect(isTrackableLocation('/konto', '')).toBe(false)
     expect(isTrackableLocation('/anmelden', '')).toBe(false)
     expect(isTrackableLocation('/passwort-zuruecksetzen', '?token=secret')).toBe(false)
     expect(isTrackableLocation('/tarife', '?checkout=success&session=cs_test_123')).toBe(false)

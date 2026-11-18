@@ -71,7 +71,7 @@ describe('LoginPage', (): void => {
 
     expect(loginAccount).toHaveBeenCalledWith('meister@example.com', 'sicher-passwort-1')
     expect(onLoggedIn).toHaveBeenCalledWith(session)
-    expect(onNavigate).toHaveBeenCalledWith('org')
+    expect(onNavigate).toHaveBeenCalledWith('account')
   })
 
   it('lets the monkey toggle password visibility', async (): Promise<void> => {

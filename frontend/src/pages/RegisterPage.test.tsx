@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import type { UserEvent } from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { registerAccount } from '../api/client'
+import { REGISTRATION_BENEFITS } from '../content/accountBenefits'
 import { RegisterPage, type RegisterSuccess } from './RegisterPage'
 import type { AppRoute } from '../routing'
 import type { RegisterResponse } from '../types/invoice'
@@ -69,6 +70,17 @@ describe('RegisterPage', (): void => {
     expect(registerAccount).not.toHaveBeenCalled()
     expect(onRegistered).not.toHaveBeenCalled()
     expect(screen.getByRole('alert')).toHaveTextContent('Die Passwörter stimmen nicht überein.')
+  })
+
+  it('lists what registration adds', (): void => {
+    render(
+      <RegisterPage onNavigate={vi.fn()} onRegistered={vi.fn()} session={null} onLogout={vi.fn()} />,
+    )
+
+    expect(screen.getByRole('heading', { name: 'Was die Registrierung bringt' })).toBeInTheDocument()
+    for (const benefit of REGISTRATION_BENEFITS) {
+      expect(screen.getByText(benefit)).toBeInTheDocument()
+    }
   })
 
   it('lets the monkey toggle password visibility', async (): Promise<void> => {

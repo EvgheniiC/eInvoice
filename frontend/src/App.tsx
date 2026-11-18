@@ -7,6 +7,7 @@ import { LandingPage } from './pages/LandingPage'
 import { LegalPage } from './pages/LegalPage'
 import { LoginPage } from './pages/LoginPage'
 import { HistoryPage } from './pages/HistoryPage'
+import { AccountPage } from './pages/AccountPage'
 import { OrgSettingsPage } from './pages/OrgSettingsPage'
 import { PricingPage } from './pages/PricingPage'
 import { AdminStatsPage } from './pages/AdminStatsPage'
@@ -246,6 +247,14 @@ function App(): JSX.Element {
         <VerifyPage
           onNavigate={navigate}
           onLoggedIn={handleLoggedIn}
+          session={session}
+          onLogout={() => {
+            void handleLogout()
+          }}
+        />
+      ) : route === 'account' ? (
+        <AccountPage
+          onNavigate={navigate}
           session={session}
           onLogout={() => {
             void handleLogout()
