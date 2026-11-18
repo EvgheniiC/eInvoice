@@ -59,11 +59,10 @@ export function LandingPage({
             <AppLink href="/erechnung-validation" className="btn btn--secondary">
               Validierung
             </AppLink>
+            <AppLink href="/erstellen" className="btn btn--secondary">
+              E-Rechnung erstellen
+            </AppLink>
           </div>
-          <p className="landing-hero__issue">
-            Eigene PDF-Rechnung als E-Rechnung vorbereiten:{' '}
-            <AppLink href="/erstellen">E-Rechnung erstellen</AppLink>
-          </p>
         </div>
         <InvoiceHeroVisual />
       </section>
