@@ -1,4 +1,5 @@
 import type { JSX } from 'react'
+import { HistoryPanel } from '../components/HistoryPanel'
 import { PageNav } from '../components/PageNav'
 import { SiteFooter } from '../components/SiteFooter'
 import { REGISTRATION_BENEFITS, REGISTRATION_SUMMARY } from '../content/accountBenefits'
@@ -158,6 +159,10 @@ export function AccountPage({ onNavigate, session, onLogout }: AccountPageProps)
               ))}
             </div>
           </section>
+          <section className="legal-section" aria-labelledby="account-history">
+            <h2 id="account-history">Verlauf</h2>
+            <HistoryPanel onNavigate={onNavigate} session={session} />
+          </section>
           <section className="legal-section account-copy" aria-labelledby="account-benefits">
             <h2 id="account-benefits">Was die Registrierung bringt</h2>
             <p className="page__limits">{REGISTRATION_SUMMARY}</p>
@@ -169,23 +174,6 @@ export function AccountPage({ onNavigate, session, onLogout }: AccountPageProps)
               <button type="button" className="btn btn--secondary" onClick={() => onNavigate('org')}>
                 Organisation
               </button>
-              {session.plan.allows_history ? (
-                <button
-                  type="button"
-                  className="btn btn--secondary"
-                  onClick={() => onNavigate('history')}
-                >
-                  Verlauf
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="btn btn--secondary"
-                  onClick={() => onNavigate('pricing')}
-                >
-                  Verlauf ab Plus
-                </button>
-              )}
               <button type="button" className="btn btn--secondary" onClick={() => onNavigate('pricing')}>
                 Tarife
               </button>

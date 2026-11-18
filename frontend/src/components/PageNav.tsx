@@ -17,6 +17,24 @@ export function PageNav({
   onLogout,
 }: PageNavProps): JSX.Element {
   const className: string = overlay ? 'page-nav page-nav--overlay' : 'page-nav'
+  if (session) {
+    return (
+      <nav className={className} aria-label="Seiten">
+        <button type="button" className="page-nav__link" onClick={() => onNavigate('account')}>
+          Konto
+        </button>
+        <AppLink href="/hilfe" className="page-nav__link">
+          Hilfe
+        </AppLink>
+        {onLogout ? (
+          <button type="button" className="page-nav__link" onClick={onLogout}>
+            Abmelden
+          </button>
+        ) : null}
+      </nav>
+    )
+  }
+
   return (
     <nav className={className} aria-label="Seiten">
       <AppLink href="/erstellen" className="page-nav__link">
@@ -31,35 +49,9 @@ export function PageNav({
       <AppLink href="/impressum" className="page-nav__link">
         Impressum
       </AppLink>
-      {session ? (
-        <>
-          <button type="button" className="page-nav__link" onClick={() => onNavigate('account')}>
-            Konto
-          </button>
-          {session.is_admin ? (
-            <button type="button" className="page-nav__link" onClick={() => onNavigate('stats')}>
-              Statistik
-            </button>
-          ) : null}
-          {session.plan.allows_history ? (
-            <button type="button" className="page-nav__link" onClick={() => onNavigate('history')}>
-              Verlauf
-            </button>
-          ) : null}
-          <button type="button" className="page-nav__link" onClick={() => onNavigate('org')}>
-            Organisation
-          </button>
-          {onLogout ? (
-            <button type="button" className="page-nav__link" onClick={onLogout}>
-              Abmelden
-            </button>
-          ) : null}
-        </>
-      ) : (
-        <button type="button" className="page-nav__link" onClick={() => onNavigate('login')}>
-          Anmelden
-        </button>
-      )}
+      <button type="button" className="page-nav__link" onClick={() => onNavigate('login')}>
+        Anmelden
+      </button>
       <AppLink href="/erechnung-validation" className="page-nav__link">
         Validierung
       </AppLink>

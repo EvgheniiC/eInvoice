@@ -54,7 +54,8 @@ describe('AdminStatsPage', (): void => {
     expect(screen.getByText('Personen mit Plus oder Team').parentElement).toHaveTextContent('2')
     expect(screen.getByRole('columnheader', { name: 'Paket' })).toBeInTheDocument()
     expect(screen.getByRole('cell', { name: '06.10.2026' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Statistik' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Konto' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Statistik' })).not.toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Startseite' }))
     expect(onNavigate).toHaveBeenCalledWith('landing')

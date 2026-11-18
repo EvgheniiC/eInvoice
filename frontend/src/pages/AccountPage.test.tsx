@@ -70,6 +70,12 @@ describe('AccountPage', (): void => {
       '/erechnung-validation',
     )
     expect(screen.getByRole('link', { name: 'E-Rechnung aus PDF' })).toHaveAttribute('href', '/erstellen')
-    expect(screen.getByRole('button', { name: 'Verlauf ab Plus' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Verlauf' })).toBeInTheDocument()
+    expect(screen.getByText(/Verlauf ist in Plus enthalten/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Konto' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Hilfe' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Rechnung hochladen' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Validierung' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Abmelden' })).toBeInTheDocument()
   })
 })
