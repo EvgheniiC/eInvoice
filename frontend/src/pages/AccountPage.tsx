@@ -1,4 +1,4 @@
-import type { JSX } from 'react'
+import { useState, type JSX } from 'react'
 import { HistoryPanel } from '../components/HistoryPanel'
 import { PageNav } from '../components/PageNav'
 import { SiteFooter } from '../components/SiteFooter'
@@ -12,6 +12,8 @@ type AccountPageProps = {
   session: MeResponse | null
   onLogout: () => void
 }
+
+type AccountSection = 'overview' | 'history' | 'tariff'
 
 type AccountAction = {
   href: string
@@ -88,6 +90,40 @@ function accountFacts(session: MeResponse): readonly AccountFact[] {
   return facts
 }
 
+function TariffSection({
+  plan,
+  onNavigate,
+}: {
+  plan: PlanInfo
+  onNavigate: (route: AppRoute) => void
+}): JSX.Element {
+  const quotaText: string = plan.quotas_enforced
+    ? `${String(plan.parse_used_today)}/${String(plan.parse_per_day)} Prüfungen, ` +
+      `${String(plan.export_used_today)}/${String(plan.export_per_day)} Exporte, ` +
+      `${String(plan.issue_used_today)}/${String(plan.issue_per_day)} E-Rechnungen.`
+    : 'Kontingente sind noch nicht durchgesetzt.'
+
+  return (
+    <section className="legal-section" aria-labelledby="account-tariff">
+      <h2 id="account-tariff">Mein Tarif</h2>
+      <ul>
+        <li>Tarif: {plan.name}</li>
+        <li>Batch: {plan.allows_batch ? 'ja' : 'nein'}</li>
+        <li>Historie: {plan.allows_history ? 'ja' : 'nein'}</li>
+        <li>Dateien pro Auftrag: {plan.allows_batch ? String(plan.max_batch_files) : '1'}</li>
+        <li>Max. Dateigröße: {String(plan.max_upload_size_mb)} MB</li>
+        <li>Heute: {quotaText}</li>
+      </ul>
+      <p className="page__limits">{tariffHint(plan)}</p>
+      {plan.code !== 'team' ? (
+        <button type="button" className="btn btn--secondary" onClick={() => onNavigate('pricing')}>
+          Tarife vergleichen
+        </button>
+      ) : null}
+    </section>
+  )
+}
+
 function BenefitList(): JSX.Element {
   return (
     <ul>
@@ -98,7 +134,19 @@ function BenefitList(): JSX.Element {
   )
 }
 
+function tariffHint(plan: PlanInfo): string {
+  if (plan.code === 'free') {
+    return 'Mit Plus stehen höhere Tageslimits, Batch und Historie zur Verfügung.'
+  }
+  if (plan.code === 'plus') {
+    return 'Mit Team stehen höhere Kontingente zur Verfügung.'
+  }
+  return 'Rechnungsdateien werden ohne Zustimmung weiterhin nicht archiviert.'
+}
+
 export function AccountPage({ onNavigate, session, onLogout }: AccountPageProps): JSX.Element {
+  const [section, setSection] = useState<AccountSection>('overview')
+
   return (
     <main id="main-content" className="page page--account" tabIndex={-1}>
       <header className="page__header">
@@ -138,6 +186,39 @@ export function AccountPage({ onNavigate, session, onLogout }: AccountPageProps)
                 </div>
               ))}
             </dl>
+            <nav className="account-menu" aria-label="Kontobereiche">
+              <button
+                type="button"
+                className="account-menu__item"
+                aria-current={section === 'overview' ? 'page' : undefined}
+                onClick={() => setSection('overview')}
+              >
+                Übersicht
+              </button>
+              <button
+                type="button"
+                className="account-menu__item"
+                aria-current={section === 'history' ? 'page' : undefined}
+                onClick={() => setSection('history')}
+              >
+                Verlauf
+              </button>
+              <button
+                type="button"
+                className="account-menu__item"
+                onClick={() => onNavigate('org')}
+              >
+                Organisation Einstellungen
+              </button>
+              <button
+                type="button"
+                className="account-menu__item"
+                aria-current={section === 'tariff' ? 'page' : undefined}
+                onClick={() => setSection('tariff')}
+              >
+                Mein Tarif
+              </button>
+            </nav>
           </aside>
           <div className="account-main">
           {!session.email_verified ? (
@@ -145,45 +226,38 @@ export function AccountPage({ onNavigate, session, onLogout }: AccountPageProps)
               Bitte bestätigen Sie die E-Mail-Adresse. Danach bleibt die Anmeldung auf diesem Konto.
             </p>
           ) : null}
-          <section className="legal-section" aria-labelledby="account-actions">
-            <h2 id="account-actions">Was Sie tun können</h2>
-            <div className="account-grid">
-              {ACCOUNT_ACTIONS.map((action: AccountAction) => (
-                <article className="account-card" key={action.href}>
-                  <h3>{action.title}</h3>
-                  <p>{action.text}</p>
-                  <AppLink href={action.href} className="btn btn--primary">
-                    {action.cta}
-                  </AppLink>
-                </article>
-              ))}
-            </div>
-          </section>
-          <section className="legal-section" aria-labelledby="account-history">
-            <h2 id="account-history">Verlauf</h2>
-            <HistoryPanel onNavigate={onNavigate} session={session} />
-          </section>
-          <section className="legal-section account-copy" aria-labelledby="account-benefits">
-            <h2 id="account-benefits">Was die Registrierung bringt</h2>
-            <p className="page__limits">{REGISTRATION_SUMMARY}</p>
-            <BenefitList />
-          </section>
-          <section className="legal-section" aria-labelledby="account-places">
-            <h2 id="account-places">Einstellungen</h2>
-            <div className="account-links">
-              <button type="button" className="btn btn--secondary" onClick={() => onNavigate('org')}>
-                Organisation
-              </button>
-              <button type="button" className="btn btn--secondary" onClick={() => onNavigate('pricing')}>
-                Tarife
-              </button>
-              {session.is_admin ? (
-                <button type="button" className="btn btn--secondary" onClick={() => onNavigate('stats')}>
-                  Statistik
-                </button>
-              ) : null}
-            </div>
-          </section>
+          {section === 'history' ? (
+            <section className="legal-section" aria-labelledby="account-history">
+              <h2 id="account-history">Verlauf</h2>
+              <HistoryPanel onNavigate={onNavigate} session={session} />
+            </section>
+          ) : null}
+          {section === 'tariff' ? (
+            <TariffSection plan={session.plan} onNavigate={onNavigate} />
+          ) : null}
+          {section === 'overview' ? (
+            <>
+              <section className="legal-section" aria-labelledby="account-actions">
+                <h2 id="account-actions">Was Sie tun können</h2>
+                <div className="account-grid">
+                  {ACCOUNT_ACTIONS.map((action: AccountAction) => (
+                    <article className="account-card" key={action.href}>
+                      <h3>{action.title}</h3>
+                      <p>{action.text}</p>
+                      <AppLink href={action.href} className="btn btn--primary">
+                        {action.cta}
+                      </AppLink>
+                    </article>
+                  ))}
+                </div>
+              </section>
+              <section className="legal-section account-copy" aria-labelledby="account-benefits">
+                <h2 id="account-benefits">Was die Registrierung bringt</h2>
+                <p className="page__limits">{REGISTRATION_SUMMARY}</p>
+                <BenefitList />
+              </section>
+            </>
+          ) : null}
           </div>
         </div>
       )}

@@ -25,10 +25,12 @@ describe('AccountPage', (): void => {
     expect(onNavigate).toHaveBeenCalledWith('register')
   })
 
-  it('shows the plan, quotas and the three tasks for a signed-in user', (): void => {
+  it('shows the plan, quotas and the three tasks for a signed-in user', async (): Promise<void> => {
+    const user: UserEvent = userEvent.setup()
+    const onNavigate: (route: AppRoute) => void = vi.fn()
     render(
       <AccountPage
-        onNavigate={vi.fn()}
+        onNavigate={onNavigate}
         session={buildSession({
           plan: {
             code: 'free',
@@ -70,8 +72,21 @@ describe('AccountPage', (): void => {
       '/erechnung-validation',
     )
     expect(screen.getByRole('link', { name: 'E-Rechnung aus PDF' })).toHaveAttribute('href', '/erstellen')
+    expect(screen.queryByRole('heading', { name: 'Verlauf' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Statistik' })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Verlauf' }))
     expect(screen.getByRole('heading', { name: 'Verlauf' })).toBeInTheDocument()
     expect(screen.getByText(/Verlauf ist in Plus enthalten/)).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Was Sie tun können' })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Mein Tarif' }))
+    expect(screen.getByRole('heading', { name: 'Mein Tarif' })).toBeInTheDocument()
+    expect(screen.getByText(/Mit Plus stehen höhere Tageslimits/)).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Organisation Einstellungen' }))
+    expect(onNavigate).toHaveBeenCalledWith('org')
+
     expect(screen.getByRole('button', { name: 'Konto' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Hilfe' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Rechnung hochladen' })).not.toBeInTheDocument()

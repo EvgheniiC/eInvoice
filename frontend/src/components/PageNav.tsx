@@ -26,6 +26,11 @@ export function PageNav({
         <AppLink href="/hilfe" className="page-nav__link">
           Hilfe
         </AppLink>
+        {session.is_admin ? (
+          <button type="button" className="page-nav__link" onClick={() => onNavigate('stats')}>
+            Statistik
+          </button>
+        ) : null}
         {onLogout ? (
           <button type="button" className="page-nav__link" onClick={onLogout}>
             Abmelden
