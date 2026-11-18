@@ -76,7 +76,7 @@ function BenefitList(): JSX.Element {
 
 export function AccountPage({ onNavigate, session, onLogout }: AccountPageProps): JSX.Element {
   return (
-    <main id="main-content" className="page" tabIndex={-1}>
+    <main id="main-content" className="page page--account" tabIndex={-1}>
       <header className="page__header">
         <div className="page__header-row">
           <button type="button" className="page__home" onClick={() => onNavigate('landing')}>
@@ -97,7 +97,7 @@ export function AccountPage({ onNavigate, session, onLogout }: AccountPageProps)
 
       {session === null ? (
         <>
-          <section className="legal-section" aria-labelledby="account-benefits">
+          <section className="legal-section account-copy" aria-labelledby="account-benefits">
             <h2 id="account-benefits">Was die Registrierung bringt</h2>
             <BenefitList />
           </section>
@@ -132,7 +132,7 @@ export function AccountPage({ onNavigate, session, onLogout }: AccountPageProps)
               ))}
             </div>
           </section>
-          <section className="legal-section" aria-labelledby="account-benefits">
+          <section className="legal-section account-copy" aria-labelledby="account-benefits">
             <h2 id="account-benefits">Was die Registrierung bringt</h2>
             <p className="page__limits">{REGISTRATION_SUMMARY}</p>
             <BenefitList />

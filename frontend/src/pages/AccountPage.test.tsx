@@ -15,6 +15,7 @@ describe('AccountPage', (): void => {
     render(<AccountPage onNavigate={onNavigate} session={null} onLogout={vi.fn()} />)
 
     expect(screen.getByRole('heading', { name: 'Konto' })).toBeInTheDocument()
+    expect(screen.getByRole('main')).toHaveClass('page--account')
     expect(screen.getByRole('heading', { name: 'Was die Registrierung bringt' })).toBeInTheDocument()
     for (const benefit of REGISTRATION_BENEFITS) {
       expect(screen.getByText(benefit)).toBeInTheDocument()
