@@ -166,7 +166,7 @@ export function IssuePage({
         </p>
       </header>
 
-      {sessionReady && session?.is_admin ? (
+      {sessionReady && session ? (
         <>
       <section className="issue-note" aria-label="Hinweis">
         <p>
@@ -434,7 +434,7 @@ export function IssuePage({
         <p className="status status--info" role="status">
           Wird geladen…
         </p>
-      ) : !session ? (
+      ) : (
         <>
           <p className="status status--info" role="status">
             Bitte anmelden.
@@ -443,10 +443,6 @@ export function IssuePage({
             Anmelden
           </button>
         </>
-      ) : (
-        <p className="status status--error" role="alert">
-          Kein Zugriff.
-        </p>
       )}
       <SiteFooter />
     </main>

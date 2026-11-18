@@ -489,14 +489,17 @@ class TestIssueApi(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 401)
 
-    def test_signed_in_user_cannot_create_a_draft(self) -> None:
+    def test_signed_in_user_can_create_a_draft(self) -> None:
         self._login("meister@example.com")
-        pdf: bytes = _text_pdf(["Rechnungsnummer: RE-9"])
+        pdf: bytes = _text_pdf(["Rechnungsnummer: RE-9", "Rechnungsdatum: 01.02.2026"])
         response = self.client.post(
             "/api/issue/draft",
             files={"file": ("rechnung.pdf", pdf, "application/pdf")},
         )
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 200, response.text)
+        body: IssueDraftResponse = IssueDraftResponse.model_validate(response.json())
+        self.assertEqual(body.draft.invoice_number, "RE-9")
+        self.assertEqual(body.draft.issue_date, "2026-02-01")
 
     def test_admin_can_read_a_text_pdf(self) -> None:
         self._login("admin@example.com")

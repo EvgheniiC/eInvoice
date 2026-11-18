@@ -1438,7 +1438,7 @@
           "issue"
         ],
         "summary": "Create Issue Draft",
-        "description": "Read a plain PDF into an editable draft. Only an administrator may call this.",
+        "description": "Read a plain PDF into an editable draft. Empty fields stay for the issuer to fill in.",
         "operationId": "create_issue_draft_api_issue_draft_post",
         "requestBody": {
           "content": {

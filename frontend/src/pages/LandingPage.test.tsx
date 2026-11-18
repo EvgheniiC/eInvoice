@@ -12,11 +12,11 @@ vi.mock('../api/client', (): {
 }))
 
 describe('LandingPage', (): void => {
-  it('places the admin issue hint after the upload button', (): void => {
+  it('places the issue hint after the upload button for a signed-in user', (): void => {
     render(
       <LandingPage
         onNavigate={vi.fn()}
-        session={buildSession({ is_admin: true })}
+        session={buildSession({ is_admin: false })}
         onLogout={vi.fn()}
       />,
     )
@@ -36,7 +36,7 @@ describe('LandingPage', (): void => {
     ).toBeTruthy()
   })
 
-  it('hides the admin issue hint for other visitors', (): void => {
+  it('hides the issue hint for a guest', (): void => {
     render(<LandingPage onNavigate={vi.fn()} session={null} onLogout={vi.fn()} />)
 
     expect(

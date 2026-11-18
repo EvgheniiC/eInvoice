@@ -5,7 +5,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_db, require_admin_user
+from app.api.deps import get_current_org, get_db
 from app.db.models import Organization
 from app.helper_functions.pdf_security import UnsafePdfError, assert_pdf_safe
 from app.schemas.issue import IssueBuildRequest, IssueBuildResponse, IssueDraftResponse
@@ -21,10 +21,10 @@ router: APIRouter = APIRouter()
 @router.post("/draft", response_model=IssueDraftResponse)
 async def create_issue_draft(
     file: UploadFile = File(...),
-    org_context: OrgContext = Depends(require_admin_user),
+    org_context: OrgContext = Depends(get_current_org),
     db: Session = Depends(get_db),
 ) -> IssueDraftResponse:
-    """Read a plain PDF into an editable draft. Only an administrator may call this."""
+    """Read a plain PDF into an editable draft. Empty fields stay for the issuer to fill in."""
     content: bytes = await _read_pdf(file, org_context)
     return draft_from_pdf(content, file.filename or "rechnung.pdf", seller=_seller_seed(db, org_context))
 
@@ -32,7 +32,7 @@ async def create_issue_draft(
 @router.post("/build", response_model=IssueBuildResponse)
 def create_issue_files(
     body: IssueBuildRequest,
-    org_context: OrgContext = Depends(require_admin_user),
+    org_context: OrgContext = Depends(get_current_org),
 ) -> IssueBuildResponse:
     """Build XRechnung and ZUGFeRD from a confirmed draft. Download stays closed until KoSIT is valid."""
     pdf_bytes: Optional[bytes] = _optional_pdf(body.pdf_base64, org_context)

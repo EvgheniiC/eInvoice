@@ -252,7 +252,7 @@ describe('IssuePage', (): void => {
     expect(await screen.findByText('KoSIT hat die Datei als gültig abgeschlossen.')).toBeInTheDocument()
   })
 
-  it('hides the form from anyone who is not an administrator', (): void => {
+  it('shows the form to a signed-in user', (): void => {
     render(
       <IssuePage
         onNavigate={() => undefined}
@@ -261,7 +261,20 @@ describe('IssuePage', (): void => {
         onLogout={() => undefined}
       />,
     )
-    expect(screen.getByRole('alert')).toHaveTextContent('Kein Zugriff.')
+    expect(screen.getByLabelText('Eigene PDF-Rechnung')).toBeInTheDocument()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  it('asks a guest to sign in before creating an invoice', (): void => {
+    render(
+      <IssuePage
+        onNavigate={() => undefined}
+        session={null}
+        sessionReady
+        onLogout={() => undefined}
+      />,
+    )
+    expect(screen.getByRole('status')).toHaveTextContent('Bitte anmelden.')
     expect(screen.queryByLabelText('Eigene PDF-Rechnung')).not.toBeInTheDocument()
   })
 })

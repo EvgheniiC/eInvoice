@@ -31,15 +31,13 @@ export function PageNav({
       {session ? (
         <>
           {session.is_admin ? (
-            <>
-              <button type="button" className="page-nav__link" onClick={() => onNavigate('stats')}>
-                Statistik
-              </button>
-              <AppLink href="/erstellen" className="page-nav__link">
-                E-Rechnung erstellen
-              </AppLink>
-            </>
+            <button type="button" className="page-nav__link" onClick={() => onNavigate('stats')}>
+              Statistik
+            </button>
           ) : null}
+          <AppLink href="/erstellen" className="page-nav__link">
+            E-Rechnung erstellen
+          </AppLink>
           {session.plan.allows_history ? (
             <button type="button" className="page-nav__link" onClick={() => onNavigate('history')}>
               Verlauf

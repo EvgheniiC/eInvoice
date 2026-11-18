@@ -60,7 +60,7 @@ export function LandingPage({
               Validierung
             </AppLink>
           </div>
-          {session?.is_admin ? (
+          {session ? (
             <p className="landing-hero__issue">
               Eigene PDF-Rechnung als E-Rechnung vorbereiten:{' '}
               <AppLink href="/erstellen">E-Rechnung erstellen</AppLink>
