@@ -159,7 +159,7 @@ export function IssuePage({
           </AppLink>
           <PageNav onNavigate={onNavigate} session={session} onLogout={onLogout} />
         </div>
-        <h1 tabIndex={-1}>E-Rechnung aus PDF erstellen</h1>
+        <h1 tabIndex={-1}>E-Rechnung erstellen</h1>
         <p className="page__lead">
           Für Rechnungsaussteller, deren Kunde eine normale PDF nicht mehr annimmt.
           Der Empfang eingehender XRechnungen bleibt getrennt.

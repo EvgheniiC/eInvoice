@@ -44,14 +44,19 @@ describe('seoForPath', (): void => {
       canonicalPath: '/erechnung-validation',
       robots: 'index,follow',
     })
+    expect(seoForPath('/erstellen')).toEqual({
+      title: 'E-Rechnung erstellen | eInvoice',
+      description:
+        'E-Rechnung erstellen aus einer normalen PDF: Entwurf für XRechnung oder ZUGFeRD. Eingehende Rechnungen bleiben getrennt.',
+      canonicalPath: '/erstellen',
+      robots: 'index,follow',
+    })
   })
 
   it('keeps account pages out of the index', (): void => {
     expect(seoForPath('/anmelden').robots).toBe('noindex,nofollow')
     expect(seoForPath('/registrieren').robots).toBe('noindex,nofollow')
     expect(seoForPath('/organisation').robots).toBe('noindex,nofollow')
-    expect(seoForPath('/erstellen').robots).toBe('noindex,nofollow')
-    expect(seoForPath('/erstellen').canonicalPath).toBe('/erstellen')
     expect(seoForPath('/verlauf').robots).toBe('noindex,nofollow')
     expect(seoForPath('/statistik').robots).toBe('noindex,nofollow')
   })

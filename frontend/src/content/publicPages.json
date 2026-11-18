@@ -62,6 +62,16 @@
       ]
     },
     {
+      "path": "/erstellen",
+      "kind": "shell",
+      "h1": "E-Rechnung erstellen",
+      "title": "E-Rechnung erstellen | eInvoice",
+      "description": "E-Rechnung erstellen aus einer normalen PDF: Entwurf für XRechnung oder ZUGFeRD. Eingehende Rechnungen bleiben getrennt.",
+      "paragraphs": [
+        "Für Rechnungsaussteller, deren Kunde eine normale PDF nicht mehr annimmt. Der Empfang eingehender XRechnungen bleibt getrennt."
+      ]
+    },
+    {
       "path": "/xrechnung-oeffnen",
       "kind": "topic",
       "h1": "XRechnung öffnen",

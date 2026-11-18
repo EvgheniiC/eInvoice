@@ -153,7 +153,7 @@ describe('IssuePage', (): void => {
       />,
     )
 
-    expect(screen.getByRole('heading', { name: 'E-Rechnung aus PDF erstellen' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'E-Rechnung erstellen' })).toBeInTheDocument()
     expect(screen.getByText(/Maßgeblich ist die XML/)).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Download als ZUGFeRD PDF' })).not.toBeInTheDocument()
 
