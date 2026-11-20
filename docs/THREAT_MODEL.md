@@ -42,7 +42,7 @@ unless nginx overwrites it (the API snippet sets `X-Forwarded-For $remote_addr`)
 | S2 | XXE / DTD / entity expansion | `defusedxml`, reject `DOCTYPE`/`ENTITY`, complexity limits |
 | S3 | Malicious PDF (JS, Launch, encryption, huge page count) | `assert_pdf_safe` |
 | S4 | Resource exhaustion (huge file, nested XML, slow KoSIT, zip-bomb) | 10 MB cap (plan size), rate limit, request timeout, JVM `-Xmx`, systemd `MemoryMax`, nginx `limit_req`; ZIP ingest checks listed sizes, ratio, member cap, xml/pdf only |
-| T1 | Invoice data in logs | Sanitized structured logs; parsers must not log IBAN/XML |
+| T1 | Invoice data in logs | Sanitized structured logs; parsers must not log IBAN/XML. nginx `einvoice_redacted` logs `$uri` only, so one-time `token` query values are not written to the access log (confirmed on production 20 November 2026) |
 | T2 | Temp file leftover | `TemporaryDirectory` for PDF probe and KoSIT; `PrivateTmp=true`; batch originals in `BATCH_TEMP_DIR` until accountant ZIP or TTL, then deleted |
 | T4 | Zip-slip / nested ZIP | Reject `..` and absolute paths; skip nested `.zip` members |
 | T3 | Error detail leak | Generic 500/422 to clients; no traceback in JSON |
@@ -52,12 +52,24 @@ unless nginx overwrites it (the API snippet sets `X-Forwarded-For $remote_addr`)
 | D1 | Denial of service via many uploads | nginx + in-app rate limit, timeouts |
 | D2 | Feedback used to exfiltrate or inject invoice data | No file upload; reject XML/PDF/IBAN-like text; rate limit `/api/feedback` |
 | I3 | Funnel/telemetry as a tracking profile | Step name only, no cookie, no invoice id |
-| I4 | Session theft | httpOnly cookie, hashed token, password change revokes sessions |
+| I4 | Session theft | httpOnly cookie, hashed token, password change revokes sessions. Production cookie is also `Secure` and `SameSite=Lax`; magic-link JSON does not return the raw token |
+
+## Closed on production (20 November 2026)
+
+Checked against `https://erechnung-smart.de`. Not an independent pentest.
+
+- Stripe is the live billing provider (`GET /api/billing/config` → `stripe`). Stub checkout is not in use.
+- `ENVIRONMENT` is production: `einv_session` is `HttpOnly`, `Secure`, `SameSite=Lax`, and `POST /api/auth/magic-link` returns `token: null` for a verified account.
+- `POST /api/admin/plans` without `X-Admin-Token` returns 401. The admin token is configured.
+- nginx rate limiting is loaded (`einvoice_api` 30 requests/minute, `limit_req`, `limit_conn`).
+- Access logs use `einvoice_redacted` (`$uri`, no query string). Public `GET /metrics` returns 404.
+
+Left open on purpose: mailbox second factor, plaintext IBAN and tax fields in PostgreSQL, logout cookie flags (the server already revokes the session), public `/api/health`, and KoSIT/JRE patching.
 
 ## Residual risk (must stay open)
 
 - No independent pentest. Client work does not wait for one.
-- In-app rate limit is per process (one uvicorn worker); nginx is the edge control
+- In-app rate limit is per process (one uvicorn worker). The nginx edge limit was confirmed loaded on 20 November 2026; it remains the control that matters
 - Operator is Svetlana Costina (Einzelunternehmen), Elbinger Straße 70,
   27755 Delmenhorst, svetlana.costina@gmx.de. Hosting: Hetzner Online GmbH,
   datacenter Nürnberg, Germany; AVV concluded in the Hetzner customer account.

@@ -54,6 +54,8 @@
 
 .page__header-row .page__home {
   margin: 0;
+  position: relative;
+  top: -0.4rem;
 }
 
 .page-nav {
@@ -73,7 +75,8 @@
   z-index: 2;
 }
 
-.page-nav__link {
+.page-nav__link,
+.page__home {
   display: inline-flex;
   align-items: center;
   text-decoration: none;
@@ -87,10 +90,12 @@
   font-size: 0.95rem;
   font-weight: 600;
   white-space: nowrap;
+  letter-spacing: 0;
   cursor: pointer;
 }
 
-.page-nav__link:hover {
+.page-nav__link:hover,
+.page__home:hover {
   border-color: var(--color-brand);
   color: var(--color-brand);
 }
@@ -118,27 +123,6 @@
   margin: 0 0 0.65rem;
   font-family: var(--font-display);
   font-size: 1.35rem;
-}
-
-.page__home {
-  display: inline-flex;
-  text-decoration: none;
-  align-items: center;
-  min-height: 44px;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--color-brand-dark);
-  font-family: var(--font-body);
-  font-size: 1.15rem;
-  font-weight: 700;
-  letter-spacing: 0;
-  cursor: pointer;
-}
-
-.page__home:hover {
-  color: var(--color-brand-dark);
 }
 
 .brand {

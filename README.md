@@ -178,6 +178,19 @@ temp directories, then deleted; application logs never contain invoice XML/PDF.
 
 See [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md) and [docs/AVV_DPA.md](docs/AVV_DPA.md).
 
+## Production security review (20 November 2026)
+
+Checked on `https://erechnung-smart.de`. These items are closed:
+
+- Billing uses Stripe. `GET /api/billing/config` returns `{"provider": "stripe"}`, so the stub checkout is not active.
+- The API runs in production. The session cookie `einv_session` is `HttpOnly`, `Secure`, and `SameSite=Lax`. `POST /api/auth/magic-link` for a verified account returns `"token": null`, so one-time links are not included in the JSON body.
+- Changing a plan requires `X-Admin-Token`. `POST /api/admin/plans` without that header returns 401.
+- The nginx edge limit is loaded: zone `einvoice_api` at 30 requests per minute, plus `limit_req` and `limit_conn`.
+- Access logs do not store the query string. `log_format einvoice_redacted` in `deploy/nginx-rate-limit-zone.conf` logs `$uri` only, and the vhost uses it via `deploy/nginx-security-snippet.conf`. A request to `/bestaetigen?token=…` is recorded as `GET /index.html` without the token.
+- Public `GET /metrics` returns 404. Prometheus stays on `127.0.0.1:8000`.
+
+Still open, and not part of this close-out: a second factor on the support mailbox, IBAN and tax identifiers stored in PostgreSQL, logout `Set-Cookie` flags, the public `/api/health` status page, and keeping the KoSIT JAR and JRE patched.
+
 ## Nginx (production)
 
 On the HTTPS vhost, include:
