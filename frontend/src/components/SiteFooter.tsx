@@ -2,19 +2,27 @@ import type { JSX } from 'react'
 import { openAnalyticsConsentPrompt } from '../analytics'
 import { AppLink } from '../navigation'
 
-export function SiteFooter(): JSX.Element {
+type SiteFooterProps = {
+  pageLinks?: boolean
+}
+
+export function SiteFooter({ pageLinks = true }: SiteFooterProps): JSX.Element {
   return (
     <footer className="site-footer">
       <nav className="site-footer__nav" aria-label="Fußzeile">
-        <AppLink href="/tarife" className="site-footer__link">
-          Tarife
-        </AppLink>
-        <AppLink href="/hilfe" className="site-footer__link">
-          Hilfe &amp; FAQ
-        </AppLink>
-        <AppLink href="/impressum" className="site-footer__link">
-          Impressum
-        </AppLink>
+        {pageLinks ? (
+          <>
+            <AppLink href="/tarife" className="site-footer__link">
+              Tarife
+            </AppLink>
+            <AppLink href="/hilfe" className="site-footer__link">
+              Hilfe &amp; FAQ
+            </AppLink>
+            <AppLink href="/impressum" className="site-footer__link">
+              Impressum
+            </AppLink>
+          </>
+        ) : null}
         <AppLink href="/datenschutz" className="site-footer__link">
           Datenschutz
         </AppLink>

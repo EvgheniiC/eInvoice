@@ -122,6 +122,28 @@ describe('LoginPage', (): void => {
     expect(screen.getByRole('button', { name: 'Bestätigung erneut senden' })).toBeInTheDocument()
   })
 
+  it('keeps header links out of the footer', (): void => {
+    render(
+      <LoginPage
+        onNavigate={vi.fn()}
+        onLoggedIn={vi.fn()}
+        onForgotPassword={vi.fn()}
+        session={null}
+        onLogout={vi.fn()}
+        notice={null}
+        initialEmail=""
+        verificationToken={null}
+      />,
+    )
+
+    expect(screen.getAllByRole('link', { name: 'Tarife' })).toHaveLength(1)
+    expect(screen.getAllByRole('link', { name: 'Hilfe' })).toHaveLength(1)
+    expect(screen.getAllByRole('link', { name: 'Impressum' })).toHaveLength(1)
+    expect(screen.queryByRole('link', { name: 'Hilfe & FAQ' })).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Datenschutz' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Cookie-Einstellungen' })).toBeInTheDocument()
+  })
+
   it('opens the forgot-password page', async (): Promise<void> => {
     const user: UserEvent = userEvent.setup()
     const onForgotPassword: (email: string) => void = vi.fn()
