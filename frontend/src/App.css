@@ -862,6 +862,7 @@
 
 .upload-zone {
   display: block;
+  margin-top: 1.15rem;
   border: 2px dashed #4d5f54;
   border-radius: 12px;
   padding: 2.5rem 1.5rem;
