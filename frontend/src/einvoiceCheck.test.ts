@@ -110,7 +110,15 @@ describe('classifyKosit', (): void => {
     const result: KositCheckResult = classifyKosit(
       buildInvoice({
         validation_status: 'not_checked',
-        validation_meta: { engine: 'business_rules', full_check_completed: false },
+        validation_meta: {
+          standard_version: null,
+          profile: null,
+          profile_id: null,
+          engine: 'business_rules',
+          engine_version: null,
+          scenarios_version: null,
+          full_check_completed: false,
+        },
       }),
     )
     expect(result).toBe('not_checked')
