@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { parseInvoice } from '../api/client'
 import { buildInvoice } from '../test/fixtures'
 import type { InvoiceParseResponse, ValidationIssue } from '../types/invoice'
+import { ValidationPage } from './ValidationPage'
 
 const KOSIT_OK: ValidationIssue = {
   level: 'info',
@@ -15,7 +16,6 @@ const KOSIT_OK: ValidationIssue = {
   bt_code: null,
   field: null,
 }
-import { ValidationPage } from './ValidationPage'
 
 vi.mock('../api/client', (): { parseInvoice: ReturnType<typeof vi.fn> } => ({
   parseInvoice: vi.fn(),
@@ -38,8 +38,13 @@ describe('ValidationPage', (): void => {
     await user.upload(input, file)
 
     expect(await screen.findByText('Ja. Das ist eine E-Rechnung.')).toBeInTheDocument()
-    expect(screen.getByText('Format: XRechnung (XML)')).toBeInTheDocument()
-    expect(screen.getByText('KoSIT: entspricht (KoSIT 1.5.0)')).toBeInTheDocument()
+    expect(screen.getByText('XRechnung (XML)')).toBeInTheDocument()
+    expect(screen.getByText('Ja')).toBeInTheDocument()
+    expect(screen.getByText('Entspricht')).toBeInTheDocument()
+    expect(screen.getByText('Validator 1.5.0 · XRechnung 3.0')).toBeInTheDocument()
+    expect(
+      screen.queryByText('KoSIT-Validator: Rechnung akzeptiert (Schematron/Schema).'),
+    ).not.toBeInTheDocument()
     expect(parseInvoice).toHaveBeenCalledTimes(1)
   })
 
@@ -69,7 +74,8 @@ describe('ValidationPage', (): void => {
     await user.upload(input, new File(['%PDF'], 'scan.pdf', { type: 'application/pdf' }))
 
     expect(await screen.findByText('Nein. Das ist keine E-Rechnung.')).toBeInTheDocument()
-    expect(screen.getByText('KoSIT: nicht geprüft')).toBeInTheDocument()
+    expect(screen.getByText('Nicht geprüft')).toBeInTheDocument()
+    expect(screen.getByText('Nur für E-Rechnungen')).toBeInTheDocument()
     expect(screen.getByText(invoice.message)).toBeInTheDocument()
   })
 
@@ -98,6 +104,7 @@ describe('ValidationPage', (): void => {
     await user.upload(input, new File(['<Invoice/>'], 'bad.xml', { type: 'text/xml' }))
 
     expect(await screen.findByText('Ja. Das ist eine E-Rechnung.')).toBeInTheDocument()
-    expect(screen.getByText('KoSIT: entspricht nicht')).toBeInTheDocument()
+    expect(screen.getByText('Entspricht nicht')).toBeInTheDocument()
+    expect(screen.getByText('Prüfregeln nicht erfüllt')).toBeInTheDocument()
   })
 })

@@ -68,14 +68,3 @@ export function classifyKosit(invoice: InvoiceParseResponse): KositCheckResult {
   return 'not_conform'
 }
 
-export function kositStatusLabel(result: KositCheckResult, invoice: InvoiceParseResponse): string {
-  if (result === 'conform') {
-    const version: string | null = invoice.validation_meta.engine_version
-    const suffix: string = version ? ` (KoSIT ${version})` : ''
-    return `KoSIT: entspricht${suffix}`
-  }
-  if (result === 'not_conform') {
-    return 'KoSIT: entspricht nicht'
-  }
-  return 'KoSIT: nicht geprüft'
-}

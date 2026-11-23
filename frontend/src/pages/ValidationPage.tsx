@@ -8,7 +8,6 @@ import {
   classifyEInvoice,
   classifyKosit,
   eInvoiceFormatLabel,
-  kositStatusLabel,
   type EInvoiceCheckResult,
   type KositCheckResult,
 } from '../einvoiceCheck'
@@ -139,40 +138,142 @@ type CheckResultProps = {
   feedbackRef: RefObject<HTMLElement | null>
 }
 
+type CheckTone = 'ok' | 'warn' | 'error'
+
 function CheckResult({ invoice, feedbackRef }: CheckResultProps): JSX.Element {
   const verdict: EInvoiceCheckResult = classifyEInvoice(invoice)
   const kosit: KositCheckResult = classifyKosit(invoice)
-  const className: string = resultClassName(verdict, kosit)
+  const tone: CheckTone = resultTone(verdict, kosit)
+  const issues: ValidationIssue[] = invoice.validation_issues.filter(
+    (issue: ValidationIssue): boolean => issue.code !== 'KOSIT_OK',
+  )
+  const showMessage: boolean = verdict !== 'einvoice' || kosit !== 'conform'
   return (
     <section
-      className={className}
+      className={`check-result check-result--${tone}`}
       role="status"
       tabIndex={-1}
       ref={(node: HTMLElement | null) => {
         feedbackRef.current = node
       }}
     >
-      {invoice.filename ? <p className="status__file">Datei: {invoice.filename}</p> : null}
-      <p>
-        <strong>{verdictHeadline(verdict)}</strong>
-      </p>
-      {verdict === 'einvoice' ? (
-        <p>Format: {eInvoiceFormatLabel(invoice.file_type)}</p>
+      {invoice.filename ? <p className="check-result__file">{invoice.filename}</p> : null}
+      <h2 className="check-result__title">{verdictHeadline(verdict)}</h2>
+      <ul className="check-result__checks">
+        <li>
+          <span className="check-result__label">Format</span>
+          <span className="check-result__value">{formatValue(verdict, invoice.file_type)}</span>
+          <span className={`badge ${badgeClass(verdictTone(verdict))}`}>{formatBadge(verdict)}</span>
+        </li>
+        <li>
+          <span className="check-result__label">KoSIT</span>
+          <span className="check-result__value">{kositValue(kosit, verdict, invoice)}</span>
+          <span className={`badge ${badgeClass(kositTone(kosit))}`}>{kositBadge(kosit)}</span>
+        </li>
+      </ul>
+      {showMessage ? <p className="check-result__note">{invoice.message}</p> : null}
+      {issues.length > 0 ? (
+        <ul className="check-result__issues">
+          {issues.map((issue: ValidationIssue, index: number) => (
+            <li key={`${issue.code ?? 'issue'}-${index}`}>{issue.message}</li>
+          ))}
+        </ul>
       ) : null}
-      <p>{kositStatusLabel(kosit, invoice)}</p>
-      <p>{invoice.message}</p>
-      {invoice.validation_issues.map((issue: ValidationIssue, index: number) => (
-        <p key={`${issue.code ?? 'issue'}-${index}`}>{issue.message}</p>
-      ))}
     </section>
   )
 }
 
-function resultClassName(verdict: EInvoiceCheckResult, kosit: KositCheckResult): string {
+function resultTone(verdict: EInvoiceCheckResult, kosit: KositCheckResult): CheckTone {
   if (verdict !== 'einvoice' || kosit === 'not_conform') {
-    return 'status status--error'
+    return 'error'
   }
-  return 'status status--info'
+  if (kosit === 'not_checked') {
+    return 'warn'
+  }
+  return 'ok'
+}
+
+function verdictTone(verdict: EInvoiceCheckResult): CheckTone {
+  if (verdict === 'einvoice') {
+    return 'ok'
+  }
+  if (verdict === 'not_einvoice') {
+    return 'error'
+  }
+  return 'warn'
+}
+
+function formatBadge(verdict: EInvoiceCheckResult): string {
+  if (verdict === 'einvoice') {
+    return 'Ja'
+  }
+  if (verdict === 'not_einvoice') {
+    return 'Nein'
+  }
+  return 'Unklar'
+}
+
+function formatValue(verdict: EInvoiceCheckResult, fileType: string | null): string {
+  if (verdict === 'einvoice') {
+    return eInvoiceFormatLabel(fileType)
+  }
+  return 'Kein E-Rechnungsformat'
+}
+
+function kositTone(kosit: KositCheckResult): CheckTone {
+  if (kosit === 'conform') {
+    return 'ok'
+  }
+  if (kosit === 'not_conform') {
+    return 'error'
+  }
+  return 'warn'
+}
+
+function kositBadge(kosit: KositCheckResult): string {
+  if (kosit === 'conform') {
+    return 'Entspricht'
+  }
+  if (kosit === 'not_conform') {
+    return 'Entspricht nicht'
+  }
+  return 'Nicht geprüft'
+}
+
+function kositValue(
+  kosit: KositCheckResult,
+  verdict: EInvoiceCheckResult,
+  invoice: InvoiceParseResponse,
+): string {
+  if (kosit === 'conform') {
+    const parts: string[] = []
+    const version: string | null = invoice.validation_meta.engine_version
+    const scenarios: string | null = invoice.validation_meta.scenarios_version
+    if (version) {
+      parts.push(`Validator ${version}`)
+    }
+    if (scenarios) {
+      parts.push(scenarios)
+    }
+    return parts.length > 0 ? parts.join(' · ') : 'Offizielle Prüfung abgeschlossen'
+  }
+  if (kosit === 'not_conform') {
+    return 'Prüfregeln nicht erfüllt'
+  }
+  if (verdict === 'einvoice') {
+    return 'Prüfung nicht ausgeführt'
+  }
+  return 'Nur für E-Rechnungen'
+}
+
+function badgeClass(tone: CheckTone): string {
+  if (tone === 'ok') {
+    return 'badge--ok'
+  }
+  if (tone === 'error') {
+    return 'badge--error'
+  }
+  return 'badge--warn'
 }
 
 function verdictHeadline(verdict: EInvoiceCheckResult): string {
