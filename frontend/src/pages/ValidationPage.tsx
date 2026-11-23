@@ -77,7 +77,7 @@ export function ValidationPage({
         <h1 tabIndex={-1}>{page?.h1 ?? 'eRechnung validation'}</h1>
         <p className="page__lead">
           {page?.description ??
-            'Eine Datei hochladen und prüfen, ob es eine E-Rechnung ist und ob sie KoSIT entspricht.'}
+            'Prüfen, ob eine Datei eine E-Rechnung ist und ob KoSIT sie akzeptiert.'}
         </p>
       </header>
 
@@ -144,10 +144,11 @@ function CheckResult({ invoice, feedbackRef }: CheckResultProps): JSX.Element {
   const verdict: EInvoiceCheckResult = classifyEInvoice(invoice)
   const kosit: KositCheckResult = classifyKosit(invoice)
   const tone: CheckTone = resultTone(verdict, kosit)
+  const finding: ValidationIssue | null = kosit === 'not_conform' ? primaryKositIssue(invoice) : null
   const issues: ValidationIssue[] = invoice.validation_issues.filter(
-    (issue: ValidationIssue): boolean => issue.code !== 'KOSIT_OK',
+    (issue: ValidationIssue): boolean => issue.code !== 'KOSIT_OK' && issue !== finding,
   )
-  const showMessage: boolean = verdict !== 'einvoice' || kosit !== 'conform'
+  const showMessage: boolean = finding === null && (verdict !== 'einvoice' || kosit !== 'conform')
   return (
     <section
       className={`check-result check-result--${tone}`}
@@ -167,7 +168,7 @@ function CheckResult({ invoice, feedbackRef }: CheckResultProps): JSX.Element {
         </li>
         <li>
           <span className="check-result__label">KoSIT</span>
-          <span className="check-result__value">{kositValue(kosit, verdict, invoice)}</span>
+          <span className="check-result__value">{kositValue(kosit, verdict, invoice, finding)}</span>
           <span className={`badge ${badgeClass(kositTone(kosit))}`}>{kositBadge(kosit)}</span>
         </li>
       </ul>
@@ -240,10 +241,22 @@ function kositBadge(kosit: KositCheckResult): string {
   return 'Nicht geprüft'
 }
 
+function primaryKositIssue(invoice: InvoiceParseResponse): ValidationIssue | null {
+  const errors: ValidationIssue[] = invoice.validation_issues.filter(
+    (issue: ValidationIssue): boolean => issue.level === 'error' && issue.code !== 'KOSIT_OK',
+  )
+  const named: ValidationIssue | undefined = errors.find(
+    (issue: ValidationIssue): boolean =>
+      issue.code === 'KOSIT_NO_SCENARIO' || issue.code === 'KOSIT_FAILED',
+  )
+  return named ?? errors[0] ?? null
+}
+
 function kositValue(
   kosit: KositCheckResult,
   verdict: EInvoiceCheckResult,
   invoice: InvoiceParseResponse,
+  finding: ValidationIssue | null,
 ): string {
   if (kosit === 'conform') {
     const parts: string[] = []
@@ -258,7 +271,7 @@ function kositValue(
     return parts.length > 0 ? parts.join(' · ') : 'Offizielle Prüfung abgeschlossen'
   }
   if (kosit === 'not_conform') {
-    return 'Prüfregeln nicht erfüllt'
+    return finding?.message ?? 'Prüfregeln nicht erfüllt'
   }
   if (verdict === 'einvoice') {
     return 'Prüfung nicht ausgeführt'

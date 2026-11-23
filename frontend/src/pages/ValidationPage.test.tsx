@@ -105,6 +105,12 @@ describe('ValidationPage', (): void => {
 
     expect(await screen.findByText('Ja. Das ist eine E-Rechnung.')).toBeInTheDocument()
     expect(screen.getByText('Entspricht nicht')).toBeInTheDocument()
-    expect(screen.getByText('Prüfregeln nicht erfüllt')).toBeInTheDocument()
+    expect(
+      screen.getByText('KoSIT-Validator: Rechnung entspricht nicht den Prüfregeln.'),
+    ).toBeInTheDocument()
+    expect(screen.queryByText('Prüfregeln nicht erfüllt')).not.toBeInTheDocument()
+    expect(
+      screen.queryByText('Rechnung gelesen, aber Validierung meldet Fehler.'),
+    ).not.toBeInTheDocument()
   })
 })
