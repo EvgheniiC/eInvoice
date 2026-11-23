@@ -40,7 +40,7 @@ describe('seoForPath', (): void => {
     expect(seoForPath('/erechnung-validation')).toEqual({
       title: 'eRechnung validation | eInvoice',
       description:
-        'eRechnung validation: eine Datei hochladen und prüfen, ob es eine E-Rechnung (XRechnung oder ZUGFeRD) ist.',
+        'eRechnung validation: eine Datei hochladen und prüfen, ob es eine E-Rechnung (XRechnung oder ZUGFeRD) ist und ob sie KoSIT entspricht.',
       canonicalPath: '/erechnung-validation',
       robots: 'index,follow',
     })

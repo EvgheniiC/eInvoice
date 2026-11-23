@@ -1,6 +1,12 @@
-import type { InvoiceParseResponse, ValidationStatus } from './types/invoice'
+import type { InvoiceParseResponse } from './types/invoice'
 
 export type EInvoiceCheckResult = 'einvoice' | 'not_einvoice' | 'unreadable'
+
+export type KositCheckResult = 'conform' | 'not_conform' | 'not_checked'
+
+const KOSIT_ACCEPT_CODE: string = 'KOSIT_OK'
+
+const KOSIT_REJECT_CODES: ReadonlySet<string> = new Set(['KOSIT_FAILED', 'KOSIT_NO_SCENARIO'])
 
 const NOT_EINVOICE_CODES: ReadonlySet<string> = new Set([
   'NOT_ZUGFERD',
@@ -43,15 +49,33 @@ export function eInvoiceFormatLabel(fileType: string | null): string {
   return 'unbekannt'
 }
 
-export function validationStatusLabel(status: ValidationStatus): string {
-  switch (status) {
-    case 'valid':
-      return 'Prüfung: gültig'
-    case 'warning':
-      return 'Prüfung: Warnung'
-    case 'invalid':
-      return 'Prüfung: ungültig'
-    default:
-      return 'Prüfung: nicht geprüft'
+export function classifyKosit(invoice: InvoiceParseResponse): KositCheckResult {
+  if (classifyEInvoice(invoice) !== 'einvoice') {
+    return 'not_checked'
   }
+  const completed: boolean =
+    invoice.validation_meta.engine === 'kosit' && invoice.validation_meta.full_check_completed
+  if (!completed) {
+    return 'not_checked'
+  }
+  const codes: string[] = invoice.validation_issues.map((issue) => issue.code ?? '')
+  if (codes.some((code: string) => KOSIT_REJECT_CODES.has(code))) {
+    return 'not_conform'
+  }
+  if (codes.includes(KOSIT_ACCEPT_CODE)) {
+    return 'conform'
+  }
+  return 'not_conform'
+}
+
+export function kositStatusLabel(result: KositCheckResult, invoice: InvoiceParseResponse): string {
+  if (result === 'conform') {
+    const version: string | null = invoice.validation_meta.engine_version
+    const suffix: string = version ? ` (KoSIT ${version})` : ''
+    return `KoSIT: entspricht${suffix}`
+  }
+  if (result === 'not_conform') {
+    return 'KoSIT: entspricht nicht'
+  }
+  return 'KoSIT: nicht geprüft'
 }

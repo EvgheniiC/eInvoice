@@ -6,9 +6,11 @@ import { SiteFooter } from '../components/SiteFooter'
 import { publicPageByPath, type PublicPage, type PublicPageLink } from '../content/publicPages'
 import {
   classifyEInvoice,
+  classifyKosit,
   eInvoiceFormatLabel,
-  validationStatusLabel,
+  kositStatusLabel,
   type EInvoiceCheckResult,
+  type KositCheckResult,
 } from '../einvoiceCheck'
 import { AppLink } from '../navigation'
 import type { AppRoute } from '../routing'
@@ -76,7 +78,7 @@ export function ValidationPage({
         <h1 tabIndex={-1}>{page?.h1 ?? 'eRechnung validation'}</h1>
         <p className="page__lead">
           {page?.description ??
-            'Eine Datei hochladen und prüfen, ob es eine E-Rechnung ist.'}
+            'Eine Datei hochladen und prüfen, ob es eine E-Rechnung ist und ob sie KoSIT entspricht.'}
         </p>
       </header>
 
@@ -139,8 +141,8 @@ type CheckResultProps = {
 
 function CheckResult({ invoice, feedbackRef }: CheckResultProps): JSX.Element {
   const verdict: EInvoiceCheckResult = classifyEInvoice(invoice)
-  const className: string =
-    verdict === 'einvoice' ? 'status status--info' : 'status status--error'
+  const kosit: KositCheckResult = classifyKosit(invoice)
+  const className: string = resultClassName(verdict, kosit)
   return (
     <section
       className={className}
@@ -157,13 +159,20 @@ function CheckResult({ invoice, feedbackRef }: CheckResultProps): JSX.Element {
       {verdict === 'einvoice' ? (
         <p>Format: {eInvoiceFormatLabel(invoice.file_type)}</p>
       ) : null}
-      {verdict === 'einvoice' ? <p>{validationStatusLabel(invoice.validation_status)}</p> : null}
+      <p>{kositStatusLabel(kosit, invoice)}</p>
       <p>{invoice.message}</p>
       {invoice.validation_issues.map((issue: ValidationIssue, index: number) => (
         <p key={`${issue.code ?? 'issue'}-${index}`}>{issue.message}</p>
       ))}
     </section>
   )
+}
+
+function resultClassName(verdict: EInvoiceCheckResult, kosit: KositCheckResult): string {
+  if (verdict !== 'einvoice' || kosit === 'not_conform') {
+    return 'status status--error'
+  }
+  return 'status status--info'
 }
 
 function verdictHeadline(verdict: EInvoiceCheckResult): string {

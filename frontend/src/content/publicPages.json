@@ -112,9 +112,9 @@
       "kind": "topic",
       "h1": "eRechnung validation",
       "title": "eRechnung validation | eInvoice",
-      "description": "eRechnung validation: eine Datei hochladen und prüfen, ob es eine E-Rechnung (XRechnung oder ZUGFeRD) ist.",
+      "description": "eRechnung validation: eine Datei hochladen und prüfen, ob es eine E-Rechnung (XRechnung oder ZUGFeRD) ist und ob sie KoSIT entspricht.",
       "paragraphs": [
-        "eRechnung validation prüft eine einzelne Datei: Ist das eine E-Rechnung oder ein normales PDF bzw. ein anderes XML?",
+        "eRechnung validation prüft eine einzelne Datei zweifach: Ist das eine E-Rechnung (XRechnung oder ZUGFeRD), und entspricht sie den KoSIT-Prüfregeln?",
         "XRechnung (UBL oder CII) und ZUGFeRD/Factur-X mit eingebettetem XML gelten als E-Rechnung. Ein PDF ohne dieses XML ist keine E-Rechnung.",
         "Die Datei wird nur für diese Anfrage gelesen und danach gelöscht."
       ],

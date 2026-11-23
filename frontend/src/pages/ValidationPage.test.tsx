@@ -5,6 +5,16 @@ import { describe, expect, it, vi } from 'vitest'
 import { parseInvoice } from '../api/client'
 import { buildInvoice } from '../test/fixtures'
 import type { InvoiceParseResponse, ValidationIssue } from '../types/invoice'
+
+const KOSIT_OK: ValidationIssue = {
+  level: 'info',
+  category: 'schema',
+  code: 'KOSIT_OK',
+  message: 'KoSIT-Validator: Rechnung akzeptiert (Schematron/Schema).',
+  explanation: null,
+  bt_code: null,
+  field: null,
+}
 import { ValidationPage } from './ValidationPage'
 
 vi.mock('../api/client', (): { parseInvoice: ReturnType<typeof vi.fn> } => ({
@@ -14,7 +24,10 @@ vi.mock('../api/client', (): { parseInvoice: ReturnType<typeof vi.fn> } => ({
 describe('ValidationPage', (): void => {
   it('reports a parsed file as an e-invoice', async (): Promise<void> => {
     const user: UserEvent = userEvent.setup()
-    const invoice: InvoiceParseResponse = buildInvoice({ filename: 'sample.xml' })
+    const invoice: InvoiceParseResponse = buildInvoice({
+      filename: 'sample.xml',
+      validation_issues: [KOSIT_OK],
+    })
     vi.mocked(parseInvoice).mockResolvedValue(invoice)
 
     render(<ValidationPage onNavigate={vi.fn()} session={null} onLogout={vi.fn()} />)
@@ -26,7 +39,7 @@ describe('ValidationPage', (): void => {
 
     expect(await screen.findByText('Ja. Das ist eine E-Rechnung.')).toBeInTheDocument()
     expect(screen.getByText('Format: XRechnung (XML)')).toBeInTheDocument()
-    expect(screen.getByText('Prüfung: gültig')).toBeInTheDocument()
+    expect(screen.getByText('KoSIT: entspricht (KoSIT 1.5.0)')).toBeInTheDocument()
     expect(parseInvoice).toHaveBeenCalledTimes(1)
   })
 
@@ -56,6 +69,35 @@ describe('ValidationPage', (): void => {
     await user.upload(input, new File(['%PDF'], 'scan.pdf', { type: 'application/pdf' }))
 
     expect(await screen.findByText('Nein. Das ist keine E-Rechnung.')).toBeInTheDocument()
+    expect(screen.getByText('KoSIT: nicht geprüft')).toBeInTheDocument()
     expect(screen.getByText(invoice.message)).toBeInTheDocument()
+  })
+
+  it('reports an e-invoice that fails KoSIT', async (): Promise<void> => {
+    const user: UserEvent = userEvent.setup()
+    const invoice: InvoiceParseResponse = buildInvoice({
+      status: 'partial',
+      message: 'Rechnung gelesen, aber Validierung meldet Fehler.',
+      validation_status: 'invalid',
+      validation_issues: [
+        {
+          level: 'error',
+          category: 'schema',
+          code: 'KOSIT_FAILED',
+          message: 'KoSIT-Validator: Rechnung entspricht nicht den Prüfregeln.',
+          explanation: null,
+          bt_code: null,
+          field: null,
+        },
+      ],
+    })
+    vi.mocked(parseInvoice).mockResolvedValue(invoice)
+
+    render(<ValidationPage onNavigate={vi.fn()} session={null} onLogout={vi.fn()} />)
+    const input: HTMLInputElement = document.querySelector('#invoice-file-input') as HTMLInputElement
+    await user.upload(input, new File(['<Invoice/>'], 'bad.xml', { type: 'text/xml' }))
+
+    expect(await screen.findByText('Ja. Das ist eine E-Rechnung.')).toBeInTheDocument()
+    expect(screen.getByText('KoSIT: entspricht nicht')).toBeInTheDocument()
   })
 })
